@@ -1,0 +1,128 @@
+{
+  "$defs": {
+    "VerificationCheckRequirement": {
+      "additionalProperties": false,
+      "properties": {
+        "program_check_id": {
+          "title": "Program Check Id",
+          "type": "string"
+        },
+        "required_suites": {
+          "items": {
+            "$ref": "#/$defs/VerificationSuite"
+          },
+          "title": "Required Suites",
+          "type": "array"
+        },
+        "evidence_requirements": {
+          "items": {
+            "$ref": "#/$defs/VerificationEvidenceRequirement"
+          },
+          "title": "Evidence Requirements",
+          "type": "array"
+        }
+      },
+      "required": [
+        "program_check_id"
+      ],
+      "title": "VerificationCheckRequirement",
+      "type": "object"
+    },
+    "VerificationEvidenceRequirement": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_type": {
+          "title": "Artifact Type",
+          "type": "string"
+        },
+        "env_class": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Env Class"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        }
+      },
+      "required": [
+        "artifact_type"
+      ],
+      "title": "VerificationEvidenceRequirement",
+      "type": "object"
+    },
+    "VerificationSuite": {
+      "additionalProperties": false,
+      "properties": {
+        "suite_id": {
+          "title": "Suite Id",
+          "type": "string"
+        },
+        "env_class": {
+          "title": "Env Class",
+          "type": "string"
+        },
+        "runner": {
+          "title": "Runner",
+          "type": "string"
+        },
+        "gating": {
+          "default": "must",
+          "enum": [
+            "must",
+            "should",
+            "may"
+          ],
+          "title": "Gating",
+          "type": "string"
+        }
+      },
+      "required": [
+        "suite_id",
+        "env_class",
+        "runner"
+      ],
+      "title": "VerificationSuite",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "default": "2.1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "verification_plan_id": {
+      "title": "Verification Plan Id",
+      "type": "string"
+    },
+    "check_requirements": {
+      "items": {
+        "$ref": "#/$defs/VerificationCheckRequirement"
+      },
+      "title": "Check Requirements",
+      "type": "array"
+    }
+  },
+  "required": [
+    "verification_plan_id"
+  ],
+  "title": "VerificationPlanPayload",
+  "type": "object"
+}

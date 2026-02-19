@@ -1,0 +1,108 @@
+{
+  "artifact_type": "failure_mode_findings",
+  "artifact_id": "failure_modes_B02A_v3",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T21:25:07.602461Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B02A_v3"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B02A_v3",
+    "taxonomy": "CouncilOS failure-mode taxonomy (inputs.taxonomy_categories)",
+    "critical_findings": [
+      {
+        "id": "FM1",
+        "category": "Tool permissioning & sandbox escape/misuse",
+        "severity": "critical",
+        "finding": "Tool policy inconsistency: the Review stage is specified as findings-only, but also denies artifact_write/workspace_write entirely, which prevents reviewers from emitting required review_findings.json artifacts (and any integration review findings). This can deadlock the workflow or force out-of-band writes, undermining auditability and role separation. Evidence: Review stage policy denies writes at /inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies/6/restrictions/0 (artifact_write=\"deny\", workspace_write=\"deny\") while requirements and architecture require review_findings outputs (e.g., /inputs/plan_candidate/plan_package/requirements (R7, R22) and /inputs/plan_candidate/plan_package/architecture/options (C16, C20)).",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies/6; /inputs/plan_candidate/plan_package/requirements; /inputs/plan_candidate/plan_package/architecture/options",
+          "closure_target": "Adjust tool_policy for Review (and Integration review) to allow artifact_write ONLY for findings artifact types (e.g., review_findings.json) and forbid any patch/code writes; add validator that rejects any non-findings artifact emitted by reviewer role.",
+          "earliest_prevention_stage": "WorkPlanning"
+        }
+      },
+      {
+        "id": "FM2",
+        "category": "Audit spine integrity (manifest/event log/artifact immutability)",
+        "severity": "critical",
+        "finding": "Parallel lanes + shared append-only event_log risk nondeterministic ordering/races: if multiple lanes append concurrently without orchestrator-assigned monotonic sequence numbers, the audit spine can become non-replayable and evidence pointers may no longer correspond to a deterministic state progression. The plan requires append-only event_log and checkpoints, but does not specify a deterministic concurrency/write serialization mechanism for multi-lane logging. Evidence: O2 parallel lanes described in /inputs/plan_candidate/plan_package/architecture/chosen/high_level_dataflow and audit spine requirements in /inputs/plan_candidate/plan_package/requirements (R8); no concrete mechanism for deterministic log ordering is defined here.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/architecture/chosen/high_level_dataflow; /inputs/plan_candidate/plan_package/requirements (see R8)",
+          "closure_target": "Define event_log append protocol: orchestrator-only append with globally monotonic sequence numbers; lane-local logs (optional) must be merged deterministically into the global log; validators must enforce monotonicity and uniqueness across all entries under parallelism.",
+          "earliest_prevention_stage": "Intake"
+        }
+      },
+      {
+        "id": "FM3",
+        "category": "Integration/merge conflict handling & parallelism hazards",
+        "severity": "critical",
+        "finding": "Deterministic integration depends on lane partitioning + merge ordering + patchset base_commit semantics, but key specifications are left open/implicit, creating high risk of irreproducible or incorrect integrated states (K12 class). In particular, the plan references deterministic ordering independent of completion time, but does not lock down a canonical ordering key beyond examples, nor does it specify what happens when patchsets declare incompatible base_commit values across lanes. Evidence: deterministic ordering intent in /inputs/plan_candidate/plan_package/decision_log/2 and /inputs/plan_candidate/plan_package/architecture/chosen/key_design_decisions; blocking open questions on diff format and conflict policy exist (e.g., /inputs/plan_candidate/plan_package/open_questions Q7, Q9).",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/decision_log/2; /inputs/plan_candidate/plan_package/architecture/chosen/key_design_decisions; /inputs/plan_candidate/plan_package/open_questions (Q7, Q9)",
+          "closure_target": "Specify: (1) canonical merge/apply ordering function (exact stable sort keys, including lane_id + patchset_sequence + deterministic tiebreakers), (2) base_commit compatibility rules and rejection/escalation behavior, (3) conflict thresholds and exact deterministic reroute/HITL triggers; add integration validator that fails if any lane patchset base_commit mismatches the integration base.",
+          "earliest_prevention_stage": "WorkPlanning"
+        }
+      },
+      {
+        "id": "FM4",
+        "category": "Validation determinism (build/test/lint/typecheck) & flaky policy",
+        "severity": "high",
+        "finding": "Integrated closure gates may be incomplete because IntegrateAndValidate stage allowlist omits run_lint and run_typecheck, despite R21 requiring lint/typecheck gates \"as applicable\" before Freeze. If lane-level validation runs lint/typecheck but integration does not, cross-lane interactions can introduce lint/typecheck failures that are never rechecked at system scope. Evidence: IntegrateAndValidate allowlisted_tools at /inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies/5/allowlisted_tools lacks run_lint/run_typecheck; R21 at /inputs/plan_candidate/plan_package/requirements includes lint/typecheck gates.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies/5/allowlisted_tools; /inputs/plan_candidate/plan_package/requirements (see R21)",
+          "closure_target": "Add run_lint and run_typecheck (and any other required validators from repo_context) to IntegrateAndValidate allowlist OR explicitly define which validators are required at lane vs integration scope with a validator enforcing that the integration-required set was executed on merged state.",
+          "earliest_prevention_stage": "WorkPlanning"
+        }
+      },
+      {
+        "id": "FM5",
+        "category": "Supply-chain/network dependency control",
+        "severity": "high",
+        "finding": "Network is denied in all stages (including Validate and IntegrateAndValidate). For many real repos, builds/tests require dependency fetching; the likely outcome is either systematic run failure or pressure to broaden permissions ad hoc, increasing policy-bypass and reproducibility risk (especially if network enabling is not paired with strict allowlists/lockfile enforcement). Evidence: network=\"deny\" across stage policies at /inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies/*/restrictions/0; open question on dependency/network policy remains blocking (/inputs/plan_candidate/plan_package/open_questions Q11).",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies; /inputs/plan_candidate/plan_package/open_questions (Q11)",
+          "closure_target": "Define a deterministic dependency policy: either require fully offline builds (with mirrored deps) or allow network only in designated stages with domain allowlists + lockfile/SBOM validators + pinned toolchains; encode as policy-as-data and gate Freeze on dependency provenance checks.",
+          "earliest_prevention_stage": "Intake"
+        }
+      },
+      {
+        "id": "FM6",
+        "category": "Schema correctness & JSON Patch safety (RFC6902)",
+        "severity": "high",
+        "finding": "JSON Patch safety is described at a policy level (op caps, forbidden pointer paths, schema revalidation), but artifact-type-specific forbidden JSON Pointer paths and semantic invariants are not concretely specified. This can allow syntactically valid patches that keep schema-validity but break logical constraints (e.g., work_plan DAG cycles, invalid stage transitions), corrupting canonical workflow state while still passing basic schema checks. Evidence: risk K11 at /inputs/plan_candidate/plan_package/risk_register (K11) indicates need for forbidden-path rules and semantic validators, but the plan does not enumerate them here; also open question about selection logic exists (/inputs/plan_candidate/plan_package/open_questions Q8).",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/risk_register (K11); /inputs/plan_candidate/plan_package/open_questions (Q8)",
+          "closure_target": "For each canonical JSON artifact type (work_plan, workspace_index, decision_record, trace_report, etc.), define: allowed patch paths, forbidden patch paths, and semantic validators (e.g., DAG acyclicity, required stage list, monotonic checkpoint IDs). Enforce pre-apply and post-apply validation deterministically.",
+          "earliest_prevention_stage": "WorkPlanning"
+        }
+      },
+      {
+        "id": "FM7",
+        "category": "Evidence & traceability compliance (RFC6901 pointers)",
+        "severity": "high",
+        "finding": "Key plan decisions and warnings include empty evidence_pointers arrays, creating a pattern where decision artifacts may be accepted without evidence even though later governance requires evidence-backed approvals/waivers. If carried into Implementation Council decision_record/judge outputs, this becomes a decision-integrity failure (un-grounded approvals). Evidence: decision_log entries have evidence_pointers: [] at /inputs/plan_candidate/plan_package/decision_log/*/evidence_pointers; synthesis_warnings evidence arrays empty at /inputs/plan_candidate/plan_package/synthesis_warnings/*/evidence.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/decision_log; /inputs/plan_candidate/plan_package/synthesis_warnings",
+          "closure_target": "Add a policy/validator rule: for specific artifact types (decision_record, judge outputs, waivers, ChangeRequest approvals), require >=1 RFC6901 evidence pointer per decision clause; allow empty evidence only for explicitly marked 'no-evidence-available' cases that trigger HITL or reroute.",
+          "earliest_prevention_stage": "Judge"
+        }
+      }
+    ],
+    "closure_pass": false
+  }
+}

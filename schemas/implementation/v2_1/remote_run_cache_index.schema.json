@@ -1,0 +1,46 @@
+{
+  "$defs": {
+    "RemoteRunCacheEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "idempotency_key": {
+          "title": "Idempotency Key",
+          "type": "string"
+        },
+        "result_ref": {
+          "title": "Result Ref",
+          "type": "string"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "idempotency_key",
+        "result_ref",
+        "created_at"
+      ],
+      "title": "RemoteRunCacheEntry",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "default": "2.0.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "entries": {
+      "items": {
+        "$ref": "#/$defs/RemoteRunCacheEntry"
+      },
+      "title": "Entries",
+      "type": "array"
+    }
+  },
+  "title": "RemoteRunCacheIndexPayload",
+  "type": "object"
+}

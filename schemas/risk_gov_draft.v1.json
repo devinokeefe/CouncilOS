@@ -1,0 +1,216 @@
+{
+  "$defs": {
+    "Acceptance": {
+      "additionalProperties": false,
+      "properties": {
+        "rationale": {
+          "title": "Rationale",
+          "type": "string"
+        },
+        "signoff": {
+          "title": "Signoff",
+          "type": "string"
+        }
+      },
+      "required": [
+        "rationale",
+        "signoff"
+      ],
+      "title": "Acceptance",
+      "type": "object"
+    },
+    "HitlPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "when_to_interrupt": {
+          "items": {
+            "type": "string"
+          },
+          "title": "When To Interrupt",
+          "type": "array"
+        },
+        "approval_roles": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Approval Roles",
+          "type": "array"
+        }
+      },
+      "required": [
+        "when_to_interrupt",
+        "approval_roles"
+      ],
+      "title": "HitlPolicy",
+      "type": "object"
+    },
+    "Mitigation": {
+      "additionalProperties": false,
+      "properties": {
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "owner": {
+          "title": "Owner",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "planned",
+            "in_progress",
+            "done"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "text",
+        "owner",
+        "status"
+      ],
+      "title": "Mitigation",
+      "type": "object"
+    },
+    "RiskItem": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "severity": {
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "mitigation": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Mitigation"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "acceptance": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Acceptance"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "severity",
+        "description",
+        "mitigation",
+        "acceptance"
+      ],
+      "title": "RiskItem",
+      "type": "object"
+    },
+    "ToolPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "stage_policies": {
+          "items": {
+            "$ref": "#/$defs/ToolPolicyStage"
+          },
+          "title": "Stage Policies",
+          "type": "array"
+        }
+      },
+      "required": [
+        "stage_policies"
+      ],
+      "title": "ToolPolicy",
+      "type": "object"
+    },
+    "ToolPolicyStage": {
+      "additionalProperties": false,
+      "properties": {
+        "stage": {
+          "title": "Stage",
+          "type": "string"
+        },
+        "allowlisted_tools": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Allowlisted Tools",
+          "type": "array"
+        },
+        "restrictions": {
+          "items": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "title": "Restrictions",
+          "type": "array"
+        },
+        "hitl_triggers": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Hitl Triggers",
+          "type": "array"
+        }
+      },
+      "required": [
+        "stage",
+        "allowlisted_tools",
+        "restrictions",
+        "hitl_triggers"
+      ],
+      "title": "ToolPolicyStage",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "risk_register": {
+      "items": {
+        "$ref": "#/$defs/RiskItem"
+      },
+      "title": "Risk Register",
+      "type": "array"
+    },
+    "tool_policy": {
+      "$ref": "#/$defs/ToolPolicy"
+    },
+    "hitl_policy": {
+      "$ref": "#/$defs/HitlPolicy"
+    },
+    "taxonomy_categories": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Taxonomy Categories",
+      "type": "array"
+    }
+  },
+  "required": [
+    "risk_register",
+    "tool_policy",
+    "hitl_policy",
+    "taxonomy_categories"
+  ],
+  "title": "RiskGovDraftPayload",
+  "type": "object"
+}

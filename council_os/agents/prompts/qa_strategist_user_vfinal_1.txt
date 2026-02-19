@@ -1,0 +1,10 @@
+{
+  "run_context": {{RUN_CONTEXT_JSON}},
+  "artifact_refs": {{ARTIFACT_REFS_JSON}},
+  "allowed_id_prefixes": ["ATT"],
+  "inputs": {
+    "project_capsule": {{CAPSULE_JSON}}
+  },
+  "task": "Produce QA templates + coverage guidance + DoD.",
+  "output_schema": {{QA_TEMPLATES_SCHEMA_JSON}}
+}

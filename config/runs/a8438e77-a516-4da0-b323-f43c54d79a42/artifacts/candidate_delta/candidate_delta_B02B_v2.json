@@ -1,0 +1,487 @@
+{
+  "artifact_type": "candidate_delta",
+  "artifact_id": "candidate_delta_B02B_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T20:54:32.496984Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "branch_set_v1"
+  ],
+  "payload": {
+    "candidate_id": "B02B",
+    "executive_summary": "Candidate B02B implements the Implementation Council subsystem using architecture O2 (task-parallel fan-out/fan-in with deterministic integration). The hybrid milestone strategy assigns independent implementation lanes their own intermediate milestones, converging at a final integration milestone where all parallel work is merged, validated, and frozen as a single Implementation Freeze Bundle. Governance uses sandboxed tooling with medium HITL strictness focused on integration-level findings. Acceptance requires two tiers: lane-scoped gate passage followed by full system-level integrated validation and integration review before freeze. This approach prioritizes wall-clock speed for divisible work while concentrating risk management at the integration fan-in point, with explicit mitigations for merge conflicts (K12), role separation (K10), and secrets/security (K4, K7).",
+    "architecture_choice": {
+      "option_id": "O2",
+      "rationale": "O2 is selected because the branch B02 strategy explicitly prioritizes speed for projects with divisible work by executing tasks in parallel. O2's task-parallel fan-out/fan-in architecture directly supports this by running independent Generate→Validate→Review→Patch lanes concurrently, then deterministically merging results through a governed Integration sub-flow before Judge→Freeze. The trade-off of increased integration complexity is accepted and mitigated by: (1) a dedicated Integration Merge Engine (C18) with deterministic merge ordering and conflict detection, (2) Integration Validator (C19) and Integration Reviewer (C20) providing full-repo regression and cross-module review, (3) medium HITL strictness focused on integration-level findings and merge conflicts exceeding deterministic thresholds, and (4) workspace partitioning (C22) that isolates lanes and reduces cross-contamination. O2's component decomposition (C11–C24) provides clear separation of the Global Orchestrator, per-lane orchestration, integration-specific components, and freeze assembly, all of which map well to the hybrid milestone strategy where lanes complete independently before a final integration milestone.",
+      "high_level_dataflow": "plan_package_final.json + repo_context.json + workspace_context.json → C12 (Intake & DAG Work Planner): validates inputs, initializes audit spine, produces work_plan.json with DAG/lane partitioning → C11 (Global Orchestrator) fans out to N parallel Task Lanes via C13 (Task Lane Orchestrators), each running C14 (Writer) → C15 (Per-Lane Validator) → C16 (Per-Lane Reviewer) → C17 (Per-Lane Patcher) cycles with per-lane stage_handoffs → completed lane patchsets feed into C18 (Integration Merge Engine): deterministic merge ordering, conflict detection → C19 (Integration Validator): full-repo build/test/lint/typecheck/security → C20 (Integration Reviewer): holistic cross-module findings → C21 (Integration Patcher): integration-level repairs → C23 (Judge Pod): evaluates integrated state, trace completeness, risk closure → C24 (Freeze Assembler): assembles Implementation Freeze Bundle with all CNS10-required artifacts. C22 (Workspace Manager) provides namespaced partitions throughout. C11 enforces budgets, tool permissions, secrets policy, and escalation at every boundary.",
+      "key_design_decisions": [
+        "Parallel lane execution with deterministic merge ordering independent of wall-clock completion timing to maximize throughput while preserving reproducibility.",
+        "Dedicated Integration sub-flow (C18→C19→C20→C21) as a first-class workflow stage with its own validation, review, and repair cycle to catch cross-lane regressions and merge conflicts.",
+        "Namespaced workspace partitions (C22) isolating per-lane canonical/non-canonical content with a shared integration partition, unified under workspace_index.json.",
+        "Medium HITL strictness: automated lane-level validation with HITL triggers concentrated at integration conflicts exceeding deterministic thresholds, security critical findings, secrets detection, and ChangeRequest approvals.",
+        "Two-tier acceptance: lane-scoped gates must pass before fan-in; integrated state must pass full system-level validators, integration review, and judge assessment before freeze.",
+        "Sandboxed tooling with deny-by-default network, repo-write only via patch_apply, and per-stage tool permission matrix enforced by C11.",
+        "Deterministic smallest-passing-repair selection (fewest ops → fewest bytes → first-generated) applied at both lane and integration repair stages.",
+        "Stage handoff artifacts emitted at every checkpoint boundary (lane transitions, integration transitions, judge, freeze) for cold-start resumability."
+      ]
+    },
+    "milestones": [
+      {
+        "id": "M1",
+        "name": "Intake & Work Plan Compilation",
+        "deliverables": [
+          {
+            "id": "M1-D1",
+            "text": "Validated plan_package_final.json, repo_context.json, and workspace_context.json with schema-pass confirmation artifacts."
+          },
+          {
+            "id": "M1-D2",
+            "text": "Initialized implementation_run_manifest.json (immutable) and implementation_event_log.jsonl (append-only)."
+          },
+          {
+            "id": "M1-D3",
+            "text": "work_plan.json with dependency DAG, lane partitioning annotations, AT# trace mapping, and bounded patchset slots."
+          },
+          {
+            "id": "M1-D4",
+            "text": "workspace_index.json initialized with namespace/partition layout per workspace_context.json."
+          },
+          {
+            "id": "M1-D5",
+            "text": "stage_handoff artifact for Intake→ParallelLanes boundary."
+          }
+        ],
+        "exit_criteria": [
+          "All three input artifacts pass schema validation (AT2, AT3, AT1).",
+          "run_manifest is immutable and event_log is append-only with initial entries (AT8).",
+          "work_plan.json passes schema validation and contains AT# trace mapping for all acceptance tests (AT4).",
+          "workspace_index.json is initialized and passes workspace integrity validation (AT18).",
+          "stage_handoff artifact is present and contains all required fields (AT5, AT6)."
+        ],
+        "depends_on": []
+      },
+      {
+        "id": "M2",
+        "name": "Parallel Lane Execution (Per-Lane Gates)",
+        "deliverables": [
+          {
+            "id": "M2-D1",
+            "text": "Per-lane diff-only patchset JSON artifacts with deterministic apply order, scoped to lane file sets."
+          },
+          {
+            "id": "M2-D2",
+            "text": "Per-lane test_results.json and quality_reports.json with AT# trace mapping."
+          },
+          {
+            "id": "M2-D3",
+            "text": "Per-lane review_findings.json (findings-only, RFC 6901 evidence pointers)."
+          },
+          {
+            "id": "M2-D4",
+            "text": "Per-lane repair artifacts (RFC 6902 JSON Patches and/or replacement patchsets) where needed."
+          },
+          {
+            "id": "M2-D5",
+            "text": "Per-lane stage_handoff artifacts at each lane checkpoint boundary."
+          },
+          {
+            "id": "M2-D6",
+            "text": "Updated workspace_index.json with per-lane partition entries and provenance."
+          }
+        ],
+        "exit_criteria": [
+          "Each lane's patchsets pass lane-scoped validators: build/test/lint/typecheck as applicable (AT13, AT14).",
+          "Per-lane review_findings.json emitted by findings-only reviewers with valid RFC 6901 evidence pointers (AT10, AT22).",
+          "Per-lane secrets scan passes with zero detected secrets (AT20).",
+          "Per-lane stage_handoffs present and complete for all lane transitions (AT5, AT6).",
+          "All per-lane workspace items indexed in workspace_index.json (AT18).",
+          "Writer/reviewer/judge separation enforced per lane with multi-vendor routing recorded (AT22)."
+        ],
+        "depends_on": [
+          "M1"
+        ]
+      },
+      {
+        "id": "M3",
+        "name": "Integration Merge & Validation",
+        "deliverables": [
+          {
+            "id": "M3-D1",
+            "text": "Merged repo_snapshot.json with deterministic patchset ordering record and base/head commits."
+          },
+          {
+            "id": "M3-D2",
+            "text": "Integration conflict_report (structured) if conflicts detected, with classification and escalation path."
+          },
+          {
+            "id": "M3-D3",
+            "text": "Integrated test_results.json and quality_reports.json from full-repo validation."
+          },
+          {
+            "id": "M3-D4",
+            "text": "Integration review_findings.json (findings-only, cross-module focus, RFC 6901 evidence pointers)."
+          },
+          {
+            "id": "M3-D5",
+            "text": "Integration-level repair artifacts where needed, within op caps."
+          },
+          {
+            "id": "M3-D6",
+            "text": "stage_handoff artifact for Integration→Judge boundary."
+          }
+        ],
+        "exit_criteria": [
+          "All lane patchsets merged in deterministic order with conflicts resolved or escalated per policy (AT14, K12 mitigation).",
+          "Full-repo validators pass on merged state: build/test/lint/typecheck/security (AT21).",
+          "Integration review_findings.json emitted with valid evidence pointers (AT10, AT22).",
+          "Secrets scan on integrated state passes with zero detected secrets (AT20).",
+          "Forbidden/protected path enforcement validated on merged patchsets (AT14).",
+          "stage_handoff artifact present and complete for Integration→Judge boundary (AT5, AT6).",
+          "workspace_index.json updated with integration partition entries (AT18)."
+        ],
+        "depends_on": [
+          "M2"
+        ]
+      },
+      {
+        "id": "M4",
+        "name": "Judge & Freeze",
+        "deliverables": [
+          {
+            "id": "M4-D1",
+            "text": "trace_report.json covering all lanes and integration with AT# evidence completeness."
+          },
+          {
+            "id": "M4-D2",
+            "text": "Freeze/no-freeze recommendation with risk closure assessment against K# entries."
+          },
+          {
+            "id": "M4-D3",
+            "text": "decision_record.json with all approvals/waivers backed by RFC 6901 evidence pointers."
+          },
+          {
+            "id": "M4-D4",
+            "text": "Complete Implementation Freeze Bundle: implementation_run_manifest.json, implementation_event_log.jsonl, work_plan.json, patchsets, repo_snapshot.json, test_results.json, quality_reports.json, trace_report.json, review_findings.json, release_bundle.json, decision_record.json, workspace_index.json, context_packs/, stage_handoffs/."
+          },
+          {
+            "id": "M4-D5",
+            "text": "Final stage_handoff artifact for Judge→Freeze boundary."
+          }
+        ],
+        "exit_criteria": [
+          "trace_report.json enumerates all AT# with passing mapped tests or approved waivers (AT10, K13 mitigation).",
+          "All closure gates pass: build/test/lint/typecheck, artifact integrity, workspace integrity, risk closure, reproducibility, trace completeness (AT21).",
+          "decision_record.json contains evidence pointers for every approval/waiver (AT10, K18 mitigation).",
+          "Implementation Freeze Bundle contains all CNS10-required artifacts and directories (AT7).",
+          "run_manifest immutability and event_log append-only integrity confirmed (AT8).",
+          "workspace_index.json complete and all context_packs within configured bounds (AT18).",
+          "No secrets detected in any freeze bundle artifact (AT20).",
+          "Writer/reviewer/judge separation and multi-vendor routing confirmed across full run (AT22)."
+        ],
+        "depends_on": [
+          "M3"
+        ]
+      }
+    ],
+    "decision_log": [
+      {
+        "id": "DEC1",
+        "question": "Which architecture option should be selected for the Implementation Council?",
+        "choice": "O2 — Task-parallel fan-out/fan-in with deterministic integration sub-flow.",
+        "rationale": "Branch B02 mandates O2 for parallel execution to minimize wall-clock time. O2's DAG-based orchestration with per-lane state machines and a dedicated integration sub-flow directly supports the hybrid milestone strategy (independent lane milestones converging at integration). The trade-off of increased integration complexity is acceptable given the dedicated Integration Merge Engine, Integration Validator, and Integration Reviewer components that provide structured conflict handling and cross-module validation.",
+        "alternatives_considered": [
+          "O1 (Sequential staged pipeline): Simpler but slower; no parallelism for independent tasks.",
+          "O3 (Checkpoint-driven micro-cycle): Best for long-horizon resume but sequential by default.",
+          "O4 (Monolithic): Simplified boundary but poor modularity and harder to enforce role separation internally."
+        ],
+        "what_would_change_this_decision": [
+          "If the target repository has tightly-coupled code with frequent cross-file dependencies making lane partitioning infeasible, O1 or O3 would be preferred.",
+          "If wall-clock time is not a priority and simplicity/auditability is paramount, O1 would be preferred.",
+          "If long-horizon partial-freeze capability is the primary concern, O3 would be preferred."
+        ],
+        "evidence_pointers": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "architecture_canonical",
+            "json_pointer": "/options/1",
+            "note": "O2 architecture definition with components C11-C24",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "branch_set_v1",
+            "artifact_id": "branch_set",
+            "json_pointer": "/branches/1",
+            "note": "Branch B02 selects O2 with hybrid milestone strategy",
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "DEC2",
+        "question": "How should milestone structure reflect the hybrid strategy for parallel lanes with integration convergence?",
+        "choice": "Four milestones: M1 (Intake & Work Plan), M2 (Parallel Lane Execution with per-lane gates), M3 (Integration Merge & Validation), M4 (Judge & Freeze).",
+        "rationale": "The hybrid milestone strategy requires independent lane completion as intermediate milestones and a final integration milestone. M1 establishes validated inputs and the work plan. M2 covers all parallel lanes with per-lane exit criteria. M3 is the critical integration fan-in point where merge conflicts and cross-lane regressions are caught. M4 is the final freeze gate. This structure maps directly to O2's workflow stages and the branch's acceptance strategy requiring two-tier validation.",
+        "alternatives_considered": [
+          "One milestone per lane plus integration plus freeze: Too granular for plan-level milestones; lane count is dynamic.",
+          "Three milestones (Intake, All-Lanes+Integration, Freeze): Merges integration with lanes, obscuring the critical fan-in point.",
+          "Five milestones with separate Review and Judge: Over-decomposed given review is embedded in lane and integration cycles."
+        ],
+        "what_would_change_this_decision": [
+          "If lane count is always small (1-2), collapsing M2 and M3 would simplify.",
+          "If partial-freeze capability is required, an additional partial-freeze milestone would be needed."
+        ],
+        "evidence_pointers": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "branch_set_v1",
+            "artifact_id": "branch_set",
+            "json_pointer": "/branches/1/milestone_strategy",
+            "note": "Hybrid strategy: independent lanes as intermediate milestones, integration as final",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "branch_set_v1",
+            "artifact_id": "branch_set",
+            "json_pointer": "/branches/1/acceptance_strategy",
+            "note": "Two-tier acceptance: lane gates then integrated system-level validation",
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "DEC3",
+        "question": "How should integration merge conflicts (K12) be handled under medium HITL strictness?",
+        "choice": "Deterministic merge ordering independent of wall-clock timing, with structured conflict reports and bounded automated resolution. Conflicts exceeding deterministic thresholds trigger HITL escalation via the Integration Patcher (C21) or reroute to re-partition lanes.",
+        "rationale": "The branch risk posture accepts increased integration complexity in exchange for speed, with focus on mitigating K12. Medium HITL strictness means automated resolution is attempted first with deterministic rules, but unresolvable conflicts are escalated rather than silently resolved. The Integration Merge Engine (C18) emits structured conflict_reports enabling auditable escalation decisions.",
+        "alternatives_considered": [
+          "Strict HITL on every conflict: Too slow for the speed-oriented branch posture.",
+          "Fully automated conflict resolution with no HITL: Risks silent incorrect merges violating CNS5.",
+          "Rebase-only strategy: May not handle all conflict types deterministically."
+        ],
+        "what_would_change_this_decision": [
+          "If conflict rates are consistently high (>20% of merges), switching to O1 sequential approach or stricter lane partitioning would be warranted.",
+          "If automated merge tooling proves highly reliable, HITL threshold could be raised."
+        ],
+        "evidence_pointers": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "risk_gov_canonical_v1",
+            "artifact_id": "risk_gov_canonical",
+            "json_pointer": "/risk_register/11",
+            "note": "K12: Integration/merge conflicts risk and mitigation",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "branch_set_v1",
+            "artifact_id": "branch_set",
+            "json_pointer": "/branches/1/risk_posture",
+            "note": "Accepts integration complexity, focuses on mitigating K12",
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "DEC4",
+        "question": "What governance posture should apply to tooling and HITL triggers?",
+        "choice": "Sandboxed tooling with deny-by-default network, repo-write only via patch_apply, per-stage tool permission matrix. Medium HITL strictness with triggers focused on integration conflicts, security critical findings, secrets detection, ChangeRequest approvals, and gate waivers.",
+        "rationale": "The branch specifies sandboxed tooling_level and medium hitl_strictness. This balances speed (automated lane-level validation without HITL for routine passes) with safety (HITL at integration-level findings and policy-critical events). The tool policy from risk_gov_canonical provides the per-stage permission matrix.",
+        "alternatives_considered": [
+          "High HITL strictness: Would slow parallel lane execution with frequent interruptions.",
+          "Low HITL strictness: Would risk missing integration-level issues that automated validators cannot fully catch.",
+          "Unrestricted tooling: Violates CNS1 and CNS9."
+        ],
+        "what_would_change_this_decision": [
+          "If security/compliance requirements increase, HITL strictness should be raised to high.",
+          "If automated validators prove comprehensive for integration scenarios, HITL triggers could be narrowed."
+        ],
+        "evidence_pointers": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "branch_set_v1",
+            "artifact_id": "branch_set",
+            "json_pointer": "/branches/1/governance_posture",
+            "note": "Sandboxed tooling, medium HITL strictness",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "risk_gov_canonical_v1",
+            "artifact_id": "risk_gov_canonical",
+            "json_pointer": "/tool_policy",
+            "note": "Per-stage tool permission matrix with deny-by-default",
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "DEC5",
+        "question": "How should acceptance testing map to the two-tier validation strategy?",
+        "choice": "Lane-scoped acceptance tests (AT2, AT9, AT10, AT13, AT14, AT20, AT22) gate lane completion at M2. Full system-level acceptance tests (AT4, AT5, AT6, AT7, AT8, AT10, AT18, AT20, AT21, AT22) gate integration and freeze at M3/M4.",
+        "rationale": "The branch acceptance strategy requires two levels: lane-scoped gates first, then integrated system-level validation. Acceptance tests are mapped to the milestone where they are most naturally validated. Lane-level tests focus on per-task correctness, schema compliance, and role separation. Integration and freeze tests focus on end-to-end workflow, bundle completeness, trace completeness, and all closure gates.",
+        "alternatives_considered": [
+          "All acceptance tests at freeze only: Misses early detection of lane-level failures.",
+          "Per-task acceptance tests: Too granular; AT# are system-level tests."
+        ],
+        "what_would_change_this_decision": [
+          "If acceptance tests cannot be meaningfully scoped to lanes, all would shift to M3/M4."
+        ],
+        "evidence_pointers": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "acceptance_canonical_v1",
+            "artifact_id": "acceptance_canonical",
+            "json_pointer": "/acceptance_tests",
+            "note": "Full acceptance test suite AT1-AT23",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "branch_set_v1",
+            "artifact_id": "branch_set",
+            "json_pointer": "/branches/1/acceptance_strategy",
+            "note": "Two-tier: lane gates then integrated system-level validation",
+            "quote": null
+          }
+        ]
+      }
+    ],
+    "supplemental_evaluations": [
+      {
+        "title": "Integration Fan-In Risk Assessment",
+        "notes": "O2's primary risk concentration is at the integration fan-in point (M3). K12 (merge conflicts) is rated high severity. The mitigation relies on deterministic merge ordering, structured conflict reports from C18, and bounded automated resolution via C21. Under medium HITL strictness, conflicts exceeding thresholds escalate to HITL rather than being silently resolved. The branch rationale explicitly acknowledges this trade-off as acceptable for projects with largely independent tasks. If task independence assumptions prove incorrect (high conflict rates), the orchestrator should signal reroute to re-evaluate lane partitioning or switch to O1.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "risk_gov_canonical_v1",
+            "artifact_id": "risk_gov_canonical",
+            "json_pointer": "/risk_register/11",
+            "note": "K12 merge conflict risk",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "architecture_canonical",
+            "json_pointer": "/options/1/risks",
+            "note": "O2 risks include merge conflicts and missed dependencies",
+            "quote": null
+          }
+        ]
+      },
+      {
+        "title": "Workspace Partition Strategy for Parallel Lanes",
+        "notes": "O2 requires namespaced workspace partitions (C22) to isolate per-lane work and prevent cross-contamination. Each lane gets its own canonical and non-canonical partition, with a shared integration partition created at M3. workspace_index.json must span all partitions with provenance metadata. Context packs are compiled per-lane during M2 and globally during M3/M4. K8 (workspace integrity) and K9 (context pack overflow) are mitigated by per-partition validators and bounded context pack selection rules. The workspace_context.json schema (R3) must declare partition layout rules compatible with O2's multi-lane model.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "architecture_canonical",
+            "json_pointer": "/options/1/components/11",
+            "note": "C22 Workspace Manager with namespaced partitions",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "risk_gov_canonical_v1",
+            "artifact_id": "risk_gov_canonical",
+            "json_pointer": "/risk_register/7",
+            "note": "K8 workspace integrity risk",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "risk_gov_canonical_v1",
+            "artifact_id": "risk_gov_canonical",
+            "json_pointer": "/risk_register/8",
+            "note": "K9 context pack overflow risk",
+            "quote": null
+          }
+        ]
+      },
+      {
+        "title": "Role Separation Under Parallel Execution",
+        "notes": "O2 must enforce writer/reviewer/judge separation (R22, K10) across parallel lanes. Each lane has its own Writer (C14), Reviewer (C16), and the integration stage has its own Reviewer (C20). The Judge (C23) operates only at the integrated level. Multi-vendor routing must be enforced per-lane and at integration. The Global Orchestrator (C11) records agent/model/vendor provenance in run_manifest for each lane and integration stage output. AT22 validates this separation across the full run.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "architecture_canonical",
+            "json_pointer": "/options/1/components",
+            "note": "O2 components with separated writer/reviewer/judge roles",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "risk_gov_canonical_v1",
+            "artifact_id": "risk_gov_canonical",
+            "json_pointer": "/risk_register/9",
+            "note": "K10 role separation failure risk",
+            "quote": null
+          }
+        ]
+      }
+    ],
+    "synthesis_warnings": [
+      {
+        "id": "W1",
+        "severity": "high",
+        "summary": "Multiple blocking open questions (Q1, Q2, Q3, Q4, Q5, Q7, Q8, Q9, Q10, Q11, Q12, Q13, Q14, Q15) remain unresolved. These affect lane partitioning strategy, workspace backend selection, artifact_ref format, forbidden paths, model routing, diff format, repair selection parameters, conflict resolution thresholds, retry budgets, network/dependency policy, ChangeRequest escalation criteria, partial-freeze handling, repo_context schema, and context pack bounding. The plan cannot be fully implemented without resolution of these questions.",
+        "routing_target": "clarification",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "capsule_canonical_v1",
+            "artifact_id": "capsule_canonical",
+            "json_pointer": "/open_questions",
+            "note": "16 open questions, most blocking",
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "W2",
+        "severity": "medium",
+        "summary": "O2 does not natively support partial-freeze for long-horizon execution (Q13). If budget/time limits are reached mid-lane or mid-integration, the current milestone structure assumes full completion of each milestone. A partial-freeze mechanism would require additional design work not covered by O2's component set.",
+        "routing_target": "architecture_review",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "architecture_canonical",
+            "json_pointer": "/options/1/tradeoffs/cons",
+            "note": "O2 cons do not address partial-freeze",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "capsule_canonical_v1",
+            "artifact_id": "capsule_canonical",
+            "json_pointer": "/open_questions/12",
+            "note": "Q13: How to handle incremental implementation within budgets",
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "W3",
+        "severity": "medium",
+        "summary": "Assumptions A5 (multi-vendor model portfolio availability), A6 (workspace backend capabilities), A8 (tool sandboxing granularity), A10 (deterministic diff application across merge conflicts), and A11 (context pack bounds) have low confidence and high impact. If any prove false, significant architectural rework may be needed.",
+        "routing_target": "assumption_validation",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "capsule_canonical_v1",
+            "artifact_id": "capsule_canonical",
+            "json_pointer": "/assumptions",
+            "note": "Multiple low-confidence, high-impact assumptions",
+            "quote": null
+          }
+        ]
+      }
+    ]
+  }
+}

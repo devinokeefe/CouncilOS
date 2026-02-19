@@ -1,0 +1,63 @@
+{
+  "$defs": {
+    "ResearchContract": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_id": {
+          "title": "Contract Id",
+          "type": "string"
+        },
+        "hypothesis": {
+          "title": "Hypothesis",
+          "type": "string"
+        },
+        "baseline": {
+          "title": "Baseline",
+          "type": "string"
+        },
+        "evaluation_metrics": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Evaluation Metrics",
+          "type": "array"
+        },
+        "decision_rule": {
+          "title": "Decision Rule",
+          "type": "string"
+        },
+        "replication_rule": {
+          "title": "Replication Rule",
+          "type": "string"
+        }
+      },
+      "required": [
+        "contract_id",
+        "hypothesis",
+        "baseline",
+        "evaluation_metrics",
+        "decision_rule",
+        "replication_rule"
+      ],
+      "title": "ResearchContract",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "default": "2.0.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "contracts": {
+      "items": {
+        "$ref": "#/$defs/ResearchContract"
+      },
+      "title": "Contracts",
+      "type": "array"
+    }
+  },
+  "title": "ResearchContractsPayload",
+  "type": "object"
+}

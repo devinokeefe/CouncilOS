@@ -1,0 +1,140 @@
+{
+  "$defs": {
+    "AcceptanceStrategy": {
+      "additionalProperties": false,
+      "properties": {
+        "notes": {
+          "title": "Notes",
+          "type": "string"
+        }
+      },
+      "required": [
+        "notes"
+      ],
+      "title": "AcceptanceStrategy",
+      "type": "object"
+    },
+    "BranchSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "branch_id": {
+          "title": "Branch Id",
+          "type": "string"
+        },
+        "selected_arch_option_id": {
+          "title": "Selected Arch Option Id",
+          "type": "string"
+        },
+        "milestone_strategy": {
+          "$ref": "#/$defs/MilestoneStrategy"
+        },
+        "acceptance_strategy": {
+          "$ref": "#/$defs/AcceptanceStrategy"
+        },
+        "governance_posture": {
+          "$ref": "#/$defs/GovernancePosture"
+        },
+        "risk_posture": {
+          "$ref": "#/$defs/RiskPosture"
+        },
+        "rationale": {
+          "title": "Rationale",
+          "type": "string"
+        }
+      },
+      "required": [
+        "branch_id",
+        "selected_arch_option_id",
+        "milestone_strategy",
+        "acceptance_strategy",
+        "governance_posture",
+        "risk_posture",
+        "rationale"
+      ],
+      "title": "BranchSpec",
+      "type": "object"
+    },
+    "GovernancePosture": {
+      "additionalProperties": false,
+      "properties": {
+        "tooling_level": {
+          "enum": [
+            "none",
+            "sandboxed",
+            "full"
+          ],
+          "title": "Tooling Level",
+          "type": "string"
+        },
+        "hitl_strictness": {
+          "enum": [
+            "high",
+            "medium",
+            "low"
+          ],
+          "title": "Hitl Strictness",
+          "type": "string"
+        }
+      },
+      "required": [
+        "tooling_level",
+        "hitl_strictness"
+      ],
+      "title": "GovernancePosture",
+      "type": "object"
+    },
+    "MilestoneStrategy": {
+      "additionalProperties": false,
+      "properties": {
+        "style": {
+          "enum": [
+            "thin_slice",
+            "big_bang",
+            "hybrid"
+          ],
+          "title": "Style",
+          "type": "string"
+        },
+        "notes": {
+          "title": "Notes",
+          "type": "string"
+        }
+      },
+      "required": [
+        "style",
+        "notes"
+      ],
+      "title": "MilestoneStrategy",
+      "type": "object"
+    },
+    "RiskPosture": {
+      "additionalProperties": false,
+      "properties": {
+        "notes": {
+          "title": "Notes",
+          "type": "string"
+        }
+      },
+      "required": [
+        "notes"
+      ],
+      "title": "RiskPosture",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "branches": {
+      "items": {
+        "$ref": "#/$defs/BranchSpec"
+      },
+      "title": "Branches",
+      "type": "array"
+    }
+  },
+  "required": [
+    "branches"
+  ],
+  "title": "BranchSetPayload",
+  "type": "object"
+}

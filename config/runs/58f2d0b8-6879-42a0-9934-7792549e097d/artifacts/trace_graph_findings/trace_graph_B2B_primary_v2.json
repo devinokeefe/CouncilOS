@@ -1,0 +1,111 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B2B_primary_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T20:56:09.316082Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B2B_v2"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2B_v2",
+    "findings": [
+      {
+        "id": "TG-001",
+        "severity": "high",
+        "summary": "Implementation of Requirement R2 (repo_context.json validation) in Milestone M1 is effectively blocked by Open Question Q1 (target ecosystems/validators), as acknowledged in Synthesis Warning W2. The foundation deliverables cannot be fully specified until this question is resolved.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/requirements/1",
+            "note": "Requirement R2",
+            "quote": "The Implementation Council subsystem SHALL define and require a typed, versioned repo_context.json schema"
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/milestones/0/deliverables/1",
+            "note": "M1-D2 Deliverable (Intake & Validation)",
+            "quote": "Intake & DAG Work Planner (C12) with input validation (plan_package_final.json, repo_context.json, workspace_context.json)..."
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/open_questions/0",
+            "note": "Blocking Open Question Q1",
+            "quote": "What are the target repository ecosystems to support first... and which validations are mandatory vs optional by default?"
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/synthesis_warnings/1",
+            "note": "Warning W2 confirms blocker",
+            "quote": "Blocking open questions Q1 (target ecosystems) and Q2 (workspace backend) must be resolved before Phase 1 can begin"
+          }
+        ],
+        "routing_target": "clarification"
+      },
+      {
+        "id": "TG-002",
+        "severity": "high",
+        "summary": "Implementation of Requirement R3 (workspace_context.json validation) in Milestone M1 is effectively blocked by Open Question Q2 (workspace backend), as acknowledged in Synthesis Warning W2. The workspace design in C22 and C12 cannot be solidified until this question is resolved.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/requirements/2",
+            "note": "Requirement R3",
+            "quote": "The Implementation Council subsystem SHALL define and require a typed, versioned workspace_context.json schema"
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/milestones/0/deliverables/2",
+            "note": "M1-D3 Deliverable (Workspace Manager)",
+            "quote": "Workspace Manager (C22) with namespaced partitions... and checkpoint/restore support"
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/open_questions/1",
+            "note": "Blocking Open Question Q2",
+            "quote": "What concrete workspace backend(s) are permitted... and what are the hard constraints...?"
+          }
+        ],
+        "routing_target": "clarification"
+      },
+      {
+        "id": "TG-003",
+        "severity": "low",
+        "summary": "Milestone M1 Deliverable D2 lists specific inputs for validation but omits explicit mention of the 'structured handoff bundle' required by Requirement R1, potentially creating a traceability gap.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/requirements/0",
+            "note": "Requirement R1 text includes handoff bundle",
+            "quote": "plus its associated structured handoff bundle"
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/milestones/0/deliverables/1",
+            "note": "M1-D2 text lists inputs but omits handoff bundle",
+            "quote": "with input validation (plan_package_final.json, repo_context.json, workspace_context.json)"
+          }
+        ],
+        "routing_target": "planning"
+      }
+    ]
+  }
+}

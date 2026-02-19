@@ -1,0 +1,484 @@
+{
+  "artifact_type": "candidate_delta",
+  "artifact_id": "candidate_delta_B01B_v3",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T21:19:42.942252Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "branch_set_v1"
+  ],
+  "payload": {
+    "candidate_id": "B01B",
+    "executive_summary": "Candidate B01B implements the Implementation Council as a sequential staged pipeline (O1) under a big-bang milestone strategy with high HITL strictness. The entire workflow—Intake → Work Planning → Generate → Validate → Review → Patch → Judge → Freeze—executes as a single linear pipeline culminating in one holistic freeze event. This maximizes determinism, auditability, and traceability (CNS1, CNS3, CNS6) at the cost of wall-clock speed. High HITL involvement at every escalation point directly mitigates the most critical risks: silent scope expansion (K1), audit spine breakage (K2), repository protection bypass (K5), and role separation failure (K10). The big-bang milestone strategy means all requirements and acceptance tests must be satisfied in a single comprehensive freeze bundle, ensuring no incremental drift and enabling holistic review before any part of the system is considered complete. A single linear milestone sequence (M1–M7) maps directly to the O1 stage sequence, with one final freeze gate enforcing all closure validators.",
+    "architecture_choice": {
+      "option_id": "O1",
+      "rationale": "O1 is selected because this branch (B01B) demands the most conservative, risk-averse posture. The sequential staged pipeline provides: (1) the simplest reproducible execution model with a single active stage and linear audit trail, directly satisfying CNS1 and CNS3; (2) unambiguous checkpoint boundaries at every stage transition, making pause/resume trivial (R5, R6); (3) clear separation of powers between orchestrator policy enforcement and role pods (writer/reviewer/judge), satisfying CNS12 and R22; (4) the easiest model for high HITL scrutiny since only one stage is active at any time, reducing cognitive load for human reviewers. The big-bang milestone strategy further reinforces this by requiring all gates to pass in a single holistic freeze event, preventing incremental drift. The known trade-off—slowest wall-clock time—is acceptable given the branch's explicit prioritization of auditability and predictability over speed.",
+      "high_level_dataflow": "plan_package_final.json + repo_context.json + workspace_context.json → [C3: Intake Gate] → validated inputs + run_manifest + event_log → [C4: Work Plan Compiler] → work_plan.json → [C5: Writer Pod] → patchset artifacts → [C6: Validator Engine] → test_results.json + quality_reports.json → [C7: Reviewer Pod] → review_findings.json → [C8: Patcher Pod] → repair patches (bounded loops back to C6) → [C9: Judge Pod] → trace_report.json + freeze recommendation → [C10: Freeze Assembler] → Implementation Freeze Bundle. Throughout: [C1: Orchestrator Core] enforces routing, budgets, tool permissions, checkpoint/stage_handoff emission, and HITL triggers. [C2: Workspace Gateway] manages all artifact IO, workspace_index.json, canonical/non-canonical separation, and secrets blocking.",
+      "key_design_decisions": [
+        "Linear state machine (C1) enforces strict stage ordering with no parallelism; only one stage is active at any time, maximizing determinism and auditability.",
+        "Big-bang milestone strategy: all deliverables converge into a single freeze event; no partial freezes or incremental releases.",
+        "High HITL strictness: every escalation trigger (ChangeRequest, forbidden-path access, secrets detection, retry budget exhaustion, waiver requests, tool permission expansion) requires human approval before proceeding.",
+        "Workspace Gateway (C2) is the sole API for all artifact and workspace IO, enforcing canonical/non-canonical separation, versioning, secrets scanning, and checkpoint/restore at every stage boundary.",
+        "Context packs are compiled by the orchestrator (C1) at each stage boundary using deterministic selection rules with explicit byte/token bounds, ensuring bounded and reproducible context delivery.",
+        "Repair loops (C8 → C6) are bounded by orchestrator-enforced iteration caps and operation caps; smallest-passing-repair selection uses deterministic tie-breakers (fewest ops → fewest bytes → first-generated).",
+        "Reviewer Pod (C7) is findings-only with no write permissions; Judge Pod (C9) is decisions-only with no patch authoring; multi-vendor routing enforced by orchestrator.",
+        "Secrets scanning runs at every checkpoint boundary and before freeze; any detection blocks persistence and triggers HITL."
+      ]
+    },
+    "milestones": [
+      {
+        "id": "M1",
+        "name": "Intake & Input Validation",
+        "deliverables": [
+          {
+            "id": "M1-D1",
+            "text": "Validated plan_package_final.json accepted and recorded in artifact store."
+          },
+          {
+            "id": "M1-D2",
+            "text": "Schema-valid repo_context.json accepted with repository root, build entrypoints, validator entrypoints, protected/forbidden paths, and branch/commit metadata."
+          },
+          {
+            "id": "M1-D3",
+            "text": "Schema-valid workspace_context.json accepted with workspace root, namespace/layout rules, canonical/non-canonical partition rules, retention/compaction policies, and access-control declarations."
+          },
+          {
+            "id": "M1-D4",
+            "text": "Initialized implementation_run_manifest.json (immutable) and implementation_event_log.jsonl (append-only)."
+          },
+          {
+            "id": "M1-D5",
+            "text": "stage_handoff artifact emitted for Intake→WorkPlanning boundary."
+          }
+        ],
+        "exit_criteria": [
+          "All three input artifacts (plan_package_final.json, repo_context.json, workspace_context.json) pass schema validation (AT1, AT2, AT3).",
+          "run_manifest is immutable and event_log is append-only with initial entries (AT8).",
+          "stage_handoff for Intake→WorkPlanning is present and schema-valid (AT5, AT6).",
+          "No secrets detected in any persisted artifact (AT20).",
+          "HITL approval obtained if any input is ambiguous or incomplete per intake validator (K20 mitigation)."
+        ],
+        "depends_on": []
+      },
+      {
+        "id": "M2",
+        "name": "Work Plan Compilation",
+        "deliverables": [
+          {
+            "id": "M2-D1",
+            "text": "work_plan.json with ordered implementation tasks decomposed from R#/AT#/O#/K# entities, dependency graph, bounded patchset slots, and AT# trace mapping."
+          },
+          {
+            "id": "M2-D2",
+            "text": "stage_handoff artifact emitted for WorkPlanning→Generate boundary."
+          }
+        ],
+        "exit_criteria": [
+          "work_plan.json is schema-valid and maps every R# to implementation tasks with AT# trace links.",
+          "No semantic deviation from frozen plan entities; validator confirms no new R#/AT#/O#/K# introduced (K1 mitigation).",
+          "stage_handoff for WorkPlanning→Generate is present and schema-valid (AT5, AT6).",
+          "workspace_index.json updated with work_plan.json entry (AT18)."
+        ],
+        "depends_on": [
+          "M1"
+        ]
+      },
+      {
+        "id": "M3",
+        "name": "Code Generation (Writer Pod)",
+        "deliverables": [
+          {
+            "id": "M3-D1",
+            "text": "Diff-only patchset JSON artifacts for all work_plan tasks, with deterministic apply order."
+          },
+          {
+            "id": "M3-D2",
+            "text": "stage_handoff artifact emitted for Generate→Validate boundary."
+          }
+        ],
+        "exit_criteria": [
+          "All patchsets are diff-only JSON artifacts conforming to schema; no non-diff code mutation mechanisms present (AT13).",
+          "No patchset writes to forbidden/protected paths per repo_context.json (AT14).",
+          "All patchsets are within operation/size caps (R14, R24, K16 mitigation).",
+          "All artifacts are JSON-only with no prose/markdown (AT9).",
+          "stage_handoff for Generate→Validate is present and schema-valid (AT5, AT6).",
+          "workspace_index.json updated; no secrets detected (AT18, AT20).",
+          "HITL approval obtained if any patchset touches protected paths or exceeds size limits."
+        ],
+        "depends_on": [
+          "M2"
+        ]
+      },
+      {
+        "id": "M4",
+        "name": "Validation",
+        "deliverables": [
+          {
+            "id": "M4-D1",
+            "text": "test_results.json with AT# trace mapping for all executed validators."
+          },
+          {
+            "id": "M4-D2",
+            "text": "quality_reports.json including security/compliance scan results."
+          },
+          {
+            "id": "M4-D3",
+            "text": "stage_handoff artifact emitted for Validate→Review boundary."
+          }
+        ],
+        "exit_criteria": [
+          "All validators declared in repo_context.json have been executed (build/test/lint/typecheck/security as applicable) (AT21).",
+          "test_results.json includes deterministic AT# mapping for each test outcome (R25, AT10).",
+          "No secrets detected in any artifact or workspace output (AT20).",
+          "Flaky failures handled per deterministic retry policy with bounded budgets; retries recorded in event_log (AT23).",
+          "stage_handoff for Validate→Review is present and schema-valid (AT5, AT6).",
+          "HITL triggered if retry budget exhausted or critical security finding detected (K4, K6 mitigation)."
+        ],
+        "depends_on": [
+          "M3"
+        ]
+      },
+      {
+        "id": "M5",
+        "name": "Review & Patch Repair Cycles",
+        "deliverables": [
+          {
+            "id": "M5-D1",
+            "text": "review_findings.json with RFC 6901 evidence pointers from Reviewer Pod (findings-only)."
+          },
+          {
+            "id": "M5-D2",
+            "text": "Repair patchsets (RFC 6902 JSON Patches for JSON artifacts; replacement diff-only patchsets for code) from Patcher Pod, if needed."
+          },
+          {
+            "id": "M5-D3",
+            "text": "Updated test_results.json and quality_reports.json after repair revalidation, if repairs were applied."
+          },
+          {
+            "id": "M5-D4",
+            "text": "stage_handoff artifact emitted for Review→Judge boundary."
+          }
+        ],
+        "exit_criteria": [
+          "Reviewer artifacts are findings-only with no code/patch content; multi-vendor routing confirmed (AT22).",
+          "All evidence pointers in review_findings.json use RFC 6901 format and resolve to versioned artifacts (AT10, AT11).",
+          "Any repairs are expressed as RFC 6902 JSON Patch or diff-only patchsets within operation caps (AT12, AT13, AT14, AT15).",
+          "Repair revalidation passes all validators; smallest-passing-repair selection applied deterministically (AT15).",
+          "No semantic deviation from plan; any required deviation has ChangeRequest + HITL approval (AT16, K1 mitigation).",
+          "stage_handoff for Review→Judge is present and schema-valid (AT5, AT6).",
+          "No secrets detected (AT20). HITL triggered for critical findings or ChangeRequests."
+        ],
+        "depends_on": [
+          "M4"
+        ]
+      },
+      {
+        "id": "M6",
+        "name": "Judge Decision",
+        "deliverables": [
+          {
+            "id": "M6-D1",
+            "text": "trace_report.json verifying evidence completeness across all artifacts."
+          },
+          {
+            "id": "M6-D2",
+            "text": "Freeze/no-freeze recommendation with risk-closure assessment against K# entries."
+          },
+          {
+            "id": "M6-D3",
+            "text": "stage_handoff artifact emitted for Judge→Freeze boundary."
+          }
+        ],
+        "exit_criteria": [
+          "Judge is independent (different vendor/model from writer and reviewer); produces decisions-only artifacts (AT22).",
+          "trace_report.json enumerates all evidence pointers and confirms they resolve (AT10).",
+          "Risk closure assessment covers all K# entries with evidence pointers (K18 mitigation).",
+          "All approvals/waivers include linked evidence pointers; no ungrounded waivers (AT10, K18).",
+          "Freeze recommendation is affirmative only if all closure gates are passing.",
+          "stage_handoff for Judge→Freeze is present and schema-valid (AT5, AT6).",
+          "HITL approval required for any waiver of a gate or ChangeRequest approval."
+        ],
+        "depends_on": [
+          "M5"
+        ]
+      },
+      {
+        "id": "M7",
+        "name": "Freeze & Bundle Assembly",
+        "deliverables": [
+          {
+            "id": "M7-D1",
+            "text": "Complete Implementation Freeze Bundle containing all CNS10-required artifacts: implementation_run_manifest.json, implementation_event_log.jsonl, work_plan.json, patchsets, repo_snapshot.json, test_results.json, quality_reports.json, trace_report.json, review_findings.json, release_bundle.json, decision_record.json, workspace_index.json, context_packs/, stage_handoffs/."
+          },
+          {
+            "id": "M7-D2",
+            "text": "decision_record.json capturing all decisions with evidence pointers."
+          },
+          {
+            "id": "M7-D3",
+            "text": "release_bundle.json with hashed build outputs and provenance record."
+          }
+        ],
+        "exit_criteria": [
+          "All required freeze bundle artifacts are present and schema-valid (AT7).",
+          "All closure gates pass: build/test/lint/typecheck, artifact integrity, workspace integrity, risk closure, reproducibility, trace completeness (AT21).",
+          "run_manifest is immutable; event_log is append-only with monotonic ordering (AT8).",
+          "workspace_index.json accounts for all workspace items; no unindexed items; no out-of-bounds context packs (AT18).",
+          "No secrets detected in any artifact, event log, or workspace output (AT20).",
+          "All evidence pointers across all artifacts use RFC 6901 and resolve (AT10).",
+          "HITL approval obtained for freeze if any gate required waiver."
+        ],
+        "depends_on": [
+          "M6"
+        ]
+      }
+    ],
+    "decision_log": [
+      {
+        "id": "DEC1",
+        "question": "Which architecture option should be selected for this candidate?",
+        "choice": "O1 — Sequential staged pipeline with explicit council role pods.",
+        "rationale": "Branch B01B requires maximum conservatism and risk aversion. O1 provides the simplest reproducible execution model, unambiguous checkpoint boundaries, and the easiest model for high HITL scrutiny. The linear audit trail directly addresses CNS1, CNS3, and CNS6. The trade-off of slower wall-clock time is explicitly acceptable per the branch risk posture.",
+        "alternatives_considered": [
+          "O2 — Task-parallel fan-out/fan-in: rejected due to higher orchestration complexity, merge conflict risks, and more complex checkpoint/resume model that conflicts with the conservative posture.",
+          "O3 — Checkpoint-driven micro-cycle with partial freeze: rejected because partial freezes add downstream complexity and the big-bang strategy requires a single holistic freeze.",
+          "O4 — Monolithic council: rejected due to low modularity, risk of weakening role separation internally, and reduced auditability of internal stage transitions."
+        ],
+        "what_would_change_this_decision": [
+          "If wall-clock execution time becomes a hard constraint requiring parallelism.",
+          "If the target repositories have many independent tasks that would benefit significantly from parallel lanes.",
+          "If partial-freeze capability becomes a requirement for long-horizon budget management."
+        ],
+        "evidence_pointers": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "architecture_canonical",
+            "json_pointer": "/options/0",
+            "note": "O1 definition with pros/cons/risks",
+            "quote": null
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "branch_set_v1",
+            "artifact_id": "branch_set",
+            "json_pointer": "/branches/0",
+            "note": "Branch B01 specifies O1, big_bang, high HITL",
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "DEC2",
+        "question": "What milestone strategy should be used?",
+        "choice": "Big-bang: single linear pipeline with one final freeze event.",
+        "rationale": "The branch specification mandates big-bang milestone strategy. All requirements and acceptance tests must be satisfied in one comprehensive freeze bundle. This prevents incremental drift and ensures holistic review, aligning with the extremely risk-averse posture and high HITL strictness.",
+        "alternatives_considered": [
+          "Incremental milestones with partial freezes (O3-style): rejected per branch specification; adds downstream complexity for consumers handling incomplete bundles.",
+          "Parallel milestone tracks: rejected; incompatible with O1 sequential pipeline and big-bang strategy."
+        ],
+        "what_would_change_this_decision": [
+          "If long-horizon execution consistently exceeds token/time budgets, requiring partial-freeze checkpoints.",
+          "If downstream consumers require incremental delivery of implementation artifacts."
+        ],
+        "evidence_pointers": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "branch_set_v1",
+            "artifact_id": "branch_set",
+            "json_pointer": "/branches/0/milestone_strategy",
+            "note": "big_bang style specified",
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "DEC3",
+        "question": "How should HITL strictness be configured?",
+        "choice": "High HITL strictness: every escalation trigger requires human approval before proceeding.",
+        "rationale": "The branch risk posture is extremely risk-averse, prioritizing auditability and predictability. High HITL involvement mitigates K1 (scope expansion), K2 (audit spine breakage), K5 (policy bypass), and K10 (role separation failure) through mandatory manual scrutiny at every escalation point.",
+        "alternatives_considered": [
+          "Medium HITL: auto-approve low-severity escalations. Rejected per branch specification.",
+          "Low HITL: orchestrator handles most decisions autonomously. Rejected; incompatible with risk-averse posture."
+        ],
+        "what_would_change_this_decision": [
+          "If execution speed becomes critical and the risk profile of the target repositories is well-understood.",
+          "If automated validators achieve sufficient coverage to reduce the need for human review at lower-severity escalation points."
+        ],
+        "evidence_pointers": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "branch_set_v1",
+            "artifact_id": "branch_set",
+            "json_pointer": "/branches/0/governance_posture",
+            "note": "hitl_strictness: high",
+            "quote": null
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "risk_gov_canonical_v1",
+            "artifact_id": "risk_gov_canonical",
+            "json_pointer": "/hitl_policy",
+            "note": "Comprehensive HITL trigger list",
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "DEC4",
+        "question": "How should repair loops be bounded and selection be deterministic?",
+        "choice": "Orchestrator enforces per-stage iteration caps and per-repair-cycle operation caps. When multiple candidate patches pass validation, the smallest passing repair is selected using deterministic tie-breakers: fewest operations → fewest bytes changed → first-generated.",
+        "rationale": "R15 mandates deterministic smallest-passing-repair selection. Bounded repair loops prevent infinite iteration and align with the conservative posture. The tie-breaker order is explicit and auditable.",
+        "alternatives_considered": [
+          "Allow unbounded repair iterations: rejected; risks exhausting budgets and stalling the pipeline.",
+          "Use quality-weighted scoring for repair selection: rejected for this branch; adds complexity and subjectivity incompatible with deterministic posture (K21 notes this as a future consideration)."
+        ],
+        "what_would_change_this_decision": [
+          "If the simplistic selection logic consistently produces sub-optimal patches (K21), secondary deterministic scoring signals could be added."
+        ],
+        "evidence_pointers": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "requirements_canonical",
+            "json_pointer": "/requirements/14",
+            "note": "R15: smallest passing repair tie-breakers",
+            "quote": null
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "risk_gov_canonical_v1",
+            "artifact_id": "risk_gov_canonical",
+            "json_pointer": "/risk_register/20",
+            "note": "K21: smallest passing repair simplicity risk",
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "DEC5",
+        "question": "How should tool permissions be enforced across stages?",
+        "choice": "Deny-by-default tool permission matrix per stage, with sandboxed execution. Network is denied by default across all stages. Repo writes are allowed only via patch_apply in PatchApply and IntegrateAndValidate stages. Reviewers have no write permissions. All denials are logged in the audit spine.",
+        "rationale": "CNS1 requires orchestrator-sole authority over tool permissions. The deny-by-default posture with sandboxed tooling (per branch governance_posture.tooling_level) minimizes blast radius. High HITL strictness means any permission expansion requires human approval.",
+        "alternatives_considered": [
+          "Permissive defaults with post-hoc auditing: rejected; incompatible with sandboxed tooling level and high HITL strictness."
+        ],
+        "what_would_change_this_decision": [
+          "If specific stages require network access (e.g., dependency resolution), explicit allowlisting with HITL approval would be added per K15 mitigation."
+        ],
+        "evidence_pointers": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "risk_gov_canonical_v1",
+            "artifact_id": "risk_gov_canonical",
+            "json_pointer": "/tool_policy/stage_policies",
+            "note": "Stage-by-stage tool permission matrix",
+            "quote": null
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "branch_set_v1",
+            "artifact_id": "branch_set",
+            "json_pointer": "/branches/0/governance_posture/tooling_level",
+            "note": "sandboxed",
+            "quote": null
+          }
+        ]
+      }
+    ],
+    "supplemental_evaluations": [
+      {
+        "title": "Coverage of Acceptance Tests by Milestones",
+        "notes": "All 23 acceptance tests (AT1–AT23) are mapped to milestone exit criteria. AT1–AT3 are covered by M1 (Intake). AT4–AT6 are covered across M1–M7 (stage sequence and handoffs). AT7 is covered by M7 (Freeze Bundle). AT8 is covered by M1 and M7. AT9 is covered by M3. AT10–AT11 are covered by M5 and M6. AT12–AT15 are covered by M3 and M5. AT16 is covered by M5. AT17–AT18 are covered by M7 (workspace governance). AT19 is covered by tool permission enforcement across all milestones. AT20 is covered by secrets scanning at every milestone. AT21 is covered by M7 (freeze gates). AT22 is covered by M5 and M6 (role separation). AT23 is covered by M4 (flaky failure handling).",
+        "evidence": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "acceptance_canonical_v1",
+            "artifact_id": "acceptance_canonical",
+            "json_pointer": "/acceptance_tests",
+            "note": "Full acceptance test list",
+            "quote": null
+          }
+        ]
+      },
+      {
+        "title": "Risk Coverage Assessment",
+        "notes": "All 22 risks (K1–K22) are addressed by the candidate design. K1 (scope expansion) is mitigated by work plan semantic validation (M2), reviewer findings-only enforcement (M5), and HITL on ChangeRequests. K2 (audit spine) is mitigated by immutable run_manifest and append-only event_log enforced from M1 through M7. K3 (evidence standard) is mitigated by RFC 6901 enforcement at every milestone. K4 (security vulnerability) is mitigated by security scanning in M4 with HITL on critical findings. K5 (repo protection bypass) is mitigated by forbidden-path enforcement in M3 and M5. K6 (flaky tests) is mitigated by deterministic retry policy in M4. K7 (secrets leakage) is mitigated by secrets scanning at every milestone. K8 (workspace integrity) is mitigated by workspace_index validation at every milestone. K9 (context pack overflow) is mitigated by bounded context pack compilation by orchestrator. K10 (role separation) is mitigated by multi-vendor routing and output-type allowlists in M5 and M6. K11 (JSON Patch misuse) is mitigated by op cap and schema revalidation in M5. K12 (merge conflicts) is low risk in O1 sequential pipeline since there is no parallel execution. K13 (AT trace mismatch) is mitigated by AT# mapping in M4. K14 (release artifact safety) is mitigated by freeze gates in M7. K15 (supply chain) is mitigated by network-deny default. K16 (over-broad refactors) is mitigated by patchset size caps in M3. K17 (checkpoint/resume) is mitigated by stage_handoff at every milestone. K18 (decision integrity) is mitigated by evidence-pointer requirements in M6. K19 (tool permissions) is mitigated by deny-by-default matrix. K20 (upstream ambiguity) is mitigated by intake validation in M1. K21 (repair selection) is mitigated by deterministic tie-breakers. K22 (workspace growth) is mitigated by retention/compaction policies in workspace_context.json.",
+        "evidence": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "risk_gov_canonical_v1",
+            "artifact_id": "risk_gov_canonical",
+            "json_pointer": "/risk_register",
+            "note": "Full risk register",
+            "quote": null
+          }
+        ]
+      },
+      {
+        "title": "Big-Bang Strategy Trade-off Analysis",
+        "notes": "The big-bang milestone strategy maximizes holistic review quality and prevents incremental drift, but introduces a key risk: if the pipeline fails late (e.g., at Judge or Freeze), all prior work must be re-evaluated. In O1's sequential model, this is partially mitigated by stage_handoff artifacts at every boundary enabling deterministic resume from the last passing checkpoint. However, there is no partial-freeze escape valve—if budgets are exhausted before Freeze, the run produces no frozen output. This is an accepted trade-off per the branch's risk posture, which prioritizes correctness over partial delivery.",
+        "evidence": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "branch_set_v1",
+            "artifact_id": "branch_set",
+            "json_pointer": "/branches/0/milestone_strategy",
+            "note": "big_bang style with notes on holistic review",
+            "quote": null
+          }
+        ]
+      }
+    ],
+    "synthesis_warnings": [
+      {
+        "id": "W1",
+        "severity": "high",
+        "summary": "Big-bang strategy with no partial-freeze capability means that if token/time budgets are exhausted before the Freeze stage, the entire run produces no frozen output. Open question Q13 (handling incremental implementation under budget constraints) is blocking and unresolved. This candidate accepts the risk but downstream consumers should be aware.",
+        "routing_target": "clarification_plan",
+        "evidence": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "capsule_canonical_v1",
+            "artifact_id": "capsule_canonical",
+            "json_pointer": "/open_questions/12",
+            "note": "Q13: incremental implementation under budget constraints",
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "W2",
+        "severity": "medium",
+        "summary": "O1 sequential pipeline is the slowest option for wall-clock time. For repositories with many independent tasks, this may cause budget exhaustion before completion. The branch explicitly accepts this trade-off, but it compounds the W1 risk.",
+        "routing_target": "branch_set",
+        "evidence": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "architecture_canonical",
+            "json_pointer": "/options/0/risks",
+            "note": "Long-horizon implementations may exceed token/time budgets due to serialized execution",
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "W3",
+        "severity": "medium",
+        "summary": "Multiple blocking open questions (Q1, Q2, Q3, Q4, Q5, Q7, Q8, Q9, Q10, Q11, Q12, Q13, Q14, Q15) remain unresolved. While this candidate's design is compatible with a range of answers, concrete schema definitions and policy parameters cannot be finalized until these are resolved.",
+        "routing_target": "clarification_plan",
+        "evidence": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "capsule_canonical_v1",
+            "artifact_id": "capsule_canonical",
+            "json_pointer": "/open_questions",
+            "note": "15 open questions, most blocking",
+            "quote": null
+          }
+        ]
+      }
+    ]
+  }
+}

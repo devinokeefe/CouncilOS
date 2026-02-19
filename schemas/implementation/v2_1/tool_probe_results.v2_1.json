@@ -1,0 +1,95 @@
+{
+  "$defs": {
+    "ToolProbeResult": {
+      "additionalProperties": false,
+      "properties": {
+        "probe_run_id": {
+          "title": "Probe Run Id",
+          "type": "string"
+        },
+        "tool_id": {
+          "title": "Tool Id",
+          "type": "string"
+        },
+        "tool_version": {
+          "title": "Tool Version",
+          "type": "string"
+        },
+        "timestamp": {
+          "format": "date-time",
+          "title": "Timestamp",
+          "type": "string"
+        },
+        "request_params": {
+          "additionalProperties": true,
+          "title": "Request Params",
+          "type": "object"
+        },
+        "response_schema_hash": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Response Schema Hash"
+        },
+        "latency_ms": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Latency Ms"
+        },
+        "status": {
+          "title": "Status",
+          "type": "string"
+        },
+        "quota_headers": {
+          "additionalProperties": true,
+          "title": "Quota Headers",
+          "type": "object"
+        },
+        "attestation_ref": {
+          "title": "Attestation Ref",
+          "type": "string"
+        }
+      },
+      "required": [
+        "probe_run_id",
+        "tool_id",
+        "tool_version",
+        "timestamp",
+        "status",
+        "attestation_ref"
+      ],
+      "title": "ToolProbeResult",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "default": "2.0.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "probes": {
+      "items": {
+        "$ref": "#/$defs/ToolProbeResult"
+      },
+      "title": "Probes",
+      "type": "array"
+    }
+  },
+  "title": "ToolProbeResultsPayload",
+  "type": "object"
+}

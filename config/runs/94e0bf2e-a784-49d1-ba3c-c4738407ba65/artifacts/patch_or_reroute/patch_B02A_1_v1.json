@@ -1,0 +1,16 @@
+{
+  "artifact_type": "patch_or_reroute",
+  "artifact_id": "patch_B02A_1_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T20:35:20.895553Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B02A_v1"
+  ],
+  "payload": {
+    "action": "reroute",
+    "rationale": "Blocking id_integrity failures cannot be repaired under Patch Generator constraints. Fixing deliverable ID format violations would require changing existing \"/id\" values under /plan_package/milestones/*/deliverables/*/id, which is disallowed. Fixing architecture option risk-reference violations would require editing /plan_package/architecture/options (locked canonical section) and/or adding new K# entries to /plan_package/risk_register (locked), both disallowed. Additionally, evidence pointer reference validation appears to depend on an external canonical artifact_ref/artifact_id convention that is not defined here; correcting it safely requires schema/validator owner guidance.",
+    "patch": [],
+    "reroute_target": "validator/schema_owner"
+  }
+}

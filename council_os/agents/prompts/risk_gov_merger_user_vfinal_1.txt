@@ -1,0 +1,13 @@
+{
+  "run_context": {{RUN_CONTEXT_JSON}},
+  "artifact_refs": {{ARTIFACT_REFS_JSON}},
+  "allowed_id_prefixes": ["RISK_U"],
+  "inputs": {
+    "project_capsule": {{CAPSULE_JSON}},
+    "canonical_requirements": {{CANONICAL_REQUIREMENTS_JSON}},
+    "canonical_architecture": {{CANONICAL_ARCHITECTURE_JSON}},
+    "risk_drafts": {{RISK_POD_DRAFTS_JSON_ARRAY}}
+  },
+  "task": "Merge risk drafts into RISK_U_* units + consolidate governance.",
+  "output_schema": {{RISK_MERGE_SCHEMA_JSON}}
+}

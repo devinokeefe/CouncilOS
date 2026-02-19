@@ -1,0 +1,103 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B02A_fallback_v3",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T21:21:25.284585Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B02A_v3"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B02A_v3",
+    "findings": [
+      {
+        "id": "TG001",
+        "severity": "medium",
+        "summary": "R1 milestone mapping includes M2 but M2 deliverables do not explicitly address R1 enforcement",
+        "evidence": [
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v3",
+            "artifact_id": "R1",
+            "json_pointer": "/plan_package/requirements/0",
+            "note": "R1 requires rejection of non-canonical inputs",
+            "quote": "SHALL reject chat logs or any non-canonical/unapproved upstream artifacts"
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v3",
+            "artifact_id": "M2",
+            "json_pointer": "/plan_package/milestones/1",
+            "note": "M2 deliverables focus on work planning and stage handoffs, not input validation",
+            "quote": "work_plan.json compiler/spec including dependency DAG"
+          }
+        ],
+        "routing_target": "milestone_review"
+      },
+      {
+        "id": "TG002",
+        "severity": "low",
+        "summary": "R2 and R3 both map to M1 and M2, but M2 exit criteria only reference AT4-AT6, not AT2-AT3",
+        "evidence": [
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v3",
+            "artifact_id": "R2",
+            "json_pointer": "/plan_package/requirements/1",
+            "note": "R2 acceptance test is AT2",
+            "quote": "acceptance_tests\": [\"AT2\"]"
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v3",
+            "artifact_id": "R3",
+            "json_pointer": "/plan_package/requirements/2",
+            "note": "R3 acceptance test is AT3",
+            "quote": "acceptance_tests\": [\"AT3\"]"
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v3",
+            "artifact_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/exit_criteria",
+            "note": "M2 exit criteria do not include AT2 or AT3",
+            "quote": "AT4 passes (recorded stage sequence includes at minimum Intake"
+          }
+        ],
+        "routing_target": "milestone_review"
+      },
+      {
+        "id": "TG003",
+        "severity": "high",
+        "summary": "R2 and R3 declare schemas must be required before specific stages, but M1 exit criteria only verify rejection behavior, not schema completeness or required field presence",
+        "evidence": [
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v3",
+            "artifact_id": "R2",
+            "json_pointer": "/plan_package/requirements/1",
+            "note": "R2 requires schema to declare minimum fields",
+            "quote": "SHALL declare at minimum: repository root, language/build-system entrypoints, validator commands/entrypoints"
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v3",
+            "artifact_id": "R3",
+            "json_pointer": "/plan_package/requirements/2",
+            "note": "R3 requires schema to declare minimum fields",
+            "quote": "SHALL declare at minimum: workspace root, namespace/layout rules, canonical vs non-canonical partition rules"
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v3",
+            "artifact_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/exit_criteria",
+            "note": "M1 exit criteria verify rejection but not schema field completeness",
+            "quote": "AT2 and AT3 pass (repo_context/workspace_context required and schema-validated before relevant stages)"
+          }
+        ],
+        "routing_target": "requirements_clarification"
+      }
+    ]
+  }
+}

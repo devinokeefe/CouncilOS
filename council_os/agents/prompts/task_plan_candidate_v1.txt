@@ -1,0 +1,1 @@
+﻿Build a complete plan package for this branch and candidate. Use stable IDs (R#, AT#, O#, C#, IF#, M#, DL#, K#, DEC#, FM#) and ensure MUST requirements have acceptance coverage.

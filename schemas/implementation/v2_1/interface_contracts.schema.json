@@ -1,0 +1,54 @@
+{
+  "$defs": {
+    "InterfaceContract": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_id": {
+          "title": "Contract Id",
+          "type": "string"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "surfaces": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Surfaces",
+          "type": "array"
+        },
+        "expectations": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Expectations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "contract_id",
+        "description"
+      ],
+      "title": "InterfaceContract",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "default": "2.1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "contracts": {
+      "items": {
+        "$ref": "#/$defs/InterfaceContract"
+      },
+      "title": "Contracts",
+      "type": "array"
+    }
+  },
+  "title": "InterfaceContractsPayload",
+  "type": "object"
+}

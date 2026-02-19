@@ -1,0 +1,11 @@
+{
+  "run_context": {{RUN_CONTEXT_JSON}},
+  "artifact_refs": {{ARTIFACT_REFS_JSON}},
+  "allowed_id_prefixes": ["OPT_U","CMP_U","IF_U"],
+  "inputs": {
+    "project_capsule": {{CAPSULE_JSON}},
+    "architecture_option_drafts": {{ARCH_POD_DRAFTS_JSON_ARRAY}}
+  },
+  "task": "Merge architecture drafts into OPT_U_* units.",
+  "output_schema": {{ARCH_MERGE_SCHEMA_JSON}}
+}

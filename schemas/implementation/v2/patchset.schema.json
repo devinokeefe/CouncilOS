@@ -1,0 +1,137 @@
+{
+  "$defs": {
+    "PatchChange": {
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "action": {
+          "enum": [
+            "add",
+            "modify",
+            "delete"
+          ],
+          "title": "Action",
+          "type": "string"
+        },
+        "before": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Before"
+        },
+        "after": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "After"
+        }
+      },
+      "required": [
+        "path",
+        "action"
+      ],
+      "title": "PatchChange",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "patchset_id": {
+      "title": "Patchset Id",
+      "type": "string"
+    },
+    "lane_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Lane Id"
+    },
+    "base_commit": {
+      "title": "Base Commit",
+      "type": "string"
+    },
+    "changes": {
+      "items": {
+        "$ref": "#/$defs/PatchChange"
+      },
+      "title": "Changes",
+      "type": "array"
+    },
+    "apply_order": {
+      "items": {
+        "type": "integer"
+      },
+      "title": "Apply Order",
+      "type": "array"
+    },
+    "maps_to_requirements": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Maps To Requirements",
+      "type": "array"
+    },
+    "maps_to_acceptance_tests": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Maps To Acceptance Tests",
+      "type": "array"
+    },
+    "semantic_change": {
+      "default": false,
+      "title": "Semantic Change",
+      "type": "boolean"
+    },
+    "change_request_ref": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Change Request Ref"
+    },
+    "operation_count": {
+      "title": "Operation Count",
+      "type": "integer"
+    },
+    "bytes_changed": {
+      "title": "Bytes Changed",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "patchset_id",
+    "base_commit",
+    "changes",
+    "operation_count",
+    "bytes_changed"
+  ],
+  "title": "PatchsetPayload",
+  "type": "object"
+}

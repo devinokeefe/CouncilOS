@@ -1,0 +1,310 @@
+{
+  "artifact_type": "candidate_delta",
+  "artifact_id": "candidate_delta_B02A_v3",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T21:19:09.750568Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "branch_set_v1"
+  ],
+  "payload": {
+    "candidate_id": "B02A",
+    "executive_summary": "Candidate B02A selects architecture option O2 (task-parallel fan-out/fan-in) to minimize wall-clock time by executing independent implementation lanes in parallel while preserving CouncilOS governance: deterministic orchestration, strict stage handoffs at every transition, JSON-only canonical artifacts, RFC 6901 evidence pointers, RFC 6902 repair-only for JSON, diff-only patchsets for code, and a dedicated deterministic integration merge/validate/review/patch sub-flow before Judge→Freeze. The plan emphasizes integration-risk mitigation (notably merge conflicts K12 and regressions) via namespaced workspace partitions, lane-scoped gates, and a single integration checkpoint where all parallel outputs are merged and revalidated under orchestrator-controlled deterministic ordering and budgets.",
+    "architecture_choice": {
+      "option_id": "O2",
+      "rationale": "O2 best matches branch B02's priority on speed for divisible work by enabling parallel Generate→Validate→Review→Patch lanes while retaining deterministic governance. The main trade-off—higher fan-in integration risk (merge conflicts, cross-lane regressions, reproducibility hazards)—is explicitly managed with a governed Integration sub-flow (deterministic merge ordering, conflict reporting/escalation, full-repo validators, integration-focused review) and a two-level acceptance strategy: lane-level scoped gates first, then integrated system-level gates prior to Judge→Freeze.",
+      "high_level_dataflow": "Intake validates plan_package_final.json + repo_context.json + workspace_context.json and initializes immutable run_manifest + append-only event_log. Work planner compiles work_plan.json with a dependency DAG and deterministic lane partitioning hints. Parallel lanes each run Generate (produce diff-only patchset artifacts) → PatchApply (orchestrator-applied) → Validate (lane-scoped validators, secrets scan) → Review (findings-only) → Patch (bounded repairs with smallest-passing selection), emitting stage_handoffs at each transition and writing to namespaced workspace partitions. Completed lane patchsets then fan-in to Integration: deterministic merge/apply in a fixed order → full-repo Validate → integration Review (findings-only) → integration Patch as needed. Judge consumes integrated outputs plus lane/integration findings and produces evidence-backed decisions + trace_report; Freeze assembles the Implementation Freeze Bundle only if all closure gates pass.",
+      "key_design_decisions": [
+        "Parallelize only lane-executable work; reserve all cross-lane coupling resolution to a single deterministic Integration stage to reduce nondeterminism at fan-in.",
+        "Use namespaced workspace partitions per lane plus a canonical integration partition to contain side effects and simplify traceability and context-pack bounding.",
+        "Define deterministic merge/apply ordering rules that are independent of wall-clock completion timing to preserve reproducibility.",
+        "Enforce two-level gating: lane-scoped validators must pass before integration, and integrated full-repo validators must pass before Judge→Freeze.",
+        "Keep reviewers strictly findings-only across both lane and integration reviews; all writing/patching remains with writer/patcher roles under orchestrator control.",
+        "Treat integration conflicts and cross-lane regressions as first-class artifacts (conflict/integration reports) that drive deterministic escalation (patch → reroute → HITL → ChangeRequest)."
+      ]
+    },
+    "milestones": [
+      {
+        "id": "M1",
+        "name": "Intake + Contract Schemas + Baseline Governance Gates",
+        "deliverables": [
+          {
+            "id": "M1-D1",
+            "text": "Typed/versioned schemas (or schema specs) for repo_context.json and workspace_context.json, including required fields for path protections, tool entrypoints, partition rules, retention/compaction, and access-control declarations."
+          },
+          {
+            "id": "M1-D2",
+            "text": "Intake validators and structured rejection behavior for missing/schema-invalid canonical inputs; initialization of immutable implementation_run_manifest.json and append-only implementation_event_log.jsonl."
+          },
+          {
+            "id": "M1-D3",
+            "text": "Evidence-pointer compliance validator (RFC 6901 objects only) and secrets scanning/redaction/blocking guardrails integrated into pre-persist validation paths."
+          },
+          {
+            "id": "M1-D4",
+            "text": "Tool permission matrix policy-as-data for all stages used by O2 (including IntegrateAndValidate), with deny-by-default and explicit repo-write-via-patch_apply-only enforcement."
+          }
+        ],
+        "exit_criteria": [
+          "AT1 passes (reject non-canonical planning inputs).",
+          "AT2 and AT3 pass (repo_context/workspace_context required and schema-validated before relevant stages).",
+          "AT8 passes for run_manifest immutability and event_log append-only behavior.",
+          "AT10 and AT11 pass (single evidence pointer standard; no non-JSON evidence).",
+          "AT19 and AT20 pass (tool policy enforcement logged; secrets blocked prior to persistence)."
+        ],
+        "depends_on": []
+      },
+      {
+        "id": "M2",
+        "name": "Work Planning DAG + Deterministic Lane Partitioning + Stage Handoff Backbone",
+        "deliverables": [
+          {
+            "id": "M2-D1",
+            "text": "work_plan.json compiler/spec including dependency DAG, parallelism annotations, deterministic lane IDs, and task-to-AT# trace mapping hooks."
+          },
+          {
+            "id": "M2-D2",
+            "text": "Stage state model for O2: Intake → Parallel Lanes (Generate/Validate/Review/Patch) → Integration (Merge/Validate/Review/Patch) → Judge → Freeze, with explicit checkpoint boundaries and required stage_handoff artifacts at every transition (including per-lane and integration transitions)."
+          },
+          {
+            "id": "M2-D3",
+            "text": "Workspace partitioning rules: per-lane partitions plus a canonical integration partition; unified workspace_index.json accounting across partitions with provenance metadata."
+          }
+        ],
+        "exit_criteria": [
+          "AT4 passes (recorded stage sequence includes at minimum Intake → Generate → Validate → Review → Judge → Freeze, with checkpoint boundaries at every transition; additional O2 stages are allowed but must still be checkpointed).",
+          "AT5 and AT6 pass (a stage_handoff exists for every stage transition and contains required resumable fields and evidence pointers where applicable).",
+          "No plan-semantics deviation pathways exist without ChangeRequest+decision+escalation (R16) in the work planning outputs."
+        ],
+        "depends_on": [
+          "M1"
+        ]
+      },
+      {
+        "id": "M3",
+        "name": "Parallel Lane Execution Loops (Generate→PatchApply→Validate→Review→Patch) with Lane-Scoped Gates",
+        "deliverables": [
+          {
+            "id": "M3-D1",
+            "text": "Per-lane orchestrator behavior: spawning lanes with deterministic budgets, per-lane stage_handoffs, and lane completion signaling with artifact_refs for patchsets and validation outputs."
+          },
+          {
+            "id": "M3-D2",
+            "text": "Diff-only patchset artifact contract and deterministic apply order; enforcement of forbidden/protected paths and operation/size caps during PatchApply."
+          },
+          {
+            "id": "M3-D3",
+            "text": "Lane-scoped validators emitting structured test_results.json and quality_reports.json (with deterministic AT# mapping where applicable) plus secrets scans at each checkpoint."
+          },
+          {
+            "id": "M3-D4",
+            "text": "Role separation enforcement in lanes: reviewers are findings-only; patchers produce RFC 6902 JSON Patch for JSON artifacts and replacement diff-only patchsets for code repairs; orchestrator applies smallest-passing-repair selection deterministically."
+          }
+        ],
+        "exit_criteria": [
+          "AT9 passes (reject prose/markdown/unstructured canonical outputs; accept schema-valid JSON-only artifacts).",
+          "AT12–AT15 pass (JSON Patch-only for canonical JSON repairs; diff-only patchsets; forbidden/protected path enforcement + op caps; deterministic smallest-passing selection).",
+          "AT22 passes (writer/reviewer/judge separation and multi-vendor routing recorded; reviewers emit findings-only).",
+          "AT23 passes (deterministic retry budgets recorded; escalation path exercised when budgets exceeded)."
+        ],
+        "depends_on": [
+          "M2"
+        ]
+      },
+      {
+        "id": "M4",
+        "name": "Deterministic Integration Fan-In (Merge→Validate→Review→Patch) and Conflict/Regression Governance",
+        "deliverables": [
+          {
+            "id": "M4-D1",
+            "text": "Integration merge/apply engine with deterministic ordering independent of wall-clock completion timing; requires explicit base_commit in each lane patchset; emits merged repo_snapshot.json and an integration ordering record."
+          },
+          {
+            "id": "M4-D2",
+            "text": "Structured conflict/integration reporting for K12-class issues (overlapping diffs, apply failures, inconsistent base/head metadata), including deterministic escalation triggers and required stage_handoffs."
+          },
+          {
+            "id": "M4-D3",
+            "text": "Integration validator suite executing full-repo gates (build/test/lint/typecheck/security/secrets as applicable via repo_context entrypoints) and producing integrated test_results.json + quality_reports.json."
+          },
+          {
+            "id": "M4-D4",
+            "text": "Integration review findings-only pod focused on cross-lane interactions and system-level quality; integration patcher loop for bounded remediation prior to Judge."
+          }
+        ],
+        "exit_criteria": [
+          "Integration stage always blocks Judge entry unless all lane-scoped gates and integrated gates meet policy (two-level acceptance).",
+          "Deterministic integration ordering and conflict escalation behavior is documented and testable under K12 scenarios (conflicts beyond thresholds trigger deterministic reroute/HITL as defined by policy).",
+          "Secrets, tool-policy, and evidence-pointer validations continue to pass at integration checkpoints (no weakening of M1 controls)."
+        ],
+        "depends_on": [
+          "M3"
+        ]
+      },
+      {
+        "id": "M5",
+        "name": "Judge + Freeze (System-Level Trace, Closure Gates, Freeze Bundle Assembly)",
+        "deliverables": [
+          {
+            "id": "M5-D1",
+            "text": "Judge evaluation artifact expectations: evidence-backed trace_report.json across lane + integration artifacts, and a decision output that enforces evidence-pointer completeness for all approvals/waivers."
+          },
+          {
+            "id": "M5-D2",
+            "text": "Freeze assembler outputs the minimum Implementation Freeze Bundle set (CNS10/R7) from integrated state plus required lane artifacts as specified by the bundle contract, with final integrity/reproducibility/workspace-integrity checks."
+          },
+          {
+            "id": "M5-D3",
+            "text": "Final closure-gate enforcement: Freeze denied unless build/test/lint/typecheck/security/secrets/integrity/workspace integrity/risk closure/reproducibility/trace completeness gates all pass under deterministic retry policy."
+          }
+        ],
+        "exit_criteria": [
+          "AT7 passes (Freeze Bundle contains all minimum required artifacts and directories).",
+          "AT21 passes (Freeze denied when any closure gate fails; permitted only when all pass).",
+          "AT8 passes at end-to-end scale (audit spine immutability/append-only properties preserved through the full O2 run)."
+        ],
+        "depends_on": [
+          "M4"
+        ]
+      }
+    ],
+    "decision_log": [
+      {
+        "id": "DEC1",
+        "question": "Which architecture option will this candidate implement?",
+        "choice": "Select O2 (task-parallel fan-out/fan-in with a governed deterministic integration sub-flow).",
+        "rationale": "Branch B02 prioritizes wall-clock speed for divisible work; O2 directly supports parallel lanes with a deterministic fan-in stage to manage merge conflicts/regressions while preserving stage gating, audit spine, and role separation requirements.",
+        "alternatives_considered": [
+          "O1 (sequential staged pipeline)",
+          "O3 (checkpoint-driven micro-cycles with partial-freeze)",
+          "O4 (monolithic council component)"
+        ],
+        "what_would_change_this_decision": [
+          "If the expected work is tightly coupled with frequent cross-file conflicts (high K12 likelihood), O1 may be preferred for lower integration complexity.",
+          "If long-horizon execution with frequent budget exhaustion is the norm, O3 may be preferred for partial-freeze/resume-first semantics.",
+          "If system boundary simplicity outweighs modular governance (and internal controls can be proven), O4 could be reconsidered."
+        ],
+        "evidence_pointers": []
+      },
+      {
+        "id": "DEC2",
+        "question": "How will acceptance be enforced under parallelism?",
+        "choice": "Two-level acceptance: lane-scoped gates must pass before fan-in, then integrated system-level gates must pass before Judge→Freeze.",
+        "rationale": "This matches the branch acceptance strategy and mitigates late surprises by ensuring each lane meets scoped quality/integrity requirements while still requiring full-repo validation after merge to catch cross-lane regressions.",
+        "alternatives_considered": [
+          "Only integrated validation (simpler, but higher rework risk and slower debugging)",
+          "Only lane validation (faster, but unsafe for cross-lane interactions)"
+        ],
+        "what_would_change_this_decision": [
+          "If repositories are fully modular with proven non-interference and very costly full-repo validators, consider reducing integrated validation scope (still keeping a minimal integrated gate set).",
+          "If validators cannot be meaningfully scoped per lane, shift emphasis to integrated gates and treat lane gates as lightweight prechecks."
+        ],
+        "evidence_pointers": []
+      },
+      {
+        "id": "DEC3",
+        "question": "How will deterministic reproducibility be preserved when lanes complete at different wall-clock times?",
+        "choice": "Integration merge/apply ordering is deterministic and independent of completion timing (e.g., order by lane_id and patchset sequence), and each patchset must declare base_commit metadata for applicability checks.",
+        "rationale": "Parallel execution introduces nondeterminism in completion order; making merge/apply order a pure function of declared identifiers preserves replayability and avoids race-dependent integrated states.",
+        "alternatives_considered": [
+          "Merge in wall-clock completion order",
+          "Attempt automatic conflict resolution with heuristic ordering"
+        ],
+        "what_would_change_this_decision": [
+          "If upstream requirements mandate chronological ordering for audit semantics (unlikely), incorporate timestamps only as non-authoritative metadata while keeping ordering deterministic via a stable sort key.",
+          "If integration policy requires dependency-based ordering, base the order on the work_plan DAG topological sort (still deterministic)."
+        ],
+        "evidence_pointers": []
+      },
+      {
+        "id": "DEC4",
+        "question": "What is the workspace strategy for parallel lanes?",
+        "choice": "Namespaced per-lane workspace partitions plus a canonical integration partition; unified workspace_index.json accounts for all items with provenance and versioning.",
+        "rationale": "Partitioning reduces accidental cross-lane contamination, enables smaller lane-scoped context packs, and supports clean fan-in with explicit provenance. A unified index is still required for auditability and context-pack determinism.",
+        "alternatives_considered": [
+          "Single shared workspace without partitions",
+          "Fully isolated workspaces with no unified index"
+        ],
+        "what_would_change_this_decision": [
+          "If the workspace backend cannot support namespacing/access control reliably, fallback to a single workspace with strict path-based partition rules enforced by validators and tool sandboxing."
+        ],
+        "evidence_pointers": []
+      },
+      {
+        "id": "DEC5",
+        "question": "How will merge conflicts and integration regressions (K12) be handled under O2?",
+        "choice": "Treat conflicts/regressions as first-class integration artifacts (conflict/integration reports) that drive deterministic escalation: attempt bounded integration patching within op caps; if thresholds exceeded, reroute/HITL per policy; never silently resolve conflicts without recorded evidence and deterministic rules.",
+        "rationale": "K12 is the dominant risk introduced by parallelism. A governed integration stage with explicit artifacts and thresholds avoids silent, non-reproducible conflict handling and preserves auditability and escalation discipline.",
+        "alternatives_considered": [
+          "Allow automatic conflict resolution by tools without structured reporting",
+          "Push conflict resolution back into lanes (can cause oscillation and duplicated effort)"
+        ],
+        "what_would_change_this_decision": [
+          "If repos have extremely low conflict rates and high confidence in deterministic auto-merge, thresholds can be tuned upward—but still require reporting artifacts and audit logging.",
+          "If conflicts are frequent and expensive, reconsider O2 in favor of O1 or adjust lane partitioning rules to reduce overlap."
+        ],
+        "evidence_pointers": []
+      },
+      {
+        "id": "DEC6",
+        "question": "What governance posture will be used for tool access and HITL strictness?",
+        "choice": "Sandboxed tooling with deny-by-default permissions and medium HITL strictness, focusing HITL interrupts on integration-level findings, protected-path touches, security/secrets events, retry-budget exhaustion, and any ChangeRequest/waiver.",
+        "rationale": "This aligns with branch posture: accept integration complexity for speed while containing risk via deterministic enforcement and targeted HITL at high-leverage choke points (notably integration fan-in and policy exceptions).",
+        "alternatives_considered": [
+          "High HITL strictness at all lane transitions (safer but slower)",
+          "Low HITL strictness with mostly automated handling (faster but riskier for K12/K4/K7)"
+        ],
+        "what_would_change_this_decision": [
+          "If operating in a high-compliance environment (regulated repos, production deployment coupling), raise HITL strictness and expand mandatory approvals.",
+          "If historical data shows very low defect rates and strong validator coverage, consider reducing HITL interrupts while keeping mandatory triggers for secrets/security/protected paths."
+        ],
+        "evidence_pointers": []
+      },
+      {
+        "id": "DEC7",
+        "question": "How will role separation be enforced across parallel lanes and integration?",
+        "choice": "Enforce writer/reviewer/judge separation per stage and across all lanes via orchestrator routing and output-type allowlists; reviewers emit findings-only artifacts and cannot produce patchsets or JSON patches; judges emit decisions/waivers only.",
+        "rationale": "Parallelism increases opportunities for accidental self-review; enforcing separation as an orchestrator-validated invariant preserves governance (CNS12/R22) while still allowing concurrency.",
+        "alternatives_considered": [
+          "Allow lane-local combined writer+reviewer for speed",
+          "Allow integration reviewer to author patches for faster resolution"
+        ],
+        "what_would_change_this_decision": [
+          "Only if an explicitly governed policy change permits combined roles (would require ChangeRequest and approval), which is outside baseline constraints."
+        ],
+        "evidence_pointers": []
+      },
+      {
+        "id": "DEC8",
+        "question": "How will deterministic 'smallest passing repair' selection work in a parallel setting?",
+        "choice": "Apply R15 selection within each lane repair cycle and within integration repair cycles separately, using deterministic tie-breakers (fewest operations → fewest bytes → first-generated), with candidates recorded and comparable under the same validator suite.",
+        "rationale": "Parallelism can produce multiple passing candidates simultaneously; applying the same deterministic selection rule at each repair scope (lane/integration) prevents subjective choice and preserves reproducibility.",
+        "alternatives_considered": [
+          "Global selection across all lanes at once",
+          "Human selection among passing candidates"
+        ],
+        "what_would_change_this_decision": [
+          "If repairs interact across lanes (shared files), defer selection to integration scope only (still deterministic) or reduce lane independence assumptions via revised partitioning rules."
+        ],
+        "evidence_pointers": []
+      }
+    ],
+    "supplemental_evaluations": [],
+    "synthesis_warnings": [
+      {
+        "id": "W1",
+        "severity": "high",
+        "summary": "O2 relies on deterministically specified lane partitioning rules, deterministic merge/apply ordering, and explicit conflict-resolution thresholds; these must be concretely defined and validated to avoid K12-class nondeterminism and to meet reproducibility expectations.",
+        "routing_target": "spec_clarification.orchestrator_policy",
+        "evidence": []
+      },
+      {
+        "id": "W2",
+        "severity": "high",
+        "summary": "Several blocking open questions remain for enforceable implementation (e.g., repo ecosystems/validator commands, workspace backend constraints, diff format/normalization, deterministic smallest-repair scoring and conflict-resolution policy details). These uncertainties can prevent a fully testable, implementation-ready O2 plan without upstream clarification.",
+        "routing_target": "clarification.intake",
+        "evidence": []
+      }
+    ]
+  }
+}

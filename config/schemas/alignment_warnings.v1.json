@@ -1,0 +1,116 @@
+{
+  "$defs": {
+    "AlignmentWarning": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "severity": {
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "summary": {
+          "title": "Summary",
+          "type": "string"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/EvidencePointer"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "routing_target": {
+          "title": "Routing Target",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "severity",
+        "summary",
+        "evidence",
+        "routing_target"
+      ],
+      "title": "AlignmentWarning",
+      "type": "object"
+    },
+    "EvidencePointer": {
+      "additionalProperties": false,
+      "properties": {
+        "candidate_id": {
+          "title": "Candidate Id",
+          "type": "string"
+        },
+        "artifact_ref": {
+          "title": "Artifact Ref",
+          "type": "string"
+        },
+        "artifact_id": {
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "json_pointer": {
+          "title": "Json Pointer",
+          "type": "string"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        },
+        "quote": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Quote"
+        }
+      },
+      "required": [
+        "candidate_id",
+        "artifact_ref",
+        "artifact_id",
+        "json_pointer"
+      ],
+      "title": "EvidencePointer",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "warnings": {
+      "items": {
+        "$ref": "#/$defs/AlignmentWarning"
+      },
+      "title": "Warnings",
+      "type": "array"
+    }
+  },
+  "required": [
+    "warnings"
+  ],
+  "title": "AlignmentWarningsPayload",
+  "type": "object"
+}

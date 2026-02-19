@@ -1,0 +1,11 @@
+{
+  "run_context": {{RUN_CONTEXT_JSON}},
+  "artifact_refs": {{ARTIFACT_REFS_JSON}},
+  "allowed_id_prefixes": ["CS"],
+  "inputs": {
+    "candidate_ref": "{{CANDIDATE_REF}}",
+    "plan_candidate": {{PLAN_CANDIDATE_JSON}}
+  },
+  "task": "Produce consistency findings only.",
+  "output_schema": {{CONSISTENCY_SCHEMA_JSON}}
+}

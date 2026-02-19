@@ -1,0 +1,15 @@
+{
+  "run_context": {{RUN_CONTEXT_JSON}},
+  "artifact_refs": {{ARTIFACT_REFS_JSON}},
+  "allowed_id_prefixes": ["B"],
+  "inputs": {
+    "project_capsule": {{CAPSULE_JSON}},
+    "requirements": {{CANONICAL_REQUIREMENTS_JSON}},
+    "acceptance_tests": {{CANONICAL_ACCEPTANCE_JSON}},
+    "architecture": {{CANONICAL_ARCHITECTURE_JSON}},
+    "risk_gov": {{CANONICAL_RISK_GOV_JSON}},
+    "alignment_warnings": {{ALIGNMENT_WARNINGS_JSON_OR_EMPTY}}
+  },
+  "task": "Build 2-4 branches without scores/counts.",
+  "output_schema": {{BRANCH_SCHEMA_JSON}}
+}

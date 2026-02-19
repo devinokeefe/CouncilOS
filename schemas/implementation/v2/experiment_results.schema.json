@@ -1,0 +1,70 @@
+{
+  "$defs": {
+    "ExperimentResultMetric": {
+      "additionalProperties": false,
+      "properties": {
+        "seed": {
+          "title": "Seed",
+          "type": "integer"
+        },
+        "metrics": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "title": "Metrics",
+          "type": "object"
+        }
+      },
+      "required": [
+        "seed",
+        "metrics"
+      ],
+      "title": "ExperimentResultMetric",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "default": "2.0.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "experiment_id": {
+      "title": "Experiment Id",
+      "type": "string"
+    },
+    "results": {
+      "items": {
+        "$ref": "#/$defs/ExperimentResultMetric"
+      },
+      "title": "Results",
+      "type": "array"
+    },
+    "aggregate_stats": {
+      "additionalProperties": {
+        "type": "number"
+      },
+      "title": "Aggregate Stats",
+      "type": "object"
+    },
+    "artifacts": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Artifacts",
+      "type": "array"
+    },
+    "attestation_ref": {
+      "title": "Attestation Ref",
+      "type": "string"
+    }
+  },
+  "required": [
+    "experiment_id",
+    "results",
+    "attestation_ref"
+  ],
+  "title": "ExperimentResultsPayload",
+  "type": "object"
+}

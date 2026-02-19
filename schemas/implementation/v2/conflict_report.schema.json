@@ -1,0 +1,43 @@
+{
+  "$defs": {
+    "ConflictItem": {
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "reason"
+      ],
+      "title": "ConflictItem",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "conflicts": {
+      "items": {
+        "$ref": "#/$defs/ConflictItem"
+      },
+      "title": "Conflicts",
+      "type": "array"
+    },
+    "escalation": {
+      "title": "Escalation",
+      "type": "string"
+    }
+  },
+  "required": [
+    "conflicts",
+    "escalation"
+  ],
+  "title": "ConflictReportPayload",
+  "type": "object"
+}

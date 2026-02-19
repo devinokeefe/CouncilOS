@@ -1,0 +1,103 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B2A_fallback_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T20:55:27.697885Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B2A_v2"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2A_v2",
+    "findings": [
+      {
+        "id": "TG001",
+        "severity": "high",
+        "summary": "R1 requirement text does not match acceptance test AT1 scope: requirement mandates rejection of chat logs and non-canonical artifacts as authoritative sources, but AT1 only tests rejection at run initiation, not enforcement throughout the subsystem lifecycle.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "requirements_canonical",
+            "json_pointer": "/requirements/0",
+            "note": "R1 states SHALL reject chat logs or non-canonical artifacts as authoritative sources of plan semantics (ongoing enforcement implied).",
+            "quote": "SHALL reject chat logs or any non-canonical/unapproved upstream artifacts as authoritative sources of plan semantics"
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "acceptance_canonical_v1",
+            "artifact_id": "acceptance_canonical",
+            "json_pointer": "/acceptance_tests/0",
+            "note": "AT1 only tests orchestrator accept/reject at run initiation, not continuous enforcement during execution.",
+            "quote": "Attempt to initiate an Implementation Council run with inputs"
+          }
+        ],
+        "routing_target": "requirements_review"
+      },
+      {
+        "id": "TG002",
+        "severity": "medium",
+        "summary": "R2 milestone mapping includes M2 but M2 deliverables focus on parallel lanes and do not explicitly call out repo_context.json schema validation as a Phase 2 gate or deliverable.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "requirements_canonical",
+            "json_pointer": "/requirements/1",
+            "note": "R2 maps to milestones M1 and M2.",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "architecture_canonical",
+            "json_pointer": "/milestones/1",
+            "note": "M2 deliverables focus on Task Lane Orchestrator and per-lane role pods; no explicit mention of repo_context.json validation as a Phase 2 gate.",
+            "quote": "Task Lane Orchestrator (C13) capable of spawning/managing lane state machines"
+          }
+        ],
+        "routing_target": "architecture_review"
+      },
+      {
+        "id": "TG003",
+        "severity": "medium",
+        "summary": "R3 milestone mapping includes M2 but M2 exit criteria do not explicitly require workspace_context.json schema validation to pass before parallel lanes are enabled, creating potential gap in governance enforcement sequencing.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "requirements_canonical",
+            "json_pointer": "/requirements/2",
+            "note": "R3 maps to milestones M1 and M2.",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "architecture_canonical",
+            "json_pointer": "/milestones/1/exit_criteria",
+            "note": "M2 exit criteria reference AT12-AT14 and AT22 but do not explicitly call out AT3 (workspace_context.json validation) as a Phase 2 gate.",
+            "quote": "AT12–AT14 pass for JSON Patch-only canonical repairs, diff-only patchsets, and forbidden/protected-path + op-cap enforcement"
+          }
+        ],
+        "routing_target": "architecture_review"
+      },
+      {
+        "id": "TG004",
+        "severity": "low",
+        "summary": "AT2 pass criteria states runs missing or schema-invalid repo_context.json are rejected before any code-generation stage, but does not specify whether rejection occurs at Intake or at the first code-generation stage boundary, creating minor ambiguity in enforcement timing.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "acceptance_canonical_v1",
+            "artifact_id": "acceptance_canonical",
+            "json_pointer": "/acceptance_tests/1/pass_criteria",
+            "note": "Pass criteria states rejection before any code-generation stage but does not specify Intake vs later boundary.",
+            "quote": "Runs missing or schema-invalid repo_context.json are rejected before any code-generation stage"
+          }
+        ],
+        "routing_target": "acceptance_review"
+      }
+    ]
+  }
+}

@@ -1,0 +1,263 @@
+{
+  "artifact_type": "validator_report",
+  "artifact_id": "validator_B01A_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T20:54:12.467674Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B01A_v2"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B01A_v2",
+    "overall_status": "FAIL_REPAIRABLE",
+    "checks": [
+      {
+        "name": "schema",
+        "hard_gate": true,
+        "pass": true,
+        "violations": []
+      },
+      {
+        "name": "id_integrity",
+        "hard_gate": true,
+        "pass": false,
+        "violations": [
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/milestones",
+            "message": "Deliverable id does not match DL#: M1.D1",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/milestones",
+            "message": "Deliverable id does not match DL#: M1.D2",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/milestones",
+            "message": "Deliverable id does not match DL#: M1.D3",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/milestones",
+            "message": "Deliverable id does not match DL#: M1.D4",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/milestones",
+            "message": "Deliverable id does not match DL#: M1.D5",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/milestones",
+            "message": "Deliverable id does not match DL#: M1.D6",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O1 references missing risk Long-horizon implementations may exceed token/time budgets due to serialized execution.",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O1 references missing risk Linear accumulation of artifacts can pressure context-window bounds if context-pack selection is not strict.",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O1 references missing risk Flaky validator behavior can exhaust retry budgets and stall the only active lane.",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O2 references missing risk Merge conflicts between lanes may be frequent in tightly-coupled repos, driving escalation rates.",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O2 references missing risk Missed dependencies in task partitioning can cause late integration failures and rework.",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O2 references missing risk Reproducibility depends on merge ordering rules that must be independent of wall-clock completion timing.",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O2 references missing risk Workspace partition boundaries can be violated by side-effecting tools unless sandboxing and path scoping are strict.",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O3 references missing risk Validation cost may pressure teams to weaken regression gates, reducing safety.",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O3 references missing risk Environment drift between runs can break deterministic replay/resume unless toolchains are pinned.",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O3 references missing risk Budget thresholds for partial-freeze decisions can be misestimated, freezing too early/late.",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O3 references missing risk Task ordering may hide implicit dependencies that cause late-task failures.",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O4 references missing risk Internal complexity may grow and undermine CNS12 separation (reviewers/judges becoming entangled with writing/patching).",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O4 references missing risk Hidden internal state transitions can make checkpoint/resume and traceability less explicit unless the monolith emits full stage_handoff artifacts.",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O4 references missing risk Monolith becomes a high-blast-radius component for failures and changes.",
+            "repair_hint": null
+          },
+          {
+            "severity": "medium",
+            "json_pointer": "/plan_package/architecture/chosen/key_design_decisions",
+            "message": "Decision reference missing: Use a strictly sequential orchestrator-owned pipeline (no parallel lanes) to simplify auditability and deterministic replay.",
+            "repair_hint": null
+          },
+          {
+            "severity": "medium",
+            "json_pointer": "/plan_package/architecture/chosen/key_design_decisions",
+            "message": "Decision reference missing: Single comprehensive Freeze bundle is the only acceptance event (no partial-freeze semantics in this branch).",
+            "repair_hint": null
+          },
+          {
+            "severity": "medium",
+            "json_pointer": "/plan_package/architecture/chosen/key_design_decisions",
+            "message": "Decision reference missing: Deny-by-default tool permissions with sandboxed execution; network access denied by baseline policy; repo writes only via patch_apply of diff-only patchsets.",
+            "repair_hint": null
+          },
+          {
+            "severity": "medium",
+            "json_pointer": "/plan_package/architecture/chosen/key_design_decisions",
+            "message": "Decision reference missing: Enforce canonical-only planning semantics: accept plan_package_final.json (and structured handoff bundle) as sole authoritative input; deviations require ChangeRequest + escalation.",
+            "repair_hint": null
+          },
+          {
+            "severity": "medium",
+            "json_pointer": "/plan_package/architecture/chosen/key_design_decisions",
+            "message": "Decision reference missing: Mandate checkpointing via stage_handoff artifacts at every stage transition; absence blocks progress.",
+            "repair_hint": null
+          },
+          {
+            "severity": "medium",
+            "json_pointer": "/plan_package/architecture/chosen/key_design_decisions",
+            "message": "Decision reference missing: Single evidence standard across all canonical artifacts: RFC 6901 JSON Pointer objects into versioned JSON artifacts; no alternate citation formats.",
+            "repair_hint": null
+          },
+          {
+            "severity": "medium",
+            "json_pointer": "/plan_package/architecture/chosen/key_design_decisions",
+            "message": "Decision reference missing: Canonical JSON artifact modifications only via RFC 6902 JSON Patch; code changes only via diff-only patchset JSON artifacts.",
+            "repair_hint": null
+          },
+          {
+            "severity": "medium",
+            "json_pointer": "/plan_package/architecture/chosen/key_design_decisions",
+            "message": "Decision reference missing: Smallest-passing-repair selection is deterministic (fewest ops, fewest bytes, first-generated) when multiple passing repairs exist.",
+            "repair_hint": null
+          },
+          {
+            "severity": "medium",
+            "json_pointer": "/plan_package/architecture/chosen/key_design_decisions",
+            "message": "Decision reference missing: Freeze is permitted only when all closure gates pass (quality, security, integrity, workspace integrity, reproducibility, trace completeness, risk closure) and every decision/waiver is evidence-backed.",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/decision_log",
+            "message": "Evidence pointer references missing id: B01",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/decision_log",
+            "message": "Evidence pointer references missing id: B01",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/decision_log",
+            "message": "Evidence pointer references missing id: tool_policy",
+            "repair_hint": null
+          }
+        ]
+      },
+      {
+        "name": "coverage",
+        "hard_gate": true,
+        "pass": true,
+        "violations": []
+      },
+      {
+        "name": "milestone_exit_criteria",
+        "hard_gate": true,
+        "pass": true,
+        "violations": []
+      },
+      {
+        "name": "risk_closure",
+        "hard_gate": true,
+        "pass": true,
+        "violations": []
+      },
+      {
+        "name": "tool_policy_parse",
+        "hard_gate": true,
+        "pass": true,
+        "violations": []
+      },
+      {
+        "name": "measurability_heuristic",
+        "hard_gate": false,
+        "pass": true,
+        "violations": []
+      },
+      {
+        "name": "contradiction_heuristic",
+        "hard_gate": false,
+        "pass": true,
+        "violations": []
+      },
+      {
+        "name": "completeness_heuristic",
+        "hard_gate": false,
+        "pass": true,
+        "violations": []
+      }
+    ]
+  }
+}

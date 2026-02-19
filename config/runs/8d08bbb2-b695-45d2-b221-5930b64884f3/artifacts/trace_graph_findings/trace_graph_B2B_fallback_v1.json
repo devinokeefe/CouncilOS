@@ -1,0 +1,103 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B2B_fallback_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T20:33:34.129651Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B2B_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2B_v1",
+    "findings": [
+      {
+        "id": "TG001",
+        "severity": "high",
+        "summary": "R1 requirement text does not match capsule constraint CNS4 scope: R1 forbids chat logs as authoritative but CNS4 forbids chat logs as source of truth for downstream consumption. R1 is narrower (planning input only) while CNS4 is broader (all downstream consumption). This creates ambiguity about whether chat logs are forbidden only at intake or throughout the workflow.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "requirements_canonical_v1",
+            "json_pointer": "/requirements/0",
+            "note": "R1 text forbids chat logs as authoritative planning input.",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "capsule_canonical_v1",
+            "artifact_id": "capsule_canonical_v1",
+            "json_pointer": "/constraints/3",
+            "note": "CNS4 forbids chat logs as source of truth for downstream councils/validators.",
+            "quote": null
+          }
+        ],
+        "routing_target": "requirements_writer"
+      },
+      {
+        "id": "TG002",
+        "severity": "medium",
+        "summary": "R2 and R3 milestone mapping includes M2 but M2 deliverables do not explicitly mention repo_context.json or workspace_context.json validation. M1-D2 covers intake validation of these schemas, but M2 exit criteria do not re-validate them, creating potential gap if schemas are modified between phases.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "requirements_canonical_v1",
+            "json_pointer": "/requirements/1",
+            "note": "R2 maps to milestones M1 and M2.",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "requirements_canonical_v1",
+            "json_pointer": "/requirements/2",
+            "note": "R3 maps to milestones M1 and M2.",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "architecture_canonical_v1",
+            "json_pointer": "/milestones/1/deliverables",
+            "note": "M2 deliverables do not mention repo_context or workspace_context validation.",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "architecture_canonical_v1",
+            "json_pointer": "/milestones/0/deliverables/1",
+            "note": "M1-D2 covers intake validation of required schemas.",
+            "quote": null
+          }
+        ],
+        "routing_target": "requirements_writer"
+      },
+      {
+        "id": "TG003",
+        "severity": "low",
+        "summary": "AT1 acceptance test maps to R1 but test procedure does not explicitly verify rejection of 'unapproved non-canonical artifacts' mentioned in R1 requirement text—only tests chat log rejection and valid plan acceptance. This leaves a coverage gap for the 'unapproved' qualifier.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "requirements_canonical_v1",
+            "json_pointer": "/requirements/0",
+            "note": "R1 forbids chat logs or any non-canonical/unapproved upstream artifacts.",
+            "quote": "SHALL reject chat logs or any non-canonical/unapproved upstream artifacts"
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "acceptance_canonical_v1",
+            "artifact_id": "acceptance_canonical_v1",
+            "json_pointer": "/acceptance_tests/0",
+            "note": "AT1 procedure tests chat log and non-canonical artifact but does not distinguish approved vs unapproved.",
+            "quote": null
+          }
+        ],
+        "routing_target": "qa_writer"
+      }
+    ]
+  }
+}

@@ -1,0 +1,257 @@
+{
+  "artifact_type": "architecture_options_draft",
+  "artifact_id": "architecture_draft_2_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T18:46:10.972524Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "capsule_canonical_v1"
+  ],
+  "payload": {
+    "options": [
+      {
+        "id": "OPT_B_MONOLITH",
+        "summary": "A single \"Implementation Council\" component encapsulates the entire workflow from plan intake to freeze bundle generation. It internally manages stages, roles, and artifact creation, presenting a simple external interface to the Orchestrator.",
+        "components": [
+          {
+            "id": "CMP_B_MONOLITHIC_COUNCIL",
+            "name": "Implementation Council (Monolithic)",
+            "responsibilities": [
+              "Manages the complete Generate→Validate→Judge→Freeze workflow internally.",
+              "Consumes the frozen Planning Council output.",
+              "Orchestrates internal assignments to writer, reviewer, and judge roles.",
+              "Generates all required artifacts, including work plans, patchsets, validation reports, and the final Implementation Freeze Bundle.",
+              "Interacts directly with the Artifact Store/Workspace for all state."
+            ]
+          },
+          {
+            "id": "CMP_B_ORCHESTRATOR",
+            "name": "Orchestrator (External)",
+            "responsibilities": [
+              "Initiates Implementation Council runs.",
+              "Enforces system-wide policies, constraints, and tool permissions (CNS1, CNS9).",
+              "Manages checkpointing and the immutable audit spine (CNS3).",
+              "Acts as the sole authority on routing, budgets, and termination."
+            ]
+          },
+          {
+            "id": "CMP_B_ARTIFACT_STORE",
+            "name": "Artifact Store & Workspace (External)",
+            "responsibilities": [
+              "Provides durable, versioned, immutable storage for all canonical artifacts (CNS3).",
+              "Hosts the shared workspace, separating canonical and non-canonical content (CNS8).",
+              "Supports addressing via artifact references and JSON Pointers (CNS6)."
+            ]
+          }
+        ],
+        "interfaces": [
+          {
+            "id": "IF_B_MON_START",
+            "from": "CMP_B_ORCHESTRATOR",
+            "to": "CMP_B_MONOLITHIC_COUNCIL",
+            "contract": "start_run(plan_package_final.json, repo_context.json)"
+          },
+          {
+            "id": "IF_B_MON_ARTIFACT_IO",
+            "from": "CMP_B_MONOLITHIC_COUNCIL",
+            "to": "CMP_B_ARTIFACT_STORE",
+            "contract": "read/write/query artifacts and workspace data via versioned references."
+          },
+          {
+            "id": "IF_B_MON_FREEZE",
+            "from": "CMP_B_MONOLITHIC_COUNCIL",
+            "to": "CMP_B_ARTIFACT_STORE",
+            "contract": "write_final(ImplementationFreezeBundle)"
+          },
+          {
+            "id": "IF_B_MON_POLICY_ENFORCE",
+            "from": "CMP_B_ORCHESTRATOR",
+            "to": "CMP_B_MONOLITHIC_COUNCIL",
+            "contract": "Enforce tool permissions, retry budgets, and other policies on execution requests."
+          }
+        ],
+        "tradeoffs": {
+          "pros": [
+            "Simplified external architecture with few top-level components.",
+            "High cohesion; all implementation logic is encapsulated within one boundary.",
+            "Reduces inter-component communication overhead."
+          ],
+          "cons": [
+            "Low modularity makes independent development, testing, and scaling of stages difficult.",
+            "The single large component can become overly complex and hard to maintain.",
+            "May obscure the enforcement of separation of powers between internal roles."
+          ]
+        },
+        "risks": [
+          "The monolithic component's internal complexity may grow to violate separation of concerns, making it difficult to audit and enforce strict writer/reviewer/judge separation as required by CNS12."
+        ]
+      },
+      {
+        "id": "OPT_B_STAGED_PIPELINE",
+        "summary": "The workflow is decomposed into a pipeline of distinct components, each representing a major stage (e.g., Planning, Implementation, Validation). The Orchestrator routes work between these components based on a state machine.",
+        "components": [
+          {
+            "id": "CMP_B_STG_PLANNER",
+            "name": "Work Planner",
+            "responsibilities": [
+              "Consumes `plan_package_final.json`.",
+              "Generates the initial `work_plan.json` artifact, breaking down the implementation into discrete tasks."
+            ]
+          },
+          {
+            "id": "CMP_B_STG_IMPLEMENTER",
+            "name": "Implementation Engine",
+            "responsibilities": [
+              "Executes tasks from the `work_plan.json`.",
+              "Generates `patchset` artifacts containing code changes."
+            ]
+          },
+          {
+            "id": "CMP_B_STG_VALIDATOR",
+            "name": "Validation Engine",
+            "responsibilities": [
+              "Runs all deterministic gates (build, test, lint, etc.) on proposed changes.",
+              "Produces `test_results.json` and `quality_reports.json`."
+            ]
+          },
+          {
+            "id": "CMP_B_STG_INTEGRATOR",
+            "name": "Integration & Review Engine",
+            "responsibilities": [
+              "Manages the application of `patchset` artifacts to a repository snapshot.",
+              "Coordinates the review process, consuming `review_findings.json`.",
+              "Generates `decision_record.json` and triggers repair loops when necessary."
+            ]
+          },
+          {
+            "id": "CMP_B_STG_FREEZER",
+            "name": "Freeze Bundler",
+            "responsibilities": [
+              "Gathers all passing artifacts from the workspace upon successful completion.",
+              "Assembles and validates the final `ImplementationFreezeBundle` as per CNS10."
+            ]
+          }
+        ],
+        "interfaces": [
+          {
+            "id": "IF_B_STG_ORCH_TO_COMP",
+            "from": "Orchestrator",
+            "to": "CMP_B_STG_PLANNER",
+            "contract": "Invoke stage with specific input artifacts (e.g., `run_plan(plan_package_ref)`). The same contract pattern applies to all stage components (Implementer, Validator, etc.)."
+          },
+          {
+            "id": "IF_B_STG_COMP_TO_STORE",
+            "from": "CMP_B_STG_PLANNER",
+            "to": "Artifact Store",
+            "contract": "Write output artifacts (e.g., `work_plan.json`). The same contract pattern applies to all stage components."
+          },
+          {
+            "id": "IF_B_STG_HANDOFF",
+            "from": "Orchestrator",
+            "to": "Orchestrator",
+            "contract": "Create and persist `stage_handoff.json` artifact at the conclusion of each stage to ensure resumability."
+          }
+        ],
+        "tradeoffs": {
+          "pros": [
+            "High modularity aligns with the natural process flow.",
+            "Components can be developed, deployed, and scaled independently.",
+            "Clear separation of responsibilities for each stage of the implementation."
+          ],
+          "cons": [
+            "Increased number of components and interfaces adds to orchestration complexity.",
+            "Potential for latency or data transfer overhead between stages.",
+            "State management is distributed, relying entirely on the orchestrator and artifact store."
+          ]
+        },
+        "risks": [
+          "The handoffs between the many specialized components could introduce latency and overhead, potentially impacting the end-to-end execution time for complex implementation tasks."
+        ]
+      },
+      {
+        "id": "OPT_B_ROLE_PODS",
+        "summary": "The architecture is organized around stateless \"Pods\" representing council roles (Writer, Reviewer, Judge). These pods interact with a central, stateful Workspace Gateway API, with the Orchestrator routing tasks to the appropriate pod based on policy.",
+        "components": [
+          {
+            "id": "CMP_B_POD_WRITER",
+            "name": "Writer Pod",
+            "responsibilities": [
+              "Performs generative tasks upon Orchestrator request.",
+              "Creates artifacts such as `work_plan.json` and `patchsets`.",
+              "Stateless; relies entirely on the provided context pack for input."
+            ]
+          },
+          {
+            "id": "CMP_B_POD_REVIEWER",
+            "name": "Reviewer Pod",
+            "responsibilities": [
+              "Performs analytical tasks upon Orchestrator request.",
+              "Analyzes artifacts (e.g., code, patchsets) and generates `review_findings.json`.",
+              "Cannot produce code or patch artifacts, enforcing CNS12."
+            ]
+          },
+          {
+            "id": "CMP_B_POD_JUDGE",
+            "name": "Judge Pod",
+            "responsibilities": [
+              "Performs evaluation tasks upon Orchestrator request.",
+              "Evaluates submissions against findings and criteria, produces `decision_record.json`.",
+              "Selects passing artifacts or recommends repair actions."
+            ]
+          },
+          {
+            "id": "CMP_B_POD_WORKSPACE_GW",
+            "name": "Workspace Gateway",
+            "responsibilities": [
+              "Provides the sole, secure API for all workspace interactions.",
+              "Manages artifact I/O, abstracting the underlying physical storage.",
+              "Assembles deterministic context packs for tasks (CNS8).",
+              "Enforces access control and validation on workspace operations."
+            ]
+          }
+        ],
+        "interfaces": [
+          {
+            "id": "IF_B_POD_TASK",
+            "from": "Orchestrator",
+            "to": "CMP_B_POD_WRITER",
+            "contract": "process_task(task_spec, context_pack_ref). This pattern is used for all pods (Writer, Reviewer, Judge)."
+          },
+          {
+            "id": "IF_B_POD_ARTIFACT_WRITE",
+            "from": "CMP_B_POD_WRITER",
+            "to": "CMP_B_POD_WORKSPACE_GW",
+            "contract": "write_artifact(artifact_data, expected_schema). The GW validates and stores the artifact, returning a reference."
+          },
+          {
+            "id": "IF_B_POD_ARTIFACT_READ",
+            "from": "CMP_B_POD_REVIEWER",
+            "to": "CMP_B_POD_WORKSPACE_GW",
+            "contract": "read_artifact(artifact_ref)."
+          },
+          {
+            "id": "IF_B_POD_CONTEXT_BUILD",
+            "from": "Orchestrator",
+            "to": "CMP_B_POD_WORKSPACE_GW",
+            "contract": "build_context_pack(task_spec), returns a context_pack_ref."
+          }
+        ],
+        "tradeoffs": {
+          "pros": [
+            "Strongly enforces separation of powers and multi-vendor model (CNS12).",
+            "Promotes stateless, easily swappable/upgradable role implementations.",
+            "Centralizes and secures all state management and business logic through the Workspace Gateway."
+          ],
+          "cons": [
+            "The Workspace Gateway is a critical component and a potential single point of failure.",
+            "Requires a mature and robust API definition for the gateway.",
+            "All interactions, even simple reads, must go through the gateway, which could add latency."
+          ]
+        },
+        "risks": [
+          "The Workspace Gateway could become a performance bottleneck or single point of failure if not designed for high availability and throughput, impacting the entire council's operation."
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,129 @@
+{
+  "artifact_type": "failure_mode_findings",
+  "artifact_id": "failure_modes_B01B_v3",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T21:24:57.985667Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B01B_v3"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B01B_v3",
+    "taxonomy": "inputs.taxonomy_categories",
+    "critical_findings": [
+      {
+        "id": "FM1",
+        "category": "Operational limits (budgets, op caps) and escalation pathways",
+        "severity": "critical",
+        "finding": "Big-bang strategy + no partial-freeze path creates a high-probability hard-failure mode: if token/time/compute budgets are exhausted late (pre-Freeze), the run can produce no frozen output, leaving downstream with no canonical deliverable despite substantial work. This is explicitly flagged as blocking (Q13) but remains unresolved while the chosen option hard-rejects partial-freeze.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/synthesis_warnings/0 ; /inputs/plan_candidate/plan_package/project_capsule/open_questions/12 ; /inputs/plan_candidate/plan_package/decision_log/1",
+          "closure_target": "Define a deterministic, schema’d outcome when budgets are hit before Freeze (e.g., either (a) explicit partial-freeze bundle with resume descriptor, or (b) explicit 'no-freeze' terminal artifact set + required checkpoint handoff guaranteeing resumable continuation). Must be validator-gated and explicitly accepted/approved if partial-freeze remains disallowed.",
+          "earliest_prevention_stage": "WorkPlanning",
+          "suggested_mitigation": "Add a mandatory 'budget exhaustion handling' policy section and acceptance test(s) covering: (1) controlled stop with last-good checkpoint, (2) required artifacts emitted on early termination, (3) deterministic resume behavior, and (4) downstream contract for incomplete runs."
+        }
+      },
+      {
+        "id": "FM2",
+        "category": "Evidence & traceability compliance (RFC6901 pointers)",
+        "severity": "critical",
+        "finding": "Evidence pointer objects in the plan are not consistently in the mandated minimal structure {artifact_ref, entity_id|null, json_pointer, note}. Instances include extra keys (e.g., candidate_id, artifact_id, quote). If validators enforce strict evidence schema (as required), these artifacts will fail validation, blocking Judge/Freeze and breaking traceability compliance.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/decision_log/0/evidence_pointers/0 ; /inputs/plan_candidate/plan_package/decision_log/4/evidence_pointers/0 ; /inputs/plan_candidate/plan_package/requirements/9",
+          "closure_target": "Normalize all evidence pointer instances to the single allowed object shape (no extra fields) or explicitly update the evidence-pointer schema to allow extensions (with a deterministic linter + backward compatibility rules). Must be enforced by the same validator across all canonical artifacts.",
+          "earliest_prevention_stage": "WorkPlanning",
+          "suggested_mitigation": "Create an evidence-pointer JSON Schema and run an evidence-lint gate in every stage that emits evidence pointers (Review/Judge/Freeze), rejecting any object with unknown keys if strict mode is required."
+        }
+      },
+      {
+        "id": "FM3",
+        "category": "Tool permissioning & sandbox escape/misuse",
+        "severity": "critical",
+        "finding": "Tool policy for the Review stage denies artifact_write/workspace_write, but the workflow requires Reviewers to emit review_findings.json (and acceptance tests require producing and validating review_findings). This contradiction can deadlock the pipeline at Review or force out-of-band writes that violate policy and auditability.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies/6 ; /inputs/plan_candidate/plan_package/milestones/4/deliverables/0 ; /inputs/plan_candidate/plan_package/acceptance_tests/21",
+          "closure_target": "Revise Review-stage permissions to allow writing exactly one findings-only canonical artifact type (e.g., review_findings.json) to the artifact store (and optionally stage_handoff) while continuing to deny repo writes and patch authoring.",
+          "earliest_prevention_stage": "Intake",
+          "suggested_mitigation": "Introduce an 'artifact_type_allowlist' per stage/role; for Review: allow write of review_findings.json only, with schema validation + size caps + evidence-pointer linting."
+        }
+      },
+      {
+        "id": "FM4",
+        "category": "Tool permissioning & sandbox escape/misuse",
+        "severity": "high",
+        "finding": "Intake tool policy restricts artifact_write to allow_noncanonical_only, but Intake milestone deliverables require initializing canonical run_manifest and event_log (and emitting stage_handoff). If taken literally, Intake cannot create required canonical audit-spine artifacts, undermining CNS3/R8 and causing the run to fail early or to violate policy to proceed.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies/0/restrictions/0 ; /inputs/plan_candidate/plan_package/milestones/0/deliverables/3 ; /inputs/plan_candidate/plan_package/requirements/7",
+          "closure_target": "Align Intake permissions with required outputs: explicitly allow canonical artifact writes for run_manifest, event_log, and stage_handoff during Intake, with immutability/append-only enforcement at the storage layer.",
+          "earliest_prevention_stage": "Intake",
+          "suggested_mitigation": "Split writes into (a) 'audit-spine canonical writes' permitted in Intake and (b) all other canonical writes denied; add an acceptance test verifying Intake can emit run_manifest/event_log while still denying other canonical artifact types."
+        }
+      },
+      {
+        "id": "FM5",
+        "category": "Checkpoint/resume correctness (stage handoffs)",
+        "severity": "high",
+        "finding": "Stage model naming is inconsistent across requirements, milestones, architecture, and tool policy. Requirements mandate a minimum stage list (Intake → Generate → Validate → Review → Judge → Freeze), while the plan also introduces WorkPlanning, PatchApply, and IntegrateAndValidate as operative stages. This can break checkpoint requirements (stage_handoff at every transition), tool permission enforcement by stage, and deterministic state-machine validation.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/requirements/3 ; /inputs/plan_candidate/plan_package/milestones ; /inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies",
+          "closure_target": "Define a single canonical stage enum list and an explicit deterministic transition graph. Update requirements, milestones, tool policy, and acceptance tests to use the same stage IDs, including whether PatchApply is a distinct stage or a sub-step within Generate/Validate.",
+          "earliest_prevention_stage": "WorkPlanning",
+          "suggested_mitigation": "Add a schema’d workflow_graph artifact (stage nodes + transitions + required gates + required handoff artifacts). Validate that tool_policy has a policy entry for every stage node and no extras."
+        }
+      },
+      {
+        "id": "FM6",
+        "category": "Supply-chain/network dependency control",
+        "severity": "high",
+        "finding": "Network is denied by default across stages, yet validators and security scans often require network (dependency fetch, vulnerability DB updates). If the environment relies on implicit caches/mirrors, outcomes can become nondeterministic across runs (cache warm/cold drift), or validation becomes impossible, forcing ad-hoc permission expansion (a governance breach risk).",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies/4/restrictions/0 ; /inputs/plan_candidate/plan_package/risk_register/14",
+          "closure_target": "Specify a deterministic dependency strategy compatible with network-deny: required offline mirrors, lockfile rules, pinned toolchain images, and deterministic vulnerability DB snapshotting; or define an explicitly allowlisted 'DependencyFetch' stage with strict allowlists + provenance capture.",
+          "earliest_prevention_stage": "Intake",
+          "suggested_mitigation": "Add repo_context fields for dependency mode (offline/allowlisted), lockfile requirements, and required mirror endpoints; require validators to record dependency provenance hashes in quality_reports.json."
+        }
+      },
+      {
+        "id": "FM7",
+        "category": "Audit spine integrity (manifest/event log/artifact immutability)",
+        "severity": "high",
+        "finding": "Artifact_ref format and resolution rules are a blocking unknown, but the entire traceability and evidence-pointer system depends on stable artifact_ref semantics. Without a canonical artifact_ref scheme and resolution guarantees, evidence pointers may not resolve deterministically, undermining auditability and causing false gate failures or (worse) false passes if resolution is permissive.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/project_capsule/open_questions/2 ; /inputs/plan_candidate/plan_package/requirements/9",
+          "closure_target": "Define artifact_ref naming/versioning/addressing rules and a deterministic resolver contract (including immutability, content-hash binding, and version selection). Must be validated at Intake and used uniformly across workspace_index and evidence pointers.",
+          "earliest_prevention_stage": "Intake",
+          "suggested_mitigation": "Introduce an 'artifact_ref_spec' section + resolver acceptance test: given (artifact_ref, json_pointer), resolver must either deterministically return the referenced bytes + hash or fail closed; no 'latest' references in canonical artifacts unless 'latest' is itself frozen to a version at checkpoint."
+        }
+      },
+      {
+        "id": "FM8",
+        "category": "Secrets handling & sensitive data retention",
+        "severity": "medium",
+        "finding": "Secrets scanning is mandated, but the plan does not fully specify how scanner outputs avoid persisting secret material (e.g., raw matches, file excerpts) into event logs or findings artifacts. A naive scanner can itself violate the 'never store secrets' policy by recording matched substrings/context.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/requirements/19 ; /inputs/plan_candidate/plan_package/risk_register/6",
+          "closure_target": "Define a deterministic redaction/normalization format for secrets-scan findings (e.g., only rule IDs + hashed match fingerprints + locations without content), and enforce it via schema + validator before persistence to any artifact/log/workspace.",
+          "earliest_prevention_stage": "Validate",
+          "suggested_mitigation": "Add a 'secrets_scan_report.json' schema that prohibits raw secret strings and file excerpts; require the orchestrator to drop/replace any candidate artifact/log line containing detected secret patterns before write, while preserving audit metadata (timestamps, rule IDs, hashed fingerprints)."
+        }
+      }
+    ],
+    "closure_pass": false
+  }
+}

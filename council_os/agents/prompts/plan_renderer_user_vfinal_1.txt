@@ -1,0 +1,7 @@
+{
+  "inputs": {
+    "final_plan": {{FINAL_PLAN_JSON}}
+  },
+  "task": "Render markdown only.",
+  "output_schema": {{RENDER_SCHEMA_JSON}}
+}

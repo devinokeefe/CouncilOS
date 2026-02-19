@@ -1,0 +1,87 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B01A_anchor_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T20:56:59.151664Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B01A_v2"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B01A_v2",
+    "findings": [
+      {
+        "id": "TG001",
+        "severity": "high",
+        "summary": "Sample check for R1 is not fully covered by AT1: it tests runs where the chat log/non-canonical artifact is the only planning input, but does not test the stricter requirement that plan_package_final.json must be the sole canonical planning input when additional non-canonical inputs are also provided (risk: mixed-input runs could still be accepted and non-canonical content could influence semantics).",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v2",
+            "artifact_id": "R1",
+            "json_pointer": "/requirements/0",
+            "note": "R1 requires plan_package_final.json as sole canonical planning input",
+            "quote": "SHALL accept exactly one frozen plan_package_final.json... as its sole canonical planning input, and SHALL reject chat logs or any non-canonical/unapproved upstream artifacts..."
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v2",
+            "artifact_id": "AT1",
+            "json_pointer": "/acceptance_tests/0",
+            "note": "AT1 only tests chat/non-canonical as the only planning input",
+            "quote": "Attempt to initiate... with inputs: (a) valid plan_package_final.json... (b) a chat log reference as the only planning input; (c) an unapproved non-canonical artifact as planning input."
+          }
+        ],
+        "routing_target": "clarification.upstream.acceptance_coverage.R1"
+      },
+      {
+        "id": "TG002",
+        "severity": "medium",
+        "summary": "Sample checks for R2 and R3 rely on “schema-invalid”/“schema-valid” repo_context.json and workspace_context.json, but the candidate package does not provide an explicit, traceable reference to the actual typed/versioned schema artifacts or their version identifiers within the sample-checked trace (risk: acceptance tests can’t be implemented deterministically without a concrete schema reference).",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v2",
+            "artifact_id": "R2",
+            "json_pointer": "/requirements/1",
+            "note": "R2 requires typed/versioned repo_context.json schema enforcement",
+            "quote": "SHALL define and require a typed, versioned repo_context.json schema; orchestrator validators SHALL fail the run if repo_context.json is missing or schema-invalid..."
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v2",
+            "artifact_id": "AT2",
+            "json_pointer": "/acceptance_tests/1",
+            "note": "AT2 invokes schema validity but does not cite a concrete schema artifact",
+            "quote": "Start a run without repo_context.json; then... with repo_context.json that violates schema; then... with schema-valid repo_context.json..."
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v2",
+            "artifact_id": "R3",
+            "json_pointer": "/requirements/2",
+            "note": "R3 requires typed/versioned workspace_context.json schema enforcement",
+            "quote": "SHALL define and require a typed, versioned workspace_context.json schema; orchestrator validators SHALL fail the run if workspace_context.json is missing or schema-invalid..."
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v2",
+            "artifact_id": "AT3",
+            "json_pointer": "/acceptance_tests/2",
+            "note": "AT3 invokes schema validity but does not cite a concrete schema artifact",
+            "quote": "Start a run without workspace_context.json; then... with schema-invalid workspace_context.json; then... with schema-valid workspace_context.json..."
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v2",
+            "artifact_id": "M1.D2",
+            "json_pointer": "/milestones/0/deliverables/1",
+            "note": "Milestone expects typed/versioned JSON schemas but sample-checked trace does not point to concrete schema artifacts/versions",
+            "quote": "Typed/versioned JSON schemas and contracts: repo_context.json, workspace_context.json, stage_handoff.json, ChangeRequest schema..."
+          }
+        ],
+        "routing_target": "clarification.upstream.schemas_and_versioning.R2_R3"
+      }
+    ]
+  }
+}

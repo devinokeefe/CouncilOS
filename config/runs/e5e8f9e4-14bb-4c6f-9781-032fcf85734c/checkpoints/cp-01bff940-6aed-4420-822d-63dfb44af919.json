@@ -1,0 +1,19 @@
+{
+  "checkpoint_id": "cp-01bff940-6aed-4420-822d-63dfb44af919",
+  "run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "created_at": "2026-02-15T18:43:09.155773Z",
+  "stage_name": "clarify.clarification_gate",
+  "stage_index": 2,
+  "event_cursor": "e2196155-a1a3-4515-909e-5b7f042906eb",
+  "artifact_refs": {
+    "capsule_draft_a": "capsule_draft_a_v1",
+    "capsule_draft_b": "capsule_draft_b_v1",
+    "capsule": "capsule_canonical_v1",
+    "clarification_plan": "clarification_plan_v1"
+  },
+  "routing_state": {
+    "stage": "clarify.clarification_gate",
+    "index": 2
+  },
+  "tool_side_effect_ledger_ref": null
+}

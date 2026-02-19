@@ -1,0 +1,102 @@
+{
+  "artifact_type": "judge_pairwise_result",
+  "artifact_id": "judge_pair_B01A_B01B_2_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T22:51:05.069920Z",
+  "source_run_id": "e7c2c917-9d2c-4c38-b133-533916af57c3",
+  "parents": [
+    "plan_candidate_B01A_v3",
+    "plan_candidate_B01B_v3"
+  ],
+  "payload": {
+    "comparison": {
+      "a": "B01A is feasible and includes acceptance tests and governance policy, but milestones are higher-level with less explicit test coverage mapping and less detailed operationalization.",
+      "b": "B01B is feasible and more operationally detailed, with granular milestones, explicit acceptance-test coverage mapping, and clearer governance linkage, improving execution and testability."
+    },
+    "judge_id": "pairwise_judge",
+    "judge_model": "unknown",
+    "winner": "b",
+    "scores": {
+      "feasibility": 8,
+      "testability": 9,
+      "governance": 9,
+      "architecture": 7,
+      "clarity": 7
+    },
+    "evidence": [
+      {
+        "artifact_ref": "plan_candidate_B01B_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/milestones/0",
+        "note": "B01B provides granular milestone structure with deliverables and exit criteria per stage.",
+        "candidate_id": "B01B",
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B01A_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/milestones/0",
+        "note": "B01A uses a single high-level milestone with aggregated exit criteria, less granular for execution tracking.",
+        "candidate_id": "B01A",
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B01B_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/supplemental_evaluations/0",
+        "note": "B01B explicitly maps acceptance tests to milestones, improving test coverage traceability.",
+        "candidate_id": "B01B",
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B01A_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/acceptance_tests",
+        "note": "B01A lists acceptance tests but lacks explicit milestone-to-test coverage analysis.",
+        "candidate_id": "B01A",
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B01B_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/decision_log/2",
+        "note": "B01B explicitly sets high HITL strictness tied to branch governance posture.",
+        "candidate_id": "B01B",
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B01A_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/governance/hitl_policy",
+        "note": "B01A includes comprehensive HITL policy but does not explicitly connect it to branch posture in decision log.",
+        "candidate_id": "B01A",
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B01B_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/synthesis_warnings/0",
+        "note": "B01B acknowledges big-bang budget risk explicitly in warnings.",
+        "candidate_id": "B01B",
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B01A_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/synthesis_warnings/0",
+        "note": "B01A notes blocking open questions but less specific about big-bang budget risk.",
+        "candidate_id": "B01A",
+        "artifact_id": null,
+        "quote": null
+      }
+    ],
+    "notes": "Winner B01B for stronger testability and operational feasibility due to explicit milestone structure and acceptance-test coverage mapping, while maintaining comparable governance and architecture to B01A."
+  }
+}

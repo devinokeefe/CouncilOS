@@ -1,0 +1,168 @@
+{
+  "$defs": {
+    "AccessRule": {
+      "additionalProperties": false,
+      "properties": {
+        "role": {
+          "title": "Role",
+          "type": "string"
+        },
+        "permissions": {
+          "items": {
+            "enum": [
+              "read",
+              "write",
+              "admin"
+            ],
+            "type": "string"
+          },
+          "title": "Permissions",
+          "type": "array"
+        }
+      },
+      "required": [
+        "role",
+        "permissions"
+      ],
+      "title": "AccessRule",
+      "type": "object"
+    },
+    "ContextPackLimits": {
+      "additionalProperties": false,
+      "properties": {
+        "max_items": {
+          "title": "Max Items",
+          "type": "integer"
+        },
+        "max_bytes": {
+          "title": "Max Bytes",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "max_items",
+        "max_bytes"
+      ],
+      "title": "ContextPackLimits",
+      "type": "object"
+    },
+    "NamespaceRule": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "purpose": {
+          "title": "Purpose",
+          "type": "string"
+        },
+        "canonical": {
+          "default": true,
+          "title": "Canonical",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "name",
+        "path",
+        "purpose"
+      ],
+      "title": "NamespaceRule",
+      "type": "object"
+    },
+    "PartitionRule": {
+      "additionalProperties": false,
+      "properties": {
+        "canonical_prefixes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Canonical Prefixes",
+          "type": "array"
+        },
+        "non_canonical_prefixes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Non Canonical Prefixes",
+          "type": "array"
+        }
+      },
+      "required": [
+        "canonical_prefixes",
+        "non_canonical_prefixes"
+      ],
+      "title": "PartitionRule",
+      "type": "object"
+    },
+    "RetentionPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "max_age_days": {
+          "title": "Max Age Days",
+          "type": "integer"
+        },
+        "max_size_mb": {
+          "title": "Max Size Mb",
+          "type": "integer"
+        },
+        "compaction_strategy": {
+          "title": "Compaction Strategy",
+          "type": "string"
+        }
+      },
+      "required": [
+        "max_age_days",
+        "max_size_mb",
+        "compaction_strategy"
+      ],
+      "title": "RetentionPolicy",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "workspace_root": {
+      "title": "Workspace Root",
+      "type": "string"
+    },
+    "namespace_rules": {
+      "items": {
+        "$ref": "#/$defs/NamespaceRule"
+      },
+      "title": "Namespace Rules",
+      "type": "array"
+    },
+    "partition_rules": {
+      "$ref": "#/$defs/PartitionRule"
+    },
+    "retention_policy": {
+      "$ref": "#/$defs/RetentionPolicy"
+    },
+    "access_control": {
+      "items": {
+        "$ref": "#/$defs/AccessRule"
+      },
+      "title": "Access Control",
+      "type": "array"
+    },
+    "context_pack_limits": {
+      "$ref": "#/$defs/ContextPackLimits"
+    }
+  },
+  "required": [
+    "workspace_root",
+    "namespace_rules",
+    "partition_rules",
+    "retention_policy",
+    "access_control",
+    "context_pack_limits"
+  ],
+  "title": "WorkspaceContextPayload",
+  "type": "object"
+}

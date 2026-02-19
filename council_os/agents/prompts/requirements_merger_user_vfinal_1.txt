@@ -1,0 +1,11 @@
+{
+  "run_context": {{RUN_CONTEXT_JSON}},
+  "artifact_refs": {{ARTIFACT_REFS_JSON}},
+  "allowed_id_prefixes": ["REQ_U"],
+  "inputs": {
+    "project_capsule": {{CAPSULE_JSON}},
+    "requirements_drafts": {{REQ_POD_DRAFTS_JSON_ARRAY}}
+  },
+  "task": "Merge requirement drafts into REQ_U_* units.",
+  "output_schema": {{REQ_MERGE_SCHEMA_JSON}}
+}

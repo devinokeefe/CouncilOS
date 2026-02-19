@@ -1,0 +1,121 @@
+{
+  "artifact_type": "failure_mode_findings",
+  "artifact_id": "failure_modes_B02A_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T21:00:46.375896Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B02A_v2"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B02A_v2",
+    "taxonomy": "CouncilOS taxonomy_categories",
+    "critical_findings": [
+      {
+        "id": "FM1",
+        "category": "Integration/merge conflict handling & parallelism hazards",
+        "severity": "critical",
+        "finding": "O2 fan-in depends on deterministic patchset semantics (diff format + normalization) and a deterministic merge/apply algorithm independent of wall-clock completion timing. These are explicitly unspecified, so identical inputs could yield different integrated repo states (or different conflict outcomes), breaking reproducibility and auditability of the integrated freeze.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "Pointers: /inputs/plan_candidate/plan_package/synthesis_warnings/0; /inputs/plan_candidate/plan_package/project_capsule/open_questions/6 (Q7); /inputs/plan_candidate/plan_package/project_capsule/open_questions/8 (Q9); /inputs/plan_candidate/plan_package/architecture/chosen/key_design_decisions/1",
+          "closure_target": "Define and freeze: (1) patchset artifact schema including explicit diff format, normalization, encoding rules, base_commit semantics, and file mode/rename handling; (2) deterministic fan-in ordering rule + conflict classification; (3) deterministic conflict-handling thresholds and escalation artifact(s). Add a validator that replays merge/apply twice and asserts identical repo_snapshot + patchset ordering record hashes.",
+          "earliest_prevention_stage": "WorkPlanning"
+        }
+      },
+      {
+        "id": "FM2",
+        "category": "Audit spine integrity (manifest/event log/artifact immutability)",
+        "severity": "critical",
+        "finding": "Workspace retention/compaction and canonical vs non-canonical handling can silently break immutability guarantees needed for evidence pointers (RFC6901) and checkpoint/resume. If compaction rewrites or removes artifacts that are already cited (including in stage_handoffs or decision records), evidence pointers may later fail to resolve, invalidating the audit spine and undermining reproducibility.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "Pointers: /inputs/plan_candidate/plan_package/project_capsule/constraints/2 (CNS3); /inputs/plan_candidate/plan_package/requirements/requirements/7 (R8); /inputs/plan_candidate/plan_package/risk_register/1 (K2); /inputs/plan_candidate/plan_package/risk_register/7 (K8); /inputs/plan_candidate/plan_package/project_capsule/assumptions/5 (A6)",
+          "closure_target": "Specify hard invariants: (1) canonical artifacts are content-addressed and never rewritten; (2) compaction produces new versions only (old versions retained at least through freeze + policy-defined retention); (3) any compaction generates an explicit mapping artifact and cannot change previously emitted evidence pointers. Add a \"pointer resolvability over retention\" validator that ensures all cited artifact_refs remain resolvable at least through freeze.",
+          "earliest_prevention_stage": "Intake"
+        }
+      },
+      {
+        "id": "FM3",
+        "category": "Tool permissioning & sandbox escape/misuse",
+        "severity": "critical",
+        "finding": "Even with network=deny and repo_write=deny in many stages, build/test/lint tools routinely perform side effects (write generated files, modify lockfiles, download deps, write to $HOME/cache) that can (a) bypass forbidden/protected-path intent, (b) cause nondeterministic outputs, and (c) leak data via attempted egress. The design relies on sandboxing as an assumption but does not yet close the gap for side-effecting tools.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "Pointers: /inputs/plan_candidate/plan_package/project_capsule/assumptions/7 (A8); /inputs/plan_candidate/plan_package/risk_register/18 (K19); /inputs/plan_candidate/plan_package/risk_register/14 (K15); /inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies/4 (Validate restrictions)",
+          "closure_target": "Require a hermetic execution profile for validators: read-only repo mount, isolated writable temp dir, controlled HOME, deterministic env vars, and enforced egress deny at the sandbox boundary. Add a validator that fails the run if any file outside allowlisted temp/output directories changes during Validate/IntegrateAndValidate, and record attempted network calls as policy violations in the event log.",
+          "earliest_prevention_stage": "Validate"
+        }
+      },
+      {
+        "id": "FM4",
+        "category": "Evidence & traceability compliance (RFC6901 pointers)",
+        "severity": "high",
+        "finding": "The plan requires repo/code/workspace state to be representable as versioned JSON artifacts for RFC6901 citation, but does not fully define the canonical representation needed to make pointers stable/resolvable (e.g., how a specific source line, config stanza, or test mapping is captured in JSON). Without concrete state-representation schemas, trace completeness can become unverifiable or devolve into pseudo-citations.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "Pointers: /inputs/plan_candidate/plan_package/project_capsule/constraints/5 (CNS6); /inputs/plan_candidate/plan_package/requirements/requirements/10 (R10); /inputs/plan_candidate/plan_package/requirements/requirements/11 (R11); /inputs/plan_candidate/plan_package/project_capsule/open_questions/2 (Q3)",
+          "closure_target": "Define minimum canonical JSON state artifacts and their pointer-stable layouts (e.g., repo_snapshot.json includes file index with stable IDs, extracted config ASTs where needed, test inventory + AT# mapping tables). Add an evidence-pointer resolver/linter that verifies each pointer resolves to an existing node and that the referenced artifact_ref is immutable/versioned.",
+          "earliest_prevention_stage": "WorkPlanning"
+        }
+      },
+      {
+        "id": "FM5",
+        "category": "Schema correctness & JSON Patch safety (RFC6902)",
+        "severity": "high",
+        "finding": "R12 constrains canonical JSON repairs to RFC6902 patches, but stage tool policies broadly allow artifact_write for canonical types across multiple stages. Without a hard \"patch-only\" write API and per-artifact forbidden-pointer maps, agents/tools may still produce full replacements or patches that are schema-valid but semantically corrupt (e.g., delete constraints, alter gate definitions).",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "Pointers: /inputs/plan_candidate/plan_package/requirements/requirements/11 (R12); /inputs/plan_candidate/plan_package/risk_register/10 (K11); /inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies/1 (WorkPlanning allowlists); /inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies/2 (Generate allowlists)",
+          "closure_target": "Enforce canonical-artifact mutation via a single orchestrator-owned patch endpoint (accepts only RFC6902 arrays) and reject direct canonical artifact writes at the workspace gateway. Define per-artifact forbidden JSON Pointer path allowlists/denylists (e.g., constraints cannot be removed) plus semantic validators for critical artifacts (work_plan, tool_policy).",
+          "earliest_prevention_stage": "Intake"
+        }
+      },
+      {
+        "id": "FM6",
+        "category": "Validation determinism (build/test/lint/typecheck) & flaky policy",
+        "severity": "high",
+        "finding": "Deterministic retries/budgets are specified, but the \"pass condition\" under flakiness is underspecified (e.g., is one passing run after failures sufficient to proceed?). Without explicit rules for seeds, environment pinning, and pass thresholds, the system can freeze on a flaky green, or oscillate unpredictably across resumes.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "Pointers: /inputs/plan_candidate/plan_package/requirements/requirements/22 (R23); /inputs/plan_candidate/plan_package/risk_register/5 (K6); /inputs/plan_candidate/plan_package/project_capsule/open_questions/9 (Q10); /inputs/plan_candidate/plan_package/project_capsule/assumptions/3 (A4)",
+          "closure_target": "Specify deterministic flake adjudication: fixed seeds where possible, pinned toolchain/container digests, and a deterministic pass criterion (e.g., require N consecutive passes, or \"no failures in last M attempts\"), with quarantine classification recorded as structured artifacts. Freeze gate must reference this policy explicitly and require evidence pointers to all attempts.",
+          "earliest_prevention_stage": "Validate"
+        }
+      },
+      {
+        "id": "FM7",
+        "category": "Role separation & multi-vendor governance",
+        "severity": "high",
+        "finding": "Multi-vendor separation is required (R22) but depends on a low-confidence assumption (A5). If the available model portfolio cannot satisfy separation (or if routing metadata is incomplete), the workflow may silently degrade to self-review/self-approval, invalidating governance claims and increasing risk of security/quality escapes.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "Pointers: /inputs/plan_candidate/plan_package/project_capsule/assumptions/4 (A5); /inputs/plan_candidate/plan_package/requirements/requirements/21 (R22); /inputs/plan_candidate/plan_package/risk_register/9 (K10); /inputs/plan_candidate/plan_package/project_capsule/open_questions/4 (Q5)",
+          "closure_target": "Define deterministic fallback behavior when vendor separation cannot be met: either (a) hard-fail/interrupt to HITL, or (b) permit with explicit policy exception + mandatory additional controls (e.g., extra independent static validators, stricter gates), all recorded in decision_record with evidence pointers. Require run_manifest to include vendor/model identifiers for each role output and validate constraints before stage transitions.",
+          "earliest_prevention_stage": "Intake"
+        }
+      },
+      {
+        "id": "FM8",
+        "category": "Context pack determinism & boundedness",
+        "severity": "medium",
+        "finding": "Context pack bounds and selection rules are critical in O2 (lane scoping + integration), but the minimum required content per stage/role is not fully specified. This can cause omission of cross-lane dependency artifacts during integration/judgment, leading to incorrect merges, missed regressions, or unsupported decisions despite \"bounded\" compliance.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "Pointers: /inputs/plan_candidate/plan_package/risk_register/8 (K9); /inputs/plan_candidate/plan_package/requirements/requirements/16 (R17); /inputs/plan_candidate/plan_package/requirements/requirements/17 (R18); /inputs/plan_candidate/plan_package/project_capsule/open_questions/14 (Q15)",
+          "closure_target": "Define per-stage/role required artifact sets (must-include lists) and completeness validators (e.g., Judge context must include integrated validation + all findings + trace report inputs). Add deterministic prioritization rules and a \"context adequacy\" check that can block progression if required items are missing, rather than proceeding with a truncated pack.",
+          "earliest_prevention_stage": "WorkPlanning"
+        }
+      }
+    ],
+    "closure_pass": false
+  }
+}

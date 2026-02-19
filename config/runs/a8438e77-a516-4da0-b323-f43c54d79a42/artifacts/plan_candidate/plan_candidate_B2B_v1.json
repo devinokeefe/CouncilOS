@@ -1,0 +1,2444 @@
+{
+  "artifact_type": "plan_candidate",
+  "artifact_id": "plan_candidate_B2B_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T19:00:00.152341Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "candidate_delta_B2B_v1"
+  ],
+  "payload": {
+    "candidate_id": "B2B",
+    "branch_id": "B2",
+    "synthesizer_id": "candidate_b_anthropic",
+    "inputs": {
+      "capsule_ref": "capsule_canonical_v1",
+      "draft_refs": [
+        "capsule_draft_a_v1",
+        "capsule_draft_b_v1",
+        "requirements_draft_1_v1",
+        "requirements_draft_2_v1",
+        "architecture_draft_1_v1",
+        "architecture_draft_2_v1",
+        "qa_templates_draft_1_v1",
+        "qa_templates_draft_2_v1",
+        "risk_gov_draft_1_v1",
+        "risk_gov_draft_2_v1",
+        "acceptance_draft_v1"
+      ],
+      "branch_ref": "B2"
+    },
+    "plan_package": {
+      "meta": {
+        "plan_id": "1fbc4f8d-7557-4cae-98f1-e8cb93e0ab56",
+        "version": "v1",
+        "created_at": "2026-02-15T19:00:00.152341Z",
+        "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+        "schema_version": "1.0.0",
+        "candidate_id": "B2B",
+        "branch_id": "B2",
+        "plan_status": "CANDIDATE"
+      },
+      "project_capsule": {
+        "brief": "Produce a frozen Plan Package (plus decision record + handoff bundle) to build a new CouncilOS subsystem: an “Implementation Council” that consumes a frozen Planning Council output (plan_package_final.json) and produces a working implementation (repo changes + tests + build/release artifacts) as a canonical “Implementation Freeze Bundle” with a governed shared workspace for long-horizon execution.",
+        "problem_statement": "CouncilOS needs a CouncilOS-grade Implementation Council architecture and workflow that can deterministically turn a frozen plan into audited, reproducible repository changes and release artifacts, while preserving separation of powers, preventing silent scope expansion, maintaining an immutable audit spine, and enabling long-running work via a versioned shared workspace with deterministic context packs and resumable stage handoffs.",
+        "goals": [
+          "Define the end-to-end Implementation Council architecture, roles, and staged workflow (Generate → Validate → Judge → Freeze) suitable for real software delivery and long-horizon context.",
+          "Define the canonical input contract: accept plan_package_final.json only (plus associated structured handoff bundle) and require repo_context.json and workspace_context.json schemas.",
+          "Define the canonical output contract: an “Implementation Freeze Bundle” with typed/versioned JSON artifacts (run manifest, event log, work plan, patchsets, repo snapshots, test/quality/trace/review/release/decision artifacts) plus required shared-workspace outputs (workspace_index, context_packs, stage_handoffs).",
+          "Design a shared, tool-accessible workspace as an extension of the artifact system: versioned, auditable, checkpointed; with canonical vs non-canonical separation; deterministic orchestrator-compiled context packs; and explicit stage handoff artifacts for pause/resume.",
+          "Standardize evidence/traceability using one evidence pointer standard: RFC 6901 JSON Pointer objects into versioned JSON artifacts; represent repo/code/workspace state as JSON artifacts to support evidence pointers.",
+          "Specify repair/iteration model: JSON artifacts repaired via RFC 6902 JSON Patch only; code changes via deterministic diff-only patchset artifacts with bounded apply/validate loops; orchestrator selects smallest passing repair via deterministic rules.",
+          "Specify tool permission matrix per stage, secrets redaction/blocking strategy, HITL triggers, and deterministic enforcement rules owned by the orchestrator.",
+          "Define deterministic, code-owned validators (closure gates) required to freeze (build/test/lint/typecheck, integrity, workspace integrity, risk closure, reproducibility, trace completeness).",
+          "Define flaky/nondeterministic failure policy: deterministic retry rules/budgets, quarantine/stabilization, and escalation paths (patch vs reroute vs HITL vs ChangeRequest).",
+          "Define change control: ChangeRequest artifact schema and deterministic rules for proposing/approving changes; reroute upstream when plan semantics must change.",
+          "Specify default multi-vendor model portfolio/routing for writers vs reviewers vs judges vs patchers, preserving writer/reviewer/judge separation and independence."
+        ],
+        "non_goals": [
+          "Implementing the actual subsystem code in this stage; this capsule is for producing the Implementation Council plan package and contracts, not executing repo changes.",
+          "Changing the semantics of upstream plan entities (R#/AT#/O#/K#) without an explicit ChangeRequest and required escalation.",
+          "Using chat logs as a source of truth; downstream consumption must use only canonical artifacts.",
+          "Introducing alternate evidence standards (e.g., code pointers) that bypass JSON Pointer into versioned JSON artifacts.",
+          "Allowing non-auditable workspace behavior (silent overwrites, unversioned scratchpads, or reliance on agent ephemeral memory).",
+          "Modifying existing CouncilOS orchestrator code or Planning Council subsystems (beyond defining interfaces/contracts they must satisfy).",
+          "Designing or implementing storage infrastructure/backends (only interface contracts, governance rules, and constraints).",
+          "Defining general-purpose CI/CD pipelines unrelated to CouncilOS multi-agent workflows."
+        ],
+        "constraints": [
+          {
+            "id": "CNS1",
+            "type": "policy",
+            "text": "Separation of powers is non-negotiable: orchestrator (code) is sole authority over routing, budgets, iteration limits, termination, checkpoint/resume, tool permissions, selection logic, and validator enforcement; agents cannot override orchestrator decisions."
+          },
+          {
+            "id": "CNS2",
+            "type": "policy",
+            "text": "LLM roles are stochastic workers that must output JSON-only artifacts matching per-stage schemas; no prose in canonical outputs."
+          },
+          {
+            "id": "CNS3",
+            "type": "tech",
+            "text": "Durable audit spine required: immutable run_manifest, append-only event_log, versioned artifact store; checkpoint at every stage boundary."
+          },
+          {
+            "id": "CNS4",
+            "type": "policy",
+            "text": "Single source of truth: downstream councils/validators consume only canonical artifacts (not chat logs)."
+          },
+          {
+            "id": "CNS5",
+            "type": "policy",
+            "text": "No silent scope expansion: Implementation Council may not change semantics of R#/AT#/O#/K# from input plan; deviations require ChangeRequest artifact + decision record + policy-triggered escalation (HITL or reroute upstream)."
+          },
+          {
+            "id": "CNS6",
+            "type": "tech",
+            "text": "Evidence pointers must use a single standard: RFC 6901 JSON Pointer objects referencing versioned JSON artifacts {artifact_ref, entity_id|null, json_pointer, note}; repo/code/workspace state must be representable as JSON artifacts for citation."
+          },
+          {
+            "id": "CNS7",
+            "type": "tech",
+            "text": "Repair model constraints: JSON artifacts repaired via RFC 6902 JSON Patch arrays only; code changes via diff-only patchset artifacts with deterministic application and revalidation; orchestrator enforces forbidden-path rules and operation caps."
+          },
+          {
+            "id": "CNS8",
+            "type": "tech",
+            "text": "Shared workspace must be tool-accessible, versioned, auditable, checkpointed; must separate canonical vs non-canonical content; must support deterministic orchestrator-built bounded context packs; and must require explicit stage_handoff artifacts at each checkpoint."
+          },
+          {
+            "id": "CNS9",
+            "type": "compliance",
+            "text": "Secrets policy: never store secrets in logs or workspace; require detection, redaction, and blocking guardrails; enforce by orchestrator policy and validators."
+          },
+          {
+            "id": "CNS10",
+            "type": "tech",
+            "text": "Freeze bundle must include, at minimum, the specified canonical artifacts: implementation_run_manifest.json, implementation_event_log.jsonl, work_plan.json, patchsets (diff-embedded JSON), repo_snapshot.json, test_results.json, quality_reports.json, trace_report.json, review_findings.json, release_bundle.json, decision_record.json, plus workspace_index.json, context_packs/, stage_handoffs/."
+          },
+          {
+            "id": "CNS12",
+            "type": "policy",
+            "text": "Writer/reviewer/judge separation and multi-vendor diversity required in council structure; reviewers are findings-only and do not emit writing/patch artifacts."
+          },
+          {
+            "id": "CNS13",
+            "type": "policy",
+            "text": "No silent scope expansion in code changes: avoid “rewrite the repo” loops; large refactors must be decomposed into bounded patchsets with staged validation and deterministic integration."
+          }
+        ],
+        "assumptions": [
+          {
+            "id": "A1",
+            "text": "A CouncilOS orchestrator implementation exists (or will be provided) that can enforce stage schemas, tool permissions, deterministic routing/selection, checkpoints, and validator gates as described.",
+            "impact": "high",
+            "confidence": "medium",
+            "needs_confirmation": true
+          },
+          {
+            "id": "A2",
+            "text": "A versioned artifact store is available that can immutably store run manifests, append-only event logs, and versioned JSON artifacts referenced by artifact_ref, and can support JSON Pointer addressing for evidence.",
+            "impact": "high",
+            "confidence": "medium",
+            "needs_confirmation": true
+          },
+          {
+            "id": "A3",
+            "text": "The implementation environment will allow deterministic application of diff-only patchsets to a checked-out repository state and can produce repo_snapshot.json with base/head commits and changed-files indices.",
+            "impact": "high",
+            "confidence": "medium",
+            "needs_confirmation": true
+          },
+          {
+            "id": "A4",
+            "text": "Validator execution (build/test/lint/typecheck/security/license as applicable) can be invoked via declared entrypoints in repo_context.json and can emit structured results to JSON artifacts.",
+            "impact": "high",
+            "confidence": "medium",
+            "needs_confirmation": true
+          },
+          {
+            "id": "A5",
+            "text": "A multi-vendor model portfolio is available to support separation between writers, reviewers, judges, and patchers, with routing controlled by orchestrator policy.",
+            "impact": "medium",
+            "confidence": "low",
+            "needs_confirmation": true
+          },
+          {
+            "id": "A6",
+            "text": "Workspace backend can support namespacing, read/write access control by stage/role, retention/compaction policies, and append-only handling for non-canonical notes while remaining auditable.",
+            "impact": "high",
+            "confidence": "low",
+            "needs_confirmation": true
+          },
+          {
+            "id": "A7",
+            "text": "Planning Council output (plan_package_final.json) is well-formed, frozen, and contains complete R#/AT#/O#/K# specifications sufficient for downstream traceability and gating.",
+            "impact": "high",
+            "confidence": "medium",
+            "needs_confirmation": true
+          },
+          {
+            "id": "A8",
+            "text": "Tool execution can be sandboxed with granular permission controls per stage (filesystem/repo, command execution, network, package managers, artifact IO) consistent with orchestrator policy enforcement.",
+            "impact": "high",
+            "confidence": "low",
+            "needs_confirmation": true
+          },
+          {
+            "id": "A9",
+            "text": "Test execution results can be deterministically mapped back to AT# acceptance test IDs from planning artifacts (via naming/metadata conventions captured in schemas).",
+            "impact": "high",
+            "confidence": "medium",
+            "needs_confirmation": true
+          },
+          {
+            "id": "A10",
+            "text": "Diff-based code change artifacts can be applied deterministically across merge conflicts and rebase scenarios using orchestrator-owned integration logic and bounded reroute/escalation paths when conflicts exceed limits.",
+            "impact": "high",
+            "confidence": "low",
+            "needs_confirmation": true
+          },
+          {
+            "id": "A11",
+            "text": "Context pack size bounds and deterministic selection rules can be defined that balance completeness with model context window constraints for the chosen model portfolio.",
+            "impact": "medium",
+            "confidence": "low",
+            "needs_confirmation": true
+          },
+          {
+            "id": "A12",
+            "text": "Flaky test/tool nondeterminism can be detected and handled using deterministic retry/quarantine policies with acceptable error rates for the targeted repos.",
+            "impact": "medium",
+            "confidence": "low",
+            "needs_confirmation": true
+          }
+        ],
+        "open_questions": [
+          {
+            "id": "Q1",
+            "text": "What are the target repository ecosystems to support first (languages, build systems, CI runners), and which validations are mandatory vs optional by default?",
+            "impact": "high",
+            "blocking": true
+          },
+          {
+            "id": "Q2",
+            "text": "What concrete workspace backend(s) are permitted (e.g., filesystem path, object store, database), and what are the hard constraints (size limits, latency, retention, encryption, tenancy)?",
+            "impact": "high",
+            "blocking": true
+          },
+          {
+            "id": "Q3",
+            "text": "What is the canonical definition/format of artifact_ref (naming scheme, versioning scheme, addressing) used by evidence pointers and workspace_index entries?",
+            "impact": "high",
+            "blocking": true
+          },
+          {
+            "id": "Q4",
+            "text": "What are the organization’s forbidden paths/protected paths patterns for repositories, and what constitutes a high-risk operation requiring HITL (e.g., destructive commands, deploys, credential changes, network expansion)?",
+            "impact": "high",
+            "blocking": true
+          },
+          {
+            "id": "Q5",
+            "text": "What is the default model routing policy (which vendors/models for writer/reviewer/judge/patch roles), and what parameters must be fixed for determinism/reproducibility (temperature, max tokens, tool-call settings)?",
+            "impact": "medium",
+            "blocking": true
+          },
+          {
+            "id": "Q6",
+            "text": "What is the required ChangeRequest approval authority and escalation policy (pure orchestrator policy vs mandatory HITL for certain classes), and where should reroute upstream land (Planning Council stage identifiers)?",
+            "impact": "medium",
+            "blocking": false
+          },
+          {
+            "id": "Q7",
+            "text": "What specific diff format should be used for code change artifacts in patchsets (e.g., unified diff vs structured file-op diffs), and what normalization rules are required for deterministic application?",
+            "impact": "high",
+            "blocking": true
+          },
+          {
+            "id": "Q8",
+            "text": "How should the orchestrator deterministically select the “smallest passing repair” when multiple candidate patch artifacts are available (ordering, tie-breakers, scoring, op caps)?",
+            "impact": "high",
+            "blocking": true
+          },
+          {
+            "id": "Q9",
+            "text": "How should conflict resolution work when parallel implementation pods produce overlapping/competing patchsets (merge strategy, reroute/rebase stages, escalation thresholds)?",
+            "impact": "high",
+            "blocking": true
+          },
+          {
+            "id": "Q10",
+            "text": "What are the retry budget and backoff strategy requirements for flaky tests and nondeterministic tool failures, and how are retries recorded in the audit spine?",
+            "impact": "high",
+            "blocking": true
+          },
+          {
+            "id": "Q11",
+            "text": "How should dependencies requiring network access and package-manager operations be handled under tool/network policies (offline mirrors, allowlists, lockfile rules, reproducibility constraints)?",
+            "impact": "high",
+            "blocking": true
+          },
+          {
+            "id": "Q12",
+            "text": "What are the specific criteria for when a ChangeRequest must be escalated (HITL and/or reroute upstream) vs handled fully within Implementation Council without changing plan semantics?",
+            "impact": "high",
+            "blocking": true
+          },
+          {
+            "id": "Q13",
+            "text": "How should the system handle incremental implementation when the full work plan cannot be completed within token/time budgets while preserving determinism and traceability (partial freezes vs checkpoints only)?",
+            "impact": "high",
+            "blocking": true
+          },
+          {
+            "id": "Q14",
+            "text": "What is the required schema for repo_context.json protected paths/forbidden paths and how exactly are they enforced during patch application and tool execution?",
+            "impact": "high",
+            "blocking": true
+          },
+          {
+            "id": "Q15",
+            "text": "How should context packs be bounded and selected when workspace state grows beyond context window limits (selection rules, prioritization, summarization artifacts, and validation of bounds)?",
+            "impact": "high",
+            "blocking": true
+          },
+          {
+            "id": "Q16",
+            "text": "What is the maximum workspace size and retention period for non-canonical artifacts before compaction/summarization is required, and what auditability guarantees must compaction preserve?",
+            "impact": "medium",
+            "blocking": false
+          },
+          {
+            "id": "Q17",
+            "text": "What specific security/compliance checks are required in quality_reports.json (SAST/DAST, dependency/license, secrets scans, SBOM), and what tooling/standards must be supported?",
+            "impact": "medium",
+            "blocking": false
+          }
+        ],
+        "success_metrics": [
+          "All required input/output contracts are fully specified as typed/versioned JSON schemas (repo_context.json, workspace_context.json, ChangeRequest schema, and full Implementation Freeze Bundle artifact list), and pass schema validation in orchestrator tests (target: 100% schema-valid artifacts).",
+          "Deterministic workflow definition exists as a staged state machine/graph with explicit checkpoint boundaries and required stage_handoffs; validators confirm a stage_handoff artifact is present for every checkpoint (target: 100% coverage).",
+          "Evidence/traceability standard is singular and enforced: all findings/decisions/trace links reference artifacts via RFC 6901 JSON Pointer objects; validator detects zero non-compliant evidence references (target: 0 violations).",
+          "Repair model is enforceable: all canonical JSON updates are expressible as RFC 6902 JSON Patch; all code changes are diff-only patchsets with deterministic apply order; validator confirms patchsets apply cleanly on base_commit with no forbidden-path writes (target: 100% clean apply; 0 forbidden writes).",
+          "Workspace governance is enforceable: workspace_index.json accounts for all workspace items with types/versions/provenance; context packs are bounded and deterministically assembled; validator confirms bounds and completeness (target: 100% indexed items; 0 out-of-bounds packs).",
+          "Security policy is implemented in design: secrets redaction/blocking rules specified and validated; event log/workspace scans find no secrets persisted (target: 0 detected secrets).",
+          "Freeze gates are complete: specified deterministic validators cover build/test/lint/typecheck (as applicable), integrity, workspace integrity, risk closure, reproducibility, and trace completeness; a freeze decision is allowed only when all gates pass (target: 0 freezes with failing gates in test scenarios).",
+          "Council structure and role separation are explicit and testable (target: required roles present with enforced write/review/judge separation and multi-vendor routing).",
+          "Workflow coverage meets minimum stage expectations (target: intake through freeze includes parallel implementation, deterministic integration, validation loops, review+patch cycles, regression revalidation, and checkpoint handoffs at each boundary).",
+          "Validator suite coverage meets minimum gate expectations (target: build/compile, lint/format/typecheck, tests+AT# trace, integrity, workspace integrity, risk closure, reproducibility/trace completeness all implemented and gating)."
+        ],
+        "stakeholders": [
+          "CouncilOS Orchestrator (code-owned policy/validation authority)",
+          "Planning Council (producer of plan_package_final.json and semantics of R#/AT#/O#/K#)",
+          "Implementation Council roles: leader/implementer/integrator/reviewer/judge/patch/QA-release/security/compliance/scribe",
+          "Platform/DevOps (tooling, build/release environments, artifact storage)",
+          "Security/Compliance (secrets policy, license/dependency/security checks, HITL triggers)",
+          "Artifact schema and validation framework maintainers",
+          "Workspace backend infrastructure team",
+          "Multi-vendor LLM integration team",
+          "End users requiring deterministic software implementation workflows"
+        ],
+        "glossary": [
+          {
+            "term": "Implementation Council",
+            "definition": "A CouncilOS subsystem that consumes a frozen planning output (plan_package_final.json) and produces audited, reproducible repository changes and release artifacts under orchestrator-controlled policies and validators."
+          },
+          {
+            "term": "Implementation Freeze Bundle",
+            "definition": "The canonical, typed/versioned set of JSON artifacts emitted at freeze, including run manifest, event log, work plan, patchsets, repo snapshot, test/quality/trace/review/release artifacts, decision record, and required workspace artifacts (workspace_index, context_packs, stage_handoffs)."
+          },
+          {
+            "term": "Shared Workspace",
+            "definition": "A tool-accessible, versioned and auditable storage area treated as an extension of the artifact system, containing canonical JSON artifacts and explicitly non-canonical notes/summaries, governed by permissions, retention, and checkpoint/resume handoffs."
+          },
+          {
+            "term": "Evidence Pointer",
+            "definition": "An RFC 6901 JSON Pointer object {artifact_ref, entity_id|null, json_pointer, note} referencing a versioned JSON artifact location; used as the sole standard for traceability across decisions, findings, and state representations."
+          },
+          {
+            "term": "Stage Handoff",
+            "definition": "A required JSON artifact emitted at each checkpoint boundary capturing resumable state: objectives, completed work, pending blockers, next actions, and pointers into canonical artifacts (work plan, patchsets, validation outputs)."
+          },
+          {
+            "term": "ChangeRequest",
+            "definition": "A canonical artifact proposed when plan semantics would need to change; requires explicit decisioning and policy-triggered escalation (HITL and/or reroute upstream) before any semantic deviation is allowed."
+          },
+          {
+            "term": "Orchestrator",
+            "definition": "Deterministic code component with sole authority over routing, budgets, iteration limits, termination, checkpoint/resume, tool permissions, selection logic, and validator enforcement."
+          },
+          {
+            "term": "Context Pack",
+            "definition": "A bounded, deterministically-compiled set of workspace artifacts provided to a role at a stage, selected by explicit rules and cited via evidence pointers."
+          },
+          {
+            "term": "Patchset",
+            "definition": "A JSON artifact embedding code diffs with deterministic apply order for repo modifications; used as the sole mechanism for code repair/changes in the workflow."
+          },
+          {
+            "term": "Validator",
+            "definition": "A code-owned deterministic gate that checks artifact integrity/completeness and quality criteria to allow stage transitions or freeze."
+          }
+        ]
+      },
+      "executive_summary": "Candidate B2B selects architecture option O2 (task-parallel fan-out/fan-in with deterministic integration) and implements it via a four-phase hybrid milestone strategy. Phase 1 delivers the foundational big-bang: Global Orchestrator, Intake & DAG Work Planner, Workspace Manager with namespaced partitions, and a single-lane execution path that validates intake, workspace governance, and the audit spine—effectively proving the O1-equivalent sequential path first. Phase 2 adds the Task Lane Orchestrator and per-lane Writer/Validator/Reviewer/Patcher pods running two parallel lanes on a test repository. Phase 3 introduces the Integration Merge Engine, Integration Validator/Reviewer/Patcher, and the deterministic merge-ordering algorithm that resolves alignment warning AL006. Phase 4 completes the system with the Judge Pod, Freeze Assembler, and full closure gates. This incremental approach de-risks parallelism by proving the single-lane path before adding concurrency, directly addresses the elevated K12 (merge conflicts) and K8 (workspace integrity) risks through phased mitigation, and retains high HITL strictness throughout due to the complexity of parallel execution and unresolved open questions Q7–Q9. The candidate is recommended when wall-clock throughput is a priority and the target repository has low inter-module coupling.",
+      "requirements": [
+        {
+          "id": "R1",
+          "priority": "MUST",
+          "text": "The Implementation Council subsystem SHALL accept exactly one frozen plan_package_final.json (plus its associated structured handoff bundle) as its sole canonical planning input, and SHALL reject chat logs or any non-canonical/unapproved upstream artifacts as authoritative sources of plan semantics.",
+          "rationale": "Enforces single source of truth and prevents downstream semantic drift driven by non-canonical inputs."
+        },
+        {
+          "id": "R2",
+          "priority": "MUST",
+          "text": "The Implementation Council subsystem SHALL define and require a typed, versioned repo_context.json schema; orchestrator validators SHALL fail the run if repo_context.json is missing or schema-invalid, and repo_context.json SHALL be required before any code-generation stage begins and SHALL declare at minimum: repository root, language/build-system entrypoints, validator commands/entrypoints, protected/forbidden path patterns, and branch/commit metadata.",
+          "rationale": "Standardizes repository execution, validates prerequisites deterministically, and enables enforcement of path protections and validator invocation."
+        },
+        {
+          "id": "R3",
+          "priority": "MUST",
+          "text": "The Implementation Council subsystem SHALL define and require a typed, versioned workspace_context.json schema; orchestrator validators SHALL fail the run if workspace_context.json is missing or schema-invalid, and workspace_context.json SHALL be required before any workspace-writing stage begins and SHALL declare at minimum: workspace root, namespace/layout rules, canonical vs non-canonical partition rules, retention/compaction policies, and access-control declarations.",
+          "rationale": "Establishes enforceable workspace governance prerequisites for long-horizon execution, checkpointing, and deterministic context delivery."
+        },
+        {
+          "id": "R4",
+          "priority": "MUST",
+          "text": "The Implementation Council workflow SHALL be defined as a deterministic staged state machine with at minimum the stages: Intake → Generate → Validate → Review → Judge → Freeze, and SHALL include an explicit checkpoint boundary at every stage transition.",
+          "rationale": "Defines the required deterministic end-to-end staged workflow and ensures resumability and gating structure at each transition."
+        },
+        {
+          "id": "R5",
+          "priority": "MUST",
+          "text": "At every checkpoint boundary (i.e., each stage transition), the system SHALL emit a stage_handoff JSON artifact conforming to a typed/versioned schema, and orchestrator validators SHALL fail the run if any required stage_handoff is absent.",
+          "rationale": "Enforces pause/resume via explicit, machine-verifiable handoffs at every checkpoint boundary."
+        },
+        {
+          "id": "R6",
+          "priority": "MUST",
+          "text": "Each stage_handoff artifact SHALL capture resumable state sufficient for cold-start resume, including: stage objectives, completed work references, pending blockers, next actions, and evidence pointers into canonical artifacts (including work_plan, patchsets, and validation outputs).",
+          "rationale": "Ensures stage handoffs are operationally sufficient for deterministic resume without relying on transient agent memory or chat."
+        },
+        {
+          "id": "R7",
+          "priority": "MUST",
+          "text": "At Freeze, the system SHALL produce an Implementation Freeze Bundle that includes, at minimum, the following typed/versioned artifacts and directories: implementation_run_manifest.json, implementation_event_log.jsonl, work_plan.json, patchsets (diff-embedded JSON), repo_snapshot.json, test_results.json, quality_reports.json, trace_report.json, review_findings.json, release_bundle.json, decision_record.json, workspace_index.json, context_packs/, and stage_handoffs/.",
+          "rationale": "Defines the minimum canonical freeze deliverables required for audited downstream consumption and reproducible implementation."
+        },
+        {
+          "id": "R8",
+          "priority": "MUST",
+          "text": "The audit spine SHALL include an implementation_run_manifest that is immutable once created and an implementation_event_log that is append-only; the artifact store SHALL version every artifact, and the orchestrator SHALL checkpoint canonical artifacts at every stage boundary.",
+          "rationale": "Provides durable, immutable run-level accountability and replayable state transitions with versioned artifacts and mandatory checkpoints."
+        },
+        {
+          "id": "R9",
+          "priority": "MUST",
+          "text": "All LLM agent outputs in canonical stages SHALL be JSON-only artifacts conforming to per-stage schemas; the orchestrator SHALL reject any artifact containing prose/markdown/unstructured text or failing schema validation.",
+          "rationale": "Ensures deterministic machine-consumable artifacts suitable for validator enforcement and downstream councils."
+        },
+        {
+          "id": "R10",
+          "priority": "MUST",
+          "text": "All evidence pointers, traceability links, findings references, and decision citations in canonical artifacts SHALL use a single standard: RFC 6901 JSON Pointer objects with the structure {artifact_ref, entity_id|null, json_pointer, note} referencing versioned JSON artifacts; the orchestrator SHALL fail the run if any non-compliant or alternative evidence format is present.",
+          "rationale": "Enforces a single, validator-checkable traceability mechanism across the system."
+        },
+        {
+          "id": "R11",
+          "priority": "MUST",
+          "text": "Repository, code, and workspace state that must be cited for traceability SHALL be represented as versioned JSON artifacts addressable via RFC 6901 JSON Pointers, and the system SHALL forbid evidence standards that bypass JSON-artifact citation.",
+          "rationale": "Makes traceability uniformly machine-verifiable by ensuring citeable state is always reachable via the evidence pointer standard."
+        },
+        {
+          "id": "R12",
+          "priority": "MUST",
+          "text": "Repairs to canonical JSON artifacts SHALL be expressed exclusively as RFC 6902 JSON Patch arrays, and orchestrator validators SHALL reject any canonical artifact modification not expressed as JSON Patch.",
+          "rationale": "Constrains artifact mutation to a deterministic, auditable, and validator-checkable repair mechanism."
+        },
+        {
+          "id": "R13",
+          "priority": "MUST",
+          "text": "All code changes produced by the Implementation Council SHALL be emitted exclusively as diff-only patchset JSON artifacts with a deterministic apply order; the orchestrator SHALL enforce bounded apply/validate loops and SHALL fail the run if patchsets include non-diff code mutation mechanisms.",
+          "rationale": "Prevents non-auditable edits and supports reproducible application and validation cycles controlled by orchestrator policy."
+        },
+        {
+          "id": "R14",
+          "priority": "MUST",
+          "text": "During patchset application, the orchestrator SHALL enforce forbidden/protected-path rules and operation caps: no patchset may write to paths declared forbidden/protected in repo_context.json, and total patch operations per repair cycle SHALL be capped by orchestrator policy.",
+          "rationale": "Ensures policy-enforced safety boundaries and bounded change application under deterministic orchestrator control."
+        },
+        {
+          "id": "R15",
+          "priority": "MUST",
+          "text": "When multiple candidate repair patches pass validation, the orchestrator SHALL select the smallest passing repair using deterministic rules, with tie-breakers in order: (1) fewest operations, (2) fewest bytes changed, (3) first-generated tiebreaker.",
+          "rationale": "Defines deterministic selection logic to prevent non-reproducible or subjective choice among multiple passing repairs."
+        },
+        {
+          "id": "R16",
+          "priority": "MUST",
+          "text": "The Implementation Council SHALL NOT modify the semantics of upstream R#/AT#/O#/K# entities from the frozen input plan; any required semantic deviation SHALL be expressed as a ChangeRequest artifact and SHALL require a decision record and policy-triggered escalation (HITL and/or reroute upstream) before the deviation is applied.",
+          "rationale": "Prevents silent scope expansion and preserves upstream governance by requiring explicit change control for semantic deviations."
+        },
+        {
+          "id": "R17",
+          "priority": "MUST",
+          "text": "The shared workspace SHALL be tool-accessible, versioned, auditable, and checkpointed; it SHALL enforce a strict canonical vs non-canonical partition where canonical artifacts are immutable after freeze and non-canonical notes are append-only with provenance metadata; and the orchestrator SHALL build bounded context packs deterministically for each stage/role invocation using explicit selection rules, with context pack contents cited via evidence pointers.",
+          "rationale": "Enables governed long-horizon execution with auditable workspace state, deterministic context delivery, and clear canonical/non-canonical behavior."
+        },
+        {
+          "id": "R18",
+          "priority": "MUST",
+          "text": "workspace_index.json SHALL enumerate all workspace items with type, version, and provenance, and orchestrator validators SHALL fail the run if any workspace item is not indexed or if any context_pack exceeds configured bounds.",
+          "rationale": "Provides complete, enforceable workspace accounting and bounded context-pack delivery for deterministic consumption."
+        },
+        {
+          "id": "R19",
+          "priority": "MUST",
+          "text": "The orchestrator SHALL define a tool permission matrix per stage specifying allowed/denied capabilities (including filesystem read/write scopes, command execution, network access, package managers, and artifact I/O) and SHALL enforce it deterministically; tool invocations outside declared permissions SHALL be blocked and recorded in the audit log.",
+          "rationale": "Enables deterministic enforcement of execution constraints and produces auditable records of denied/violating tool actions."
+        },
+        {
+          "id": "R20",
+          "priority": "MUST",
+          "text": "The system SHALL implement and enforce a secrets policy such that secrets are never stored in event logs, workspace artifacts, or any canonical/non-canonical artifacts; the orchestrator SHALL enforce detection, redaction, and blocking guardrails validated before any artifact is persisted, and validators SHALL fail any run where secrets are detected in canonical artifacts, event logs, or workspace outputs.",
+          "rationale": "Meets compliance constraints by preventing persistence of sensitive data and making enforcement validator-checkable."
+        },
+        {
+          "id": "R21",
+          "priority": "MUST",
+          "text": "Freeze SHALL be permitted only when all deterministic, code-owned closure gates pass, including: build/test/lint/typecheck (as applicable per repo_context), artifact integrity, workspace integrity, risk closure, reproducibility, and trace completeness validators.",
+          "rationale": "Prevents freezes with unmet quality/integrity/traceability conditions and makes release decisions validator-gated."
+        },
+        {
+          "id": "R22",
+          "priority": "MUST",
+          "text": "The council structure SHALL enforce writer/reviewer/judge separation and multi-vendor diversity: writers produce code/artifact outputs, reviewers produce findings-only artifacts (no writing or patches), and judges produce accept/reject decisions; no single role may perform more than one of these functions within the same stage; orchestrator routing SHALL enforce default multi-vendor separation across writer/reviewer/judge roles.",
+          "rationale": "Prevents conflicts of interest and preserves independent review and judgment via enforceable role separation and routing diversity."
+        },
+        {
+          "id": "R23",
+          "priority": "MUST",
+          "text": "Flaky and nondeterministic failures SHALL be handled using deterministic retry rules with bounded budgets (including max retries per validator per stage); failures exceeding retry budgets SHALL be quarantined and escalated via a deterministic path (patch → reroute → HITL → ChangeRequest), and all retries and outcomes SHALL be recorded in the implementation_event_log.",
+          "rationale": "Establishes deterministic handling for nondeterminism while preserving auditability and bounded iteration behavior."
+        },
+        {
+          "id": "R24",
+          "priority": "SHOULD",
+          "text": "Large code refactors SHOULD be decomposed into bounded patchsets with staged validation and deterministic integration order; the orchestrator SHOULD reject any single patchset exceeding a configurable operation/size cap and require decomposition.",
+          "rationale": "Reduces risk of “rewrite the repo” loops and improves deterministic validation/integration by bounding change units."
+        },
+        {
+          "id": "R25",
+          "priority": "SHOULD",
+          "text": "test_results.json SHOULD include a deterministic mapping from each test outcome back to the corresponding AT# acceptance test ID from the planning artifacts to enable automated trace completeness validation.",
+          "rationale": "Supports validator-checkable end-to-end traceability from plan acceptance tests to implementation validation results."
+        }
+      ],
+      "acceptance_tests": [
+        {
+          "id": "AT1",
+          "maps_to_requirements": [
+            "R1"
+          ],
+          "type": "system",
+          "procedure": "Attempt to initiate an Implementation Council run with inputs: (a) a valid plan_package_final.json plus its structured handoff bundle; (b) a chat log reference as the only planning input; (c) an unapproved non-canonical artifact as planning input. Record orchestrator accept/reject results.",
+          "pass_criteria": "Run (a) is accepted; runs (b) and (c) are rejected with structured errors indicating non-canonical planning inputs are not authoritative."
+        },
+        {
+          "id": "AT2",
+          "maps_to_requirements": [
+            "R2"
+          ],
+          "type": "system",
+          "procedure": "Start a run without repo_context.json; then start a run with repo_context.json that violates schema; then start a run with schema-valid repo_context.json containing required fields (repo root, build entrypoints, validator entrypoints, protected/forbidden paths, branch/commit metadata).",
+          "pass_criteria": "Runs missing or schema-invalid repo_context.json are rejected before any code-generation stage; run with schema-valid repo_context.json is accepted and records validation success."
+        },
+        {
+          "id": "AT3",
+          "maps_to_requirements": [
+            "R3"
+          ],
+          "type": "system",
+          "procedure": "Start a run without workspace_context.json; then start a run with schema-invalid workspace_context.json; then start a run with schema-valid workspace_context.json containing required fields (workspace root, namespace/layout rules, canonical/non-canonical partition rules, retention/compaction, access-control).",
+          "pass_criteria": "Runs missing or schema-invalid workspace_context.json are rejected before any workspace-writing stage; run with schema-valid workspace_context.json is accepted and records validation success."
+        },
+        {
+          "id": "AT4",
+          "maps_to_requirements": [
+            "R4"
+          ],
+          "type": "system",
+          "procedure": "Execute a run through stages and extract the recorded stage sequence and checkpoint boundaries from implementation_event_log.jsonl and stage_handoff artifacts.",
+          "pass_criteria": "Stage sequence includes at minimum Intake → Generate → Validate → Review → Judge → Freeze and a checkpoint boundary is recorded at every stage transition."
+        },
+        {
+          "id": "AT5",
+          "maps_to_requirements": [
+            "R5"
+          ],
+          "type": "system",
+          "procedure": "Complete a run with all stage transitions and list stage_handoff artifacts present in stage_handoffs/ and workspace_index.json.",
+          "pass_criteria": "A stage_handoff artifact exists for every stage transition; validator fails the run if any required stage_handoff is missing."
+        },
+        {
+          "id": "AT6",
+          "maps_to_requirements": [
+            "R6"
+          ],
+          "type": "system",
+          "procedure": "Inspect each stage_handoff artifact for required fields: objectives, completed work references, pending blockers, next actions, and evidence pointers into work_plan, patchsets, and validation outputs.",
+          "pass_criteria": "Every stage_handoff contains all required fields and valid evidence pointers to the referenced canonical artifacts."
+        },
+        {
+          "id": "AT7",
+          "maps_to_requirements": [
+            "R7"
+          ],
+          "type": "system",
+          "procedure": "At Freeze, enumerate artifacts in the Implementation Freeze Bundle and verify presence of all required items and directories.",
+          "pass_criteria": "Freeze bundle contains all minimum artifacts: implementation_run_manifest.json, implementation_event_log.jsonl, work_plan.json, patchsets (diff-embedded JSON), repo_snapshot.json, test_results.json, quality_reports.json, trace_report.json, review_findings.json, release_bundle.json, decision_record.json, workspace_index.json, context_packs/, stage_handoffs/."
+        },
+        {
+          "id": "AT8",
+          "maps_to_requirements": [
+            "R8"
+          ],
+          "type": "system",
+          "procedure": "Attempt to modify implementation_run_manifest.json after creation and attempt to delete/overwrite past entries in implementation_event_log.jsonl; check artifact store versions and event_log ordering.",
+          "pass_criteria": "Run manifest is immutable (modification rejected or versioned as new artifact without altering original); event log is append-only with monotonic ordering; artifacts are versioned and checkpoints recorded at each stage boundary."
+        },
+        {
+          "id": "AT9",
+          "maps_to_requirements": [
+            "R9"
+          ],
+          "type": "system",
+          "procedure": "Submit a canonical stage artifact containing prose/markdown; submit another artifact that violates schema; then submit a valid JSON-only artifact conforming to schema.",
+          "pass_criteria": "Artifacts with prose/markdown or schema violations are rejected; JSON-only, schema-valid artifact is accepted."
+        },
+        {
+          "id": "AT10",
+          "maps_to_requirements": [
+            "R10"
+          ],
+          "type": "system",
+          "procedure": "Scan all evidence pointers in canonical artifacts (trace_report, review_findings, decision_record, quality_reports, stage_handoffs) for structure and JSON Pointer format.",
+          "pass_criteria": "All evidence pointers use {artifact_ref, entity_id|null, json_pointer, note} with json_pointer starting with '/' and resolving to a valid path; any non-compliant evidence format causes validation failure."
+        },
+        {
+          "id": "AT11",
+          "maps_to_requirements": [
+            "R11"
+          ],
+          "type": "system",
+          "procedure": "Attempt to cite repository/code/workspace state using a non-JSON artifact reference (e.g., file path or code pointer) in a canonical artifact; then cite the same state using a versioned JSON artifact with RFC 6901 pointer.",
+          "pass_criteria": "Non-JSON artifact evidence is rejected; JSON artifact citation via RFC 6901 pointer is accepted."
+        },
+        {
+          "id": "AT12",
+          "maps_to_requirements": [
+            "R12"
+          ],
+          "type": "system",
+          "procedure": "Attempt to modify a canonical JSON artifact via direct replacement (non-patch); then perform the same modification using an RFC 6902 JSON Patch array.",
+          "pass_criteria": "Direct modification is rejected; JSON Patch modification is accepted and recorded."
+        },
+        {
+          "id": "AT13",
+          "maps_to_requirements": [
+            "R13"
+          ],
+          "type": "system",
+          "procedure": "Submit code changes as (a) a diff-only patchset JSON artifact with deterministic apply order; (b) a non-diff mechanism (e.g., direct file writes or prose instructions).",
+          "pass_criteria": "Diff-only patchset artifact is accepted and applied under bounded apply/validate loops; non-diff mechanism is rejected."
+        },
+        {
+          "id": "AT14",
+          "maps_to_requirements": [
+            "R14"
+          ],
+          "type": "system",
+          "procedure": "Create a patchset that attempts to modify a forbidden/protected path from repo_context.json and exceeds operation caps; apply patchset under orchestrator enforcement.",
+          "pass_criteria": "Patchset writes to forbidden/protected paths are blocked; operation caps are enforced and exceedance causes failure; blocks are recorded in the event log."
+        },
+        {
+          "id": "AT15",
+          "maps_to_requirements": [
+            "R15"
+          ],
+          "type": "system",
+          "procedure": "Provide multiple candidate repair patchsets that all pass validation and differ in operation count and bytes changed; record orchestrator selection.",
+          "pass_criteria": "Orchestrator selects the smallest passing repair using tie-breakers: fewest operations, then fewest bytes changed, then first-generated."
+        },
+        {
+          "id": "AT16",
+          "maps_to_requirements": [
+            "R16"
+          ],
+          "type": "system",
+          "procedure": "Propose a semantic change to an upstream R#/AT#/O#/K# entity without ChangeRequest; then propose the same change with a ChangeRequest and decision record plus required escalation.",
+          "pass_criteria": "Unapproved semantic change is rejected; ChangeRequest with decision record and escalation approval is required before applying the deviation."
+        },
+        {
+          "id": "AT17",
+          "maps_to_requirements": [
+            "R17"
+          ],
+          "type": "system",
+          "procedure": "Inspect workspace for canonical vs non-canonical partitions and context pack assembly rules; verify canonical immutability after freeze and append-only behavior for non-canonical notes; verify context packs are deterministically built with evidence pointers.",
+          "pass_criteria": "Workspace enforces canonical vs non-canonical partition rules; canonical artifacts are immutable after freeze; non-canonical notes are append-only with provenance; context packs are deterministically built and cite contents via evidence pointers."
+        },
+        {
+          "id": "AT18",
+          "maps_to_requirements": [
+            "R18"
+          ],
+          "type": "system",
+          "procedure": "Enumerate all workspace items and compare against workspace_index.json entries; verify context pack sizes against configured bounds.",
+          "pass_criteria": "All workspace items are indexed with type, version, provenance; any unindexed item or out-of-bounds context pack causes validation failure."
+        },
+        {
+          "id": "AT19",
+          "maps_to_requirements": [
+            "R19"
+          ],
+          "type": "system",
+          "procedure": "Attempt tool invocations outside the declared permission matrix (filesystem write outside scope, network access, disallowed command execution) and within allowed permissions; inspect implementation_event_log.jsonl for records.",
+          "pass_criteria": "Unauthorized tool invocations are blocked and recorded; authorized invocations succeed; enforcement is deterministic and logged."
+        },
+        {
+          "id": "AT20",
+          "maps_to_requirements": [
+            "R20"
+          ],
+          "type": "system",
+          "procedure": "Inject known secret patterns into a candidate artifact and event log content, then run secrets detection/redaction guardrails prior to persistence.",
+          "pass_criteria": "Secrets are detected and blocked/redacted; validators fail the run if any secret is persisted in event logs, workspace artifacts, or canonical artifacts."
+        },
+        {
+          "id": "AT21",
+          "maps_to_requirements": [
+            "R21"
+          ],
+          "type": "system",
+          "procedure": "Attempt to Freeze when one or more closure gates (build/test/lint/typecheck, artifact integrity, workspace integrity, risk closure, reproducibility, trace completeness) are failing; then attempt Freeze when all gates pass.",
+          "pass_criteria": "Freeze is denied when any gate fails; Freeze is permitted only when all required deterministic gates pass."
+        },
+        {
+          "id": "AT22",
+          "maps_to_requirements": [
+            "R22"
+          ],
+          "type": "system",
+          "procedure": "Run a workflow with distinct writer, reviewer, and judge roles using multi-vendor routing; inspect produced artifacts to ensure reviewers emit findings-only and do not produce patches; verify orchestrator routing records.",
+          "pass_criteria": "Writer/reviewer/judge roles are distinct, reviewers emit findings-only artifacts, judges emit decisions; multi-vendor routing is recorded and no role performs more than one function within the same stage."
+        },
+        {
+          "id": "AT23",
+          "maps_to_requirements": [
+            "R23"
+          ],
+          "type": "system",
+          "procedure": "Induce flaky validator failures that require retries; observe retry counts and outcomes in implementation_event_log.jsonl; exceed retry budget and check escalation path.",
+          "pass_criteria": "Retries follow deterministic policy with bounded budgets and are recorded; when budget is exceeded, failures are quarantined and escalated via the defined deterministic path with records in event log and decision artifacts."
+        }
+      ],
+      "architecture": {
+        "options": [
+          {
+            "id": "O1",
+            "summary": "Sequential staged pipeline with explicit council role pods (Writer/Reviewer/Patcher/Judge) routed by an orchestrator-owned linear state machine. State lives in a governed workspace/artifact store; deterministic context packs are compiled per stage boundary; repair loops are bounded and enforced by validators and orchestrator policy.",
+            "components": [
+              {
+                "id": "C1",
+                "name": "Orchestrator Core (Linear State Machine)",
+                "responsibilities": [
+                  "Enforce strict stage ordering and closure gates (Intake → Plan → Generate → Validate → Review → Patch → Judge → Freeze).",
+                  "Own routing, budgets, retry/iteration caps, and termination/checkpoint logic (CNS1).",
+                  "Compile deterministic context packs for each stage from workspace_index and declared selection rules (CNS8).",
+                  "Enforce tool permission matrix per stage/role and forbidden-path / operation-cap rules (CNS7).",
+                  "Trigger escalation via ChangeRequest and/or HITL when policy thresholds are exceeded (CNS5)."
+                ]
+              },
+              {
+                "id": "C2",
+                "name": "Workspace Gateway / Manager",
+                "responsibilities": [
+                  "Provide the sole API for workspace and artifact IO, abstracting underlying storage.",
+                  "Maintain workspace_index.json with types/versions/provenance; separate canonical vs non-canonical content (CNS8).",
+                  "Support checkpoint/restore and emit/verify stage_handoff artifacts at boundaries (CNS3).",
+                  "Validate artifact writes against expected schemas; block/redact secrets per policy (CNS9)."
+                ]
+              },
+              {
+                "id": "C3",
+                "name": "Intake Gate",
+                "responsibilities": [
+                  "Validate plan_package_final.json, repo_context.json, workspace_context.json against schemas.",
+                  "Initialize run_manifest and append-only event_log (CNS3).",
+                  "Emit structured rejection errors for malformed/incomplete inputs.",
+                  "Emit stage_handoff for Intake→Plan boundary."
+                ]
+              },
+              {
+                "id": "C4",
+                "name": "Work Plan Compiler",
+                "responsibilities": [
+                  "Decompose plan entities (R#/AT#/O#/K#) into ordered implementation tasks.",
+                  "Produce work_plan.json with dependency graph, bounded patchset slots, and AT# trace mapping.",
+                  "Enforce no semantic deviation from frozen plan entities (CNS5)."
+                ]
+              },
+              {
+                "id": "C5",
+                "name": "Writer Pod",
+                "responsibilities": [
+                  "Consume orchestrator-compiled context pack for a task/task-batch.",
+                  "Produce diff-only patchset JSON artifacts with deterministic apply order (CNS7).",
+                  "Obey tool permissions and forbidden-path rules; output JSON-only artifacts (CNS2)."
+                ]
+              },
+              {
+                "id": "C6",
+                "name": "Validator Engine",
+                "responsibilities": [
+                  "Run deterministic validators via repo_context.json entrypoints (build/test/lint/typecheck/etc.).",
+                  "Emit structured test_results.json and quality_reports.json with AT# trace mapping.",
+                  "Detect secrets in artifacts/workspace; enforce policy blocking (CNS9).",
+                  "Produce pass/fail gate results consumed by orchestrator."
+                ]
+              },
+              {
+                "id": "C7",
+                "name": "Reviewer Pod (Findings-Only)",
+                "responsibilities": [
+                  "Review patchsets and validation outputs read-only.",
+                  "Produce review_findings.json with RFC 6901 evidence pointers into versioned artifacts (CNS6).",
+                  "Flag scope expansion, risks, and quality issues; never emit code/patch artifacts (CNS12)."
+                ]
+              },
+              {
+                "id": "C8",
+                "name": "Patcher Pod",
+                "responsibilities": [
+                  "Produce RFC 6902 JSON Patch arrays for JSON artifact repairs (CNS7).",
+                  "Produce replacement diff-only patchsets for code repairs (CNS7).",
+                  "Operate within orchestrator-enforced iteration/op caps; provide candidates for deterministic smallest-passing selection."
+                ]
+              },
+              {
+                "id": "C9",
+                "name": "Judge Pod",
+                "responsibilities": [
+                  "Independently evaluate patchsets, validator outputs, and review findings.",
+                  "Produce trace_report.json verifying evidence completeness (CNS6).",
+                  "Emit freeze/no-freeze recommendation and risk-closure assessment against K# entries."
+                ]
+              },
+              {
+                "id": "C10",
+                "name": "Freeze Assembler",
+                "responsibilities": [
+                  "Collect and validate the required Implementation Freeze Bundle artifacts (CNS10).",
+                  "Run final integrity/reproducibility/workspace-integrity checks before freeze (CNS3/CNS8).",
+                  "Emit decision_record.json and release_bundle.json and a bundle manifest."
+                ]
+              }
+            ],
+            "interfaces": [
+              {
+                "id": "IF1",
+                "from": "C1",
+                "to": "C3",
+                "contract": "Provide plan_package_final.json + repo_context.json + workspace_context.json; receive intake_result.json or structured schema/policy rejection plus stage_handoff."
+              },
+              {
+                "id": "IF2",
+                "from": "C3",
+                "to": "C4",
+                "contract": "Provide validated inputs + intake stage_handoff; receive work_plan.json with task graph and AT# trace mapping."
+              },
+              {
+                "id": "IF3",
+                "from": "C1",
+                "to": "C2",
+                "contract": "Checkpoint/restore and artifact IO operations; return updated workspace_index.json and versioned artifact_refs; append mutations to event_log."
+              },
+              {
+                "id": "IF4",
+                "from": "C1",
+                "to": "C5",
+                "contract": "Dispatch task slice + context_pack_ref; receive patchset artifact_refs (diff-only JSON) for deterministic apply."
+              },
+              {
+                "id": "IF5",
+                "from": "C1",
+                "to": "C6",
+                "contract": "Invoke validators on applied patchsets using repo_context.json entrypoints; receive test_results.json + quality_reports.json + gate status."
+              },
+              {
+                "id": "IF6",
+                "from": "C1",
+                "to": "C7",
+                "contract": "Provide read-only context pack (patchsets + validation + work_plan slice); receive review_findings.json with RFC 6901 evidence pointers."
+              },
+              {
+                "id": "IF7",
+                "from": "C1",
+                "to": "C8",
+                "contract": "Provide failures/findings + constraints/op caps; receive candidate RFC 6902 JSON Patches and/or replacement patchsets for bounded repair."
+              },
+              {
+                "id": "IF8",
+                "from": "C1",
+                "to": "C9",
+                "contract": "Provide full run context pack (work_plan, patchsets, validation, findings, workspace index); receive trace_report.json and freeze recommendation."
+              },
+              {
+                "id": "IF9",
+                "from": "C9",
+                "to": "C10",
+                "contract": "On freeze-eligible recommendation, assemble CNS10 bundle and run final validators; return freeze bundle manifest or structured missing/failed-gate report."
+              }
+            ],
+            "tradeoffs": {
+              "pros": [
+                "Simplest reproducible execution model: one active stage and a linear audit trail.",
+                "Clear separation of powers between orchestrator policy enforcement and role pods (writer/reviewer/judge).",
+                "Easier checkpoint/resume because stage boundaries are unambiguous and there is no parallel in-flight work.",
+                "Modular decomposition supports independent testing of stage components while keeping overall flow sequential."
+              ],
+              "cons": [
+                "Slowest wall-clock time for repos with many independent tasks due to lack of parallelism.",
+                "Single failing task can block pipeline progress even when other tasks are independent.",
+                "Context packs may grow across stages unless bounded/filtered aggressively."
+              ]
+            },
+            "risks": [
+              "Long-horizon implementations may exceed token/time budgets due to serialized execution.",
+              "Linear accumulation of artifacts can pressure context-window bounds if context-pack selection is not strict.",
+              "Flaky validator behavior can exhaust retry budgets and stall the only active lane."
+            ]
+          },
+          {
+            "id": "O2",
+            "summary": "Task-parallel fan-out/fan-in architecture with deterministic per-lane execution and a governed integration sub-flow. Independent lanes run Generate→Validate→Review→Patch in parallel partitions; an Integration Merge/Validate/Review/Patch sequence produces a single integrated state for Judge→Freeze. Optionally modeled as a dedicated Integration Sub-Council for stronger separation and specialized integration review.",
+            "components": [
+              {
+                "id": "C11",
+                "name": "Global Orchestrator / Council Coordinator (DAG + Budgets)",
+                "responsibilities": [
+                  "Own top-level DAG workflow: Intake → Parallel Lanes → Integration → Judge → Freeze.",
+                  "Allocate and enforce global/per-lane budgets, retry/iteration caps, and escalation policy (CNS1/CNS5).",
+                  "Compile deterministic context packs for lanes and integration stages from partitioned workspace_index (CNS8).",
+                  "Enforce multi-vendor role separation across writers/reviewers/judges (CNS12)."
+                ]
+              },
+              {
+                "id": "C12",
+                "name": "Intake & DAG Work Planner",
+                "responsibilities": [
+                  "Validate plan_package_final.json, repo_context.json, workspace_context.json and initialize run_manifest/event_log/workspace_index.",
+                  "Produce work_plan.json with dependency DAG, parallelism annotations, and lane partitioning hints.",
+                  "Emit stage_handoff for Intake→Parallel boundary."
+                ]
+              },
+              {
+                "id": "C13",
+                "name": "Task Lane Orchestrator",
+                "responsibilities": [
+                  "Spawn and manage per-lane state machines (Generate→Validate→Review→Patch).",
+                  "Emit per-lane stage_handoffs and completion signals.",
+                  "Enforce lane-scoped tool permissions and file-path scoping for patchsets."
+                ]
+              },
+              {
+                "id": "C14",
+                "name": "Writer Pool (Multi-Lane)",
+                "responsibilities": [
+                  "Consume lane-scoped context pack and produce diff-only patchset artifacts scoped to lane file sets.",
+                  "Output JSON-only artifacts per schema; obey forbidden-path and operation caps."
+                ]
+              },
+              {
+                "id": "C15",
+                "name": "Per-Lane Validator",
+                "responsibilities": [
+                  "Run scoped validators per lane; emit per-lane test_results.json and quality_reports.json with AT# mapping.",
+                  "Detect secrets in lane artifacts/workspace partitions."
+                ]
+              },
+              {
+                "id": "C16",
+                "name": "Per-Lane Reviewer (Findings-Only)",
+                "responsibilities": [
+                  "Review lane patchsets and lane validation results read-only.",
+                  "Produce per-lane review_findings.json with RFC 6901 evidence pointers; flag cross-lane dependency issues.",
+                  "Enforce findings-only constraint (CNS12)."
+                ]
+              },
+              {
+                "id": "C17",
+                "name": "Per-Lane Patcher",
+                "responsibilities": [
+                  "Produce lane-scoped repairs: RFC 6902 patches for JSON artifacts and replacement diff-only patchsets for code.",
+                  "Operate within lane iteration/op caps; provide candidates for deterministic selection."
+                ]
+              },
+              {
+                "id": "C18",
+                "name": "Integration Merge Engine",
+                "responsibilities": [
+                  "Collect completed lane patchsets and apply in deterministic order to base repo state.",
+                  "Detect merge conflicts/collisions and emit structured conflict reports for reroute/escalation.",
+                  "Produce merged repo_snapshot.json and integrated patchset ordering record."
+                ]
+              },
+              {
+                "id": "C19",
+                "name": "Integration Validator",
+                "responsibilities": [
+                  "Run full-repo validators on merged state and emit integrated test_results.json and quality_reports.json.",
+                  "Verify regressions and ensure cross-lane interactions are validated."
+                ]
+              },
+              {
+                "id": "C20",
+                "name": "Integration Reviewer (Findings-Only)",
+                "responsibilities": [
+                  "Perform holistic integration review focused on cross-module interactions and system-level quality.",
+                  "Produce integration review_findings.json with RFC 6901 evidence pointers; findings-only (CNS12)."
+                ]
+              },
+              {
+                "id": "C21",
+                "name": "Integration Patcher",
+                "responsibilities": [
+                  "Produce integration-level repairs for conflicts/regressions discovered at merge/validation time.",
+                  "Operate within integration op caps and escalation thresholds."
+                ]
+              },
+              {
+                "id": "C22",
+                "name": "Workspace Manager (Namespaced Partitions)",
+                "responsibilities": [
+                  "Maintain per-lane workspace partitions plus a shared canonical integration partition (CNS8).",
+                  "Maintain unified workspace_index.json spanning partitions with provenance and checkpoint metadata.",
+                  "Support per-lane and global checkpoint/restore; enforce retention/compaction policies."
+                ]
+              },
+              {
+                "id": "C23",
+                "name": "Judge Pod",
+                "responsibilities": [
+                  "Evaluate integrated outputs (merged patchsets, integrated validation, lane + integration findings).",
+                  "Produce trace_report.json across lanes and integration and freeze/no-freeze recommendation.",
+                  "Assess risk closure against K# entries."
+                ]
+              },
+              {
+                "id": "C24",
+                "name": "Freeze Assembler",
+                "responsibilities": [
+                  "Collect CNS10-required artifacts from integrated state plus required lane artifacts as specified.",
+                  "Run final integrity/reproducibility/workspace-integrity checks; emit decision_record.json and release_bundle.json."
+                ]
+              }
+            ],
+            "interfaces": [
+              {
+                "id": "IF10",
+                "from": "C11",
+                "to": "C12",
+                "contract": "Provide input artifacts; receive validated inputs, work_plan.json with DAG/lane annotations, and stage_handoff for fan-out."
+              },
+              {
+                "id": "IF11",
+                "from": "C11",
+                "to": "C13",
+                "contract": "Dispatch lane IDs + task slices + per-lane budgets; receive per-lane stage_handoffs and completion signals with lane artifact_refs."
+              },
+              {
+                "id": "IF12",
+                "from": "C13",
+                "to": "C14",
+                "contract": "Provide lane context_pack_ref; receive lane patchset artifact_refs (diff-only JSON) scoped to lane file set."
+              },
+              {
+                "id": "IF13",
+                "from": "C13",
+                "to": "C15",
+                "contract": "Invoke scoped validators for lane; receive lane test_results.json + quality_reports.json + gate status."
+              },
+              {
+                "id": "IF14",
+                "from": "C13",
+                "to": "C16",
+                "contract": "Provide read-only lane context pack; receive lane review_findings.json with RFC 6901 evidence pointers."
+              },
+              {
+                "id": "IF15",
+                "from": "C13",
+                "to": "C17",
+                "contract": "Provide lane failures/findings; receive lane-scoped repairs (RFC 6902 patches and/or replacement patchsets)."
+              },
+              {
+                "id": "IF16",
+                "from": "C11",
+                "to": "C18",
+                "contract": "Provide completed lane patchsets and deterministic merge order; receive merged repo_snapshot.json and conflict report (if any)."
+              },
+              {
+                "id": "IF17",
+                "from": "C11",
+                "to": "C19",
+                "contract": "Provide merged repo state; receive integrated test_results.json + quality_reports.json + gate status."
+              },
+              {
+                "id": "IF18",
+                "from": "C11",
+                "to": "C20",
+                "contract": "Provide read-only integrated context pack; receive integration review_findings.json."
+              },
+              {
+                "id": "IF19",
+                "from": "C11",
+                "to": "C21",
+                "contract": "Provide integration failures/conflicts; receive integration-level repair artifacts within op caps or escalation recommendation."
+              },
+              {
+                "id": "IF20",
+                "from": "C11",
+                "to": "C22",
+                "contract": "Namespaced workspace operations (lane/integration partitions) + checkpoint/restore; receive unified workspace_index.json updates with provenance."
+              },
+              {
+                "id": "IF21",
+                "from": "C11",
+                "to": "C23",
+                "contract": "Provide full integrated context pack including lane and integration artifacts; receive trace_report.json and freeze recommendation."
+              },
+              {
+                "id": "IF22",
+                "from": "C23",
+                "to": "C24",
+                "contract": "On freeze-eligible recommendation, assemble CNS10 bundle and run final validators; return freeze bundle manifest or structured failure report."
+              }
+            ],
+            "tradeoffs": {
+              "pros": [
+                "Faster wall-clock time via parallel execution lanes for independent tasks.",
+                "Smaller, lane-scoped context packs reduce context-window pressure.",
+                "Integration-focused validation and review improves cross-module quality and catches coupling issues.",
+                "Isolation via workspace partitions reduces accidental cross-contamination across tasks."
+              ],
+              "cons": [
+                "Higher orchestration complexity (DAG scheduling, lane budgets, deterministic merge ordering, conflict handling).",
+                "Integration is a critical path and can become a bottleneck when conflicts/regressions are common.",
+                "More complex checkpoint/resume model (per-lane + global + integration checkpoints).",
+                "Higher total compute/token cost due to parallel role invocations."
+              ]
+            },
+            "risks": [
+              "Merge conflicts between lanes may be frequent in tightly-coupled repos, driving escalation rates.",
+              "Missed dependencies in task partitioning can cause late integration failures and rework.",
+              "Reproducibility depends on merge ordering rules that must be independent of wall-clock completion timing.",
+              "Workspace partition boundaries can be violated by side-effecting tools unless sandboxing and path scoping are strict."
+            ]
+          },
+          {
+            "id": "O3",
+            "summary": "Checkpoint-driven, sequential-by-default micro-cycle pipeline that processes work_plan tasks one at a time (Generate→Validate→Review→Patch), emitting a stage_handoff after each task. Supports deterministic partial-freeze bundles when budgets are reached, enabling long-horizon execution with resumable checkpoints.",
+            "components": [
+              {
+                "id": "C25",
+                "name": "Orchestrator Core (Checkpoint-Oriented)",
+                "responsibilities": [
+                  "Own task-by-task state machine and enforce per-task budgets/retry/iteration limits (CNS1).",
+                  "Compile task-scoped context packs with bounded selection rules and sliding window over recent state (CNS8).",
+                  "Decide continue vs partial-freeze based on deterministic budget thresholds; enforce escalation (CNS5).",
+                  "Require and verify stage_handoff at every task boundary for resumability (CNS3)."
+                ]
+              },
+              {
+                "id": "C26",
+                "name": "Intake & Resume + Work Plan Compiler",
+                "responsibilities": [
+                  "Validate inputs and initialize run_manifest/event_log/workspace_index, or resume from prior checkpoint.",
+                  "Produce or update work_plan.json with completion status and deterministic next-task selection metadata.",
+                  "Load prior stage_handoff for continuation and emit Intake→TaskCycle stage_handoff."
+                ]
+              },
+              {
+                "id": "C27",
+                "name": "Task Cycle Engine",
+                "responsibilities": [
+                  "Execute micro-cycles per task: Generate→Validate→Review→Patch until task gate passes or caps are hit.",
+                  "Emit checkpoint and stage_handoff after each completed task.",
+                  "Track cumulative budget consumption and signal orchestrator when thresholds approach."
+                ]
+              },
+              {
+                "id": "C28",
+                "name": "Writer Pod",
+                "responsibilities": [
+                  "Consume task-scoped context pack and produce diff-only patchset JSON for the current task (CNS7).",
+                  "Enforce forbidden paths and JSON-only outputs (CNS2)."
+                ]
+              },
+              {
+                "id": "C29",
+                "name": "Task Validator (Incremental)",
+                "responsibilities": [
+                  "Apply task patchset and run incremental validators (changed-files lint/tests as configured).",
+                  "Emit incremental test_results.json and quality_reports.json with AT# mapping.",
+                  "Detect secrets in artifacts/workspace (CNS9)."
+                ]
+              },
+              {
+                "id": "C30",
+                "name": "Task Reviewer (Findings-Only)",
+                "responsibilities": [
+                  "Review task patchset and incremental validation outputs read-only.",
+                  "Produce task review_findings.json with RFC 6901 evidence pointers (CNS6).",
+                  "Findings-only enforcement (CNS12)."
+                ]
+              },
+              {
+                "id": "C31",
+                "name": "Task Patcher",
+                "responsibilities": [
+                  "Produce task-scoped repairs: RFC 6902 JSON patches and/or replacement patchsets (CNS7).",
+                  "Operate within task op caps; provide candidates for deterministic smallest-passing selection."
+                ]
+              },
+              {
+                "id": "C32",
+                "name": "Regression Revalidation Gate (Cumulative)",
+                "responsibilities": [
+                  "After each task completion, run full-repo validators on cumulative repo state as configured.",
+                  "Detect regressions introduced by the latest task and emit cumulative validation overlays.",
+                  "Trigger repair/rollback/escalation signals to orchestrator based on deterministic rules."
+                ]
+              },
+              {
+                "id": "C33",
+                "name": "Workspace Manager (Append-Checkpoint Model)",
+                "responsibilities": [
+                  "Maintain append-only checkpoint log per task completion; support deterministic restore to any checkpoint.",
+                  "Maintain workspace_index.json with per-task provenance and completion status; separate canonical vs non-canonical (CNS8).",
+                  "Enforce compaction policies for non-canonical content at checkpoint boundaries."
+                ]
+              },
+              {
+                "id": "C34",
+                "name": "Judge Pod",
+                "responsibilities": [
+                  "Evaluate cumulative state at full completion or partial-freeze boundary.",
+                  "Produce trace_report.json for completed tasks and freeze/partial-freeze recommendation.",
+                  "Assess risk closure for completed scope against K# entries."
+                ]
+              },
+              {
+                "id": "C35",
+                "name": "Freeze / Partial-Freeze Assembler",
+                "responsibilities": [
+                  "Assemble full or partial Implementation Freeze Bundle.",
+                  "For partial freeze: include completion_status metadata and a resume_descriptor artifact to enable deterministic continuation.",
+                  "Run integrity/reproducibility/workspace-integrity checks on completed scope (CNS3/CNS8)."
+                ]
+              }
+            ],
+            "interfaces": [
+              {
+                "id": "IF23",
+                "from": "C25",
+                "to": "C26",
+                "contract": "Provide inputs and (optionally) prior stage_handoff for resume; receive validated/resumed state plus work_plan.json with completion status."
+              },
+              {
+                "id": "IF24",
+                "from": "C25",
+                "to": "C27",
+                "contract": "Dispatch next task (or small batch) with task-scoped budget; receive task completion signal, patchset refs, and stage_handoff."
+              },
+              {
+                "id": "IF25",
+                "from": "C27",
+                "to": "C28",
+                "contract": "Provide task context_pack_ref; receive task patchset artifact_ref (diff-only JSON)."
+              },
+              {
+                "id": "IF26",
+                "from": "C27",
+                "to": "C29",
+                "contract": "Invoke incremental validators on task patchset; receive incremental test_results.json + quality_reports.json + gate status."
+              },
+              {
+                "id": "IF27",
+                "from": "C27",
+                "to": "C30",
+                "contract": "Provide read-only task context; receive task review_findings.json with RFC 6901 evidence pointers."
+              },
+              {
+                "id": "IF28",
+                "from": "C27",
+                "to": "C31",
+                "contract": "Provide task failures/findings; receive bounded task repair artifacts (RFC 6902 patches and/or replacement patchsets)."
+              },
+              {
+                "id": "IF29",
+                "from": "C25",
+                "to": "C32",
+                "contract": "After task completion, trigger cumulative regression revalidation; receive cumulative results or regression alert with evidence pointers."
+              },
+              {
+                "id": "IF30",
+                "from": "C25",
+                "to": "C33",
+                "contract": "Append/checkpoint/restore operations per task; receive updated workspace_index.json with checkpoint IDs and provenance."
+              },
+              {
+                "id": "IF31",
+                "from": "C25",
+                "to": "C34",
+                "contract": "At completion or partial-freeze boundary, provide cumulative context pack; receive trace_report.json and freeze/partial-freeze recommendation."
+              },
+              {
+                "id": "IF32",
+                "from": "C34",
+                "to": "C35",
+                "contract": "Assemble full/partial freeze bundle; return bundle manifest plus resume_descriptor (for partial) or structured failure report."
+              }
+            ],
+            "tradeoffs": {
+              "pros": [
+                "Best fit for long-horizon work: fine-grained checkpoints minimize rework and enable deterministic resume.",
+                "Partial freeze preserves completed progress when budgets are exhausted.",
+                "Task-scoped context packs remain small and focused.",
+                "Early regression detection via frequent cumulative revalidation (when enabled)."
+              ],
+              "cons": [
+                "Slower than parallel approaches for independent tasks.",
+                "Full regression revalidation after each task can be expensive for large repos with slow test suites.",
+                "Partial freeze adds complexity for downstream consumers who must handle incomplete bundles.",
+                "Resume correctness depends on stable environment/toolchain and faithful checkpoint restoration."
+              ]
+            },
+            "risks": [
+              "Validation cost may pressure teams to weaken regression gates, reducing safety.",
+              "Environment drift between runs can break deterministic replay/resume unless toolchains are pinned.",
+              "Budget thresholds for partial-freeze decisions can be misestimated, freezing too early/late.",
+              "Task ordering may hide implicit dependencies that cause late-task failures."
+            ]
+          },
+          {
+            "id": "O4",
+            "summary": "Monolithic Implementation Council component that encapsulates the full workflow (intake through freeze) behind a single external interface. The external orchestrator still enforces global policy, tool permissions, budgets, and audit spine, while the monolith manages internal stage logic and role separation.",
+            "components": [
+              {
+                "id": "C36",
+                "name": "Orchestrator (External Policy Authority)",
+                "responsibilities": [
+                  "Initiate runs and enforce system-wide policies, budgets, routing, iteration limits, and termination (CNS1).",
+                  "Enforce tool permissions and secrets policy guardrails (CNS9).",
+                  "Manage checkpointing boundaries and immutable audit spine requirements (CNS3)."
+                ]
+              },
+              {
+                "id": "C37",
+                "name": "Implementation Council (Monolithic)",
+                "responsibilities": [
+                  "Consume plan_package_final.json and related required context artifacts as inputs.",
+                  "Internally manage stages/roles (writer/reviewer/judge/patch/validate) and produce required artifacts (work plan, patchsets, validations, findings, decision record).",
+                  "Write the final Implementation Freeze Bundle to the artifact store/workspace per CNS10.",
+                  "Request tool/workspace operations via orchestrator-controlled interfaces (no direct policy override)."
+                ]
+              },
+              {
+                "id": "C38",
+                "name": "Artifact Store & Workspace (External)",
+                "responsibilities": [
+                  "Provide durable, versioned storage for canonical artifacts and append-only logs (CNS3).",
+                  "Host shared workspace with canonical vs non-canonical separation (CNS8).",
+                  "Support addressing via artifact references and JSON Pointer evidence (CNS6)."
+                ]
+              }
+            ],
+            "interfaces": [
+              {
+                "id": "IF33",
+                "from": "C36",
+                "to": "C37",
+                "contract": "start_run(plan_package_final.json, repo_context.json, workspace_context.json) with orchestrator-enforced budgets/permissions; receive run outputs/status."
+              },
+              {
+                "id": "IF34",
+                "from": "C37",
+                "to": "C38",
+                "contract": "read/write/query versioned artifacts and workspace items via artifact_ref; all writes validated and logged per policy."
+              },
+              {
+                "id": "IF35",
+                "from": "C36",
+                "to": "C37",
+                "contract": "Policy enforcement channel: tool permission decisions, retry budgets, checkpoint/termination directives; monolith must comply."
+              }
+            ],
+            "tradeoffs": {
+              "pros": [
+                "Simplified external system boundary with a single main council component.",
+                "Potentially lower inter-component interface overhead inside the council boundary.",
+                "Encapsulates internal workflow evolution behind one interface."
+              ],
+              "cons": [
+                "Low modularity: harder to independently test/scale stages and enforce role separation internally.",
+                "Auditability can degrade if internal sub-stages are not surfaced as explicit artifacts/handoffs.",
+                "Risk of inadvertently weakening separation of powers and findings-only constraints without strict internal controls."
+              ]
+            },
+            "risks": [
+              "Internal complexity may grow and undermine CNS12 separation (reviewers/judges becoming entangled with writing/patching).",
+              "Hidden internal state transitions can make checkpoint/resume and traceability less explicit unless the monolith emits full stage_handoff artifacts.",
+              "Monolith becomes a high-blast-radius component for failures and changes."
+            ]
+          }
+        ],
+        "chosen": {
+          "option_id": "O2",
+          "rationale": "O2 is selected because it addresses the primary weakness of O1 (wall-clock time for repos with many independent tasks) while preserving all MUST requirements. The hybrid milestone strategy mitigates O2's higher orchestration complexity by first proving the single-lane sequential path (Phase 1), then incrementally layering parallelism (Phase 2) and deterministic integration (Phase 3). O2's lane-scoped context packs reduce per-invocation context-window pressure (mitigating K9). The namespaced workspace partitions (C22) provide stronger isolation than a single workspace, directly addressing K8. The dedicated Integration Merge Engine (C18) and Integration Validator/Reviewer/Patcher (C19–C21) provide a governed integration sub-flow that addresses K12 and alignment warning AL006 (merge ordering determinism). O1 was rejected as the primary architecture because serialized execution is too slow for repos with many independent modules. O3 was rejected because its per-task micro-cycle model, while excellent for long-horizon resumability, does not provide the parallelism benefit that is the primary driver for this branch. O4 was rejected due to low modularity and risk of undermining CNS12 role separation internally.",
+          "high_level_dataflow": "plan_package_final.json + repo_context.json + workspace_context.json → C12 (Intake & DAG Work Planner): validates inputs, initializes run_manifest/event_log/workspace_index, produces work_plan.json with DAG and lane partitioning → C11 (Global Orchestrator) fans out to C13 (Task Lane Orchestrators): each lane runs C14 (Writer) → C15 (Validator) → C16 (Reviewer) → C17 (Patcher) cycles within lane-scoped workspace partitions managed by C22 → lane completion signals flow back to C11 → C18 (Integration Merge Engine) applies lane patchsets in deterministic order to base repo state, emits conflict reports → C19 (Integration Validator) runs full-repo validation → C20 (Integration Reviewer) produces integration findings → C21 (Integration Patcher) repairs integration issues → C11 routes integrated outputs to C23 (Judge Pod) which produces trace_report and freeze recommendation → C24 (Freeze Assembler) collects all CNS10-required artifacts, runs final closure gates, emits Implementation Freeze Bundle.",
+          "key_design_decisions": [
+            "Phase 1 proves the single-lane sequential path (O1-equivalent) before adding parallelism, de-risking the core intake/workspace/audit infrastructure.",
+            "Deterministic merge ordering in C18 is independent of wall-clock lane completion timing, ensuring reproducibility (addresses AL006 and K12).",
+            "Namespaced workspace partitions (C22) enforce per-lane isolation with a shared canonical integration partition, mitigating K8.",
+            "Per-lane orchestrators (C13) enforce lane-scoped tool permissions and file-path scoping, reducing cross-contamination risk.",
+            "High HITL strictness is retained across all phases due to parallel complexity and blocking open questions Q7–Q9.",
+            "Integration sub-flow (C18–C21) is a dedicated governed stage with its own validation, review, and patch cycle, not a simple merge step.",
+            "Context packs are lane-scoped during parallel execution and integration-scoped during the integration sub-flow, keeping pack sizes bounded (mitigating K9)."
+          ]
+        }
+      },
+      "milestones": [
+        {
+          "id": "M1",
+          "name": "Phase 1: Foundation (Big-Bang Single-Lane)",
+          "deliverables": [
+            {
+              "id": "M1-D1",
+              "text": "Global Orchestrator (C11) with DAG workflow engine, budget/retry enforcement, and checkpoint logic."
+            },
+            {
+              "id": "M1-D2",
+              "text": "Intake & DAG Work Planner (C12) with input validation (plan_package_final.json, repo_context.json, workspace_context.json), run_manifest/event_log initialization, and work_plan.json generation."
+            },
+            {
+              "id": "M1-D3",
+              "text": "Workspace Manager (C22) with namespaced partitions, canonical/non-canonical separation, workspace_index.json maintenance, and checkpoint/restore support."
+            },
+            {
+              "id": "M1-D4",
+              "text": "Single-lane execution path: one Writer (C14), one Validator (C15), one Reviewer (C16), one Patcher (C17) operating sequentially under C11 orchestration."
+            },
+            {
+              "id": "M1-D5",
+              "text": "Audit spine: immutable run_manifest, append-only event_log, versioned artifact store with stage-boundary checkpoints."
+            },
+            {
+              "id": "M1-D6",
+              "text": "Stage_handoff artifacts emitted at every stage transition with required resumable-state fields."
+            },
+            {
+              "id": "M1-D7",
+              "text": "Tool permission matrix enforcement for Intake, WorkPlanning, Generate, PatchApply, Validate, and Review stages."
+            },
+            {
+              "id": "M1-D8",
+              "text": "Secrets detection/redaction/blocking guardrails validated at each checkpoint."
+            }
+          ],
+          "exit_criteria": [
+            "AT1 passes: valid plan accepted; chat logs and non-canonical inputs rejected.",
+            "AT2 passes: missing/invalid repo_context.json rejected; valid repo_context.json accepted.",
+            "AT3 passes: missing/invalid workspace_context.json rejected; valid workspace_context.json accepted.",
+            "AT4 passes (single-lane subset): stage sequence Intake→Generate→Validate→Review→Patch recorded with checkpoint at each transition.",
+            "AT5 passes: stage_handoff artifact present for every stage transition.",
+            "AT8 passes: run_manifest immutable; event_log append-only; artifacts versioned and checkpointed.",
+            "AT9 passes: prose/markdown artifacts rejected; JSON-only schema-valid artifacts accepted.",
+            "AT19 passes: unauthorized tool invocations blocked and logged; authorized invocations succeed.",
+            "AT20 passes: secrets detected and blocked/redacted before persistence."
+          ],
+          "depends_on": []
+        },
+        {
+          "id": "M2",
+          "name": "Phase 2: Parallel Lanes (Thin-Slice)",
+          "deliverables": [
+            {
+              "id": "M2-D1",
+              "text": "Task Lane Orchestrator (C13) managing per-lane state machines (Generate→Validate→Review→Patch) with per-lane stage_handoffs and completion signals."
+            },
+            {
+              "id": "M2-D2",
+              "text": "Multi-lane Writer Pool (C14) producing lane-scoped diff-only patchset artifacts."
+            },
+            {
+              "id": "M2-D3",
+              "text": "Per-Lane Validator (C15), Reviewer (C16), and Patcher (C17) pods with lane-scoped context packs."
+            },
+            {
+              "id": "M2-D4",
+              "text": "Per-lane workspace partitions enforced by C22 with lane-scoped tool permissions and file-path scoping."
+            },
+            {
+              "id": "M2-D5",
+              "text": "Demonstration of two parallel lanes executing on a test repository with independent modules."
+            },
+            {
+              "id": "M2-D6",
+              "text": "Per-lane role separation enforcement: writer/reviewer/patcher output-type allowlists per lane."
+            }
+          ],
+          "exit_criteria": [
+            "AT12 passes: canonical JSON artifact modification via RFC 6902 JSON Patch only; direct replacement rejected.",
+            "AT13 passes: diff-only patchset artifacts accepted; non-diff mechanisms rejected.",
+            "AT14 passes: forbidden/protected path writes blocked; operation caps enforced.",
+            "AT22 passes: writer/reviewer/judge roles distinct per lane; reviewers emit findings-only; multi-vendor routing recorded."
+          ],
+          "depends_on": [
+            "M1"
+          ]
+        },
+        {
+          "id": "M3",
+          "name": "Phase 3: Integration Sub-Flow (Thin-Slice)",
+          "deliverables": [
+            {
+              "id": "M3-D1",
+              "text": "Integration Merge Engine (C18) with deterministic merge ordering algorithm independent of wall-clock lane completion timing."
+            },
+            {
+              "id": "M3-D2",
+              "text": "Integration Validator (C19) running full-repo validators on merged state with integrated test_results.json and quality_reports.json."
+            },
+            {
+              "id": "M3-D3",
+              "text": "Integration Reviewer (C20) producing integration review_findings.json (findings-only)."
+            },
+            {
+              "id": "M3-D4",
+              "text": "Integration Patcher (C21) producing integration-level repairs within op caps and escalation thresholds."
+            },
+            {
+              "id": "M3-D5",
+              "text": "Structured conflict_report and integration_report artifacts with deterministic escalation paths."
+            },
+            {
+              "id": "M3-D6",
+              "text": "ChangeRequest artifact schema and deterministic rules for conflict escalation."
+            }
+          ],
+          "exit_criteria": [
+            "AT15 passes: smallest passing repair selected using deterministic tie-breakers (fewest ops → fewest bytes → first-generated).",
+            "AT10 passes: all evidence pointers across integration artifacts use RFC 6901 format and resolve correctly.",
+            "AT16 passes: unapproved semantic changes rejected; ChangeRequest with decision record and escalation required.",
+            "Deterministic merge ordering produces identical results regardless of lane completion order (integration-specific acceptance criterion from branch strategy)."
+          ],
+          "depends_on": [
+            "M2"
+          ]
+        },
+        {
+          "id": "M4",
+          "name": "Phase 4: Judge, Freeze & Full Closure",
+          "deliverables": [
+            {
+              "id": "M4-D1",
+              "text": "Judge Pod (C23) evaluating integrated outputs, producing trace_report.json and freeze/no-freeze recommendation with risk closure assessment against K# entries."
+            },
+            {
+              "id": "M4-D2",
+              "text": "Freeze Assembler (C24) collecting all CNS10-required artifacts, running final integrity/reproducibility/workspace-integrity checks, emitting decision_record.json and release_bundle.json."
+            },
+            {
+              "id": "M4-D3",
+              "text": "Complete Implementation Freeze Bundle with all required artifacts and directories."
+            },
+            {
+              "id": "M4-D4",
+              "text": "Full closure gate suite: build/test/lint/typecheck, artifact integrity, workspace integrity, risk closure, reproducibility, and trace completeness validators."
+            },
+            {
+              "id": "M4-D5",
+              "text": "End-to-end AT# trace mapping in test_results.json for automated trace completeness validation."
+            }
+          ],
+          "exit_criteria": [
+            "AT5 passes (full run): stage_handoff for every transition including Judge and Freeze boundaries.",
+            "AT6 passes: every stage_handoff contains objectives, completed work refs, pending blockers, next actions, and valid evidence pointers.",
+            "AT7 passes: freeze bundle contains all minimum required artifacts and directories.",
+            "AT17 passes: workspace canonical/non-canonical partition enforced; canonical immutable after freeze; context packs deterministic with evidence pointers.",
+            "AT18 passes: all workspace items indexed; no unindexed items or out-of-bounds context packs.",
+            "AT21 passes: freeze denied when any gate fails; permitted only when all gates pass.",
+            "AT23 passes: flaky retries follow deterministic policy with bounded budgets; exceeded budgets trigger quarantine and escalation.",
+            "Full AT suite (AT1–AT23) passes at final Freeze."
+          ],
+          "depends_on": [
+            "M3"
+          ]
+        }
+      ],
+      "risk_register": [
+        {
+          "id": "K1",
+          "severity": "critical",
+          "description": "Silent plan-semantics drift / scope expansion: implementation artifacts or code changes effectively alter the meaning of upstream R#/AT#/O#/K# without an explicit ChangeRequest + governed decision, violating no-scope-expansion constraints.",
+          "mitigation": {
+            "text": "Add deterministic semantic-drift/trace gates: (1) require explicit mapping from each change/patchset and decision clause to referenced R#/AT#/O#/K# IDs; (2) validator rejects any patchset/decision_record that introduces new requirements/acceptance criteria not present in plan_package_final.json unless a ChangeRequest artifact is present and approved per policy; (3) enforce reviewer role emits findings-only and cannot author ChangeRequest/patchsets; (4) Intake validator reroutes upstream if plan ambiguities force assumptions that would change semantics.",
+            "owner": "Orchestrator+Validators",
+            "status": "planned"
+          },
+          "acceptance": null
+        },
+        {
+          "id": "K2",
+          "severity": "critical",
+          "description": "Audit spine breakage: missing/overwritten run_manifest, non-append-only event_log, or unversioned artifacts leads to irreproducible outcomes and invalidates evidence pointers.",
+          "mitigation": {
+            "text": "Enforce immutability/append-only at storage interface; validator requires: run_manifest immutable hash recorded at first emission, event_log monotonic sequence numbers, artifact_ref uniqueness + content hashes; stage transitions blocked if any required audit artifacts are missing or mutated.",
+            "owner": "Orchestrator+ArtifactStore+Validators",
+            "status": "planned"
+          },
+          "acceptance": null
+        },
+        {
+          "id": "K3",
+          "severity": "high",
+          "description": "Evidence pointer standard (RFC 6901) not used consistently: artifacts embed freeform citations (paths/prose/non-RFC6901 references), causing unverifiable traceability and broken downstream consumption.",
+          "mitigation": {
+            "text": "Add strict evidence-reference linter validator: only allow evidence pointer objects {artifact_ref, entity_id|null, json_pointer, note}; reject any nonconforming reference fields; require trace_report.json to enumerate all evidence pointers and validate pointers resolve against versioned JSON artifacts before freeze.",
+            "owner": "Validators",
+            "status": "planned"
+          },
+          "acceptance": null
+        },
+        {
+          "id": "K4",
+          "severity": "critical",
+          "description": "An agent generates a code patchset that introduces a severe security vulnerability (e.g., RCE, data exfiltration) that is missed by automated validators.",
+          "mitigation": {
+            "text": "Implement and mandate a comprehensive suite of security validators (e.g., SAST/DAST/dependency scanning as applicable) as a freeze gate. Critical findings must trigger a mandatory HITL review by Security/Compliance prior to any freeze/release decision.",
+            "owner": "Security/Compliance Team",
+            "status": "planned"
+          },
+          "acceptance": null
+        },
+        {
+          "id": "K5",
+          "severity": "critical",
+          "description": "Repository protection bypass: patchsets or tools modify forbidden/protected paths or perform high-risk operations outside policy (e.g., CI/release config, auth/deploy/credential handling), leading to security/compliance incidents.",
+          "mitigation": {
+            "text": "Enforce deterministic forbidden/protected-path controls at both patch-apply time and tool-sandbox policy using repo_context.json patterns: reject before apply/execute; require HITL for any change touching protected paths or release/deploy/auth configuration; enforce operation caps and file-type restrictions; block any tool execution attempt to write forbidden paths and record in audit log.",
+            "owner": "Orchestrator Policy+Validators+Platform/DevOps",
+            "status": "planned"
+          },
+          "acceptance": null
+        },
+        {
+          "id": "K6",
+          "severity": "high",
+          "description": "Nondeterministic tool executions (flaky tests/builds) cause inconsistent gate outcomes, leading to incorrect freezes or endless repair loops / exhausted budgets.",
+          "mitigation": {
+            "text": "Define deterministic retry/quarantine rules: fixed retry budget, fixed backoff schedule, record all attempts in event_log, classify failures as flaky using deterministic thresholds, and block freeze unless gates pass under the deterministic policy; add stabilization/quarantine path with bounded changes and deterministic escalation (patch → reroute → HITL → ChangeRequest).",
+            "owner": "Orchestrator Policy+Validators",
+            "status": "planned"
+          },
+          "acceptance": null
+        },
+        {
+          "id": "K7",
+          "severity": "high",
+          "description": "Secrets leakage into canonical artifacts or workspace (event log, patches, snapshots, context packs, stage handoffs), violating secrets policy and creating durable compromise.",
+          "mitigation": {
+            "text": "Mandatory secrets scanning at each checkpoint and before freeze across patchsets/logs/repo_snapshot/context_packs/stage_handoffs; deterministic redaction/blocking rules (block persistence and require remediation patchset); deny network exfiltration by default; ensure scanner findings are stored as structured artifacts without embedding secrets.",
+            "owner": "Orchestrator Policy+Security Validators",
+            "status": "planned"
+          },
+          "acceptance": null
+        },
+        {
+          "id": "K8",
+          "severity": "high",
+          "description": "Workspace integrity failure or corruption: canonical vs non-canonical separation is violated (overwrites/unversioned state), or workspace becomes inconsistent, breaking deterministic resume and traceability.",
+          "mitigation": {
+            "text": "Run workspace integrity validators at each stage handoff: schema compliance, index completeness, artifact checksums, and immutability flags. Enforce workspace namespace policy: canonical paths append-only/versioned; non-canonical append-only with provenance; workspace_index.json must enumerate all items; validator rejects unindexed items or canonical overwrites; checkpoint immutable workspace versions.",
+            "owner": "Orchestrator+Workspace Validators",
+            "status": "planned"
+          },
+          "acceptance": null
+        },
+        {
+          "id": "K9",
+          "severity": "medium",
+          "description": "Context pack overflow or under-selection: bounded context packs omit critical artifacts or exceed size limits, causing incorrect decisions/patches or truncation-driven errors.",
+          "mitigation": {
+            "text": "Deterministic, versioned context-pack selection rules with priorities and explicit byte/token budgets; validator checks pack completeness against stage-required sets and rejects out-of-bounds packs. Include a structured mechanism to flag missing context and a context-adequacy check during Review.",
+            "owner": "Orchestrator+Validators",
+            "status": "planned"
+          },
+          "acceptance": null
+        },
+        {
+          "id": "K10",
+          "severity": "high",
+          "description": "Role separation failure: writer/reviewer/judge boundaries and/or multi-vendor diversity are not enforced, allowing self-review/self-approval and undermining independence/governance.",
+          "mitigation": {
+            "text": "Orchestrator-enforced output-type allowlists by role (reviewers findings-only; judges decisions-only; writers/patchers write/patch only) plus multi-vendor routing constraints (review/judge model family must differ from writer). Record agent/model/vendor provenance in run_manifest for each stage output and validate separation constraints before stage transitions/freeze.",
+            "owner": "Orchestrator Policy",
+            "status": "planned"
+          },
+          "acceptance": null
+        },
+        {
+          "id": "K11",
+          "severity": "high",
+          "description": "RFC 6902 JSON Patch misuse: syntactically valid patches touch forbidden JSON Pointer paths, exceed op caps, or create schema/logic-invalid states, corrupting canonical JSON artifacts (e.g., work_plan).",
+          "mitigation": {
+            "text": "Validator enforces: (1) op count caps, (2) forbidden JSON Pointer path rules per artifact type, (3) schema revalidation after patch application, (4) deterministic patch ordering and tie-breakers; for critical artifacts, add semantic validators for logical consistency; reject nonconforming patches before apply.",
+            "owner": "Orchestrator+Schema/Validation Team",
+            "status": "planned"
+          },
+          "acceptance": null
+        },
+        {
+          "id": "K12",
+          "severity": "high",
+          "description": "Integration/merge conflicts: multiple patchsets (including parallel pods) produce overlapping diffs causing conflicts, inconsistent base/head commits, or partial application that breaks reproducibility; automated conflict resolution may lack safe fallback.",
+          "mitigation": {
+            "text": "Require explicit base_commit in each patchset; deterministic apply/merge ordering rules independent of wall-clock completion timing; strict limits for automated conflict resolution; if limits exceeded, block and trigger reroute to integration stage or HITL with a pre-packaged conflict summary. Emit a structured integration_report/conflict_report describing classification and chosen deterministic escalation path.",
+            "owner": "Orchestrator Policy+Integration Validators",
+            "status": "planned"
+          },
+          "acceptance": null
+        },
+        {
+          "id": "K13",
+          "severity": "medium",
+          "description": "Acceptance-test trace mismatch: test_results cannot be deterministically mapped to AT# acceptance tests, breaking trace completeness gates and weakening validation credibility.",
+          "mitigation": {
+            "text": "Define required AT# linkage fields in test metadata; validator requires that each AT# has either a passing mapped test or an explicit, approved waiver/ChangeRequest; trace_report must enumerate AT#→test evidence pointers.",
+            "owner": "QA/Trace Validators",
+            "status": "planned"
+          },
+          "acceptance": null
+        },
+        {
+          "id": "K14",
+          "severity": "high",
+          "description": "Release artifact unsafe/incorrect: release_bundle produced without passing all gates, includes unreviewed binaries, or references non-reproducible build steps.",
+          "mitigation": {
+            "text": "Freeze gate requires reproducible build recipe captured in structured artifact; release_bundle allowed only after all validators pass; require hashed build outputs and provenance record; disallow network-dependent build steps unless explicitly allowlisted and captured in dependency policy artifacts.",
+            "owner": "Orchestrator+Release Validators",
+            "status": "planned"
+          },
+          "acceptance": null
+        },
+        {
+          "id": "K15",
+          "severity": "high",
+          "description": "Supply-chain/network risk: package manager operations or network access pull unpinned dependencies, introduce version drift across runs, or leak information, undermining reproducibility and security.",
+          "mitigation": {
+            "text": "Default network deny; allow network only in explicitly designated stages with allowlisted domains and deterministic lockfile requirements. Mandate lockfiles and/or audited offline mirrors/caching proxies when network is enabled. Validator checks dependency changes are pinned and justified with evidence pointers.",
+            "owner": "Orchestrator Policy+Security/Compliance Validators+Platform/DevOps",
+            "status": "planned"
+          },
+          "acceptance": null
+        },
+        {
+          "id": "K16",
+          "severity": "medium",
+          "description": "Over-broad refactors: patchsets attempt repo-wide rewrites contrary to bounded-change constraints, increasing failure rate and review burden.",
+          "mitigation": {
+            "text": "Define patchset size limits (files changed, diff hunks, bytes, risk-weighted thresholds) and require decomposition into staged patchsets; validator rejects oversized patchsets unless approved via HITL with rationale captured in decision_record.",
+            "owner": "Orchestrator Policy+Validators",
+            "status": "planned"
+          },
+          "acceptance": null
+        },
+        {
+          "id": "K17",
+          "severity": "medium",
+          "description": "Checkpoint/resume inconsistency: missing or incomplete stage_handoff artifacts cause inability to resume deterministically, leading to duplicated work or inconsistent outcomes.",
+          "mitigation": {
+            "text": "Require stage_handoff emission at every checkpoint boundary with mandatory pointers to work_plan, current patchsets, validation outputs, and pending blockers; validator blocks stage transition if handoff missing or pointers do not resolve.",
+            "owner": "Orchestrator+Workspace Validators",
+            "status": "planned"
+          },
+          "acceptance": null
+        },
+        {
+          "id": "K18",
+          "severity": "high",
+          "description": "Decision integrity risk: judge outputs or decision_record include conclusions/waivers without linked evidence pointers, allowing ungrounded approvals/waivers.",
+          "mitigation": {
+            "text": "Decision validator: every approval/waiver must include evidence pointers to passing gate artifacts or an explicit policy exception with HITL signoff; disallow freeze if any decision clause lacks evidence pointers.",
+            "owner": "Judge Policy+Validators",
+            "status": "planned"
+          },
+          "acceptance": null
+        },
+        {
+          "id": "K19",
+          "severity": "high",
+          "description": "Misconfigured tool permissions: stages accidentally permit destructive commands, broad filesystem writes, undeclared entrypoints, or unbounded artifact mutation, enabling accidental damage or policy bypass.",
+          "mitigation": {
+            "text": "Machine-enforced tool permission matrix per stage with deny-by-default; validate effective permissions (policy-as-data) continuously; audit logging of tool invocations and denials; HITL required to expand permissions beyond baseline.",
+            "owner": "Orchestrator Policy",
+            "status": "planned"
+          },
+          "acceptance": null
+        },
+        {
+          "id": "K20",
+          "severity": "high",
+          "description": "Upstream plan_package_final.json is ambiguous or incomplete, forcing the Implementation Council to make assumptions that later turn out to be incorrect, requiring costly rework and/or semantic drift.",
+          "mitigation": {
+            "text": "Intake stage includes validator that checks the input plan for completeness/clarity. If validation fails, orchestrator immediately reroutes upstream to the Planning Council rather than allowing assumption-based implementation.",
+            "owner": "Intake & Validation Team",
+            "status": "planned"
+          },
+          "acceptance": null
+        },
+        {
+          "id": "K21",
+          "severity": "medium",
+          "description": "The 'smallest passing repair' selection logic is too simplistic and consistently chooses a sub-optimal patch from multiple valid proposals, leading to technical debt.",
+          "mitigation": {
+            "text": "Add deterministic secondary evaluation signals (e.g., style/lint adherence, complexity deltas) as additional structured validators or deterministic scoring, while keeping selection rules auditable and reproducible. Escalate to HITL when multiple passing candidates have materially different long-term maintenance risk.",
+            "owner": "Orchestrator Design Team",
+            "status": "planned"
+          },
+          "acceptance": null
+        },
+        {
+          "id": "K22",
+          "severity": "low",
+          "description": "Non-canonical workspace data (e.g., scratchpad notes) grows indefinitely, making audits difficult and potentially exceeding storage quotas.",
+          "mitigation": {
+            "text": "Define and implement automated compaction and retention policies for non-canonical data. Create summarization artifacts (non-canonical, with provenance) before purging to preserve audit intent.",
+            "owner": "Workspace Backend Team",
+            "status": "planned"
+          },
+          "acceptance": null
+        }
+      ],
+      "governance": {
+        "failure_modes": [],
+        "tool_policy": {
+          "stage_policies": [
+            {
+              "stage": "Intake",
+              "allowlisted_tools": [
+                "artifact_read",
+                "schema_validate"
+              ],
+              "restrictions": [
+                {
+                  "network": "deny",
+                  "repo_write": "deny",
+                  "workspace_write": "allow_noncanonical_only",
+                  "artifact_write": "allow_noncanonical_only",
+                  "notes": "Ingest and validate plan_package_final.json and required context artifacts; no code changes; do not persist secrets."
+                }
+              ],
+              "hitl_triggers": [
+                "Missing required inputs (plan_package_final.json, repo_context.json, workspace_context.json)",
+                "Schema validation failures that cannot be repaired via RFC6902 without changing semantics",
+                "Input plan_package_final.json incomplete/ambiguous per intake validator (reroute upstream)"
+              ]
+            },
+            {
+              "stage": "WorkPlanning",
+              "allowlisted_tools": [
+                "artifact_read",
+                "artifact_write",
+                "schema_validate"
+              ],
+              "restrictions": [
+                {
+                  "network": "deny",
+                  "repo_write": "deny",
+                  "workspace_write": "canonical_versioned_only",
+                  "artifact_write": "canonical_allowed_only_for_declared_types",
+                  "evidence_standard": "rfc6901_only",
+                  "notes": "Compile/update work_plan and trace mappings only; no repo mutation."
+                }
+              ],
+              "hitl_triggers": [
+                "Proposed work requires changing plan semantics (must raise ChangeRequest)",
+                "Work plan implies assumptions due to ambiguous plan semantics (reroute upstream)"
+              ]
+            },
+            {
+              "stage": "Generate",
+              "allowlisted_tools": [
+                "artifact_read",
+                "artifact_write",
+                "workspace_write",
+                "schema_validate"
+              ],
+              "restrictions": [
+                {
+                  "network": "deny",
+                  "repo_write": "deny",
+                  "artifact_write": "canonical_allowed_only_for_declared_types",
+                  "workspace_write": "canonical_versioned_only",
+                  "evidence_standard": "rfc6901_only",
+                  "notes": "Draft patchsets and required mappings as artifacts; no direct repo mutation."
+                }
+              ],
+              "hitl_triggers": [
+                "Proposed work requires changing plan semantics (must raise ChangeRequest)",
+                "Proposed patchsets touch protected/forbidden paths per repo_context"
+              ]
+            },
+            {
+              "stage": "PatchApply",
+              "allowlisted_tools": [
+                "artifact_read",
+                "patch_apply",
+                "repo_snapshot",
+                "artifact_write",
+                "schema_validate"
+              ],
+              "restrictions": [
+                {
+                  "network": "deny",
+                  "repo_write": "allow_via_patch_apply_only",
+                  "repo_write_paths": "enforced_by_repo_context",
+                  "patchset_limits": {
+                    "max_files_changed": "policy_defined",
+                    "max_diff_bytes": "policy_defined",
+                    "forbidden_file_globs": "from_repo_context"
+                  },
+                  "notes": "Only apply diff-only patchsets against declared base_commit; direct edits prohibited."
+                }
+              ],
+              "hitl_triggers": [
+                "Patch application conflict beyond deterministic thresholds",
+                "Any attempted modification of forbidden/protected paths",
+                "Patchset exceeds size/risk limits"
+              ]
+            },
+            {
+              "stage": "Validate",
+              "allowlisted_tools": [
+                "artifact_read",
+                "run_build",
+                "run_tests",
+                "run_lint",
+                "run_typecheck",
+                "security_scan",
+                "secrets_scan",
+                "artifact_write",
+                "schema_validate"
+              ],
+              "restrictions": [
+                {
+                  "network": "deny",
+                  "repo_write": "deny",
+                  "tool_entrypoints": "must_be_declared_in_repo_context",
+                  "retry_policy": "deterministic_budgets_only",
+                  "notes": "Execute deterministic validators and emit structured results; do not run undeclared commands."
+                }
+              ],
+              "hitl_triggers": [
+                "Secrets detected in any artifact/workspace output",
+                "Flaky failure classification exceeds retry/quarantine policy thresholds",
+                "Security validator reports critical finding",
+                "Validator outputs indicate policy violations requiring exception"
+              ]
+            },
+            {
+              "stage": "IntegrateAndValidate",
+              "allowlisted_tools": [
+                "artifact_read",
+                "patch_apply",
+                "repo_snapshot",
+                "run_build",
+                "run_tests",
+                "security_scan",
+                "secrets_scan",
+                "artifact_write",
+                "schema_validate"
+              ],
+              "restrictions": [
+                {
+                  "network": "deny",
+                  "repo_write": "allow_via_patch_apply_only",
+                  "repo_write_paths": "enforced_by_repo_context",
+                  "retry_policy": "deterministic_budgets_only",
+                  "notes": "Deterministic integration merge/apply and full-repo validation; emits structured conflict/integration reports."
+                }
+              ],
+              "hitl_triggers": [
+                "patch_conflict_unresolved",
+                "security_validator_critical_finding",
+                "build_failure",
+                "Deterministic retry budget exhausted"
+              ]
+            },
+            {
+              "stage": "Review",
+              "allowlisted_tools": [
+                "artifact_read",
+                "schema_validate"
+              ],
+              "restrictions": [
+                {
+                  "network": "deny",
+                  "repo_write": "deny",
+                  "artifact_write": "deny",
+                  "workspace_write": "deny",
+                  "notes": "Reviewers are findings-only; they do not emit canonical writing/patch artifacts."
+                }
+              ],
+              "hitl_triggers": [
+                "critical_finding_proposed",
+                "Reviewer identifies high-risk area requiring manual security/compliance approval",
+                "Reviewer flags ambiguity that implies upstream plan defect (reroute to Planning Council)"
+              ]
+            },
+            {
+              "stage": "Judge",
+              "allowlisted_tools": [
+                "artifact_read",
+                "artifact_write",
+                "schema_validate"
+              ],
+              "restrictions": [
+                {
+                  "network": "deny",
+                  "repo_write": "deny",
+                  "decision_requirements": "all_approvals_must_have_rfc6901_evidence_pointers",
+                  "notes": "Judge emits decisions/waivers only; no patch authoring."
+                }
+              ],
+              "hitl_triggers": [
+                "Any waiver of a gate (tests/build/security/trace/reproducibility/workspace integrity) is requested",
+                "Any ChangeRequest approval is requested",
+                "Any permission expansion beyond baseline is requested"
+              ]
+            },
+            {
+              "stage": "Freeze",
+              "allowlisted_tools": [
+                "artifact_read",
+                "artifact_write",
+                "bundle_release",
+                "secrets_scan",
+                "schema_validate"
+              ],
+              "restrictions": [
+                {
+                  "network": "deny",
+                  "repo_write": "deny",
+                  "freeze_condition": "all_required_gates_pass_and_trace_complete",
+                  "notes": "Emit Implementation Freeze Bundle only when validators confirm all gates; otherwise block."
+                }
+              ],
+              "hitl_triggers": [
+                "Attempt to freeze with any failing gate",
+                "Missing required artifacts in the freeze bundle list",
+                "Unresolved trace/evidence pointer validation errors",
+                "Secrets detected during pre-freeze scan"
+              ]
+            }
+          ]
+        },
+        "hitl_policy": {
+          "when_to_interrupt": [
+            "Any proposed ChangeRequest (plan-semantics change) or any evidence of silent scope expansion",
+            "Any attempt to modify forbidden/protected paths or perform high-risk repo operations (auth, deploy, credential handling)",
+            "Any secrets detection event in artifacts/workspace/logs or suspected exfiltration vector",
+            "Any security validator reports a 'critical' severity finding",
+            "Any deterministic retry budget for a failing validator is exhausted",
+            "Any merge/integration conflict beyond deterministic resolution thresholds",
+            "Any waiver request for required freeze gates (build/test/lint/typecheck/security/trace/reproducibility/workspace integrity)",
+            "Any tool-permission expansion beyond baseline (e.g., enabling network, broad filesystem writes, executing undeclared entrypoints)",
+            "The orchestrator detects a potential integrity violation in the audit spine or workspace"
+          ],
+          "approval_roles": [
+            "Orchestrator Policy Owner",
+            "Security/Compliance Approver",
+            "Implementation Council Judge (HITL signatory)",
+            "Repo Owner/Maintainer (for protected paths and release approval)",
+            "Implementation Council Lead",
+            "Platform/DevOps Lead",
+            "Planning Council Representative"
+          ]
+        }
+      },
+      "decision_log": [
+        {
+          "id": "DEC1",
+          "question": "Which architecture option should be selected for this candidate?",
+          "choice": "O2 — Task-parallel fan-out/fan-in with deterministic integration sub-flow.",
+          "rationale": "O2 provides wall-clock throughput improvement via parallel lanes while preserving all MUST requirements. The hybrid milestone strategy de-risks by proving the sequential path first (Phase 1). O2's lane-scoped context packs and namespaced workspace partitions address K9 and K8 respectively. The dedicated integration sub-flow addresses K12 and AL006.",
+          "alternatives_considered": [
+            "O1: Sequential staged pipeline — rejected due to slowest wall-clock time for repos with many independent tasks.",
+            "O3: Checkpoint-driven micro-cycle — rejected because it lacks parallelism, the primary driver for this branch.",
+            "O4: Monolithic council — rejected due to low modularity and risk of undermining CNS12 role separation."
+          ],
+          "what_would_change_this_decision": [
+            "Target repository has very high inter-module coupling making lane partitioning infeasible (would favor O1 or O3).",
+            "Wall-clock throughput is not a priority and simplicity is paramount (would favor O1).",
+            "Long-horizon budget constraints dominate and partial-freeze is critical (would favor O3)."
+          ],
+          "evidence_pointers": [
+            {
+              "candidate_id": "B2B",
+              "artifact_ref": "architecture_canonical_v1",
+              "artifact_id": "architecture_canonical_v1",
+              "json_pointer": "/options/1",
+              "note": "O2 definition with components C11-C24, interfaces IF10-IF22, and tradeoffs.",
+              "quote": null
+            },
+            {
+              "candidate_id": "B2B",
+              "artifact_ref": "branch_set_v1",
+              "artifact_id": "branch_set_v1",
+              "json_pointer": "/branches/1",
+              "note": "Branch B2 rationale selecting O2 for wall-clock throughput priority.",
+              "quote": null
+            }
+          ]
+        },
+        {
+          "id": "DEC2",
+          "question": "What milestone strategy should be used to implement O2?",
+          "choice": "Hybrid four-phase strategy: Phase 1 big-bang foundation with single-lane, Phase 2 thin-slice parallel lanes, Phase 3 thin-slice integration, Phase 4 judge/freeze/closure.",
+          "rationale": "The hybrid approach de-risks by first proving the single-lane sequential path works (Phase 1), then incrementally adding parallelism (Phase 2) and integration (Phase 3). This ensures the foundational infrastructure (intake, workspace governance, audit spine) is validated before introducing the complexity of parallel execution and merge ordering.",
+          "alternatives_considered": [
+            "Pure thin-slice from the start — rejected because parallel infrastructure depends on foundational components being proven first.",
+            "Two-phase approach (foundation + everything else) — rejected because integration sub-flow complexity warrants its own phase for focused validation."
+          ],
+          "what_would_change_this_decision": [
+            "Team has prior experience with parallel orchestration infrastructure, reducing Phase 1 validation need.",
+            "Time pressure requires collapsing phases 2 and 3."
+          ],
+          "evidence_pointers": [
+            {
+              "candidate_id": "B2B",
+              "artifact_ref": "branch_set_v1",
+              "artifact_id": "branch_set_v1",
+              "json_pointer": "/branches/1/milestone_strategy",
+              "note": "Branch B2 milestone strategy specifying hybrid four-phase approach.",
+              "quote": null
+            }
+          ]
+        },
+        {
+          "id": "DEC3",
+          "question": "How should merge ordering determinism be guaranteed in the integration sub-flow?",
+          "choice": "C18 (Integration Merge Engine) applies lane patchsets in a deterministic order defined by work_plan.json task DAG topology, independent of wall-clock lane completion timing. Conflicts exceeding automated resolution thresholds trigger structured escalation (reroute to integration patcher or HITL).",
+          "rationale": "Deterministic ordering independent of completion timing is required for reproducibility (alignment warning AL006). The work_plan DAG provides a stable, auditable ordering basis. Escalation thresholds prevent unbounded automated conflict resolution.",
+          "alternatives_considered": [
+            "Completion-order-based merge — rejected because it introduces wall-clock nondeterminism.",
+            "Alphabetical file-path ordering — rejected because it ignores logical dependency structure."
+          ],
+          "what_would_change_this_decision": [
+            "Open question Q9 is resolved with a different conflict resolution strategy.",
+            "Work_plan DAG proves insufficient for ordering (e.g., many independent tasks with no topological order) — would need supplemental deterministic tie-breaker."
+          ],
+          "evidence_pointers": [
+            {
+              "candidate_id": "B2B",
+              "artifact_ref": "architecture_canonical_v1",
+              "artifact_id": "architecture_canonical_v1",
+              "json_pointer": "/options/1/components/7",
+              "note": "C18 Integration Merge Engine responsibilities including deterministic merge ordering.",
+              "quote": null
+            },
+            {
+              "candidate_id": "B2B",
+              "artifact_ref": "risk_gov_canonical_v1",
+              "artifact_id": "risk_gov_canonical_v1",
+              "json_pointer": "/risk_register/11",
+              "note": "K12 merge conflict risk and mitigation requiring deterministic ordering independent of wall-clock timing.",
+              "quote": null
+            },
+            {
+              "candidate_id": "B2B",
+              "artifact_ref": "alignment_warnings_v1",
+              "artifact_id": "alignment_warnings_v1",
+              "json_pointer": "/warnings",
+              "note": "AL006 alignment warning on merge ordering determinism.",
+              "quote": null
+            }
+          ]
+        },
+        {
+          "id": "DEC4",
+          "question": "What governance posture should be applied for tooling and HITL?",
+          "choice": "Sandboxed tooling with high HITL strictness across all phases.",
+          "rationale": "Parallel execution introduces elevated risks (K12 merge conflicts, K8 workspace integrity, K10 role separation across lanes). High HITL strictness ensures human oversight at critical junctures. Sandboxed tooling enforces deny-by-default tool permissions per the tool policy matrix. Open questions Q7–Q9 remain blocking, further justifying conservative governance.",
+          "alternatives_considered": [
+            "Medium HITL strictness — rejected due to unresolved open questions and elevated parallel-execution risks.",
+            "Unsandboxed tooling — rejected as it violates CNS1 and tool permission matrix requirements."
+          ],
+          "what_would_change_this_decision": [
+            "Open questions Q7–Q9 are resolved, reducing uncertainty about diff format, repair selection, and conflict resolution.",
+            "Demonstrated track record of safe parallel execution in similar repos."
+          ],
+          "evidence_pointers": [
+            {
+              "candidate_id": "B2B",
+              "artifact_ref": "branch_set_v1",
+              "artifact_id": "branch_set_v1",
+              "json_pointer": "/branches/1/governance_posture",
+              "note": "Branch B2 governance posture: sandboxed tooling, high HITL strictness.",
+              "quote": null
+            },
+            {
+              "candidate_id": "B2B",
+              "artifact_ref": "risk_gov_canonical_v1",
+              "artifact_id": "risk_gov_canonical_v1",
+              "json_pointer": "/hitl_policy",
+              "note": "HITL policy with interruption triggers and approval roles.",
+              "quote": null
+            }
+          ]
+        },
+        {
+          "id": "DEC5",
+          "question": "Which acceptance tests gate which milestone phases?",
+          "choice": "Phase 1: AT1-AT3, AT4 (single-lane subset), AT5, AT8, AT9, AT19, AT20. Phase 2: AT12, AT13, AT14, AT22. Phase 3: AT15, AT10, AT16 plus integration-specific merge ordering criterion. Phase 4: AT5-AT7, AT17, AT18, AT21, AT23 plus full AT suite at final Freeze.",
+          "rationale": "Tests are allocated to the earliest phase where the corresponding functionality is delivered. Phase 1 validates foundational infrastructure. Phase 2 validates per-lane mechanics. Phase 3 validates integration and change control. Phase 4 validates end-to-end closure. Full AT suite runs at final Freeze for comprehensive regression coverage.",
+          "alternatives_considered": [
+            "Running full AT suite at every phase — rejected as premature tests would fail on undelivered functionality.",
+            "Deferring all testing to Phase 4 — rejected as it eliminates incremental validation benefit of phased delivery."
+          ],
+          "what_would_change_this_decision": [
+            "Requirement priorities change, shifting functionality between phases.",
+            "New acceptance tests are added that map to specific phase deliverables."
+          ],
+          "evidence_pointers": [
+            {
+              "candidate_id": "B2B",
+              "artifact_ref": "branch_set_v1",
+              "artifact_id": "branch_set_v1",
+              "json_pointer": "/branches/1/acceptance_strategy",
+              "note": "Branch B2 acceptance strategy mapping ATs to phases.",
+              "quote": null
+            },
+            {
+              "candidate_id": "B2B",
+              "artifact_ref": "acceptance_canonical_v1",
+              "artifact_id": "acceptance_canonical_v1",
+              "json_pointer": "/acceptance_tests",
+              "note": "Full acceptance test definitions AT1-AT23.",
+              "quote": null
+            }
+          ]
+        }
+      ],
+      "supplemental_evaluations": [
+        {
+          "title": "Elevated Risk Assessment for Parallel Execution",
+          "notes": "O2 elevates several risks compared to O1: K12 (merge conflicts) becomes the primary risk due to parallel lane patchsets potentially overlapping; mitigated by Phase 3's deterministic merge ordering and explicit conflict escalation. K8 (workspace integrity) risk increases with namespaced partitions; mitigated by C22 partition enforcement and workspace integrity validators at each checkpoint. K10 (role separation) risk increases with parallel pods; mitigated by per-lane orchestrator-enforced output-type allowlists. K9 (context pack overflow) risk is actually lower per-lane due to smaller scoped packs but integration-stage packs may be larger. K6 (flaky tests) risk is distributed across lanes but integration revalidation can amplify it. All mitigations are addressed in specific milestone phases.",
+          "evidence": [
+            {
+              "candidate_id": "B2B",
+              "artifact_ref": "risk_gov_canonical_v1",
+              "artifact_id": "risk_gov_canonical_v1",
+              "json_pointer": "/risk_register/11",
+              "note": "K12 merge conflict risk — primary elevated risk for O2.",
+              "quote": null
+            },
+            {
+              "candidate_id": "B2B",
+              "artifact_ref": "risk_gov_canonical_v1",
+              "artifact_id": "risk_gov_canonical_v1",
+              "json_pointer": "/risk_register/7",
+              "note": "K8 workspace integrity risk — elevated due to namespaced partitions.",
+              "quote": null
+            },
+            {
+              "candidate_id": "B2B",
+              "artifact_ref": "risk_gov_canonical_v1",
+              "artifact_id": "risk_gov_canonical_v1",
+              "json_pointer": "/risk_register/9",
+              "note": "K10 role separation risk — elevated with parallel pods.",
+              "quote": null
+            }
+          ]
+        },
+        {
+          "title": "Blocking Open Questions Impact on B2B",
+          "notes": "Open questions Q7 (diff format), Q8 (smallest passing repair selection), and Q9 (conflict resolution for parallel patchsets) are all blocking and directly impact O2's parallel execution model. Q7 affects patchset format across all lanes and integration. Q8 affects repair selection in both per-lane and integration patch cycles. Q9 is the most critical for O2 specifically, as it determines how C18 handles overlapping lane outputs. The high HITL strictness posture and Phase 3's dedicated integration focus are designed to accommodate resolution of these questions. Until Q7-Q9 are resolved, Phase 3 implementation details remain provisional.",
+          "evidence": [
+            {
+              "candidate_id": "B2B",
+              "artifact_ref": "capsule_canonical_v1",
+              "artifact_id": "capsule_canonical_v1",
+              "json_pointer": "/open_questions/6",
+              "note": "Q7 — diff format blocking question.",
+              "quote": null
+            },
+            {
+              "candidate_id": "B2B",
+              "artifact_ref": "capsule_canonical_v1",
+              "artifact_id": "capsule_canonical_v1",
+              "json_pointer": "/open_questions/7",
+              "note": "Q8 — smallest passing repair selection blocking question.",
+              "quote": null
+            },
+            {
+              "candidate_id": "B2B",
+              "artifact_ref": "capsule_canonical_v1",
+              "artifact_id": "capsule_canonical_v1",
+              "json_pointer": "/open_questions/8",
+              "note": "Q9 — conflict resolution for parallel patchsets blocking question.",
+              "quote": null
+            }
+          ]
+        },
+        {
+          "title": "Pruning Guidance",
+          "notes": "Candidate B2B (O2 parallel lanes) is recommended when: (1) wall-clock throughput is a priority, (2) the target repository has low inter-module coupling enabling clean lane partitioning, and (3) the team is prepared for the higher orchestration complexity. It should be pruned in favor of B1 (O1 sequential) when the repo has high inter-module coupling or simplicity is paramount, or in favor of O3 when long-horizon partial-freeze resumability is the dominant concern.",
+          "evidence": [
+            {
+              "candidate_id": "B2B",
+              "artifact_ref": "branch_set_v1",
+              "artifact_id": "branch_set_v1",
+              "json_pointer": "/branches/1/rationale",
+              "note": "Branch B2 rationale and pruning hints.",
+              "quote": null
+            }
+          ]
+        }
+      ],
+      "synthesis_warnings": [
+        {
+          "id": "W1",
+          "severity": "high",
+          "summary": "Blocking open questions Q7 (diff format), Q8 (smallest passing repair), and Q9 (parallel conflict resolution) directly impact O2's integration sub-flow design. Phase 3 milestone deliverables and exit criteria are provisional until these questions are resolved. Recommend routing to clarification stage to resolve Q7-Q9 before Phase 3 implementation begins.",
+          "routing_target": "clarification",
+          "evidence": [
+            {
+              "candidate_id": "B2B",
+              "artifact_ref": "capsule_canonical_v1",
+              "artifact_id": "capsule_canonical_v1",
+              "json_pointer": "/open_questions/6",
+              "note": "Q7 blocking — diff format for patchsets.",
+              "quote": null
+            },
+            {
+              "candidate_id": "B2B",
+              "artifact_ref": "capsule_canonical_v1",
+              "artifact_id": "capsule_canonical_v1",
+              "json_pointer": "/open_questions/7",
+              "note": "Q8 blocking — smallest passing repair selection rules.",
+              "quote": null
+            },
+            {
+              "candidate_id": "B2B",
+              "artifact_ref": "capsule_canonical_v1",
+              "artifact_id": "capsule_canonical_v1",
+              "json_pointer": "/open_questions/8",
+              "note": "Q9 blocking — conflict resolution for parallel patchsets.",
+              "quote": null
+            }
+          ]
+        },
+        {
+          "id": "W2",
+          "severity": "medium",
+          "summary": "The integration-specific acceptance criterion ('deterministic merge ordering produces identical results regardless of lane completion order') from the branch acceptance strategy is not yet a canonical AT# test. It is used as a Phase 3 exit criterion but may need to be formalized as a new acceptance test. Minting a new AT# is outside this role's ID ownership.",
+          "routing_target": "acceptance_tests",
+          "evidence": [
+            {
+              "candidate_id": "B2B",
+              "artifact_ref": "branch_set_v1",
+              "artifact_id": "branch_set_v1",
+              "json_pointer": "/branches/1/acceptance_strategy",
+              "note": "Integration-specific acceptance criterion not yet mapped to an AT#.",
+              "quote": "deterministic merge ordering produces identical results regardless of lane completion order"
+            }
+          ]
+        },
+        {
+          "id": "W3",
+          "severity": "medium",
+          "summary": "Assumptions A6 (workspace backend namespacing/access control) and A8 (tool sandbox granularity) have low confidence and high impact. Both are critical for O2's namespaced workspace partitions (C22) and per-lane tool permission enforcement (C13). If these assumptions prove false, the parallel lane isolation model may need significant redesign.",
+          "routing_target": "clarification",
+          "evidence": [
+            {
+              "candidate_id": "B2B",
+              "artifact_ref": "capsule_canonical_v1",
+              "artifact_id": "capsule_canonical_v1",
+              "json_pointer": "/assumptions/5",
+              "note": "A6 — workspace backend namespacing, low confidence, high impact.",
+              "quote": null
+            },
+            {
+              "candidate_id": "B2B",
+              "artifact_ref": "capsule_canonical_v1",
+              "artifact_id": "capsule_canonical_v1",
+              "json_pointer": "/assumptions/7",
+              "note": "A8 — tool sandbox granularity, low confidence, high impact.",
+              "quote": null
+            }
+          ]
+        }
+      ],
+      "appendix": {
+        "glossary": [
+          {
+            "term": "Implementation Council",
+            "definition": "A CouncilOS subsystem that consumes a frozen planning output (plan_package_final.json) and produces audited, reproducible repository changes and release artifacts under orchestrator-controlled policies and validators."
+          },
+          {
+            "term": "Implementation Freeze Bundle",
+            "definition": "The canonical, typed/versioned set of JSON artifacts emitted at freeze, including run manifest, event log, work plan, patchsets, repo snapshot, test/quality/trace/review/release artifacts, decision record, and required workspace artifacts (workspace_index, context_packs, stage_handoffs)."
+          },
+          {
+            "term": "Shared Workspace",
+            "definition": "A tool-accessible, versioned and auditable storage area treated as an extension of the artifact system, containing canonical JSON artifacts and explicitly non-canonical notes/summaries, governed by permissions, retention, and checkpoint/resume handoffs."
+          },
+          {
+            "term": "Evidence Pointer",
+            "definition": "An RFC 6901 JSON Pointer object {artifact_ref, entity_id|null, json_pointer, note} referencing a versioned JSON artifact location; used as the sole standard for traceability across decisions, findings, and state representations."
+          },
+          {
+            "term": "Stage Handoff",
+            "definition": "A required JSON artifact emitted at each checkpoint boundary capturing resumable state: objectives, completed work, pending blockers, next actions, and pointers into canonical artifacts (work plan, patchsets, validation outputs)."
+          },
+          {
+            "term": "ChangeRequest",
+            "definition": "A canonical artifact proposed when plan semantics would need to change; requires explicit decisioning and policy-triggered escalation (HITL and/or reroute upstream) before any semantic deviation is allowed."
+          },
+          {
+            "term": "Orchestrator",
+            "definition": "Deterministic code component with sole authority over routing, budgets, iteration limits, termination, checkpoint/resume, tool permissions, selection logic, and validator enforcement."
+          },
+          {
+            "term": "Context Pack",
+            "definition": "A bounded, deterministically-compiled set of workspace artifacts provided to a role at a stage, selected by explicit rules and cited via evidence pointers."
+          },
+          {
+            "term": "Patchset",
+            "definition": "A JSON artifact embedding code diffs with deterministic apply order for repo modifications; used as the sole mechanism for code repair/changes in the workflow."
+          },
+          {
+            "term": "Validator",
+            "definition": "A code-owned deterministic gate that checks artifact integrity/completeness and quality criteria to allow stage transitions or freeze."
+          }
+        ]
+      }
+    }
+  }
+}

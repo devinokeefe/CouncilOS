@@ -1,0 +1,211 @@
+{
+  "artifact_type": "requirements_canonical",
+  "artifact_id": "requirements_canonical_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T18:48:00.947671Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "requirements_merge_v1"
+  ],
+  "payload": {
+    "requirements": [
+      {
+        "id": "R1",
+        "priority": "MUST",
+        "text": "The Implementation Council subsystem SHALL accept exactly one frozen plan_package_final.json (plus its associated structured handoff bundle) as its sole canonical planning input, and SHALL reject chat logs or any non-canonical/unapproved upstream artifacts as authoritative sources of plan semantics.",
+        "rationale": "Enforces single source of truth and prevents downstream semantic drift driven by non-canonical inputs."
+      },
+      {
+        "id": "R2",
+        "priority": "MUST",
+        "text": "The Implementation Council subsystem SHALL define and require a typed, versioned repo_context.json schema; orchestrator validators SHALL fail the run if repo_context.json is missing or schema-invalid, and repo_context.json SHALL be required before any code-generation stage begins and SHALL declare at minimum: repository root, language/build-system entrypoints, validator commands/entrypoints, protected/forbidden path patterns, and branch/commit metadata.",
+        "rationale": "Standardizes repository execution, validates prerequisites deterministically, and enables enforcement of path protections and validator invocation."
+      },
+      {
+        "id": "R3",
+        "priority": "MUST",
+        "text": "The Implementation Council subsystem SHALL define and require a typed, versioned workspace_context.json schema; orchestrator validators SHALL fail the run if workspace_context.json is missing or schema-invalid, and workspace_context.json SHALL be required before any workspace-writing stage begins and SHALL declare at minimum: workspace root, namespace/layout rules, canonical vs non-canonical partition rules, retention/compaction policies, and access-control declarations.",
+        "rationale": "Establishes enforceable workspace governance prerequisites for long-horizon execution, checkpointing, and deterministic context delivery."
+      },
+      {
+        "id": "R4",
+        "priority": "MUST",
+        "text": "The Implementation Council workflow SHALL be defined as a deterministic staged state machine with at minimum the stages: Intake → Generate → Validate → Review → Judge → Freeze, and SHALL include an explicit checkpoint boundary at every stage transition.",
+        "rationale": "Defines the required deterministic end-to-end staged workflow and ensures resumability and gating structure at each transition."
+      },
+      {
+        "id": "R5",
+        "priority": "MUST",
+        "text": "At every checkpoint boundary (i.e., each stage transition), the system SHALL emit a stage_handoff JSON artifact conforming to a typed/versioned schema, and orchestrator validators SHALL fail the run if any required stage_handoff is absent.",
+        "rationale": "Enforces pause/resume via explicit, machine-verifiable handoffs at every checkpoint boundary."
+      },
+      {
+        "id": "R6",
+        "priority": "MUST",
+        "text": "Each stage_handoff artifact SHALL capture resumable state sufficient for cold-start resume, including: stage objectives, completed work references, pending blockers, next actions, and evidence pointers into canonical artifacts (including work_plan, patchsets, and validation outputs).",
+        "rationale": "Ensures stage handoffs are operationally sufficient for deterministic resume without relying on transient agent memory or chat."
+      },
+      {
+        "id": "R7",
+        "priority": "MUST",
+        "text": "At Freeze, the system SHALL produce an Implementation Freeze Bundle that includes, at minimum, the following typed/versioned artifacts and directories: implementation_run_manifest.json, implementation_event_log.jsonl, work_plan.json, patchsets (diff-embedded JSON), repo_snapshot.json, test_results.json, quality_reports.json, trace_report.json, review_findings.json, release_bundle.json, decision_record.json, workspace_index.json, context_packs/, and stage_handoffs/.",
+        "rationale": "Defines the minimum canonical freeze deliverables required for audited downstream consumption and reproducible implementation."
+      },
+      {
+        "id": "R8",
+        "priority": "MUST",
+        "text": "The audit spine SHALL include an implementation_run_manifest that is immutable once created and an implementation_event_log that is append-only; the artifact store SHALL version every artifact, and the orchestrator SHALL checkpoint canonical artifacts at every stage boundary.",
+        "rationale": "Provides durable, immutable run-level accountability and replayable state transitions with versioned artifacts and mandatory checkpoints."
+      },
+      {
+        "id": "R9",
+        "priority": "MUST",
+        "text": "All LLM agent outputs in canonical stages SHALL be JSON-only artifacts conforming to per-stage schemas; the orchestrator SHALL reject any artifact containing prose/markdown/unstructured text or failing schema validation.",
+        "rationale": "Ensures deterministic machine-consumable artifacts suitable for validator enforcement and downstream councils."
+      },
+      {
+        "id": "R10",
+        "priority": "MUST",
+        "text": "All evidence pointers, traceability links, findings references, and decision citations in canonical artifacts SHALL use a single standard: RFC 6901 JSON Pointer objects with the structure {artifact_ref, entity_id|null, json_pointer, note} referencing versioned JSON artifacts; the orchestrator SHALL fail the run if any non-compliant or alternative evidence format is present.",
+        "rationale": "Enforces a single, validator-checkable traceability mechanism across the system."
+      },
+      {
+        "id": "R11",
+        "priority": "MUST",
+        "text": "Repository, code, and workspace state that must be cited for traceability SHALL be represented as versioned JSON artifacts addressable via RFC 6901 JSON Pointers, and the system SHALL forbid evidence standards that bypass JSON-artifact citation.",
+        "rationale": "Makes traceability uniformly machine-verifiable by ensuring citeable state is always reachable via the evidence pointer standard."
+      },
+      {
+        "id": "R12",
+        "priority": "MUST",
+        "text": "Repairs to canonical JSON artifacts SHALL be expressed exclusively as RFC 6902 JSON Patch arrays, and orchestrator validators SHALL reject any canonical artifact modification not expressed as JSON Patch.",
+        "rationale": "Constrains artifact mutation to a deterministic, auditable, and validator-checkable repair mechanism."
+      },
+      {
+        "id": "R13",
+        "priority": "MUST",
+        "text": "All code changes produced by the Implementation Council SHALL be emitted exclusively as diff-only patchset JSON artifacts with a deterministic apply order; the orchestrator SHALL enforce bounded apply/validate loops and SHALL fail the run if patchsets include non-diff code mutation mechanisms.",
+        "rationale": "Prevents non-auditable edits and supports reproducible application and validation cycles controlled by orchestrator policy."
+      },
+      {
+        "id": "R14",
+        "priority": "MUST",
+        "text": "During patchset application, the orchestrator SHALL enforce forbidden/protected-path rules and operation caps: no patchset may write to paths declared forbidden/protected in repo_context.json, and total patch operations per repair cycle SHALL be capped by orchestrator policy.",
+        "rationale": "Ensures policy-enforced safety boundaries and bounded change application under deterministic orchestrator control."
+      },
+      {
+        "id": "R15",
+        "priority": "MUST",
+        "text": "When multiple candidate repair patches pass validation, the orchestrator SHALL select the smallest passing repair using deterministic rules, with tie-breakers in order: (1) fewest operations, (2) fewest bytes changed, (3) first-generated tiebreaker.",
+        "rationale": "Defines deterministic selection logic to prevent non-reproducible or subjective choice among multiple passing repairs."
+      },
+      {
+        "id": "R16",
+        "priority": "MUST",
+        "text": "The Implementation Council SHALL NOT modify the semantics of upstream R#/AT#/O#/K# entities from the frozen input plan; any required semantic deviation SHALL be expressed as a ChangeRequest artifact and SHALL require a decision record and policy-triggered escalation (HITL and/or reroute upstream) before the deviation is applied.",
+        "rationale": "Prevents silent scope expansion and preserves upstream governance by requiring explicit change control for semantic deviations."
+      },
+      {
+        "id": "R17",
+        "priority": "MUST",
+        "text": "The shared workspace SHALL be tool-accessible, versioned, auditable, and checkpointed; it SHALL enforce a strict canonical vs non-canonical partition where canonical artifacts are immutable after freeze and non-canonical notes are append-only with provenance metadata; and the orchestrator SHALL build bounded context packs deterministically for each stage/role invocation using explicit selection rules, with context pack contents cited via evidence pointers.",
+        "rationale": "Enables governed long-horizon execution with auditable workspace state, deterministic context delivery, and clear canonical/non-canonical behavior."
+      },
+      {
+        "id": "R18",
+        "priority": "MUST",
+        "text": "workspace_index.json SHALL enumerate all workspace items with type, version, and provenance, and orchestrator validators SHALL fail the run if any workspace item is not indexed or if any context_pack exceeds configured bounds.",
+        "rationale": "Provides complete, enforceable workspace accounting and bounded context-pack delivery for deterministic consumption."
+      },
+      {
+        "id": "R19",
+        "priority": "MUST",
+        "text": "The orchestrator SHALL define a tool permission matrix per stage specifying allowed/denied capabilities (including filesystem read/write scopes, command execution, network access, package managers, and artifact I/O) and SHALL enforce it deterministically; tool invocations outside declared permissions SHALL be blocked and recorded in the audit log.",
+        "rationale": "Enables deterministic enforcement of execution constraints and produces auditable records of denied/violating tool actions."
+      },
+      {
+        "id": "R20",
+        "priority": "MUST",
+        "text": "The system SHALL implement and enforce a secrets policy such that secrets are never stored in event logs, workspace artifacts, or any canonical/non-canonical artifacts; the orchestrator SHALL enforce detection, redaction, and blocking guardrails validated before any artifact is persisted, and validators SHALL fail any run where secrets are detected in canonical artifacts, event logs, or workspace outputs.",
+        "rationale": "Meets compliance constraints by preventing persistence of sensitive data and making enforcement validator-checkable."
+      },
+      {
+        "id": "R21",
+        "priority": "MUST",
+        "text": "Freeze SHALL be permitted only when all deterministic, code-owned closure gates pass, including: build/test/lint/typecheck (as applicable per repo_context), artifact integrity, workspace integrity, risk closure, reproducibility, and trace completeness validators.",
+        "rationale": "Prevents freezes with unmet quality/integrity/traceability conditions and makes release decisions validator-gated."
+      },
+      {
+        "id": "R22",
+        "priority": "MUST",
+        "text": "The council structure SHALL enforce writer/reviewer/judge separation and multi-vendor diversity: writers produce code/artifact outputs, reviewers produce findings-only artifacts (no writing or patches), and judges produce accept/reject decisions; no single role may perform more than one of these functions within the same stage; orchestrator routing SHALL enforce default multi-vendor separation across writer/reviewer/judge roles.",
+        "rationale": "Prevents conflicts of interest and preserves independent review and judgment via enforceable role separation and routing diversity."
+      },
+      {
+        "id": "R23",
+        "priority": "MUST",
+        "text": "Flaky and nondeterministic failures SHALL be handled using deterministic retry rules with bounded budgets (including max retries per validator per stage); failures exceeding retry budgets SHALL be quarantined and escalated via a deterministic path (patch → reroute → HITL → ChangeRequest), and all retries and outcomes SHALL be recorded in the implementation_event_log.",
+        "rationale": "Establishes deterministic handling for nondeterminism while preserving auditability and bounded iteration behavior."
+      },
+      {
+        "id": "R24",
+        "priority": "SHOULD",
+        "text": "Large code refactors SHOULD be decomposed into bounded patchsets with staged validation and deterministic integration order; the orchestrator SHOULD reject any single patchset exceeding a configurable operation/size cap and require decomposition.",
+        "rationale": "Reduces risk of “rewrite the repo” loops and improves deterministic validation/integration by bounding change units."
+      },
+      {
+        "id": "R25",
+        "priority": "SHOULD",
+        "text": "test_results.json SHOULD include a deterministic mapping from each test outcome back to the corresponding AT# acceptance test ID from the planning artifacts to enable automated trace completeness validation.",
+        "rationale": "Supports validator-checkable end-to-end traceability from plan acceptance tests to implementation validation results."
+      }
+    ],
+    "id_map": {
+      "REQ_U_1": "R1",
+      "REQ_U_2": "R2",
+      "REQ_U_3": "R3",
+      "REQ_U_4": "R4",
+      "REQ_U_5": "R5",
+      "REQ_U_6": "R6",
+      "REQ_U_7": "R7",
+      "REQ_U_8": "R8",
+      "REQ_U_9": "R9",
+      "REQ_U_10": "R10",
+      "REQ_U_11": "R11",
+      "REQ_U_12": "R12",
+      "REQ_U_13": "R13",
+      "REQ_U_14": "R14",
+      "REQ_U_15": "R15",
+      "REQ_U_16": "R16",
+      "REQ_U_17": "R17",
+      "REQ_U_18": "R18",
+      "REQ_U_19": "R19",
+      "REQ_U_20": "R20",
+      "REQ_U_21": "R21",
+      "REQ_U_22": "R22",
+      "REQ_U_23": "R23",
+      "REQ_U_24": "R24",
+      "REQ_U_25": "R25"
+    },
+    "merge_log": [
+      "Merged duplicate input-contract requirements REQ_A_1 and REQ_B_1 into REQ_U_1.",
+      "Merged repo_context requirements REQ_A_2 and REQ_B_2 into REQ_U_2; preserved Draft B field enumerations and Draft A schema-validity gate.",
+      "Merged workspace_context requirements REQ_A_3 and REQ_B_3 into REQ_U_3; preserved Draft B field enumerations and Draft A schema-validity gate.",
+      "Merged workflow-stage definitions REQ_A_4 and REQ_B_4 into REQ_U_4 by taking Draft B’s superset stage list and retaining deterministic checkpoint requirement.",
+      "Merged stage_handoff presence requirements REQ_A_5 and REQ_B_4 into REQ_U_5; split out stage_handoff content into separate atomic unit REQ_U_6 from REQ_B_16.",
+      "Merged freeze bundle minimum contents REQ_A_6 and REQ_B_7 into REQ_U_7.",
+      "Merged audit-spine immutability/versioning/checkpointing requirements REQ_A_8 and REQ_B_8 into REQ_U_8.",
+      "Merged JSON-only/schema-valid canonical output requirements REQ_A_7 and REQ_B_6 into REQ_U_9.",
+      "Merged evidence pointer single-standard requirements REQ_A_9 and REQ_B_9 into REQ_U_10; merged citeable-state-as-JSON requirements REQ_A_10 and REQ_B_10 into REQ_U_11.",
+      "Merged JSON Patch-only repair requirements REQ_A_11 and REQ_B_11 into REQ_U_12; merged diff-only patchset requirements REQ_A_12 and REQ_B_11 into REQ_U_13.",
+      "Kept Draft B-specific enforcement details as separate MUST units: forbidden/protected paths + op caps (REQ_U_14) and smallest-passing-repair tie-breakers (REQ_U_15).",
+      "Merged no-semantic-change/change-control requirements REQ_A_13 and REQ_B_21 into REQ_U_16.",
+      "Merged shared-workspace governance/context-pack determinism requirements REQ_A_15, REQ_B_14, and REQ_B_15 into REQ_U_17; merged workspace indexing/bounds requirements REQ_A_16 and REQ_B_15 into REQ_U_18.",
+      "Merged tool-permission-matrix requirements REQ_A_17 and REQ_B_22 into REQ_U_19.",
+      "Merged secrets-policy enforcement requirements REQ_A_18 and REQ_B_17 into REQ_U_20.",
+      "Merged freeze gate requirements REQ_A_19 and REQ_B_18 into REQ_U_21.",
+      "Merged role separation + reviewer findings-only + multi-vendor routing requirements REQ_A_20, REQ_B_19, and REQ_B_20 into REQ_U_22.",
+      "Kept Draft B flaky-failure policy as separate MUST unit REQ_U_23; retained Draft B SHOULD units on refactor decomposition (REQ_U_24) and AT# mapping (REQ_U_25)."
+    ]
+  }
+}

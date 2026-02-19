@@ -1,0 +1,413 @@
+{
+  "$defs": {
+    "OracleCheck": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "title": "Type",
+          "type": "string"
+        },
+        "path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Path"
+        },
+        "value": {
+          "anyOf": [
+            {},
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        },
+        "metric": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Metric"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "title": "OracleCheck",
+      "type": "object"
+    },
+    "OracleSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "title": "Type",
+          "type": "string"
+        },
+        "schema_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Schema Ref"
+        },
+        "checks": {
+          "items": {
+            "$ref": "#/$defs/OracleCheck"
+          },
+          "title": "Checks",
+          "type": "array"
+        },
+        "expected_hash": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expected Hash"
+        },
+        "baseline_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Baseline Ref"
+        },
+        "metric": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Metric"
+        },
+        "threshold": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Threshold"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "title": "OracleSpec",
+      "type": "object"
+    },
+    "RemoteOpBudget": {
+      "additionalProperties": false,
+      "properties": {
+        "time_sec": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Time Sec"
+        },
+        "cost_usd": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cost Usd"
+        },
+        "max_calls": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Calls"
+        }
+      },
+      "title": "RemoteOpBudget",
+      "type": "object"
+    },
+    "RemoteOpCanary": {
+      "additionalProperties": false,
+      "properties": {
+        "inputs_subset": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Inputs Subset",
+          "type": "array"
+        },
+        "cost_cap": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cost Cap"
+        }
+      },
+      "title": "RemoteOpCanary",
+      "type": "object"
+    },
+    "RemoteOpInputs": {
+      "additionalProperties": false,
+      "properties": {
+        "snapshot_refs": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Snapshot Refs",
+          "type": "array"
+        }
+      },
+      "title": "RemoteOpInputs",
+      "type": "object"
+    },
+    "RemoteOpScale": {
+      "additionalProperties": false,
+      "properties": {
+        "max_cost": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Cost"
+        },
+        "max_calls": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Calls"
+        }
+      },
+      "title": "RemoteOpScale",
+      "type": "object"
+    },
+    "RemoteOpSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "op_id": {
+          "title": "Op Id",
+          "type": "string"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Task Id"
+        },
+        "profile_id": {
+          "title": "Profile Id",
+          "type": "string"
+        },
+        "tool_id": {
+          "title": "Tool Id",
+          "type": "string"
+        },
+        "idempotency_key": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Idempotency Key"
+        },
+        "budget": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RemoteOpBudget"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "inputs": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RemoteOpInputs"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "expected": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Expected",
+          "type": "array"
+        },
+        "canary": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RemoteOpCanary"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "scale": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RemoteOpScale"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "oracle_override": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/OracleSpec"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "mock_output": {
+          "anyOf": [
+            {},
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Mock Output"
+        },
+        "mock_canary_output": {
+          "anyOf": [
+            {},
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Mock Canary Output"
+        },
+        "mock_attempts": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Mock Attempts",
+          "type": "array"
+        },
+        "mock_cost": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Mock Cost"
+        }
+      },
+      "required": [
+        "op_id",
+        "profile_id",
+        "tool_id"
+      ],
+      "title": "RemoteOpSpec",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "default": "2.0.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "ops": {
+      "items": {
+        "$ref": "#/$defs/RemoteOpSpec"
+      },
+      "title": "Ops",
+      "type": "array"
+    }
+  },
+  "title": "RemoteOpsManifestPayload",
+  "type": "object"
+}

@@ -1,0 +1,102 @@
+{
+  "artifact_type": "judge_pairwise_result",
+  "artifact_id": "judge_pair_B01A_B01B_3_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T22:51:05.076920Z",
+  "source_run_id": "e7c2c917-9d2c-4c38-b133-533916af57c3",
+  "parents": [
+    "plan_candidate_B01A_v3",
+    "plan_candidate_B01B_v3"
+  ],
+  "payload": {
+    "comparison": {
+      "a": "Candidate A is strong on requirements/architecture articulation and provides a solid acceptance-test list (AT1–AT23), plus clear HITL interrupt triggers and synthesis warnings/open questions; however, it is less operationally decomposed into stage-by-stage milestones with deliverables/exit criteria and has less explicit milestone-level acceptance-test coverage mapping.",
+      "b": "Candidate B is more implementation-ready and closure-oriented because it decomposes the O1 linear pipeline into concrete milestones with deliverables and exit criteria, explicitly maps/evaluates acceptance-test coverage across milestones, and operationalizes governance via decisioning and milestone gates; it also more explicitly calls out the big-bang downside (no partial-freeze) as a key consequence."
+    },
+    "judge_id": "e7c2c917-9d2c-4c38-b133-533916af57c3",
+    "judge_model": "council-os-hq",
+    "winner": "b",
+    "scores": {
+      "feasibility": 8,
+      "testability": 9,
+      "governance": 8,
+      "architecture": 8,
+      "clarity": 8
+    },
+    "evidence": [
+      {
+        "artifact_ref": "plan_candidate_B01A_v3",
+        "entity_id": null,
+        "json_pointer": "/milestones",
+        "note": "Differentiator: operational decomposition—Candidate A has a single high-level milestone block.",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B01B_v3",
+        "entity_id": null,
+        "json_pointer": "/milestones",
+        "note": "Differentiator: operational decomposition—Candidate B defines M1–M7 with deliverables and exit criteria aligned to the linear pipeline.",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B01A_v3",
+        "entity_id": null,
+        "json_pointer": "/acceptance_tests",
+        "note": "Differentiator: testability—Candidate A provides AT1–AT23 but without an explicit milestone-by-milestone coverage evaluation.",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B01B_v3",
+        "entity_id": null,
+        "json_pointer": "/supplemental_evaluations/0/notes",
+        "note": "Differentiator: testability—Candidate B explicitly summarizes acceptance-test coverage by milestones.",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B01A_v3",
+        "entity_id": null,
+        "json_pointer": "/governance/hitl_policy/when_to_interrupt",
+        "note": "Differentiator: governance—Candidate A defines HITL interrupt triggers.",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B01B_v3",
+        "entity_id": null,
+        "json_pointer": "/decision_log/2",
+        "note": "Differentiator: governance operationalization—Candidate B explicitly decides/configures high HITL strictness (DEC3).",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B01A_v3",
+        "entity_id": null,
+        "json_pointer": "/synthesis_warnings/0/summary",
+        "note": "Differentiator: clarity on key blockers—Candidate A warns about multiple blocking open questions impacting enforceability.",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B01B_v3",
+        "entity_id": null,
+        "json_pointer": "/synthesis_warnings/0/summary",
+        "note": "Differentiator: clarity on big-bang consequence—Candidate B explicitly flags lack of partial-freeze as a budget-risk consequence.",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      }
+    ],
+    "notes": "Winner B due to better closure readiness from milestone-level operationalization and explicit acceptance-test coverage mapping, while maintaining a similarly conservative O1/big-bang governance posture."
+  }
+}

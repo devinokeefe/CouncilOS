@@ -1,0 +1,90 @@
+{
+  "$defs": {
+    "FreezeTradeoff": {
+      "additionalProperties": false,
+      "properties": {
+        "topic": {
+          "title": "Topic",
+          "type": "string"
+        },
+        "winner_reason": {
+          "title": "Winner Reason",
+          "type": "string"
+        },
+        "runner_up_reason": {
+          "title": "Runner Up Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "topic",
+        "winner_reason",
+        "runner_up_reason"
+      ],
+      "title": "FreezeTradeoff",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "winner_candidate_ref": {
+      "title": "Winner Candidate Ref",
+      "type": "string"
+    },
+    "frozen_plan_ref": {
+      "title": "Frozen Plan Ref",
+      "type": "string"
+    },
+    "why_winner": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Why Winner",
+      "type": "array"
+    },
+    "tradeoffs": {
+      "items": {
+        "$ref": "#/$defs/FreezeTradeoff"
+      },
+      "title": "Tradeoffs",
+      "type": "array"
+    },
+    "judge_summary_refs": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Judge Summary Refs",
+      "type": "array"
+    },
+    "validator_summary_ref": {
+      "title": "Validator Summary Ref",
+      "type": "string"
+    },
+    "remaining_open_questions": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Remaining Open Questions",
+      "type": "array"
+    },
+    "accepted_risks": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Accepted Risks",
+      "type": "array"
+    }
+  },
+  "required": [
+    "winner_candidate_ref",
+    "frozen_plan_ref",
+    "why_winner",
+    "tradeoffs",
+    "judge_summary_refs",
+    "validator_summary_ref",
+    "remaining_open_questions",
+    "accepted_risks"
+  ],
+  "title": "FreezeRecordPayload",
+  "type": "object"
+}

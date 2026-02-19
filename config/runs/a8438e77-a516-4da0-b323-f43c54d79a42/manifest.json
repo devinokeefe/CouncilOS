@@ -1,0 +1,85 @@
+{
+  "run_id": "a8438e77-a516-4da0-b323-f43c54d79a42",
+  "created_at": "2026-02-15T22:53:25.986478Z",
+  "code_version": "5a4b0019c6604f0e1c56a694de0379dbc08309b7",
+  "schema_versions": {
+    "artifacts": "1.0.0"
+  },
+  "run_config_version": "1.0.0",
+  "stage_machine_version": "1.0.0",
+  "validator_suite_version": "1.0.0",
+  "selection_protocol_version": "1.0.0",
+  "model_portfolio": {
+    "openai/gpt-5.2": {
+      "provider": "openai",
+      "model": "openai/gpt-5.2",
+      "temperature": 0.0,
+      "max_tokens": 128000,
+      "prompt_version_hash": "hq_pipeline"
+    },
+    "openai/gpt-5.2-codex": {
+      "provider": "openai",
+      "model": "openai/gpt-5.2-codex",
+      "temperature": 0.0,
+      "max_tokens": 128000,
+      "prompt_version_hash": "hq_pipeline"
+    },
+    "openai/gpt-5.2-pro": {
+      "provider": "openai",
+      "model": "openai/gpt-5.2-pro",
+      "temperature": 0.0,
+      "max_tokens": 128000,
+      "prompt_version_hash": "hq_pipeline"
+    },
+    "anthropic/claude-opus-4-6": {
+      "provider": "anthropic",
+      "model": "anthropic/claude-opus-4-6",
+      "temperature": 0.0,
+      "max_tokens": 0,
+      "prompt_version_hash": "hq_pipeline"
+    },
+    "anthropic/claude-sonnet-4-5": {
+      "provider": "anthropic",
+      "model": "anthropic/claude-sonnet-4-5",
+      "temperature": 0.0,
+      "max_tokens": 0,
+      "prompt_version_hash": "hq_pipeline"
+    },
+    "google/gemini-2.5-pro": {
+      "provider": "google_vertex_ai",
+      "model": "google/gemini-2.5-pro",
+      "temperature": 0.0,
+      "max_tokens": 65535,
+      "prompt_version_hash": "hq_pipeline"
+    },
+    "google/gemini-3-pro-preview": {
+      "provider": "google_vertex_ai",
+      "model": "google/gemini-3-pro-preview",
+      "temperature": 0.0,
+      "max_tokens": 65535,
+      "prompt_version_hash": "hq_pipeline"
+    }
+  },
+  "branching_policy": {
+    "branch_count": 4,
+    "keep_count": 3
+  },
+  "ensemble_policy": {
+    "synthesizers_per_branch": 2,
+    "judge_panel_size": 3
+  },
+  "iteration_caps": {
+    "max_full_cycles_without_pass": 3,
+    "max_pod_reruns": 2,
+    "max_branch_rebuilds": 2,
+    "max_candidate_repairs": 3
+  },
+  "tool_policy_version": "1.0.0",
+  "tools_enabled": false,
+  "consent_profile": "trusted_user",
+  "determinism_disclaimer": "LLM outputs are stochastic; orchestrator routing is deterministic.",
+  "prompt_pack_hash": "af282ee0e0cbb7c4209a67b23545c31fe221347185cd8bbb5fd68317c2eb4728",
+  "config_hash": "5c185c7206d9c1754f5993dcc0383efd8e4a5140aeaa57bcc8d48a69eeecf1e9",
+  "parent_run_id": "e7c2c917-9d2c-4c38-b133-533916af57c3",
+  "forked_from_checkpoint_id": "cp-457c537c-db16-4ef7-b306-b943a18d776d"
+}

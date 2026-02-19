@@ -1,0 +1,391 @@
+{
+  "artifact_type": "consistency_findings",
+  "artifact_id": "consistency_B01B_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T19:00:46.543014Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B01B_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B01B_v1",
+    "findings": [
+      {
+        "id": "CS1",
+        "severity": "critical",
+        "summary": "Tool policy for Intake forbids canonical artifact writes (and does not allow artifact_write tool), but Intake Gate is specified to initialize immutable run_manifest, append-only event_log, and emit a stage_handoff. This makes the Intake stage internally inconsistent with R8/R5 and the C3 responsibilities.",
+        "evidence": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/governance/tool_policy/stage_policies/0/allowlisted_tools",
+            "note": "Intake allowlisted tools exclude artifact_write",
+            "quote": "[\"artifact_read\",\"schema_validate\"]"
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/governance/tool_policy/stage_policies/0/restrictions/0/artifact_write",
+            "note": "Intake restriction limits artifact writes to non-canonical only",
+            "quote": "allow_noncanonical_only"
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/architecture/options/0/components/2/responsibilities",
+            "note": "C3 Intake Gate responsibilities require manifest/log init and stage_handoff emission",
+            "quote": null
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/requirements/7/text",
+            "note": "R8 requires run_manifest and event_log behavior",
+            "quote": "The audit spine SHALL include an implementation_run_manifest that is immutable once created and an implementation_event_log that is append-only;"
+          }
+        ],
+        "routing_target": "risk_gov_and_tool_policy_alignment"
+      },
+      {
+        "id": "CS2",
+        "severity": "high",
+        "summary": "Tool policy for Review denies any artifact_write/workspace_write, but the architecture requires Reviewer Pod to emit review_findings.json (findings-only artifact). This contradicts R22/C7 and blocks AT22/AT7 deliverables.",
+        "evidence": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/governance/tool_policy/stage_policies/6/restrictions/0/artifact_write",
+            "note": "Review stage forbids artifact writes",
+            "quote": "deny"
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/governance/tool_policy/stage_policies/6/restrictions/0/workspace_write",
+            "note": "Review stage forbids workspace writes",
+            "quote": "deny"
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/architecture/options/0/components/6/responsibilities/1",
+            "note": "C7 says reviewers produce review_findings.json",
+            "quote": "Produce review_findings.json with RFC 6901 evidence pointers into versioned artifacts (CNS6)."
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/acceptance_tests/21/procedure",
+            "note": "AT22 expects reviewers to produce findings artifacts",
+            "quote": "Run a workflow with distinct writer, reviewer, and judge roles... inspect produced artifacts to ensure reviewers emit findings-only"
+          }
+        ],
+        "routing_target": "risk_gov_and_tool_policy_alignment"
+      },
+      {
+        "id": "CS3",
+        "severity": "high",
+        "summary": "Workflow includes a distinct \"Patch\" stage (Review → Patch → Judge), but the tool permission matrix omits a \"Patch\" stage policy entirely. This leaves Patcher Pod permissions undefined/inconsistent with R19 and the state machine in M3.",
+        "evidence": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/milestones/2/deliverables/0/text",
+            "note": "M3 defines the staged state machine including Patch",
+            "quote": "Deterministic staged state machine definition: Intake → WorkPlanning → Generate → PatchApply → Validate → Review → Patch → Judge → Freeze with checkpoint at every boundary per R4"
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/governance/tool_policy/stage_policies",
+            "note": "Stage policies list does not include a Patch stage entry",
+            "quote": null
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/architecture/options/0/components/7/name",
+            "note": "Patcher Pod exists as a component requiring permissions",
+            "quote": "Patcher Pod"
+          }
+        ],
+        "routing_target": "risk_gov_and_tool_policy_alignment"
+      },
+      {
+        "id": "CS4",
+        "severity": "medium",
+        "summary": "Stage naming is inconsistent: some places use \"Plan\" while others use \"WorkPlanning\" for the stage between Intake and Generate. This impacts stage_handoff naming (Intake→Plan vs Intake→WorkPlanning) and could break deterministic stage validation and handoff requirements.",
+        "evidence": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/architecture/options/0/components/0/responsibilities/0",
+            "note": "C1 stage ordering uses \"Plan\"",
+            "quote": "Enforce strict stage ordering and closure gates (Intake → Plan → Generate → Validate → Review → Patch → Judge → Freeze)."
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/milestones/0/deliverables/3/text",
+            "note": "M1 uses Intake→WorkPlanning boundary",
+            "quote": "... stage_handoff emission for Intake→WorkPlanning boundary"
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/architecture/options/0/components/2/responsibilities/3",
+            "note": "C3 references Intake→Plan boundary",
+            "quote": "Emit stage_handoff for Intake→Plan boundary."
+          }
+        ],
+        "routing_target": "plan_candidate_revision"
+      },
+      {
+        "id": "CS5",
+        "severity": "medium",
+        "summary": "Chosen option O1 claims it eliminates merge/integration conflict risk (K12) entirely due to no parallelism, yet governance includes an explicit \"IntegrateAndValidate\" stage and the risk register retains K12 as high severity. This is a semantic inconsistency about whether integration/merge conflict handling is in-scope for O1.",
+        "evidence": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/architecture/chosen/rationale",
+            "note": "O1 rationale claims merge-conflict risk eliminated",
+            "quote": "The lack of parallelism eliminates merge-conflict risks (K12) entirely and simplifies workspace partitioning."
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/governance/tool_policy/stage_policies/5/stage",
+            "note": "Tool policy includes integration stage despite O1 sequential pipeline selection",
+            "quote": "IntegrateAndValidate"
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/risk_register/11",
+            "note": "K12 remains in the risk register with high severity and describes parallel/overlapping patchsets",
+            "quote": null
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/supplemental_evaluations/0/notes",
+            "note": "Supplement claims O1 eliminates K12 entirely",
+            "quote": "O1 eliminates K12 (merge/integration conflicts) entirely since there is no parallel execution."
+          }
+        ],
+        "routing_target": "plan_candidate_revision"
+      },
+      {
+        "id": "CS001",
+        "severity": "high",
+        "summary": "Milestone M4 deliverable M4-D3 references 'PatchApply' stage but architecture O1 does not define a PatchApply stage as a distinct component or stage boundary in the state machine.",
+        "evidence": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/milestones/3/deliverables/2",
+            "note": "M4-D3 references PatchApply stage",
+            "quote": "Patchset application specification: forbidden/protected-path enforcement, operation caps, base_commit requirement per R14"
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/architecture/chosen/option_id",
+            "note": "O1 architecture chosen",
+            "quote": null
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/architecture/options/0/components",
+            "note": "O1 components list does not include PatchApply as distinct stage",
+            "quote": null
+          }
+        ],
+        "routing_target": "synthesis_repair"
+      },
+      {
+        "id": "CS002",
+        "severity": "high",
+        "summary": "Architecture O1 high_level_dataflow describes stage sequence including 'PatchApply' but M3-D1 staged state machine definition lists 'Intake → WorkPlanning → Generate → PatchApply → Validate → Review → Patch → Judge → Freeze' while O1 components do not define PatchApply as a separate component with distinct responsibilities.",
+        "evidence": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/architecture/chosen/high_level_dataflow",
+            "note": "Dataflow mentions PatchApply as orchestrator-owned action",
+            "quote": "[C1 Orchestrator: apply patchsets via PatchApply with forbidden-path/op-cap enforcement]"
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/milestones/2/deliverables/0",
+            "note": "M3-D1 includes PatchApply in stage sequence",
+            "quote": "Intake → WorkPlanning → Generate → PatchApply → Validate → Review → Patch → Judge → Freeze"
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/architecture/options/0/components/0",
+            "note": "C1 Orchestrator responsibilities do not explicitly list PatchApply as a stage",
+            "quote": null
+          }
+        ],
+        "routing_target": "synthesis_repair"
+      },
+      {
+        "id": "CS003",
+        "severity": "medium",
+        "summary": "Tool policy stage 'IntegrateAndValidate' is defined in risk_gov tool_policy but O1 architecture does not include an Integration stage or IntegrateAndValidate stage, creating a mismatch between governance policy and architecture.",
+        "evidence": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/5",
+            "note": "IntegrateAndValidate stage policy defined",
+            "quote": null
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/architecture/chosen/option_id",
+            "note": "O1 chosen architecture is sequential without integration stage",
+            "quote": null
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/milestones/2/deliverables/0",
+            "note": "M3-D1 stage sequence does not include IntegrateAndValidate",
+            "quote": "Intake → WorkPlanning → Generate → PatchApply → Validate → Review → Patch → Judge → Freeze"
+          }
+        ],
+        "routing_target": "synthesis_repair"
+      },
+      {
+        "id": "CS004",
+        "severity": "medium",
+        "summary": "Decision DEC1 rationale states O1 'eliminates merge-conflict risks (K12) entirely' but K12 mitigation text still describes merge conflict handling procedures including 'deterministic apply/merge ordering rules' and 'automated conflict resolution' which are unnecessary if conflicts cannot occur.",
+        "evidence": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/governance/decision_log/0/rationale",
+            "note": "DEC1 claims K12 eliminated entirely",
+            "quote": "It eliminates merge-conflict risks (K12) entirely and simplifies workspace partitioning."
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/risk_register/11/mitigation/text",
+            "note": "K12 mitigation describes conflict handling",
+            "quote": "Require explicit base_commit in each patchset; deterministic apply/merge ordering rules independent of wall-clock completion timing"
+          }
+        ],
+        "routing_target": "synthesis_repair"
+      },
+      {
+        "id": "CS005",
+        "severity": "low",
+        "summary": "Acceptance test AT4 pass criteria references 'Intake → Generate → Validate → Review → Judge → Freeze' stage sequence but M3-D1 and other references specify 'Intake → WorkPlanning → Generate → PatchApply → Validate → Review → Patch → Judge → Freeze', missing WorkPlanning, PatchApply, and Patch stages.",
+        "evidence": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/acceptance_tests/3/pass_criteria",
+            "note": "AT4 pass criteria lists incomplete stage sequence",
+            "quote": "Stage sequence includes at minimum Intake → Generate → Validate → Review → Judge → Freeze"
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/milestones/2/deliverables/0",
+            "note": "M3-D1 specifies full stage sequence",
+            "quote": "Intake → WorkPlanning → Generate → PatchApply → Validate → Review → Patch → Judge → Freeze"
+          }
+        ],
+        "routing_target": "synthesis_repair"
+      },
+      {
+        "id": "CS006",
+        "severity": "medium",
+        "summary": "R4 requirement states workflow SHALL include 'at minimum the stages: Intake → Generate → Validate → Review → Judge → Freeze' but this omits WorkPlanning, PatchApply, and Patch stages that are present in M3-D1 and architecture dataflow, creating inconsistency in minimum stage requirements.",
+        "evidence": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/requirements/3/text",
+            "note": "R4 minimum stage list",
+            "quote": "at minimum the stages: Intake → Generate → Validate → Review → Judge → Freeze"
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/milestones/2/deliverables/0",
+            "note": "M3-D1 full stage sequence",
+            "quote": "Intake → WorkPlanning → Generate → PatchApply → Validate → Review → Patch → Judge → Freeze"
+          }
+        ],
+        "routing_target": "synthesis_repair"
+      },
+      {
+        "id": "CS007",
+        "severity": "low",
+        "summary": "Milestone M5 exit criteria references 'all declared entrypoints invocable' but does not specify which artifact (repo_context.json) declares these entrypoints, while M1-D2 and R2 clearly establish repo_context.json as the source.",
+        "evidence": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/milestones/4/exit_criteria/0",
+            "note": "M5 exit criteria mentions entrypoints without artifact reference",
+            "quote": "Validators produce structured results with AT# mapping; all declared entrypoints invocable"
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/requirements/1/text",
+            "note": "R2 specifies repo_context.json declares entrypoints",
+            "quote": "validator commands/entrypoints"
+          }
+        ],
+        "routing_target": "synthesis_repair"
+      }
+    ]
+  }
+}

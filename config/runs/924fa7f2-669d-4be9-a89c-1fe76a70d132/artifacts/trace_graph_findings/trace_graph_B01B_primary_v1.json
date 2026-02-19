@@ -1,0 +1,55 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B01B_primary_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T19:00:51.133959Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B01B_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B01B_v1",
+    "findings": [
+      {
+        "id": "FD-M1-DEPENDENCY-INVERSION",
+        "severity": "high",
+        "summary": "Milestone M1 specifies the implementation of the 'Intake Gate' (C3), which requires initializing the 'run_manifest' and emitting a 'stage_handoff'. However, the schemas and definitions for these artifacts are deliverables of future milestone M2 and M3 respectively, creating a logical dependency impossibility since M2 and M3 depend on M1.",
+        "evidence": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/milestones/0/deliverables/3",
+            "note": "M1-D4 specifies Intake Gate logic including run_manifest initialization and stage_handoff emission.",
+            "quote": "Intake Gate (C3) specification: ... run_manifest initialization ... stage_handoff emission for Intake→WorkPlanning boundary"
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/milestones/1/deliverables/0",
+            "note": "M2-D1 defines the run_manifest schema, which is required by M1-D4.",
+            "quote": "Immutable run_manifest schema and append-only event_log schema with versioning and checkpoint rules per R8"
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/milestones/2/deliverables/1",
+            "note": "M3-D2 defines the stage_handoff schema, which is required by M1-D4.",
+            "quote": "Typed/versioned stage_handoff schema with required fields... per R5, R6"
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/milestones/2/depends_on",
+            "note": "M3 depends on M1/M2, making the schema unavailable during M1 execution.",
+            "quote": null
+          }
+        ],
+        "routing_target": "plan_candidate_B01B_v1"
+      }
+    ]
+  }
+}

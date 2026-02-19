@@ -1,0 +1,129 @@
+{
+  "artifact_type": "failure_mode_findings",
+  "artifact_id": "failure_modes_B2A_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T21:05:22.027041Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B2A_v2"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2A_v2",
+    "taxonomy": "CouncilOS taxonomy categories (provided)",
+    "critical_findings": [
+      {
+        "id": "FM1",
+        "category": "Integration/merge conflict handling & parallelism hazards",
+        "severity": "critical",
+        "finding": "Deterministic fan-in is a critical-path requirement for O2, but the plan still has blocking ambiguity on patch format + merge strategy + conflict resolution. Without a fully specified, deterministic (wall-clock-independent) merge ordering algorithm and bounded conflict policy, integration outcomes can become non-reproducible or stall indefinitely under conflicts.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/project_capsule/open_questions/6 (Q7 diff format); /inputs/plan_candidate/plan_package/project_capsule/open_questions/8 (Q9 conflict resolution/merge strategy); /inputs/plan_candidate/plan_package/decision_log/2 (DEC3 depends on Q7/Q9); /inputs/plan_candidate/plan_package/milestones/2/exit_criteria (M3 requires deterministic integration identical regardless of completion order)",
+          "closure_target": "Before M3 (Phase 3) exit; bake deterministic ordering + conflict thresholds into canonical schemas and validator rules, then test via the M3 reproducibility exit criterion.",
+          "earliest_prevention_stage": "WorkPlanning",
+          "recommended_action": "Define canonical patchset schema normalization rules + a deterministic ordering key (e.g., stable lane_id + work_plan topological index) and a deterministic conflict classification/escalation spec; add an integration validator that replays merge twice under permuted lane completion orders and requires identical repo_snapshot hashes."
+        }
+      },
+      {
+        "id": "FM2",
+        "category": "Secrets handling & sensitive data retention",
+        "severity": "critical",
+        "finding": "The secrets policy requires detection/redaction/blocking \"before any artifact is persisted\", but the architecture also requires append-only event logs and pervasive artifact/workspace writes. If any tool output, patch diff, repo snapshot, or context pack contains secrets, the system can accidentally persist them (especially in append-only logs) and then cannot safely \"unwrite\" them.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/project_capsule/constraints/8 (CNS9 secrets never stored); /inputs/plan_candidate/plan_package/requirements/19 (R20 requires detection/redaction/blocking before persistence); /inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies/4 (Validate includes secrets_scan but also artifact_write)",
+          "closure_target": "Before any stage that writes canonical artifacts or appends to implementation_event_log.jsonl; enforce at the storage/write boundary, not as a post-hoc validator.",
+          "earliest_prevention_stage": "Intake",
+          "recommended_action": "Specify a write-path guard: streaming secrets scan/redaction at the Workspace Gateway / artifact-write API; event_log must record denials using redacted excerpts/hashes only; add a hard rule that raw tool stdout/stderr is never persisted unscanned (store references + redacted summaries only)."
+        }
+      },
+      {
+        "id": "FM3",
+        "category": "Role separation & multi-vendor governance",
+        "severity": "critical",
+        "finding": "The tool policy for the Review stage forbids artifact_write/workspace_write, but the system requires reviewers to emit findings artifacts (e.g., review_findings.json) as canonical outputs. This mismatch can either (a) block required review artifacts and break traceability/governance gates, or (b) cause ad hoc permission exceptions that weaken deterministic enforcement.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies/6/restrictions/0/artifact_write (Review artifact_write=deny); /inputs/plan_candidate/plan_package/requirements/6 (R7 requires review_findings.json in freeze bundle); /inputs/plan_candidate/plan_package/requirements/21 (R22 requires reviewers produce findings-only artifacts)",
+          "closure_target": "Before M1 Phase 1 single-lane end-to-end demonstration (since it includes Review); update policy-as-data and corresponding acceptance tests.",
+          "earliest_prevention_stage": "Review",
+          "recommended_action": "Adjust Review stage policy to allow writing a single findings-only artifact type (strict allowlist) via artifact_write to canonical store, while still forbidding patch/code writes; enforce by role output-type allowlist + schema validator."
+        }
+      },
+      {
+        "id": "FM4",
+        "category": "Evidence & traceability compliance (RFC6901 pointers)",
+        "severity": "high",
+        "finding": "Evidence pointer objects are not consistently RFC6901-compliant as specified: decision_log evidence_pointers include extra fields (e.g., artifact_id, quote, candidate_id) not in the required structure, and at least one json_pointer is the empty string, which violates the stated rule that pointers start with '/'. This risks systematic validator failure or silent divergence from the single evidence standard.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/requirements/9 (R10 evidence pointer structure); /inputs/plan_candidate/plan_package/decision_log/0/evidence_pointers/0 (extra fields beyond {artifact_ref, entity_id|null, json_pointer, note}); /inputs/plan_candidate/plan_package/decision_log/0/evidence_pointers/1/json_pointer (empty string); /inputs/plan_candidate/plan_package/acceptance_tests/9/pass_criteria (AT10 requires json_pointer starting with '/')",
+          "closure_target": "Before implementing evidence lint validators; align decision_log and all artifacts to the exact evidence pointer schema and tighten AT10 to reject nonconforming objects.",
+          "earliest_prevention_stage": "WorkPlanning",
+          "recommended_action": "Define a single evidence_pointer JSON Schema and require it via $ref everywhere; forbid additionalProperties; require json_pointer to match '^/' and explicitly disallow '' (root) unless separately allowed and consistently treated."
+        }
+      },
+      {
+        "id": "FM5",
+        "category": "Validation determinism (build/test/lint/typecheck) & flaky policy",
+        "severity": "high",
+        "finding": "Flaky/nondeterministic handling is required, but concrete retry budgets/backoff/quarantine thresholds remain unspecified (blocking), and the tool policy references deterministic budgets without defining them. This can yield non-deterministic behavior across runs (different retry counts/outcomes) or repeated dead-end escalation.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/project_capsule/open_questions/9 (Q10 retry budget/backoff requirements); /inputs/plan_candidate/plan_package/requirements/22 (R23 requires deterministic retry rules with bounded budgets); /inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies/4/restrictions/0/retry_policy (\"deterministic_budgets_only\" without parameters)",
+          "closure_target": "Before M4 freeze gating (AT23 depends on deterministic retry/escalation); encode defaults as policy-as-data with explicit numeric budgets and tie to event_log schema.",
+          "earliest_prevention_stage": "Validate",
+          "recommended_action": "Specify default max retries per validator per stage, fixed backoff schedule, and a deterministic flaky classifier; require event_log entries to include attempt_number and deterministic decision fields (retry/quarantine/escalate)."
+        }
+      },
+      {
+        "id": "FM6",
+        "category": "Supply-chain/network dependency control",
+        "severity": "high",
+        "finding": "The plan simultaneously (a) defaults to network=deny in all stages, and (b) has a blocking open question on how to handle dependency installation/network requirements. For many repos, builds/tests require network/package managers; without a deterministic allowlist/offline-mirror policy, implementation can deadlock or drift into ad hoc permission expansions that break reproducibility and security posture.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/project_capsule/open_questions/10 (Q11 dependencies requiring network); /inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies/4/restrictions/0/network (Validate network=deny); /inputs/plan_candidate/plan_package/risk_register/14 (K15 supply-chain/network risk)",
+          "closure_target": "Before any real-repo execution beyond toy repos; define a deterministic dependency policy and a controlled stage where network may be enabled under allowlists with lockfile enforcement.",
+          "earliest_prevention_stage": "Intake",
+          "recommended_action": "Add a dependency_policy artifact (allowlisted domains, package managers, lockfile rules, mirror requirements) and make it part of repo_context.json; make network opt-in with deterministic allowlists and record all network accesses for audit."
+        }
+      },
+      {
+        "id": "FM7",
+        "category": "Workspace governance (canonical vs non-canonical, indexing)",
+        "severity": "medium",
+        "finding": "The system requires workspace_index.json to enumerate all workspace items and to fail runs with any unindexed item, but the plan does not specify an enforcement mechanism at write time (e.g., Workspace Gateway auto-indexing or write denial if indexing is not atomic). This can create frequent integrity failures or, worse, allow unindexed shadow state that bypasses context-pack selection and audit.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/requirements/17 (R18 indexing required; fail if any workspace item not indexed); /inputs/plan_candidate/plan_package/architecture/options/1/components/11 (C22 workspace manager responsibilities for unified workspace_index)",
+          "closure_target": "Before M1 exit (workspace governance is a Phase 1 prerequisite); define atomic write+index semantics and validate with AT18.",
+          "earliest_prevention_stage": "WorkPlanning",
+          "recommended_action": "Specify that all workspace writes must go through a gateway that (1) writes content, (2) writes/updates workspace_index in the same transaction, or (3) rejects the write; add a periodic scanner validator as a backstop, not the primary mechanism."
+        }
+      },
+      {
+        "id": "FM8",
+        "category": "Schema correctness & JSON Patch safety (RFC6902)",
+        "severity": "high",
+        "finding": "JSON Patch is mandated for canonical artifact repair, but the plan does not provide concrete forbidden/allowed JSON Pointer path rules per artifact type, nor explicit semantic invariants (e.g., immutability of IDs, monotonic histories). Relying on schema-only validation can allow logically corrupt but schema-valid repairs (e.g., rewriting requirement IDs or trace mappings) that undermine audit and determinism.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/requirements/11 (R12 patch-only repairs); /inputs/plan_candidate/plan_package/risk_register/10/mitigation/text (K11 calls for forbidden JSON Pointer path rules per artifact type but does not define them)",
+          "closure_target": "Before enabling automated patcher loops (Phase 2+) and before any acceptance test asserting safe patch repair (AT12); codify per-artifact patch allowlists/denylists and semantic validators.",
+          "earliest_prevention_stage": "PatchApply",
+          "recommended_action": "For each canonical artifact schema, define a patch_policy (allowed ops + allowed pointer prefixes + immutable fields) and enforce it pre-apply; add semantic validators for invariants like stable IDs, trace link integrity, and monotonic event sequences."
+        }
+      }
+    ],
+    "closure_pass": false
+  }
+}

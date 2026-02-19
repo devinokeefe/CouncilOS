@@ -1,0 +1,96 @@
+{
+  "$defs": {
+    "FailureModeFindingItem": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "category": {
+          "title": "Category",
+          "type": "string"
+        },
+        "severity": {
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "finding": {
+          "title": "Finding",
+          "type": "string"
+        },
+        "required_closure": {
+          "enum": [
+            "mitigate",
+            "accept"
+          ],
+          "title": "Required Closure",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "open",
+            "mitigated",
+            "accepted"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "closure": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Closure",
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "category",
+        "severity",
+        "finding",
+        "required_closure",
+        "status",
+        "closure"
+      ],
+      "title": "FailureModeFindingItem",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "candidate_ref": {
+      "title": "Candidate Ref",
+      "type": "string"
+    },
+    "taxonomy": {
+      "title": "Taxonomy",
+      "type": "string"
+    },
+    "critical_findings": {
+      "items": {
+        "$ref": "#/$defs/FailureModeFindingItem"
+      },
+      "title": "Critical Findings",
+      "type": "array"
+    },
+    "closure_pass": {
+      "title": "Closure Pass",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "candidate_ref",
+    "taxonomy",
+    "critical_findings",
+    "closure_pass"
+  ],
+  "title": "FailureModeFindingsPayload",
+  "type": "object"
+}

@@ -1,0 +1,103 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B01A_fallback_v3",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T21:20:40.967861Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B01A_v3"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B01A_v3",
+    "findings": [
+      {
+        "id": "TG-001",
+        "severity": "high",
+        "summary": "R1 requirement text does not explicitly mandate rejection of chat logs or non-canonical artifacts; it states SHALL accept frozen plan and SHALL reject non-canonical sources, but the acceptance test AT1 expects structured rejection errors that are not specified in the requirement.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "requirements_canonical",
+            "json_pointer": "/requirements/0/text",
+            "note": "R1 text does not specify structured error format for rejections",
+            "quote": "SHALL reject chat logs or any non-canonical/unapproved upstream artifacts as authoritative sources"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "acceptance_canonical_v1",
+            "artifact_id": "acceptance_canonical",
+            "json_pointer": "/acceptance_tests/0/pass_criteria",
+            "note": "AT1 expects structured errors but R1 does not mandate structured error format",
+            "quote": "runs (b) and (c) are rejected with structured errors indicating non-canonical planning inputs"
+          }
+        ],
+        "routing_target": "requirements_writer"
+      },
+      {
+        "id": "TG-002",
+        "severity": "medium",
+        "summary": "R2 and R3 requirements specify that validators SHALL fail the run if schemas are missing or invalid, but do not specify whether the failure should occur at intake stage or at the boundary before code-generation/workspace-writing stages; AT2 and AT3 test rejection 'before any code-generation stage' and 'before any workspace-writing stage' respectively, which may allow intake to pass and fail later.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "requirements_canonical",
+            "json_pointer": "/requirements/1/text",
+            "note": "R2 states validators SHALL fail but timing is ambiguous",
+            "quote": "orchestrator validators SHALL fail the run if repo_context.json is missing or schema-invalid, and repo_context.json SHALL be required before any code-generation stage"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "requirements_canonical",
+            "json_pointer": "/requirements/2/text",
+            "note": "R3 has same timing ambiguity",
+            "quote": "orchestrator validators SHALL fail the run if workspace_context.json is missing or schema-invalid, and workspace_context.json SHALL be required before any workspace-writing stage"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "acceptance_canonical_v1",
+            "artifact_id": "acceptance_canonical",
+            "json_pointer": "/acceptance_tests/1/pass_criteria",
+            "note": "AT2 expects rejection before code-generation stage",
+            "quote": "Runs missing or schema-invalid repo_context.json are rejected before any code-generation stage"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "acceptance_canonical_v1",
+            "artifact_id": "acceptance_canonical",
+            "json_pointer": "/acceptance_tests/2/pass_criteria",
+            "note": "AT3 expects rejection before workspace-writing stage",
+            "quote": "Runs missing or schema-invalid workspace_context.json are rejected before any workspace-writing stage"
+          }
+        ],
+        "routing_target": "requirements_writer"
+      },
+      {
+        "id": "TG-003",
+        "severity": "low",
+        "summary": "M1 milestone deliverable M1-D2 references 'intake constraints' for plan_package_final.json but R1 does not specify what those constraints are beyond 'frozen' and 'structured handoff bundle'; the milestone exit criteria references R1-R3 but does not clarify whether intake constraints are fully specified.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "architecture_canonical",
+            "json_pointer": "/milestones/0/deliverables/1/text",
+            "note": "M1-D2 mentions intake constraints but they are not detailed in R1",
+            "quote": "plan_package_final.json intake constraints, repo_context.json schema, workspace_context.json schema"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "requirements_canonical",
+            "json_pointer": "/requirements/0/text",
+            "note": "R1 does not enumerate specific intake constraints beyond frozen and structured handoff bundle",
+            "quote": "exactly one frozen plan_package_final.json (plus its associated structured handoff bundle)"
+          }
+        ],
+        "routing_target": "requirements_writer"
+      }
+    ]
+  }
+}

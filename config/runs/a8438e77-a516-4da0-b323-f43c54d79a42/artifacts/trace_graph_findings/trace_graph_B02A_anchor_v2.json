@@ -1,0 +1,111 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B02A_anchor_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T20:56:17.953210Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B02A_v2"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B02A_v2",
+    "findings": [
+      {
+        "id": "TG1",
+        "severity": "high",
+        "summary": "Milestone M2 requires reviewers to emit findings artifacts (e.g., review_findings.json), but the Review stage tool policy denies artifact_write and workspace_write, which would prevent producing the required findings outputs and breaks the M2 trace for R1–R3 execution readiness.",
+        "evidence": [
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/milestones/1/deliverables/2/text",
+            "note": "M2-D3 requires findings-only review_findings.json outputs.",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/6/restrictions/0/artifact_write",
+            "note": "Review stage currently sets artifact_write to deny.",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/6/restrictions/0/workspace_write",
+            "note": "Review stage currently sets workspace_write to deny.",
+            "quote": null
+          }
+        ],
+        "routing_target": "governance.tool_policy.review_stage_write_permissions"
+      },
+      {
+        "id": "TG2",
+        "severity": "medium",
+        "summary": "R1/AT1 reference an \"associated structured handoff bundle\" alongside plan_package_final.json, but the plan does not specify what artifacts constitute this bundle or how it is schema-validated, weakening deterministic intake validation for the R1 sample check.",
+        "evidence": [
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/requirements/0/text",
+            "note": "R1 references \"plan_package_final.json (plus its associated structured handoff bundle)\".",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/acceptance_tests/0/procedure",
+            "note": "AT1 step (a) references valid plan_package_final.json plus its structured handoff bundle, but no bundle definition/schema is provided elsewhere in this candidate.",
+            "quote": null
+          }
+        ],
+        "routing_target": "clarification.required.handoff_bundle_schema"
+      },
+      {
+        "id": "TG3",
+        "severity": "medium",
+        "summary": "R2 and R3 require typed, versioned schemas for repo_context.json and workspace_context.json, but the candidate provides only high-level field lists without specifying concrete schema versioning/IDs/locations; key enforcement details are deferred to open questions (e.g., protected/forbidden path schema), leaving the R2/R3 sample checks under-specified for deterministic validation.",
+        "evidence": [
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/requirements/1/text",
+            "note": "R2 requires a typed, versioned repo_context.json schema but no concrete schema is defined in this candidate.",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/requirements/2/text",
+            "note": "R3 requires a typed, versioned workspace_context.json schema but no concrete schema is defined in this candidate.",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/open_questions/13/text",
+            "note": "Q14 explicitly leaves repo_context.json protected/forbidden paths schema/enforcement unspecified, impacting R2 validation determinism.",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/open_questions/1/text",
+            "note": "Q2 leaves workspace backend constraints unspecified, which may affect workspace_context schema requirements for R3.",
+            "quote": null
+          }
+        ],
+        "routing_target": "clarification.required.repo_workspace_context_schema_details"
+      }
+    ]
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "artifact_type": "triage_report",
+  "artifact_id": "triage_B02B_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T20:15:23.126064Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B02B_v1",
+    "validator_B02B_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B02B_v1",
+    "critic_id": "MERGED",
+    "verdict": "reject",
+    "defects": [
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Review stage tool policy forbids artifact_write but reviewers must emit review_findings.json artifacts, making the workflow impossible as specified.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/6/restrictions/0/artifact_write",
+            "note": "Review stage sets artifact_write to deny",
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency_check",
+        "patch": []
+      }
+    ],
+    "reroute_target": "governance",
+    "reroute_reason": "Critical tool policy conflict: Review stage must allow artifact_write for findings-only artifacts (review_findings.json). Governance stage policies require revision to distinguish findings-only artifact writes from general artifact writes, or to explicitly allowlist review_findings.json as a permitted canonical artifact type for reviewers."
+  }
+}

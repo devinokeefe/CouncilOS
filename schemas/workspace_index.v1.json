@@ -1,0 +1,61 @@
+{
+  "$defs": {
+    "WorkspaceItem": {
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "item_type": {
+          "title": "Item Type",
+          "type": "string"
+        },
+        "version": {
+          "title": "Version",
+          "type": "string"
+        },
+        "provenance": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Provenance",
+          "type": "object"
+        },
+        "canonical": {
+          "title": "Canonical",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "path",
+        "item_type",
+        "version",
+        "provenance",
+        "canonical"
+      ],
+      "title": "WorkspaceItem",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "default": "1.0.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "items": {
+      "items": {
+        "$ref": "#/$defs/WorkspaceItem"
+      },
+      "title": "Items",
+      "type": "array"
+    }
+  },
+  "required": [
+    "items"
+  ],
+  "title": "WorkspaceIndexPayload",
+  "type": "object"
+}

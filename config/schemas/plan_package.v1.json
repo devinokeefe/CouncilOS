@@ -1,0 +1,1219 @@
+{
+  "$defs": {
+    "Acceptance": {
+      "additionalProperties": false,
+      "properties": {
+        "rationale": {
+          "title": "Rationale",
+          "type": "string"
+        },
+        "signoff": {
+          "title": "Signoff",
+          "type": "string"
+        }
+      },
+      "required": [
+        "rationale",
+        "signoff"
+      ],
+      "title": "Acceptance",
+      "type": "object"
+    },
+    "AcceptanceTest": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "maps_to_requirements": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Maps To Requirements",
+          "type": "array"
+        },
+        "type": {
+          "enum": [
+            "unit",
+            "integration",
+            "system",
+            "human_eval",
+            "metric"
+          ],
+          "title": "Type",
+          "type": "string"
+        },
+        "procedure": {
+          "title": "Procedure",
+          "type": "string"
+        },
+        "pass_criteria": {
+          "title": "Pass Criteria",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "maps_to_requirements",
+        "type",
+        "procedure",
+        "pass_criteria"
+      ],
+      "title": "AcceptanceTest",
+      "type": "object"
+    },
+    "Appendix": {
+      "additionalProperties": false,
+      "properties": {
+        "glossary": {
+          "items": {
+            "$ref": "#/$defs/GlossaryItem"
+          },
+          "title": "Glossary",
+          "type": "array"
+        }
+      },
+      "title": "Appendix",
+      "type": "object"
+    },
+    "ArchitectureChosen": {
+      "additionalProperties": false,
+      "properties": {
+        "option_id": {
+          "title": "Option Id",
+          "type": "string"
+        },
+        "rationale": {
+          "title": "Rationale",
+          "type": "string"
+        },
+        "high_level_dataflow": {
+          "title": "High Level Dataflow",
+          "type": "string"
+        },
+        "key_design_decisions": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Key Design Decisions",
+          "type": "array"
+        }
+      },
+      "required": [
+        "option_id",
+        "rationale",
+        "high_level_dataflow",
+        "key_design_decisions"
+      ],
+      "title": "ArchitectureChosen",
+      "type": "object"
+    },
+    "ArchitectureOption": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "summary": {
+          "title": "Summary",
+          "type": "string"
+        },
+        "components": {
+          "items": {
+            "$ref": "#/$defs/Component"
+          },
+          "title": "Components",
+          "type": "array"
+        },
+        "interfaces": {
+          "items": {
+            "$ref": "#/$defs/Interface"
+          },
+          "title": "Interfaces",
+          "type": "array"
+        },
+        "tradeoffs": {
+          "$ref": "#/$defs/Tradeoffs"
+        },
+        "risks": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Risks",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "summary",
+        "components",
+        "interfaces",
+        "tradeoffs",
+        "risks"
+      ],
+      "title": "ArchitectureOption",
+      "type": "object"
+    },
+    "ArchitectureSection": {
+      "additionalProperties": false,
+      "properties": {
+        "options": {
+          "items": {
+            "$ref": "#/$defs/ArchitectureOption"
+          },
+          "title": "Options",
+          "type": "array"
+        },
+        "chosen": {
+          "$ref": "#/$defs/ArchitectureChosen"
+        }
+      },
+      "required": [
+        "options",
+        "chosen"
+      ],
+      "title": "ArchitectureSection",
+      "type": "object"
+    },
+    "Assumption": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "impact": {
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "title": "Impact",
+          "type": "string"
+        },
+        "confidence": {
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "title": "Confidence",
+          "type": "string"
+        },
+        "needs_confirmation": {
+          "title": "Needs Confirmation",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "text",
+        "impact",
+        "confidence",
+        "needs_confirmation"
+      ],
+      "title": "Assumption",
+      "type": "object"
+    },
+    "CandidateInputs": {
+      "additionalProperties": false,
+      "properties": {
+        "capsule_ref": {
+          "title": "Capsule Ref",
+          "type": "string"
+        },
+        "draft_refs": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Draft Refs",
+          "type": "array"
+        },
+        "branch_ref": {
+          "title": "Branch Ref",
+          "type": "string"
+        }
+      },
+      "required": [
+        "capsule_ref",
+        "draft_refs",
+        "branch_ref"
+      ],
+      "title": "CandidateInputs",
+      "type": "object"
+    },
+    "Component": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "responsibilities": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Responsibilities",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "responsibilities"
+      ],
+      "title": "Component",
+      "type": "object"
+    },
+    "Constraint": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "time",
+            "budget",
+            "tech",
+            "policy",
+            "legal",
+            "compliance",
+            "org",
+            "other"
+          ],
+          "title": "Type",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "text"
+      ],
+      "title": "Constraint",
+      "type": "object"
+    },
+    "DecisionLogItem": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "question": {
+          "title": "Question",
+          "type": "string"
+        },
+        "choice": {
+          "title": "Choice",
+          "type": "string"
+        },
+        "rationale": {
+          "title": "Rationale",
+          "type": "string"
+        },
+        "alternatives_considered": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Alternatives Considered",
+          "type": "array"
+        },
+        "what_would_change_this_decision": {
+          "items": {
+            "type": "string"
+          },
+          "title": "What Would Change This Decision",
+          "type": "array"
+        },
+        "evidence_pointers": {
+          "items": {
+            "$ref": "#/$defs/EvidencePointer"
+          },
+          "title": "Evidence Pointers",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "question",
+        "choice",
+        "rationale",
+        "alternatives_considered",
+        "what_would_change_this_decision",
+        "evidence_pointers"
+      ],
+      "title": "DecisionLogItem",
+      "type": "object"
+    },
+    "EvidencePointer": {
+      "additionalProperties": false,
+      "properties": {
+        "candidate_id": {
+          "title": "Candidate Id",
+          "type": "string"
+        },
+        "artifact_ref": {
+          "title": "Artifact Ref",
+          "type": "string"
+        },
+        "artifact_id": {
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "json_pointer": {
+          "title": "Json Pointer",
+          "type": "string"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        },
+        "quote": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Quote"
+        }
+      },
+      "required": [
+        "candidate_id",
+        "artifact_ref",
+        "artifact_id",
+        "json_pointer"
+      ],
+      "title": "EvidencePointer",
+      "type": "object"
+    },
+    "FailureModeClosure": {
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "enum": [
+            "mitigated",
+            "accepted"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "rationale": {
+          "title": "Rationale",
+          "type": "string"
+        },
+        "signoff": {
+          "title": "Signoff",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status",
+        "rationale",
+        "signoff"
+      ],
+      "title": "FailureModeClosure",
+      "type": "object"
+    },
+    "FailureModeItem": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "taxonomy": {
+          "title": "Taxonomy",
+          "type": "string"
+        },
+        "category": {
+          "title": "Category",
+          "type": "string"
+        },
+        "finding": {
+          "title": "Finding",
+          "type": "string"
+        },
+        "severity": {
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "closure": {
+          "$ref": "#/$defs/FailureModeClosure"
+        }
+      },
+      "required": [
+        "id",
+        "taxonomy",
+        "category",
+        "finding",
+        "severity",
+        "closure"
+      ],
+      "title": "FailureModeItem",
+      "type": "object"
+    },
+    "GlossaryItem": {
+      "additionalProperties": false,
+      "properties": {
+        "term": {
+          "title": "Term",
+          "type": "string"
+        },
+        "definition": {
+          "title": "Definition",
+          "type": "string"
+        }
+      },
+      "required": [
+        "term",
+        "definition"
+      ],
+      "title": "GlossaryItem",
+      "type": "object"
+    },
+    "GovernanceSection": {
+      "additionalProperties": false,
+      "properties": {
+        "failure_modes": {
+          "items": {
+            "$ref": "#/$defs/FailureModeItem"
+          },
+          "title": "Failure Modes",
+          "type": "array"
+        },
+        "tool_policy": {
+          "$ref": "#/$defs/ToolPolicy"
+        },
+        "hitl_policy": {
+          "$ref": "#/$defs/HitlPolicy"
+        }
+      },
+      "required": [
+        "failure_modes",
+        "tool_policy",
+        "hitl_policy"
+      ],
+      "title": "GovernanceSection",
+      "type": "object"
+    },
+    "HitlPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "when_to_interrupt": {
+          "items": {
+            "type": "string"
+          },
+          "title": "When To Interrupt",
+          "type": "array"
+        },
+        "approval_roles": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Approval Roles",
+          "type": "array"
+        }
+      },
+      "required": [
+        "when_to_interrupt",
+        "approval_roles"
+      ],
+      "title": "HitlPolicy",
+      "type": "object"
+    },
+    "Interface": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "from": {
+          "title": "From",
+          "type": "string"
+        },
+        "to": {
+          "title": "To",
+          "type": "string"
+        },
+        "contract": {
+          "title": "Contract",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "from",
+        "to",
+        "contract"
+      ],
+      "title": "Interface",
+      "type": "object"
+    },
+    "Milestone": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "deliverables": {
+          "items": {
+            "$ref": "#/$defs/MilestoneDeliverable"
+          },
+          "title": "Deliverables",
+          "type": "array"
+        },
+        "exit_criteria": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Exit Criteria",
+          "type": "array"
+        },
+        "depends_on": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Depends On",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "deliverables",
+        "exit_criteria"
+      ],
+      "title": "Milestone",
+      "type": "object"
+    },
+    "MilestoneDeliverable": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "text"
+      ],
+      "title": "MilestoneDeliverable",
+      "type": "object"
+    },
+    "Mitigation": {
+      "additionalProperties": false,
+      "properties": {
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "owner": {
+          "title": "Owner",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "planned",
+            "in_progress",
+            "done"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "text",
+        "owner",
+        "status"
+      ],
+      "title": "Mitigation",
+      "type": "object"
+    },
+    "OpenQuestion": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "impact": {
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "title": "Impact",
+          "type": "string"
+        },
+        "blocking": {
+          "title": "Blocking",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "text",
+        "impact",
+        "blocking"
+      ],
+      "title": "OpenQuestion",
+      "type": "object"
+    },
+    "PlanMeta": {
+      "additionalProperties": false,
+      "properties": {
+        "plan_id": {
+          "format": "uuid",
+          "title": "Plan Id",
+          "type": "string"
+        },
+        "version": {
+          "pattern": "^(v\\d+|vFinal)$",
+          "title": "Version",
+          "type": "string"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "source_run_id": {
+          "format": "uuid",
+          "title": "Source Run Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "candidate_id": {
+          "title": "Candidate Id",
+          "type": "string"
+        },
+        "branch_id": {
+          "title": "Branch Id",
+          "type": "string"
+        },
+        "plan_status": {
+          "enum": [
+            "CANDIDATE",
+            "FROZEN"
+          ],
+          "title": "Plan Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "plan_id",
+        "version",
+        "created_at",
+        "source_run_id",
+        "schema_version",
+        "candidate_id",
+        "branch_id",
+        "plan_status"
+      ],
+      "title": "PlanMeta",
+      "type": "object"
+    },
+    "PlanPackage": {
+      "additionalProperties": false,
+      "properties": {
+        "meta": {
+          "$ref": "#/$defs/PlanMeta"
+        },
+        "project_capsule": {
+          "$ref": "#/$defs/ProjectCapsulePayload"
+        },
+        "executive_summary": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Executive Summary"
+        },
+        "requirements": {
+          "items": {
+            "$ref": "#/$defs/Requirement"
+          },
+          "title": "Requirements",
+          "type": "array"
+        },
+        "acceptance_tests": {
+          "items": {
+            "$ref": "#/$defs/AcceptanceTest"
+          },
+          "title": "Acceptance Tests",
+          "type": "array"
+        },
+        "architecture": {
+          "$ref": "#/$defs/ArchitectureSection"
+        },
+        "milestones": {
+          "items": {
+            "$ref": "#/$defs/Milestone"
+          },
+          "title": "Milestones",
+          "type": "array"
+        },
+        "risk_register": {
+          "items": {
+            "$ref": "#/$defs/RiskItem"
+          },
+          "title": "Risk Register",
+          "type": "array"
+        },
+        "governance": {
+          "$ref": "#/$defs/GovernanceSection"
+        },
+        "decision_log": {
+          "items": {
+            "$ref": "#/$defs/DecisionLogItem"
+          },
+          "title": "Decision Log",
+          "type": "array"
+        },
+        "supplemental_evaluations": {
+          "items": {
+            "$ref": "#/$defs/SupplementalEvaluation"
+          },
+          "title": "Supplemental Evaluations",
+          "type": "array"
+        },
+        "synthesis_warnings": {
+          "items": {
+            "$ref": "#/$defs/SynthesisWarning"
+          },
+          "title": "Synthesis Warnings",
+          "type": "array"
+        },
+        "appendix": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Appendix"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "meta",
+        "project_capsule",
+        "requirements",
+        "acceptance_tests",
+        "architecture",
+        "milestones",
+        "risk_register",
+        "governance",
+        "decision_log"
+      ],
+      "title": "PlanPackage",
+      "type": "object"
+    },
+    "ProjectCapsulePayload": {
+      "additionalProperties": false,
+      "properties": {
+        "brief": {
+          "title": "Brief",
+          "type": "string"
+        },
+        "problem_statement": {
+          "title": "Problem Statement",
+          "type": "string"
+        },
+        "goals": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Goals",
+          "type": "array"
+        },
+        "non_goals": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Non Goals",
+          "type": "array"
+        },
+        "constraints": {
+          "items": {
+            "$ref": "#/$defs/Constraint"
+          },
+          "title": "Constraints",
+          "type": "array"
+        },
+        "assumptions": {
+          "items": {
+            "$ref": "#/$defs/Assumption"
+          },
+          "title": "Assumptions",
+          "type": "array"
+        },
+        "open_questions": {
+          "items": {
+            "$ref": "#/$defs/OpenQuestion"
+          },
+          "title": "Open Questions",
+          "type": "array"
+        },
+        "success_metrics": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Success Metrics",
+          "type": "array"
+        },
+        "stakeholders": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Stakeholders",
+          "type": "array"
+        },
+        "glossary": {
+          "items": {
+            "$ref": "#/$defs/GlossaryItem"
+          },
+          "title": "Glossary",
+          "type": "array"
+        }
+      },
+      "required": [
+        "brief",
+        "problem_statement",
+        "goals",
+        "non_goals",
+        "constraints",
+        "assumptions",
+        "open_questions",
+        "success_metrics"
+      ],
+      "title": "ProjectCapsulePayload",
+      "type": "object"
+    },
+    "Requirement": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "priority": {
+          "enum": [
+            "MUST",
+            "SHOULD",
+            "COULD"
+          ],
+          "title": "Priority",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "rationale": {
+          "title": "Rationale",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "priority",
+        "text",
+        "rationale"
+      ],
+      "title": "Requirement",
+      "type": "object"
+    },
+    "RiskItem": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "severity": {
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "mitigation": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Mitigation"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "acceptance": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Acceptance"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "severity",
+        "description",
+        "mitigation",
+        "acceptance"
+      ],
+      "title": "RiskItem",
+      "type": "object"
+    },
+    "SupplementalEvaluation": {
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "notes": {
+          "title": "Notes",
+          "type": "string"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/EvidencePointer"
+          },
+          "title": "Evidence",
+          "type": "array"
+        }
+      },
+      "required": [
+        "title",
+        "notes"
+      ],
+      "title": "SupplementalEvaluation",
+      "type": "object"
+    },
+    "SynthesisWarning": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "severity": {
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "summary": {
+          "title": "Summary",
+          "type": "string"
+        },
+        "routing_target": {
+          "title": "Routing Target",
+          "type": "string"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/EvidencePointer"
+          },
+          "title": "Evidence",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "severity",
+        "summary",
+        "routing_target"
+      ],
+      "title": "SynthesisWarning",
+      "type": "object"
+    },
+    "ToolPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "stage_policies": {
+          "items": {
+            "$ref": "#/$defs/ToolPolicyStage"
+          },
+          "title": "Stage Policies",
+          "type": "array"
+        }
+      },
+      "required": [
+        "stage_policies"
+      ],
+      "title": "ToolPolicy",
+      "type": "object"
+    },
+    "ToolPolicyStage": {
+      "additionalProperties": false,
+      "properties": {
+        "stage": {
+          "title": "Stage",
+          "type": "string"
+        },
+        "allowlisted_tools": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Allowlisted Tools",
+          "type": "array"
+        },
+        "restrictions": {
+          "items": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "title": "Restrictions",
+          "type": "array"
+        },
+        "hitl_triggers": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Hitl Triggers",
+          "type": "array"
+        }
+      },
+      "required": [
+        "stage",
+        "allowlisted_tools",
+        "restrictions",
+        "hitl_triggers"
+      ],
+      "title": "ToolPolicyStage",
+      "type": "object"
+    },
+    "Tradeoffs": {
+      "additionalProperties": false,
+      "properties": {
+        "pros": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Pros",
+          "type": "array"
+        },
+        "cons": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Cons",
+          "type": "array"
+        }
+      },
+      "required": [
+        "pros",
+        "cons"
+      ],
+      "title": "Tradeoffs",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "candidate_id": {
+      "title": "Candidate Id",
+      "type": "string"
+    },
+    "branch_id": {
+      "title": "Branch Id",
+      "type": "string"
+    },
+    "synthesizer_id": {
+      "title": "Synthesizer Id",
+      "type": "string"
+    },
+    "inputs": {
+      "$ref": "#/$defs/CandidateInputs"
+    },
+    "plan_package": {
+      "$ref": "#/$defs/PlanPackage"
+    }
+  },
+  "required": [
+    "candidate_id",
+    "branch_id",
+    "synthesizer_id",
+    "inputs",
+    "plan_package"
+  ],
+  "title": "PlanCandidatePayload",
+  "type": "object"
+}

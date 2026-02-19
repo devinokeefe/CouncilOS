@@ -1,0 +1,111 @@
+{
+  "$defs": {
+    "PatchApplyCandidateResult": {
+      "additionalProperties": false,
+      "properties": {
+        "patch_ref": {
+          "title": "Patch Ref",
+          "type": "string"
+        },
+        "applied": {
+          "title": "Applied",
+          "type": "boolean"
+        },
+        "validator_status": {
+          "enum": [
+            "PASS",
+            "FAIL_REPAIRABLE",
+            "FAIL_STRUCTURAL"
+          ],
+          "title": "Validator Status",
+          "type": "string"
+        },
+        "op_count": {
+          "title": "Op Count",
+          "type": "integer"
+        },
+        "paths_touched": {
+          "title": "Paths Touched",
+          "type": "integer"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reason"
+        }
+      },
+      "required": [
+        "patch_ref",
+        "applied",
+        "validator_status",
+        "op_count",
+        "paths_touched"
+      ],
+      "title": "PatchApplyCandidateResult",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "candidate_ref": {
+      "title": "Candidate Ref",
+      "type": "string"
+    },
+    "selected_patch_ref": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Selected Patch Ref"
+    },
+    "reroute_target": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Reroute Target"
+    },
+    "applied_candidate_ref": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Applied Candidate Ref"
+    },
+    "candidates": {
+      "items": {
+        "$ref": "#/$defs/PatchApplyCandidateResult"
+      },
+      "title": "Candidates",
+      "type": "array"
+    }
+  },
+  "required": [
+    "candidate_ref",
+    "candidates"
+  ],
+  "title": "PatchApplyResultPayload",
+  "type": "object"
+}

@@ -1,0 +1,241 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B01A_v3",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T21:20:40.975348Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "trace_graph_B01A_primary_v3",
+    "trace_graph_B01A_anchor_v3",
+    "trace_graph_B01A_fallback_v3"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B01A_v3",
+    "findings": [
+      {
+        "id": "TG-001",
+        "severity": "low",
+        "summary": "Architectural interface IF1 and Component C3 do not explicitly list the 'structured handoff bundle' as a required input, creating a traceability gap with Requirement R1 which mandates it.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v3",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/requirements/0/text",
+            "note": "R1 explicit requirement for handoff bundle input.",
+            "quote": "accept exactly one frozen plan_package_final.json (plus its associated structured handoff bundle)"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v3",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/architecture/options/0/interfaces/0/contract",
+            "note": "IF1 contract lists only plan package and contexts, omitting the handoff bundle.",
+            "quote": "Provide plan_package_final.json + repo_context.json + workspace_context.json"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v3",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/architecture/options/0/components/2/responsibilities/0",
+            "note": "C3 Intake Gate responsibilities do not mention validating an upstream handoff bundle.",
+            "quote": "Validate plan_package_final.json, repo_context.json, workspace_context.json against schemas."
+          }
+        ],
+        "routing_target": "architecture_canonical"
+      },
+      {
+        "id": "TG001",
+        "severity": "high",
+        "summary": "Sample check R2: repo_context.json is required to be a typed/versioned schema, but this candidate package only specifies requirements and tests; it does not include (or point to) an actual repo_context.json schema definition, and open questions explicitly mark repo_context protected/forbidden-path schema/enforcement as unresolved.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/requirements/1",
+            "note": "R2 declares a typed/versioned repo_context.json schema is required.",
+            "quote": "...SHALL define and require a typed, versioned repo_context.json schema..."
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/acceptance_tests/1",
+            "note": "AT2 tests presence/schema-validity but does not supply the schema definition itself.",
+            "quote": "Start a run without repo_context.json; then start a run with repo_context.json that violates schema..."
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/open_questions/13",
+            "note": "Explicitly asks for the required repo_context.json protected/forbidden paths schema and enforcement details (blocking).",
+            "quote": "What is the required schema for repo_context.json protected paths/forbidden paths and how exactly are they enforced..."
+          }
+        ],
+        "routing_target": "clarification_plan / schema+validator owners"
+      },
+      {
+        "id": "TG002",
+        "severity": "high",
+        "summary": "Sample check R3: workspace_context.json is required to be a typed/versioned schema, but this candidate package does not include (or point to) an actual workspace_context.json schema definition, and multiple blocking open questions remain about workspace backend constraints and context-pack bounding that materially affect the workspace_context/workspace_index enforceability.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/requirements/2",
+            "note": "R3 declares a typed/versioned workspace_context.json schema is required.",
+            "quote": "...SHALL define and require a typed, versioned workspace_context.json schema..."
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/acceptance_tests/2",
+            "note": "AT3 tests presence/schema-validity but does not supply the schema definition itself.",
+            "quote": "Start a run without workspace_context.json; then start a run with schema-invalid workspace_context.json..."
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/open_questions/1",
+            "note": "Blocking: permitted workspace backends and constraints are unspecified.",
+            "quote": "What concrete workspace backend(s) are permitted... and what are the hard constraints..."
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/open_questions/14",
+            "note": "Blocking: deterministic context-pack bounding/selection rules remain unspecified (impacts workspace governance).",
+            "quote": "How should context packs be bounded and selected when workspace state grows beyond context window limits..."
+          }
+        ],
+        "routing_target": "clarification_plan / workspace backend + orchestrator policy owners"
+      },
+      {
+        "id": "TG003",
+        "severity": "medium",
+        "summary": "Sample check R1: requirement/AT1 specify rejecting chat logs and non-canonical artifacts as authoritative planning inputs, but the tool policy/intake stage triggers do not explicitly mention chat-log rejection or define what constitutes the 'associated structured handoff bundle' for plan_package_final.json, which may leave validator behavior under-specified.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/requirements/0",
+            "note": "R1 requires plan_package_final.json as sole canonical planning input and rejection of chat logs/non-canonical artifacts.",
+            "quote": "...SHALL reject chat logs or any non-canonical/unapproved upstream artifacts..."
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/acceptance_tests/0",
+            "note": "AT1 defines the accept/reject behavior, but does not define the handoff-bundle structure.",
+            "quote": "Attempt to initiate... (a) a valid plan_package_final.json plus its structured handoff bundle; (b) a chat log reference..."
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/0",
+            "note": "Intake policy lists required inputs and schema validation, but does not explicitly call out chat-log/non-canonical artifact rejection logic.",
+            "quote": "Ingest and validate plan_package_final.json and required context artifacts; no code changes; do not persist secrets."
+          }
+        ],
+        "routing_target": "clarification_plan / intake-validator owners"
+      },
+      {
+        "id": "TG-001",
+        "severity": "high",
+        "summary": "R1 requirement text does not explicitly mandate rejection of chat logs or non-canonical artifacts; it states SHALL accept frozen plan and SHALL reject non-canonical sources, but the acceptance test AT1 expects structured rejection errors that are not specified in the requirement.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "requirements_canonical",
+            "json_pointer": "/requirements/0/text",
+            "note": "R1 text does not specify structured error format for rejections",
+            "quote": "SHALL reject chat logs or any non-canonical/unapproved upstream artifacts as authoritative sources"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "acceptance_canonical_v1",
+            "artifact_id": "acceptance_canonical",
+            "json_pointer": "/acceptance_tests/0/pass_criteria",
+            "note": "AT1 expects structured errors but R1 does not mandate structured error format",
+            "quote": "runs (b) and (c) are rejected with structured errors indicating non-canonical planning inputs"
+          }
+        ],
+        "routing_target": "requirements_writer"
+      },
+      {
+        "id": "TG-002",
+        "severity": "medium",
+        "summary": "R2 and R3 requirements specify that validators SHALL fail the run if schemas are missing or invalid, but do not specify whether the failure should occur at intake stage or at the boundary before code-generation/workspace-writing stages; AT2 and AT3 test rejection 'before any code-generation stage' and 'before any workspace-writing stage' respectively, which may allow intake to pass and fail later.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "requirements_canonical",
+            "json_pointer": "/requirements/1/text",
+            "note": "R2 states validators SHALL fail but timing is ambiguous",
+            "quote": "orchestrator validators SHALL fail the run if repo_context.json is missing or schema-invalid, and repo_context.json SHALL be required before any code-generation stage"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "requirements_canonical",
+            "json_pointer": "/requirements/2/text",
+            "note": "R3 has same timing ambiguity",
+            "quote": "orchestrator validators SHALL fail the run if workspace_context.json is missing or schema-invalid, and workspace_context.json SHALL be required before any workspace-writing stage"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "acceptance_canonical_v1",
+            "artifact_id": "acceptance_canonical",
+            "json_pointer": "/acceptance_tests/1/pass_criteria",
+            "note": "AT2 expects rejection before code-generation stage",
+            "quote": "Runs missing or schema-invalid repo_context.json are rejected before any code-generation stage"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "acceptance_canonical_v1",
+            "artifact_id": "acceptance_canonical",
+            "json_pointer": "/acceptance_tests/2/pass_criteria",
+            "note": "AT3 expects rejection before workspace-writing stage",
+            "quote": "Runs missing or schema-invalid workspace_context.json are rejected before any workspace-writing stage"
+          }
+        ],
+        "routing_target": "requirements_writer"
+      },
+      {
+        "id": "TG-003",
+        "severity": "low",
+        "summary": "M1 milestone deliverable M1-D2 references 'intake constraints' for plan_package_final.json but R1 does not specify what those constraints are beyond 'frozen' and 'structured handoff bundle'; the milestone exit criteria references R1-R3 but does not clarify whether intake constraints are fully specified.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "architecture_canonical",
+            "json_pointer": "/milestones/0/deliverables/1/text",
+            "note": "M1-D2 mentions intake constraints but they are not detailed in R1",
+            "quote": "plan_package_final.json intake constraints, repo_context.json schema, workspace_context.json schema"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "requirements_canonical",
+            "json_pointer": "/requirements/0/text",
+            "note": "R1 does not enumerate specific intake constraints beyond frozen and structured handoff bundle",
+            "quote": "exactly one frozen plan_package_final.json (plus its associated structured handoff bundle)"
+          }
+        ],
+        "routing_target": "requirements_writer"
+      }
+    ]
+  }
+}

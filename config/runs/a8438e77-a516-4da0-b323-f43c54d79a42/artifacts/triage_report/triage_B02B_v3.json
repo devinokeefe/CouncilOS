@@ -1,0 +1,890 @@
+{
+  "artifact_type": "triage_report",
+  "artifact_id": "triage_B02B_v3",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T21:23:50.188322Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B02B_v3",
+    "validator_B02B_v3"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B02B_v3",
+    "critic_id": "MERGED",
+    "verdict": "reject",
+    "defects": [
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Evidence pointer standard is self-contradictory: R10/glossary define RFC6901 evidence pointers as {artifact_ref, entity_id|null, json_pointer, note}, but plan instances use {candidate_id, artifact_ref, artifact_id, json_pointer, note, quote} (missing entity_id, extra keys). This also triggers id_integrity failures where artifact_id values reference non-existent IDs.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/requirements/9/text",
+            "note": "R10 defines evidence pointer structure.",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/project_capsule/glossary/3/definition",
+            "note": "Glossary Evidence Pointer definition.",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/decision_log/0/evidence_pointers/0",
+            "note": "Actual evidence pointer instance includes candidate_id/artifact_id/quote and omits entity_id.",
+            "quote": null
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/0/evidence_pointers/0",
+            "value": {
+              "artifact_ref": "architecture_canonical_v1",
+              "entity_id": null,
+              "json_pointer": "/options/1",
+              "note": "O2 architecture definition with parallel lanes and integration sub-flow"
+            }
+          },
+          {
+            "hint": "Apply the same normalization to ALL evidence pointers under /plan_package/decision_log/*/evidence_pointers/*, /plan_package/synthesis_warnings/*/evidence/*, and /plan_package/supplemental_evaluations/*/evidence/*: remove candidate_id/artifact_id/quote; add entity_id:null; keep artifact_ref/json_pointer/note."
+          }
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Governance tool policy for stage=Review forbids artifact_write/workspace_write, but reviewers are required to emit review_findings.json artifacts (findings-only). This makes the workflow impossible under the stated policy.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/6/allowlisted_tools",
+            "note": "Review stage allowlisted tools exclude artifact_write.",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/6/restrictions/0/artifact_write",
+            "note": "Review stage sets artifact_write=deny.",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/milestones/1/deliverables/2/text",
+            "note": "M2 requires per-lane review_findings.json artifacts.",
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency_findings",
+        "patch": [
+          {
+            "op": "add",
+            "path": "/plan_package/governance/tool_policy/stage_policies/6/allowlisted_tools/-",
+            "value": "artifact_write"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/governance/tool_policy/stage_policies/6/restrictions/0/artifact_write",
+            "value": "canonical_allowed_only_for_declared_types"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/governance/tool_policy/stage_policies/6/restrictions/0/notes",
+            "value": "Reviewers are findings-only but MUST be able to write findings artifacts (e.g., review_findings.json) under a strict allowlist; no patch/code/artifact mutation beyond findings outputs."
+          }
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Governance tool policy for Intake does not allow artifact_write (and restricts writes to non-canonical), but Intake deliverables/responsibilities require initializing canonical artifacts (run_manifest, event_log, workspace_index).",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/0/allowlisted_tools",
+            "note": "Intake allowlisted tools omit artifact_write/workspace_write.",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/0/restrictions/0/artifact_write",
+            "note": "Intake restricts artifact_write to allow_noncanonical_only.",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/milestones/0/deliverables/1/text",
+            "note": "M1-D2 requires run_manifest and event_log initialized in M1.",
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency_findings",
+        "patch": [
+          {
+            "op": "add",
+            "path": "/plan_package/governance/tool_policy/stage_policies/0/allowlisted_tools/-",
+            "value": "artifact_write"
+          },
+          {
+            "op": "add",
+            "path": "/plan_package/governance/tool_policy/stage_policies/0/allowlisted_tools/-",
+            "value": "workspace_write"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/governance/tool_policy/stage_policies/0/restrictions/0/artifact_write",
+            "value": "canonical_allowed_only_for_declared_types"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/governance/tool_policy/stage_policies/0/restrictions/0/workspace_write",
+            "value": "canonical_versioned_only"
+          }
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Milestone deliverable IDs fail id_integrity validation (deliverable id does not match expected DL# pattern). Fix likely requires ID-bearing edits across milestones/deliverables and must follow the canonical ID convention.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/milestones",
+            "note": "Validator reports multiple deliverable id mismatches (e.g., M1-D1..M4-D5).",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/milestones/0/deliverables/0/id",
+            "note": "Example deliverable id value that trips validator.",
+            "quote": null
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": []
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Stage model naming is inconsistent (Patch vs PatchApply; IntegrateAndValidate appears only in tool policy). This creates ambiguity for checkpoint boundaries and stage_handoff coverage requirements.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/requirements/3/text",
+            "note": "R4 defines minimum workflow stages without WorkPlanning/PatchApply/IntegrateAndValidate.",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/3/stage",
+            "note": "Governance uses stage name PatchApply.",
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency_findings",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/requirements/3/text",
+            "value": "The Implementation Council workflow SHALL be defined as a deterministic staged state machine with at minimum the stages: Intake → WorkPlanning → Generate → PatchApply → Validate → Review → Judge → Freeze, and SHALL include an explicit checkpoint boundary at every stage transition. For parallel O2, an Integration (fan-in) sub-flow MAY be represented as its own stage (e.g., IntegrateAndValidate) provided stage_handoff coverage remains complete."
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Freeze bundle contract requires a single review_findings.json, but the parallel-lane architecture produces per-lane findings plus integration findings. The plan does not specify aggregation rules, risking downstream ambiguity.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/requirements/6/text",
+            "note": "R7 lists review_findings.json (singular).",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/milestones/1/deliverables/2/text",
+            "note": "M2 requires per-lane review_findings.json artifacts.",
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency_findings",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/requirements/6/text",
+            "value": "At Freeze, the system SHALL produce an Implementation Freeze Bundle that includes, at minimum, the following typed/versioned artifacts and directories: implementation_run_manifest.json, implementation_event_log.jsonl, work_plan.json, patchsets (diff-embedded JSON), repo_snapshot.json, test_results.json, quality_reports.json, trace_report.json, review_findings.json (a canonical aggregate of per-lane and integration findings), release_bundle.json, decision_record.json, workspace_index.json, context_packs/, and stage_handoffs/."
+          }
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "ChangeRequest is required for semantic deviations (R16) but the ChangeRequest schema/approval mechanics remain undefined (open question). This makes R16 unenforceable as written.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/requirements/15/text",
+            "note": "R16 requires a ChangeRequest artifact and escalation before semantic deviation.",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/project_capsule/open_questions/5",
+            "note": "Q6 indicates ChangeRequest approval/escalation is unresolved.",
+            "quote": null
+          }
+        ],
+        "violated_gate": "completeness_heuristic",
+        "patch": []
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "Integration conflict_report is required by milestones/risk mitigations but no artifact schema/required fields are specified, leaving a key integration output under-defined.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/milestones/2/deliverables/1/text",
+            "note": "M3-D2 requires a structured conflict_report artifact.",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/risk_register/11/mitigation/text",
+            "note": "K12 mitigation relies on emitting a structured conflict report for escalation.",
+            "quote": null
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": []
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Chosen-architecture key_design_decisions lack explicit links to decision_log entries, triggering id_integrity warnings and weakening traceability.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/architecture/chosen/key_design_decisions",
+            "note": "Validator reports missing decision references for each listed design decision.",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/decision_log",
+            "note": "Decision log exists (DEC1..DEC6) to reference.",
+            "quote": null
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/chosen/key_design_decisions/0",
+            "value": "Parallel lane partitioning is derived from the work_plan.json dependency DAG; only tasks with no cross-lane dependencies are assigned to separate lanes, minimizing merge conflict risk (K12). (DEC1)"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/chosen/key_design_decisions/1",
+            "value": "Each lane operates in a namespaced workspace partition (C22) with scoped tool permissions and file-path restrictions enforced by the Task Lane Orchestrator (C13), preventing cross-lane contamination. (DEC5)"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/chosen/key_design_decisions/2",
+            "value": "Integration merge ordering is deterministic and independent of wall-clock lane completion timing; patchsets are applied in a canonical order derived from the work_plan DAG, not arrival order. (DEC4)"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/chosen/key_design_decisions/3",
+            "value": "The Integration stage (C18→C19→C20→C21) is a dedicated sub-flow with its own validation, review, and repair cycle; merge conflicts exceeding deterministic resolution thresholds trigger structured conflict reports and escalation (HITL or reroute). (DEC4)"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/chosen/key_design_decisions/4",
+            "value": "Medium HITL strictness: HITL is triggered for unresolved merge conflicts, critical security findings, secrets detection, protected-path modifications, ChangeRequests, gate waivers, and integration-level critical findings; lane-level validation relies more on automated gates. (DEC3)"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/chosen/key_design_decisions/5",
+            "value": "Writer/reviewer/judge separation and multi-vendor diversity are enforced by the Global Orchestrator (C11) routing policy across all lanes and integration stages. (DEC5)"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/chosen/key_design_decisions/6",
+            "value": "Context packs are compiled per-lane (scoped) and per-integration-stage (full integrated state) by the orchestrator using deterministic selection rules with bounded size. (DEC5)"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/chosen/key_design_decisions/7",
+            "value": "Acceptance is two-tiered: each lane must pass its scoped gates (build/test/lint per lane file set) before fan-in; the integrated state must pass full-repo validators, integration review, and all freeze closure gates before the bundle is released. (DEC6)"
+          }
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Architecture options risk fields appear to violate expected id_integrity rules (validator reports that options reference 'missing risks'), implying the option-level risks need to reference canonical risk IDs or a defined risk registry format rather than free text.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/architecture/options",
+            "note": "Validator reports multiple 'Option O# references missing risk ...' violations.",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/architecture/options/0/risks",
+            "note": "Example: option risk list is free text, likely expected to reference K# IDs or structured risk entries.",
+            "quote": null
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Evidence pointer schema mismatch: R10 and glossary define RFC6901 evidence pointers as {artifact_ref, entity_id|null, json_pointer, note}, but actual evidence_pointers in decision_log use {candidate_id, artifact_ref, artifact_id, json_pointer, note, quote} without entity_id. This creates self-contradictory validator behavior.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/requirements/9/text",
+            "note": "R10 defines evidence pointer structure with entity_id",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/decision_log/0/evidence_pointers/0",
+            "note": "Actual evidence pointer uses different schema",
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency_findings CS1",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Review stage tool policy contradiction: governance forbids artifact_write for Review stage, but architecture/milestones require reviewers to emit review_findings.json artifacts. This makes the review output contract impossible.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/6/restrictions/0/artifact_write",
+            "note": "Review stage sets artifact_write=deny",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/milestones/1/deliverables/2/text",
+            "note": "M2 requires per-lane review_findings.json",
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency_findings CS2",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Intake stage tool policy contradiction: governance restricts artifact_write to non-canonical only, but M1 deliverables require initializing canonical artifacts (run_manifest, event_log, workspace_index). Stage policy conflicts with stated outputs.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/0/restrictions/0/artifact_write",
+            "note": "Intake allows only non-canonical artifact writes",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/milestones/0/deliverables/1/text",
+            "note": "M1 requires canonical run_manifest and event_log",
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency_findings CS3",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "ChangeRequest artifact schema undefined: R16 requires ChangeRequest artifact for semantic deviations with escalation, but Q6 identifies ChangeRequest schema as a blocking open question. R16 is unenforceable without schema definition.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/requirements/15",
+            "note": "R16 requires ChangeRequest artifact",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/project_capsule/open_questions/5",
+            "note": "Q6 marks ChangeRequest schema as blocking",
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency_findings CS005",
+        "patch": []
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "Deliverable IDs violate DL# naming convention: all milestone deliverables use M#-D# format instead of required DL# format. Validator reports 21 violations.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/milestones/0/deliverables/0/id",
+            "note": "Example: M1-D1 should be DL#",
+            "quote": null
+          }
+        ],
+        "violated_gate": "validator_report id_integrity",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "Architecture options reference missing risks: O1/O2/O3/O4 risk arrays contain prose descriptions instead of K# risk IDs. Validator reports 14 violations for missing risk references.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/architecture/options/0/risks/0",
+            "note": "O1 risks are prose, not K# IDs",
+            "quote": null
+          }
+        ],
+        "violated_gate": "validator_report id_integrity",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "Decision log evidence pointers reference missing artifact IDs: evidence_pointers use artifact_id values (architecture_canonical, branch_set, risk_gov_canonical, acceptance_canonical) that do not exist in the artifact system. Validator reports 12 violations.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/decision_log/0/evidence_pointers/0/artifact_id",
+            "note": "References architecture_canonical which is not a valid artifact_id",
+            "quote": null
+          }
+        ],
+        "violated_gate": "validator_report id_integrity",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "Key design decisions lack decision record references: 8 key_design_decisions in architecture.chosen are not linked to decision_log entries. Validator reports medium severity violations.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/architecture/chosen/key_design_decisions/0",
+            "note": "Lane partitioning decision has no DEC# reference",
+            "quote": null
+          }
+        ],
+        "violated_gate": "validator_report id_integrity",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "Conflict_report artifact schema undefined: M3-D2 requires structured conflict_report but no schema or required fields are specified in requirements or architecture.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/milestones/2/deliverables/1",
+            "note": "M3-D2 references conflict_report",
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency_findings CS006",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "Patchset base_commit requirement missing: K12 mitigation requires explicit base_commit in patchsets, but R13 does not mandate base_commit as a required field.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/risk_register/11/mitigation/text",
+            "note": "K12 mitigation requires base_commit",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/requirements/12",
+            "note": "R13 does not specify base_commit requirement",
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency_findings CS009",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Review_findings.json aggregation ambiguity: R7 lists singular review_findings.json in freeze bundle, but architecture produces multiple per-lane + integration findings. Aggregation mechanism unspecified.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/requirements/6/text",
+            "note": "R7 lists singular review_findings.json",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/milestones/1/deliverables/2/text",
+            "note": "M2 produces per-lane review_findings.json",
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency_findings CS5",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Stage naming inconsistency: requirements/milestones reference Patch stage, governance defines PatchApply stage. Checkpoint boundary ambiguity for stage_handoff requirements.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/milestones/1/exit_criteria/0",
+            "note": "M2 references Patch cycle",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/3/stage",
+            "note": "Governance uses PatchApply stage name",
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency_findings CS4",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Stage_handoff coverage gap: R5 requires handoff at every stage transition, governance defines WorkPlanning stage, but M1 only specifies Intake→ParallelLanes handoff without explicit WorkPlanning boundary.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/requirements/4/text",
+            "note": "R5 requires handoff at every transition",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/milestones/0/deliverables/4/text",
+            "note": "M1 only specifies Intake→ParallelLanes handoff",
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency_findings CS6",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "M2 exit criteria references wrong acceptance tests: cites AT13/AT14 for lane validator pass criteria, but these tests validate patchset application mechanism, not validator outcomes.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/milestones/1/exit_criteria/1",
+            "note": "M2 incorrectly cites AT13/AT14",
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency_findings CS001",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Interface IF12 missing file-path scoping contract: C13 enforces lane-scoped file-path restrictions, but IF12 (C13→C14) does not specify how scoping constraints are communicated in context_pack_ref.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/architecture/options/1/components/2/responsibilities/2",
+            "note": "C13 enforces file-path scoping",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/architecture/options/1/interfaces/3",
+            "note": "IF12 does not specify scoping mechanism",
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency_findings CS002",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "AT23 missing AT# mapping preservation for retries: R25 requires AT# mapping in test_results.json, but AT23 pass criteria for retry records do not require preserving AT# trace mapping.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/acceptance_tests/22/pass_criteria",
+            "note": "AT23 does not require AT# mapping in retries",
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency_findings CS003",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "C18 merge ordering source ambiguous: DEC4 specifies merge ordering derived from work_plan DAG, but C18 responsibilities only state deterministic order without explicit DAG reference.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/decision_log/3/choice",
+            "note": "DEC4 specifies work_plan DAG ordering",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/architecture/options/1/components/7/responsibilities/1",
+            "note": "C18 does not reference work_plan DAG",
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency_findings CS004",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Interface IF20 missing canonical/non-canonical enforcement: C22 maintains canonical vs non-canonical separation per partition, but IF20 does not specify enforcement mechanism.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/architecture/options/1/interfaces/11",
+            "note": "IF20 does not specify canonical separation enforcement",
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency_findings CS007",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Tool policy stage name mismatch: governance defines IntegrateAndValidate stage, but O2 architecture uses separate C18/C19/C20/C21 components without single IntegrateAndValidate stage.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/5",
+            "note": "Tool policy defines IntegrateAndValidate",
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency_findings CS010",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "note",
+        "severity": "medium",
+        "summary": "Missing acceptance test for lane partitioning correctness: W3 identifies work_plan lane partitioning as critical for O2, but no acceptance test validates partitioning correctness.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/synthesis_warnings/2",
+            "note": "W3 identifies missing acceptance test",
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency_findings CS008",
+        "patch": []
+      },
+      {
+        "label": "note",
+        "severity": "medium",
+        "summary": "JSON-only vs prose rule ambiguity: R9 rejects prose/unstructured text, but plan requires free-text fields (rationales, notes) in canonical artifacts like decision records.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/requirements/8/text",
+            "note": "R9 rejects prose in canonical artifacts",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/decision_log/0/rationale",
+            "note": "Decision log uses prose rationale",
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency_findings CS7",
+        "patch": []
+      },
+      {
+        "label": "note",
+        "severity": "low",
+        "summary": "Implementation Council glossary definition incomplete: does not mention workspace artifacts (workspace_index, context_packs, stage_handoffs) that are part of freeze bundle per R7.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/appendix/glossary/0/definition",
+            "note": "Glossary definition incomplete",
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency_findings CS011",
+        "patch": []
+      }
+    ],
+    "reroute_target": "clarification",
+    "reroute_reason": "Multiple blockers require decisions/spec clarification beyond safe patch hints: (1) enforceable evidence-pointer object schema (R10 vs current instances), (2) deliverable ID convention (DL# expectations), (3) ChangeRequest schema/approval authority (R16/Q6), and (4) required schemas for integration conflict_report and architecture option risk linkage. Addressing these likely needs canonical schema decisions and potentially ID-bearing changes, so reroute is recommended."
+  }
+}

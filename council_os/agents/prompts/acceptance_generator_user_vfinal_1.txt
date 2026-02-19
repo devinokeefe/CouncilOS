@@ -1,0 +1,13 @@
+{
+  "run_context": {{RUN_CONTEXT_JSON}},
+  "artifact_refs": {{ARTIFACT_REFS_JSON}},
+  "allowed_id_prefixes": ["AT_U"],
+  "inputs": {
+    "project_capsule": {{CAPSULE_JSON}},
+    "canonical_requirements": {{CANONICAL_REQUIREMENTS_JSON}},
+    "qa_templates": {{QA_TEMPLATES_JSON}},
+    "canonical_architecture": {{CANONICAL_ARCHITECTURE_JSON}}
+  },
+  "task": "Generate acceptance test drafts mapped to R#.",
+  "output_schema": {{ACCEPTANCE_DRAFT_SCHEMA_JSON}}
+}

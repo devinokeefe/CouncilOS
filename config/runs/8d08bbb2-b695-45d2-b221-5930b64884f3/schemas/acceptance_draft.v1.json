@@ -1,0 +1,63 @@
+{
+  "$defs": {
+    "AcceptanceTest": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "maps_to_requirements": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Maps To Requirements",
+          "type": "array"
+        },
+        "type": {
+          "enum": [
+            "unit",
+            "integration",
+            "system",
+            "human_eval",
+            "metric"
+          ],
+          "title": "Type",
+          "type": "string"
+        },
+        "procedure": {
+          "title": "Procedure",
+          "type": "string"
+        },
+        "pass_criteria": {
+          "title": "Pass Criteria",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "maps_to_requirements",
+        "type",
+        "procedure",
+        "pass_criteria"
+      ],
+      "title": "AcceptanceTest",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "acceptance_tests": {
+      "items": {
+        "$ref": "#/$defs/AcceptanceTest"
+      },
+      "title": "Acceptance Tests",
+      "type": "array"
+    }
+  },
+  "required": [
+    "acceptance_tests"
+  ],
+  "title": "AcceptanceDraftPayload",
+  "type": "object"
+}

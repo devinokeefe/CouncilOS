@@ -1,0 +1,282 @@
+{
+  "$defs": {
+    "EvidencePointer": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_ref": {
+          "title": "Artifact Ref",
+          "type": "string"
+        },
+        "entity_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Entity Id"
+        },
+        "json_pointer": {
+          "title": "Json Pointer",
+          "type": "string"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        }
+      },
+      "required": [
+        "artifact_ref",
+        "json_pointer"
+      ],
+      "title": "EvidencePointer",
+      "type": "object"
+    },
+    "ToolCapabilitySpec": {
+      "additionalProperties": false,
+      "properties": {
+        "declared": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Declared",
+          "type": "array"
+        },
+        "observed": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Observed",
+          "type": "array"
+        }
+      },
+      "title": "ToolCapabilitySpec",
+      "type": "object"
+    },
+    "ToolCard": {
+      "additionalProperties": false,
+      "properties": {
+        "tool_id": {
+          "title": "Tool Id",
+          "type": "string"
+        },
+        "tool_version": {
+          "title": "Tool Version",
+          "type": "string"
+        },
+        "endpoints": {
+          "items": {
+            "$ref": "#/$defs/ToolEndpointSpec"
+          },
+          "title": "Endpoints",
+          "type": "array"
+        },
+        "capabilities": {
+          "$ref": "#/$defs/ToolCapabilitySpec"
+        },
+        "limits": {
+          "$ref": "#/$defs/ToolLimitsSpec"
+        },
+        "schemas": {
+          "$ref": "#/$defs/ToolSchemaRefs"
+        },
+        "reliability": {
+          "$ref": "#/$defs/ToolReliabilitySpec"
+        },
+        "last_probe": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EvidencePointer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "probe_status": {
+          "default": "probed",
+          "enum": [
+            "probed",
+            "unprobed",
+            "exempt"
+          ],
+          "title": "Probe Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "tool_id",
+        "tool_version"
+      ],
+      "title": "ToolCard",
+      "type": "object"
+    },
+    "ToolEndpointSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Url"
+        },
+        "method": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Method"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "ToolEndpointSpec",
+      "type": "object"
+    },
+    "ToolLimitsSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "quota": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Quota"
+        },
+        "rate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rate"
+        }
+      },
+      "title": "ToolLimitsSpec",
+      "type": "object"
+    },
+    "ToolReliabilitySpec": {
+      "additionalProperties": false,
+      "properties": {
+        "success_rate": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Success Rate"
+        },
+        "last_failure": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Last Failure"
+        }
+      },
+      "title": "ToolReliabilitySpec",
+      "type": "object"
+    },
+    "ToolSchemaRefs": {
+      "additionalProperties": false,
+      "properties": {
+        "request_schema_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Request Schema Ref"
+        },
+        "response_schema_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Response Schema Ref"
+        }
+      },
+      "title": "ToolSchemaRefs",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "default": "2.0.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "registry_id": {
+      "title": "Registry Id",
+      "type": "string"
+    },
+    "tools": {
+      "items": {
+        "$ref": "#/$defs/ToolCard"
+      },
+      "title": "Tools",
+      "type": "array"
+    }
+  },
+  "required": [
+    "registry_id"
+  ],
+  "title": "ToolRegistryPayload",
+  "type": "object"
+}

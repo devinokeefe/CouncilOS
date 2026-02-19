@@ -1,0 +1,297 @@
+{
+  "$defs": {
+    "BaseImageSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "digest": {
+          "title": "Digest",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "digest"
+      ],
+      "title": "BaseImageSpec",
+      "type": "object"
+    },
+    "DependencyName": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "DependencyName",
+      "type": "object"
+    },
+    "DependencyPin": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "version": {
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version"
+      ],
+      "title": "DependencyPin",
+      "type": "object"
+    },
+    "DependencyRange": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "version_range": {
+          "title": "Version Range",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version_range"
+      ],
+      "title": "DependencyRange",
+      "type": "object"
+    },
+    "DependencySpec": {
+      "additionalProperties": false,
+      "properties": {
+        "required": {
+          "items": {
+            "$ref": "#/$defs/DependencyPin"
+          },
+          "title": "Required",
+          "type": "array"
+        },
+        "allowed": {
+          "items": {
+            "$ref": "#/$defs/DependencyRange"
+          },
+          "title": "Allowed",
+          "type": "array"
+        },
+        "forbidden": {
+          "items": {
+            "$ref": "#/$defs/DependencyName"
+          },
+          "title": "Forbidden",
+          "type": "array"
+        }
+      },
+      "title": "DependencySpec",
+      "type": "object"
+    },
+    "ExecutionProfile": {
+      "additionalProperties": false,
+      "properties": {
+        "profile_id": {
+          "title": "Profile Id",
+          "type": "string"
+        },
+        "profile_version": {
+          "title": "Profile Version",
+          "type": "string"
+        },
+        "runtime": {
+          "$ref": "#/$defs/RuntimeSpec"
+        },
+        "base_image": {
+          "$ref": "#/$defs/BaseImageSpec"
+        },
+        "deps": {
+          "$ref": "#/$defs/DependencySpec"
+        },
+        "hardware": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/HardwareSpec"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "network": {
+          "$ref": "#/$defs/NetworkPolicy"
+        },
+        "package_manager": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PackageManagerPolicy"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "tool_adapters": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Tool Adapters",
+          "type": "array"
+        },
+        "env": {
+          "additionalProperties": true,
+          "title": "Env",
+          "type": "object"
+        }
+      },
+      "required": [
+        "profile_id",
+        "profile_version",
+        "runtime",
+        "base_image",
+        "deps",
+        "network"
+      ],
+      "title": "ExecutionProfile",
+      "type": "object"
+    },
+    "HardwareSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "gpu": {
+          "default": false,
+          "title": "Gpu",
+          "type": "boolean"
+        },
+        "min_vram_gb": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Min Vram Gb"
+        }
+      },
+      "title": "HardwareSpec",
+      "type": "object"
+    },
+    "NetworkPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "default": {
+          "enum": [
+            "deny",
+            "allow"
+          ],
+          "type": "string",
+          "title": "Default"
+        },
+        "allowlist_domains": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Allowlist Domains",
+          "type": "array"
+        },
+        "allowlist_ports": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Allowlist Ports",
+          "type": "array"
+        }
+      },
+      "required": [
+        "default"
+      ],
+      "title": "NetworkPolicy",
+      "type": "object"
+    },
+    "PackageManagerPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "pip_install": {
+          "default": "deny",
+          "enum": [
+            "allow",
+            "deny"
+          ],
+          "title": "Pip Install",
+          "type": "string"
+        },
+        "conda_install": {
+          "default": "deny",
+          "enum": [
+            "allow",
+            "deny"
+          ],
+          "title": "Conda Install",
+          "type": "string"
+        }
+      },
+      "title": "PackageManagerPolicy",
+      "type": "object"
+    },
+    "RuntimeSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "lang": {
+          "title": "Lang",
+          "type": "string"
+        },
+        "version": {
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "lang",
+        "version"
+      ],
+      "title": "RuntimeSpec",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "default": "2.0.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "catalog_id": {
+      "title": "Catalog Id",
+      "type": "string"
+    },
+    "profiles": {
+      "items": {
+        "$ref": "#/$defs/ExecutionProfile"
+      },
+      "title": "Profiles",
+      "type": "array"
+    }
+  },
+  "required": [
+    "catalog_id",
+    "profiles"
+  ],
+  "title": "ExecutionProfileCatalogPayload",
+  "type": "object"
+}

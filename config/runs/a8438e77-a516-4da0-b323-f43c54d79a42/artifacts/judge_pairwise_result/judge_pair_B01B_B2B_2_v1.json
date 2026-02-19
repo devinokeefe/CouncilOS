@@ -1,0 +1,66 @@
+{
+  "artifact_type": "judge_pairwise_result",
+  "artifact_id": "judge_pair_B01B_B2B_2_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T23:19:22.365268Z",
+  "source_run_id": "a8438e77-a516-4da0-b323-f43c54d79a42",
+  "parents": [
+    "plan_candidate_B01B_v3",
+    "plan_candidate_B2B_v3"
+  ],
+  "payload": {
+    "comparison": {
+      "a": "Defines a simpler, sequential O1 workflow with explicit stage gates, tool policies, and evidence/patch constraints that are straightforward to operationalize deterministically. Risk posture is consistent with conservative governance and minimizes integration complexity.",
+      "b": "Offers higher throughput via O2 parallel lanes plus a phased delivery plan, but adds orchestration and integration complexity that increases implementation and validation burden. Key parallel-merge specifics remain dependent on unresolved blocking questions, raising closure risk."
+    },
+    "judge_id": "pairwise_judge",
+    "judge_model": "unspecified",
+    "winner": "a",
+    "scores": {
+      "feasibility": 8,
+      "testability": 9,
+      "governance": 9,
+      "architecture": 8,
+      "clarity": 8
+    },
+    "evidence": [
+      {
+        "artifact_ref": "plan_candidate_B01B_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/architecture/chosen",
+        "note": "Chooses O1 sequential pipeline with rationale focused on determinism, auditability, and clear checkpoints.",
+        "candidate_id": "B01B",
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B01B_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/governance/tool_policy/stage_policies",
+        "note": "Stage-by-stage tool permission matrix and HITL triggers are fully enumerated for enforceable governance.",
+        "candidate_id": "B01B",
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B2B_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/architecture/chosen",
+        "note": "Chooses O2 parallel fan-out/fan-in and relies on deterministic integration/merge sub-flow to preserve reproducibility.",
+        "candidate_id": "B2B",
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B2B_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/milestones",
+        "note": "Four-phase hybrid milestone plan demonstrates incremental rollout but adds multiple layers of orchestration and integration gates.",
+        "candidate_id": "B2B",
+        "artifact_id": null,
+        "quote": null
+      }
+    ],
+    "notes": "A is more closure-ready because it reduces moving parts while still specifying enforceable gates, policies, and artifacts. B’s parallelism is attractive but increases feasibility risk due to added integration complexity and dependencies on unresolved merge/patch-format details."
+  }
+}

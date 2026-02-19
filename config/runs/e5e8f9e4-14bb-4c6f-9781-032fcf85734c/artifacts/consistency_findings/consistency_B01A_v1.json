@@ -1,0 +1,495 @@
+{
+  "artifact_type": "consistency_findings",
+  "artifact_id": "consistency_B01A_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T18:59:47.047623Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B01A_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B01A_v1",
+    "findings": [
+      {
+        "id": "CS1",
+        "severity": "high",
+        "summary": "Stage model is internally inconsistent: requirements define a minimal stage sequence without WorkPlanning/PatchApply/Patch/Plan, while architecture components and tool policy assume additional stages (Plan, WorkPlanning, PatchApply, Patch). This creates ambiguity in checkpoint boundaries, required handoffs, and validator gating.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "R4",
+            "json_pointer": "/plan_package/requirements/3/text",
+            "note": "R4 stage list excludes Plan/WorkPlanning/PatchApply/Patch.",
+            "quote": "The Implementation Council workflow SHALL be defined as a deterministic staged state machine with at minimum the stages: Intake → Generate → Validate → Review → Judge → Freeze"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "C1",
+            "json_pointer": "/plan_package/architecture/options/0/components/0/responsibilities/0",
+            "note": "Architecture C1 includes Plan and Patch stages (and a different ordering).",
+            "quote": "Enforce strict stage ordering and closure gates (Intake → Plan → Generate → Validate → Review → Patch → Judge → Freeze)."
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "tool_policy",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies",
+            "note": "Tool policy defines additional stages (WorkPlanning, PatchApply, IntegrateAndValidate) not present in R4.",
+            "quote": null
+          }
+        ],
+        "routing_target": "requirements_and_architecture_alignment"
+      },
+      {
+        "id": "CS2",
+        "severity": "medium",
+        "summary": "Executive summary stage flow conflicts with the stated required/selected stage sequence: it claims a single linear flow with Generate → Validate → Judge → Freeze, omitting Review (and other stages referenced elsewhere).",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "executive_summary",
+            "json_pointer": "/plan_package/executive_summary",
+            "note": "Executive summary omits Review and other stages.",
+            "quote": "...single conservative, linear flow... (Generate → Validate → Judge → Freeze) ..."
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "R4",
+            "json_pointer": "/plan_package/requirements/3/text",
+            "note": "R4 requires Review stage (at minimum).",
+            "quote": "...Intake → Generate → Validate → Review → Judge → Freeze..."
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "chosen_decision",
+            "json_pointer": "/plan_package/architecture/chosen/key_design_decisions/0",
+            "note": "Chosen design decision reiterates the sequence including Review.",
+            "quote": "Use a linear, sequential stage order (Intake → Generate → Validate → Review → Judge → Freeze) ..."
+          }
+        ],
+        "routing_target": "plan_editor_executive_summary_consistency"
+      },
+      {
+        "id": "CS3",
+        "severity": "critical",
+        "summary": "Tool policy for the Review stage denies artifact_write/workspace_write, but the architecture and requirements require reviewers to emit review_findings.json (a findings artifact). This blocks the reviewer role from producing its mandated output.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "Review_stage_policy",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/6/restrictions/0",
+            "note": "Review restrictions deny artifact and workspace writes.",
+            "quote": "Reviewers are findings-only; they do not emit canonical writing/patch artifacts."
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "Review_stage_policy",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/6/restrictions/0/artifact_write",
+            "note": "Explicit deny prevents writing review_findings.json at all (even findings-only).",
+            "quote": "deny"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "C7",
+            "json_pointer": "/plan_package/architecture/options/0/components/6/responsibilities/1",
+            "note": "Reviewer Pod is required to produce review_findings.json.",
+            "quote": "Produce review_findings.json with RFC 6901 evidence pointers into versioned artifacts (CNS6)."
+          }
+        ],
+        "routing_target": "governance_tool_policy_fix"
+      },
+      {
+        "id": "CS4",
+        "severity": "high",
+        "summary": "Intake stage tool policy allows only non-canonical artifact writes, but the Intake Gate component requires initializing canonical audit-spine artifacts (run_manifest, event_log) and emitting stage_handoff. This is inconsistent with the stated Intake write restrictions.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "Intake_stage_policy",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/0/restrictions/0/artifact_write",
+            "note": "Intake artifact writes restricted to non-canonical only.",
+            "quote": "allow_noncanonical_only"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "C3",
+            "json_pointer": "/plan_package/architecture/options/0/components/2/responsibilities/1",
+            "note": "Intake Gate must initialize run_manifest/event_log (canonical).",
+            "quote": "Initialize run_manifest and append-only event_log (CNS3)."
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "C3",
+            "json_pointer": "/plan_package/architecture/options/0/components/2/responsibilities/3",
+            "note": "Intake Gate also must emit a stage_handoff at Intake→Plan boundary.",
+            "quote": "Emit stage_handoff for Intake→Plan boundary."
+          }
+        ],
+        "routing_target": "governance_tool_policy_fix"
+      },
+      {
+        "id": "CS5",
+        "severity": "high",
+        "summary": "The plan declares a single evidence-pointer object shape ({artifact_ref, entity_id|null, json_pointer, note}) but uses a different structure in decision_log evidence_pointers (includes candidate_id/artifact_id/quote and does not use entity_id). This violates the plan’s own evidence standard requirements.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "EvidencePointer_glossary",
+            "json_pointer": "/plan_package/glossary/3/definition",
+            "note": "Glossary defines the evidence pointer object shape with entity_id.",
+            "quote": "An RFC 6901 JSON Pointer object {artifact_ref, entity_id|null, json_pointer, note} referencing a versioned JSON artifact location; used as the sole standard..."
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "R10",
+            "json_pointer": "/plan_package/requirements/9/text",
+            "note": "R10 enforces this single structure.",
+            "quote": "...RFC 6901 JSON Pointer objects with the structure {artifact_ref, entity_id|null, json_pointer, note}..."
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "DEC1_evidence_pointer_example",
+            "json_pointer": "/plan_package/decision_log/0/evidence_pointers/0",
+            "note": "Decision log uses artifact_id + candidate_id + quote, not entity_id.",
+            "quote": null
+          }
+        ],
+        "routing_target": "evidence_standard_lint_and_schema_alignment"
+      },
+      {
+        "id": "CS6",
+        "severity": "medium",
+        "summary": "R9’s prohibition on “prose/markdown/unstructured text” in canonical artifacts conflicts with the plan’s extensive reliance on freeform natural-language strings in requirements, rationales, risk descriptions, and notes. As written, R9 would imply rejecting artifacts like the plan itself.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "R9",
+            "json_pointer": "/plan_package/requirements/8/text",
+            "note": "R9 prohibits prose/unstructured text in canonical artifacts.",
+            "quote": "...orchestrator SHALL reject any artifact containing prose/markdown/unstructured text..."
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "R1_text_example",
+            "json_pointer": "/plan_package/requirements/0/text",
+            "note": "Example of natural-language requirement text the system would seemingly reject under R9.",
+            "quote": "The Implementation Council subsystem SHALL accept exactly one frozen plan_package_final.json..."
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "K1_description_example",
+            "json_pointer": "/plan_package/risk_register/0/description",
+            "note": "Example of prose risk description.",
+            "quote": "Silent plan-semantics drift / scope expansion: implementation artifacts or code changes effectively alter the meaning..."
+          }
+        ],
+        "routing_target": "requirements_wording_clarification"
+      },
+      {
+        "id": "CS7",
+        "severity": "medium",
+        "summary": "Tool policy includes an IntegrateAndValidate stage that is not part of the selected O1 sequential pipeline description, suggesting leftover or cross-option stage definitions that may confuse orchestrator stage enforcement and handoff requirements.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "chosen_option",
+            "json_pointer": "/plan_package/architecture/chosen/option_id",
+            "note": "Chosen architecture option is O1 (sequential pipeline).",
+            "quote": "O1"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "IntegrateAndValidate_stage_policy",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/5/stage",
+            "note": "Tool policy defines IntegrateAndValidate stage.",
+            "quote": "IntegrateAndValidate"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "O1_components",
+            "json_pointer": "/plan_package/architecture/options/0/components",
+            "note": "O1 component list does not define an IntegrateAndValidate stage name (it defines Validate and PatchApply separately only in tool policy).",
+            "quote": null
+          }
+        ],
+        "routing_target": "governance_and_stage_model_alignment"
+      },
+      {
+        "id": "CS001",
+        "severity": "high",
+        "summary": "Requirement R24 (SHOULD decompose large refactors) lacks corresponding acceptance test coverage, weakening enforceability of bounded-change constraints critical to K16 mitigation.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "R24",
+            "json_pointer": "/requirements/23",
+            "note": "R24 requires decomposition of large refactors but is marked SHOULD, not MUST.",
+            "quote": "Large code refactors SHOULD be decomposed into bounded patchsets"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "acceptance_canonical_v1",
+            "artifact_id": "AT1",
+            "json_pointer": "/acceptance_tests",
+            "note": "No acceptance test explicitly validates R24 patchset size limits or decomposition enforcement.",
+            "quote": null
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "risk_gov_canonical_v1",
+            "artifact_id": "K16",
+            "json_pointer": "/risk_register/15",
+            "note": "K16 mitigation depends on patchset size limits that R24 addresses but does not mandate.",
+            "quote": "Define patchset size limits... require decomposition"
+          }
+        ],
+        "routing_target": "requirements_and_acceptance_test_coverage"
+      },
+      {
+        "id": "CS002",
+        "severity": "high",
+        "summary": "Requirement R25 (SHOULD map test results to AT#) is marked SHOULD but is critical for trace completeness gate (R21) and K13 mitigation; inconsistency between priority and dependency.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "R25",
+            "json_pointer": "/requirements/24",
+            "note": "R25 is SHOULD priority but trace completeness is a MUST gate.",
+            "quote": "test_results.json SHOULD include a deterministic mapping"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "R21",
+            "json_pointer": "/requirements/20",
+            "note": "R21 MUST gate requires trace completeness, which depends on R25.",
+            "quote": "trace completeness validators"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "risk_gov_canonical_v1",
+            "artifact_id": "K13",
+            "json_pointer": "/risk_register/12",
+            "note": "K13 mitigation requires AT# linkage that R25 addresses as SHOULD.",
+            "quote": "validator requires that each AT# has either a passing mapped test"
+          }
+        ],
+        "routing_target": "requirements_priority_alignment"
+      },
+      {
+        "id": "CS003",
+        "severity": "medium",
+        "summary": "Decision DEC6 mandates deny-by-default network policy, but tool_policy stage definitions for Generate and Validate do not explicitly address package-manager tool allowlisting, creating ambiguity for Q11 resolution.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "risk_gov_canonical_v1",
+            "artifact_id": "DEC6",
+            "json_pointer": "/decision_log/5",
+            "note": "DEC6 adopts network deny baseline.",
+            "quote": "deny-by-default tool permissions (including network deny)"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "risk_gov_canonical_v1",
+            "artifact_id": "tool_policy",
+            "json_pointer": "/tool_policy/stage_policies/2",
+            "note": "Generate stage restrictions list network deny but do not mention package managers.",
+            "quote": "network: deny"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "capsule_canonical_v1",
+            "artifact_id": "Q11",
+            "json_pointer": "/open_questions/10",
+            "note": "Q11 asks how to handle package-manager operations under network policy.",
+            "quote": "dependencies requiring network access and package-manager operations"
+          }
+        ],
+        "routing_target": "tool_policy_clarification"
+      },
+      {
+        "id": "CS004",
+        "severity": "high",
+        "summary": "Architecture O1 chosen option states 'no direct repo writes' in Generate stage, but PatchApply stage allows 'repo_write: allow_via_patch_apply_only', yet no explicit validator or interface contract enforces that Generate cannot invoke patch_apply tool.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "C5",
+            "json_pointer": "/options/0/components/4",
+            "note": "Writer Pod (Generate) responsibilities say 'no direct edits' but do not forbid patch_apply tool.",
+            "quote": "Produce diff-only patchset JSON artifacts"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "risk_gov_canonical_v1",
+            "artifact_id": "tool_policy",
+            "json_pointer": "/tool_policy/stage_policies/2",
+            "note": "Generate stage restrictions say repo_write: deny but do not list patch_apply in allowlisted_tools.",
+            "quote": "repo_write: deny"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "risk_gov_canonical_v1",
+            "artifact_id": "tool_policy",
+            "json_pointer": "/tool_policy/stage_policies/3",
+            "note": "PatchApply stage explicitly allows patch_apply tool.",
+            "quote": "allowlisted_tools: [artifact_read, patch_apply, repo_snapshot, artifact_write, schema_validate]"
+          }
+        ],
+        "routing_target": "tool_policy_enforcement_gap"
+      },
+      {
+        "id": "CS005",
+        "severity": "medium",
+        "summary": "Milestone M1 exit criteria require 'all MUST requirements R1–R23 are satisfied' but R24 and R25 are SHOULD requirements; unclear whether SHOULD requirements block milestone exit or are optional.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "R24",
+            "json_pointer": "/requirements/23",
+            "note": "R24 is SHOULD priority.",
+            "quote": "Large code refactors SHOULD be decomposed"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "R25",
+            "json_pointer": "/requirements/24",
+            "note": "R25 is SHOULD priority.",
+            "quote": "test_results.json SHOULD include"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "M1",
+            "json_pointer": "/milestones/0/exit_criteria/0",
+            "note": "Exit criteria reference only MUST requirements R1–R23.",
+            "quote": "All MUST requirements R1–R23 are satisfied"
+          }
+        ],
+        "routing_target": "milestone_exit_criteria_clarification"
+      },
+      {
+        "id": "CS006",
+        "severity": "high",
+        "summary": "Synthesis warning W1 flags tension between big-bang freeze strategy and Q13 (budget overruns/partial freezes), but Decision DEC2 rationale does not acknowledge this blocking tension or provide escalation path if budgets are exceeded.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "risk_gov_canonical_v1",
+            "artifact_id": "W1",
+            "json_pointer": "/synthesis_warnings/0",
+            "note": "W1 warns big-bang may be infeasible if budgets exceeded.",
+            "quote": "Big-bang single-freeze strategy is in tension with blocking open question Q13"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "risk_gov_canonical_v1",
+            "artifact_id": "DEC2",
+            "json_pointer": "/decision_log/1",
+            "note": "DEC2 adopts big-bang but does not address budget exhaustion escalation.",
+            "quote": "single "
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "capsule_canonical_v1",
+            "artifact_id": "Q13",
+            "json_pointer": "/open_questions/12",
+            "note": "Q13 is marked blocking and high impact but unresolved.",
+            "quote": "How should the system handle incremental implementation when the full work plan cannot be completed within token/time budgets"
+          }
+        ],
+        "routing_target": "decision_and_open_question_resolution"
+      },
+      {
+        "id": "CS007",
+        "severity": "medium",
+        "summary": "Risk K12 mitigation requires 'explicit base_commit in each patchset' but patchset artifact schema is not defined in requirements or architecture, leaving enforcement mechanism unspecified.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "risk_gov_canonical_v1",
+            "artifact_id": "K12",
+            "json_pointer": "/risk_register/11",
+            "note": "K12 mitigation mandates base_commit in patchsets.",
+            "quote": "Require explicit base_commit in each patchset"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "R13",
+            "json_pointer": "/requirements/12",
+            "note": "R13 requires diff-only patchset JSON artifacts but does not specify schema fields.",
+            "quote": "diff-only patchset JSON artifacts with a deterministic apply order"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "M1.D1",
+            "json_pointer": "/milestones/0/deliverables/0",
+            "note": "M1.D1 lists patchset artifact schema as deliverable but schema content not provided in plan.",
+            "quote": "patchset artifact schema (diff-only)"
+          }
+        ],
+        "routing_target": "schema_definition_gap"
+      },
+      {
+        "id": "CS008",
+        "severity": "medium",
+        "summary": "Requirement R6 mandates stage_handoff must include 'evidence pointers into canonical artifacts (including work_plan, patchsets, and validation outputs)' but stage_handoff schema is not defined, leaving required fields unspecified.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "R6",
+            "json_pointer": "/requirements/5",
+            "note": "R6 lists required stage_handoff content but no schema provided.",
+            "quote": "stage objectives, completed work references, pending blockers, next actions, and evidence pointers"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "R5",
+            "json_pointer": "/requirements/4",
+            "note": "R5 requires typed/versioned stage_handoff schema but schema not included in plan.",
+            "quote": "stage_handoff JSON artifact conforming to a typed/versioned schema"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "M1.D2",
+            "json_pointer": "/milestones/0/deliverables/1",
+            "note": "M1.D2 mentions stage_handoff schema as deliverable but content not provided.",
+            "quote": "stage_handoff schema + required fields enforced"
+          }
+        ],
+        "routing_target": "schema_definition_gap"
+      }
+    ]
+  }
+}

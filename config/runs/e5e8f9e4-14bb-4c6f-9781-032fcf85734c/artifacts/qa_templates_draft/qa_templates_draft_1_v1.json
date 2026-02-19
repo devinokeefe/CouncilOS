@@ -1,0 +1,194 @@
+{
+  "artifact_type": "qa_templates_draft",
+  "artifact_id": "qa_templates_draft_1_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T18:44:12.255951Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "capsule_canonical_v1"
+  ],
+  "payload": {
+    "templates": [
+      {
+        "id": "ATT-001",
+        "name": "Input Contract Schema Compliance",
+        "description": "Verify plan_package_final.json and required input artifacts conform to declared JSON schemas. Procedure: validate each artifact against its schema; confirm required fields present and types correct. Pass: 100% schema validation success; fail otherwise.",
+        "applies_to": [
+          "plan_package_final.json",
+          "repo_context.json",
+          "workspace_context.json"
+        ]
+      },
+      {
+        "id": "ATT-002",
+        "name": "Evidence Pointer Standard Enforcement",
+        "description": "Check all evidence references in decision/findings/trace artifacts use RFC 6901 JSON Pointer object {artifact_ref, entity_id|null, json_pointer, note}. Procedure: scan artifacts for evidence links; validate structure and pointer syntax; ensure artifact_ref exists. Pass: zero non-compliant evidence references.",
+        "applies_to": [
+          "trace_report.json",
+          "review_findings.json",
+          "decision_record.json",
+          "work_plan.json"
+        ]
+      },
+      {
+        "id": "ATT-003",
+        "name": "No Silent Scope Expansion",
+        "description": "Ensure no semantic changes to R#/AT#/O#/K# from input plan without ChangeRequest. Procedure: diff plan semantics referenced in outputs vs plan_package_final.json; check for ChangeRequest and decision record when deviations present. Pass: no deviations or approved ChangeRequest with decision record; fail otherwise.",
+        "applies_to": [
+          "work_plan.json",
+          "decision_record.json",
+          "change_request.json"
+        ]
+      },
+      {
+        "id": "ATT-004",
+        "name": "Patchset Deterministic Apply",
+        "description": "Validate patchsets are diff-only JSON artifacts with deterministic apply order and apply cleanly to base repo snapshot. Procedure: parse patchset format, apply in declared order to base_commit; confirm no conflicts and outputs match repo_snapshot.json. Pass: 100% clean apply and snapshot consistency.",
+        "applies_to": [
+          "patchsets/*.json",
+          "repo_snapshot.json"
+        ]
+      },
+      {
+        "id": "ATT-005",
+        "name": "Forbidden/Protected Paths Enforcement",
+        "description": "Ensure patchsets do not modify forbidden/protected paths defined in repo_context.json. Procedure: compute changed paths from patchsets; compare against forbidden/protected patterns. Pass: zero forbidden writes; fail otherwise.",
+        "applies_to": [
+          "patchsets/*.json",
+          "repo_context.json"
+        ]
+      },
+      {
+        "id": "ATT-006",
+        "name": "Validator Gate Completeness",
+        "description": "Confirm required validators (build/test/lint/typecheck/integrity/workspace integrity/risk closure/reproducibility/trace completeness) are defined and executed with results captured. Procedure: verify test_results/quality_reports/trace_report include entries for each required gate and status. Pass: all gates present and status recorded.",
+        "applies_to": [
+          "test_results.json",
+          "quality_reports.json",
+          "trace_report.json"
+        ]
+      },
+      {
+        "id": "ATT-007",
+        "name": "Freeze Bundle Required Artifacts",
+        "description": "Validate Implementation Freeze Bundle includes all mandatory artifacts and versions. Procedure: check artifact list for required files and presence in workspace_index; verify non-empty and schema-valid. Pass: all required artifacts present and valid.",
+        "applies_to": [
+          "implementation_run_manifest.json",
+          "implementation_event_log.jsonl",
+          "work_plan.json",
+          "patchsets/*.json",
+          "repo_snapshot.json",
+          "test_results.json",
+          "quality_reports.json",
+          "trace_report.json",
+          "review_findings.json",
+          "release_bundle.json",
+          "decision_record.json",
+          "workspace_index.json",
+          "context_packs/*",
+          "stage_handoffs/*"
+        ]
+      },
+      {
+        "id": "ATT-008",
+        "name": "Audit Spine Immutability",
+        "description": "Verify run_manifest is immutable and event_log is append-only with ordered entries. Procedure: check event_log for monotonic sequence/timestamps and no deletions in provenance; ensure run_manifest referenced consistently. Pass: append-only sequence with no gaps or rewrites.",
+        "applies_to": [
+          "implementation_run_manifest.json",
+          "implementation_event_log.jsonl"
+        ]
+      },
+      {
+        "id": "ATT-009",
+        "name": "Stage Handoff Coverage",
+        "description": "Ensure a stage_handoff artifact exists for every checkpoint boundary and contains required fields and evidence pointers. Procedure: enumerate stages from workflow; verify matching handoff artifacts; validate pointers. Pass: 100% coverage and valid structure.",
+        "applies_to": [
+          "stage_handoffs/*",
+          "work_plan.json"
+        ]
+      },
+      {
+        "id": "ATT-010",
+        "name": "Workspace Index Integrity",
+        "description": "Confirm workspace_index accounts for all workspace artifacts, with types/versions/provenance. Procedure: cross-check workspace storage vs index entries; verify canonical vs non-canonical flags. Pass: 100% indexed items; no unindexed canonical artifacts.",
+        "applies_to": [
+          "workspace_index.json"
+        ]
+      },
+      {
+        "id": "ATT-011",
+        "name": "Secrets Redaction/Blocking",
+        "description": "Verify secrets policy enforcement across logs and workspace. Procedure: run secrets scan; check event_log/workspace artifacts for redaction markers; ensure blocking recorded for detected secrets. Pass: zero unredacted secrets persisted.",
+        "applies_to": [
+          "implementation_event_log.jsonl",
+          "workspace_index.json",
+          "quality_reports.json"
+        ]
+      },
+      {
+        "id": "ATT-012",
+        "name": "Traceability to AT#",
+        "description": "Ensure test results map to AT# identifiers from plan_package_final.json. Procedure: verify test_results entries include AT# mapping and evidence pointers to plan_package_final.json. Pass: 100% tests mapped to AT# or explicitly justified exclusions.",
+        "applies_to": [
+          "test_results.json",
+          "plan_package_final.json"
+        ]
+      },
+      {
+        "id": "ATT-013",
+        "name": "Review Findings Separation",
+        "description": "Verify reviewers produce findings-only artifacts with no writing/patch content. Procedure: scan review_findings.json for disallowed fields or patch content; ensure patches exist only in patchsets. Pass: findings-only compliance.",
+        "applies_to": [
+          "review_findings.json",
+          "patchsets/*.json"
+        ]
+      },
+      {
+        "id": "ATT-014",
+        "name": "ChangeRequest Governance",
+        "description": "If ChangeRequest present, verify approval/escalation recorded and policy-compliant before semantic changes applied. Procedure: validate ChangeRequest schema, decision record references, and stage ordering. Pass: approved ChangeRequest before any semantic deviation.",
+        "applies_to": [
+          "change_request.json",
+          "decision_record.json",
+          "work_plan.json"
+        ]
+      },
+      {
+        "id": "ATT-015",
+        "name": "Context Pack Determinism and Bounds",
+        "description": "Validate context packs are deterministically compiled, bounded, and reproducible. Procedure: check context_pack manifest for selection rules, size bounds, and referenced artifacts; recompute selection deterministically. Pass: deterministic match and within bounds.",
+        "applies_to": [
+          "context_packs/*",
+          "workspace_index.json"
+        ]
+      }
+    ],
+    "coverage_guidance": [
+      "Cover every required canonical artifact in the freeze bundle with at least one template-based check.",
+      "Ensure each policy constraint (CNS1–CNS13) has a measurable QA check mapped to an artifact.",
+      "Prioritize validation of evidence pointer compliance and no-silent-scope expansion early in the workflow.",
+      "Include both positive (presence/validity) and negative (absence of forbidden content) tests.",
+      "For each stage boundary, ensure a stage_handoff artifact exists and references latest canonical artifacts.",
+      "Verify deterministic behaviors: patchset apply order, context pack selection, and event log ordering.",
+      "Require schema validation for all JSON artifacts before content-level checks.",
+      "Trace tests to AT# identifiers and verify completeness or documented exclusions.",
+      "Check separation of powers by ensuring no artifacts claim authority reserved to orchestrator.",
+      "Verify secrets scanning and redaction outcomes are recorded in quality_reports with zero unredacted leaks.",
+      "Confirm review artifacts are findings-only and do not include patches or authored content.",
+      "Validate workspace index covers all canonical artifacts and distinguishes non-canonical items.",
+      "Ensure validator gate results are present and passing before freeze is allowed.",
+      "Require reproducibility evidence: rerun validators yields same outputs or recorded nondeterminism handling.",
+      "Enforce forbidden/protected path policies on patchsets with zero violations."
+    ],
+    "definition_of_done": [
+      "All QA templates are applicable to at least one required artifact and describe a measurable pass/fail procedure.",
+      "Templates include checks for schema compliance, traceability, deterministic patch application, and gate completeness.",
+      "Coverage guidance maps to constraints and success metrics with no unaddressed critical areas.",
+      "DoD is met when a candidate freeze bundle passes all applicable templates with zero critical failures.",
+      "Any missing or ambiguous input contracts are flagged via ChangeRequest governance template if deviations occur.",
+      "All checks are executable using only canonical artifacts (no reliance on chat logs).",
+      "Templates avoid minting AT# and use only ATT-prefixed IDs.",
+      "Output JSON is schema-valid and contains templates, coverage_guidance, and definition_of_done arrays."
+    ]
+  }
+}

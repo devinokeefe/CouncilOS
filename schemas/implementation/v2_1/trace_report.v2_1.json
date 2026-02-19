@@ -1,0 +1,84 @@
+{
+  "$defs": {
+    "EvidencePointer": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_ref": {
+          "title": "Artifact Ref",
+          "type": "string"
+        },
+        "entity_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Entity Id"
+        },
+        "json_pointer": {
+          "title": "Json Pointer",
+          "type": "string"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        }
+      },
+      "required": [
+        "artifact_ref",
+        "json_pointer"
+      ],
+      "title": "EvidencePointer",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "trace_complete": {
+      "title": "Trace Complete",
+      "type": "boolean"
+    },
+    "missing_links": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Missing Links",
+      "type": "array"
+    },
+    "evidence": {
+      "items": {
+        "$ref": "#/$defs/EvidencePointer"
+      },
+      "title": "Evidence",
+      "type": "array"
+    },
+    "recommendation": {
+      "enum": [
+        "freeze",
+        "no_freeze"
+      ],
+      "title": "Recommendation",
+      "type": "string"
+    }
+  },
+  "required": [
+    "trace_complete",
+    "missing_links",
+    "evidence",
+    "recommendation"
+  ],
+  "title": "TraceReportPayload",
+  "type": "object"
+}

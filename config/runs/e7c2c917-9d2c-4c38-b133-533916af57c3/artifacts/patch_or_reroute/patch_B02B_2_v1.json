@@ -1,0 +1,16 @@
+{
+  "artifact_type": "patch_or_reroute",
+  "artifact_id": "patch_B02B_2_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T20:35:37.806944Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B02B_v1"
+  ],
+  "payload": {
+    "action": "reroute",
+    "rationale": "Multiple hard-gate id_integrity failures require changes in locked sections and/or ID renaming, which are disallowed. Specifically: (1) deliverable IDs must be reformatted (M#-D# to DL#) requiring edits across milestones and ID changes; (2) architecture/options risk references expect a different risk representation (likely K# IDs) requiring edits to /architecture/options and/or /risk_register, which are locked; (3) evidence pointer schema in decision_log requires structural changes in a locked canonical section; (4) R4/AT4 stage-sequence alignment requires edits to /requirements and /acceptance_tests, which are locked. These cannot be safely patched under current constraints. Reroute to schema/validator owner for authoritative format and locked-section updates.",
+    "patch": [],
+    "reroute_target": "validator_spec_alignment"
+  }
+}

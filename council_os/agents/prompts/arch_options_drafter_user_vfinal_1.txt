@@ -1,0 +1,11 @@
+{
+  "run_context": {{RUN_CONTEXT_JSON}},
+  "artifact_refs": {{ARTIFACT_REFS_JSON}},
+  "allowed_id_prefixes": ["{{OPT_PREFIX}}","{{COMP_PREFIX}}","{{IF_PREFIX}}"],
+  "inputs": {
+    "prefixes": {"opt":"{{OPT_PREFIX}}","comp":"{{COMP_PREFIX}}","if":"{{IF_PREFIX}}"},
+    "project_capsule": {{CAPSULE_JSON}}
+  },
+  "task": "Propose 2-4 architecture options.",
+  "output_schema": {{ARCH_DRAFT_SCHEMA_JSON}}
+}

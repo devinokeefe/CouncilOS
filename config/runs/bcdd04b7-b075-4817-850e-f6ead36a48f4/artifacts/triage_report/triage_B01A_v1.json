@@ -1,0 +1,414 @@
+{
+  "artifact_type": "triage_report",
+  "artifact_id": "triage_B01A_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T19:03:20.708509Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B01A_v1",
+    "validator_B01A_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B01A_v1",
+    "critic_id": "MERGED",
+    "verdict": "reject",
+    "defects": [
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Review stage tool policy forbids any artifact writes, but reviewers are required to emit review_findings.json; this makes the Review stage impossible to execute as specified.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "CS3",
+            "json_pointer": "/inputs/consistency_findings/findings/2",
+            "note": "Consistency finding CS3 describes the conflict.",
+            "quote": "Review stage denies artifact_write/workspace_write, but reviewers must emit review_findings.json."
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "Review_stage_policy",
+            "json_pointer": "/inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies/6/restrictions/0/artifact_write",
+            "note": "Review stage explicitly denies artifact writes.",
+            "quote": "deny"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "C7",
+            "json_pointer": "/inputs/plan_candidate/plan_package/architecture/options/0/components/6/responsibilities/1",
+            "note": "Reviewer pod must produce review_findings.json.",
+            "quote": "Produce review_findings.json with RFC 6901 evidence pointers into versioned artifacts (CNS6)."
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {
+            "op": "add",
+            "path": "/inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies/6/allowlisted_tools/-",
+            "value": "artifact_write"
+          }
+        ]
+      },
+      {
+        "label": "note",
+        "severity": "high",
+        "summary": "Trace-completeness dependency mismatch: R21 requires trace completeness as a MUST freeze gate, but R25 (AT# mapping in test_results) is only SHOULD; consider upgrading R25 to MUST or explicitly defining an alternate trace mechanism that satisfies R21 deterministically.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "CS002",
+            "json_pointer": "/inputs/consistency_findings/findings/9",
+            "note": "Consistency finding CS002 flags the priority mismatch.",
+            "quote": "R25 is marked SHOULD but is critical for the trace completeness gate (R21)."
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "R21",
+            "json_pointer": "/inputs/plan_candidate/plan_package/requirements/20/text",
+            "note": "R21 requires trace completeness gate.",
+            "quote": "trace completeness validators"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "R25",
+            "json_pointer": "/inputs/plan_candidate/plan_package/requirements/24/text",
+            "note": "R25 is only SHOULD.",
+            "quote": "test_results.json SHOULD include a deterministic mapping"
+          }
+        ],
+        "violated_gate": "completeness_heuristic",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Tool policy for Review stage denies artifact_write, blocking reviewers from emitting required review_findings.json artifact.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "Review_stage_policy",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/6/restrictions/0/artifact_write",
+            "note": "Review stage explicitly denies artifact writes.",
+            "quote": "deny"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "C7",
+            "json_pointer": "/plan_package/architecture/options/0/components/6/responsibilities/1",
+            "note": "Reviewer Pod must produce review_findings.json.",
+            "quote": "Produce review_findings.json with RFC 6901 evidence pointers into versioned artifacts (CNS6)."
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Tool policy for Intake stage allows only non-canonical artifact writes, but Intake Gate must initialize canonical audit-spine artifacts (run_manifest, event_log) and emit stage_handoff.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "Intake_stage_policy",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/0/restrictions/0/artifact_write",
+            "note": "Intake restricted to non-canonical writes only.",
+            "quote": "allow_noncanonical_only"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "C3",
+            "json_pointer": "/plan_package/architecture/options/0/components/2/responsibilities/1",
+            "note": "Intake Gate must initialize canonical audit artifacts.",
+            "quote": "Initialize run_manifest and append-only event_log (CNS3)."
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Stage model inconsistency: R4 defines minimal stages (Intake→Generate→Validate→Review→Judge→Freeze) but architecture C1 and tool policy reference additional stages (Plan, WorkPlanning, PatchApply, Patch, IntegrateAndValidate) creating ambiguity in checkpoint boundaries and handoff requirements.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "R4",
+            "json_pointer": "/plan_package/requirements/3/text",
+            "note": "R4 minimal stage list excludes Plan/WorkPlanning/PatchApply/Patch.",
+            "quote": "Intake → Generate → Validate → Review → Judge → Freeze"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "C1",
+            "json_pointer": "/plan_package/architecture/options/0/components/0/responsibilities/0",
+            "note": "Architecture C1 includes Plan and Patch stages with different ordering.",
+            "quote": "Intake → Plan → Generate → Validate → Review → Patch → Judge → Freeze"
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "Evidence pointer structure inconsistency: plan defines {artifact_ref, entity_id|null, json_pointer, note} but decision_log uses {candidate_id, artifact_ref, artifact_id, json_pointer, note, quote} violating the single evidence standard.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "R10",
+            "json_pointer": "/plan_package/requirements/9/text",
+            "note": "R10 mandates specific evidence pointer structure.",
+            "quote": "{artifact_ref, entity_id|null, json_pointer, note}"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "DEC1_evidence_pointer_example",
+            "json_pointer": "/plan_package/decision_log/0/evidence_pointers/0",
+            "note": "Decision log uses different structure with candidate_id/artifact_id/quote.",
+            "quote": null
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "Deliverable IDs do not match DL# pattern: all six deliverables use M1.D# format instead of required DL# format.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "M1.D1",
+            "json_pointer": "/plan_package/milestones/0/deliverables/0/id",
+            "note": "Deliverable uses M1.D1 instead of DL# format.",
+            "quote": "M1.D1"
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "Architecture options reference 20 missing risk IDs: O1 references 3 risks, O2 references 4 risks, O3 references 4 risks, O4 references 3 risks that are not present in risk_register.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "O1",
+            "json_pointer": "/plan_package/architecture/options/0/risks/0",
+            "note": "O1 references risk not in risk_register.",
+            "quote": "Long-horizon implementations may exceed token/time budgets due to serialized execution."
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Key design decisions lack decision record references: 6 design decisions in chosen architecture do not reference corresponding decision_log entries.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "chosen_decision",
+            "json_pointer": "/plan_package/architecture/chosen/key_design_decisions/0",
+            "note": "Design decision references R4-R6 but no DEC# link.",
+            "quote": "Use a linear, sequential stage order (Intake → Generate → Validate → Review → Judge → Freeze) with an explicit checkpoint boundary"
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "Decision log evidence pointers reference missing IDs: 3 pointers reference branch_id 'B01' and 1 references artifact_id 'tool_policy' that do not exist in the provided artifacts.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "DEC1",
+            "json_pointer": "/plan_package/decision_log/0/evidence_pointers/1/artifact_id",
+            "note": "Evidence pointer references missing branch artifact_id B01.",
+            "quote": "B01"
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Executive summary stage flow omits Review stage and conflicts with R4 and chosen architecture stage sequence.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "executive_summary",
+            "json_pointer": "/plan_package/executive_summary",
+            "note": "Executive summary omits Review stage from flow description.",
+            "quote": "Generate → Validate → Judge → Freeze"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "R4",
+            "json_pointer": "/plan_package/requirements/3/text",
+            "note": "R4 requires Review stage.",
+            "quote": "Intake → Generate → Validate → Review → Judge → Freeze"
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "note",
+        "severity": "medium",
+        "summary": "R9 prohibition on prose/markdown in canonical artifacts conflicts with plan's extensive use of natural-language strings in requirements, rationales, and risk descriptions.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "R9",
+            "json_pointer": "/plan_package/requirements/8/text",
+            "note": "R9 rejects prose/markdown/unstructured text in canonical artifacts.",
+            "quote": "orchestrator SHALL reject any artifact containing prose/markdown/unstructured text"
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "note",
+        "severity": "medium",
+        "summary": "Tool policy includes IntegrateAndValidate stage not present in chosen O1 sequential pipeline, suggesting cross-option contamination.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "IntegrateAndValidate_stage_policy",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/5/stage",
+            "note": "Tool policy defines IntegrateAndValidate stage.",
+            "quote": "IntegrateAndValidate"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "chosen_option",
+            "json_pointer": "/plan_package/architecture/chosen/option_id",
+            "note": "Chosen option is O1 sequential pipeline.",
+            "quote": "O1"
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "note",
+        "severity": "high",
+        "summary": "R24 (SHOULD decompose large refactors) lacks acceptance test coverage, weakening enforceability of K16 mitigation for bounded-change constraints.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "R24",
+            "json_pointer": "/plan_package/requirements/23",
+            "note": "R24 is SHOULD priority without corresponding acceptance test.",
+            "quote": "Large code refactors SHOULD be decomposed into bounded patchsets"
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "note",
+        "severity": "high",
+        "summary": "R25 (SHOULD map test results to AT#) is marked SHOULD but is critical dependency for R21 trace completeness gate and K13 mitigation.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "R25",
+            "json_pointer": "/plan_package/requirements/24",
+            "note": "R25 is SHOULD but trace completeness gate depends on it.",
+            "quote": "test_results.json SHOULD include a deterministic mapping"
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "note",
+        "severity": "medium",
+        "summary": "DEC2 adopts big-bang freeze strategy but does not address W1 warning about tension with Q13 (budget exhaustion) or provide escalation path.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "W1",
+            "json_pointer": "/plan_package/synthesis_warnings/0",
+            "note": "W1 warns big-bang may be infeasible if budgets exceeded.",
+            "quote": "Big-bang single-freeze strategy is in tension with blocking open question Q13"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "DEC2",
+            "json_pointer": "/plan_package/decision_log/1",
+            "note": "DEC2 does not address budget exhaustion escalation.",
+            "quote": "single comprehensive freeze event"
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {}
+        ]
+      }
+    ],
+    "reroute_target": "requirements_and_architecture_alignment",
+    "reroute_reason": "Multiple hard-gate issues require coordinated cross-section resolution (stage model canonicalization across requirements/architecture/tool_policy; evidence pointer schema alignment; unresolved ID/reference conventions in validator id_integrity failures). Safe local patches exist for some tool_policy and wording issues, but the remaining blockers need upstream policy/schema decisions."
+  }
+}

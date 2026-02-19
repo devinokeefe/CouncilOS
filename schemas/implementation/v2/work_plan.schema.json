@@ -1,0 +1,163 @@
+{
+  "$defs": {
+    "PatchsetLimits": {
+      "additionalProperties": false,
+      "properties": {
+        "max_operations": {
+          "title": "Max Operations",
+          "type": "integer"
+        },
+        "max_bytes": {
+          "title": "Max Bytes",
+          "type": "integer"
+        },
+        "max_operations_total": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Operations Total"
+        }
+      },
+      "required": [
+        "max_operations",
+        "max_bytes"
+      ],
+      "title": "PatchsetLimits",
+      "type": "object"
+    },
+    "WorkLane": {
+      "additionalProperties": false,
+      "properties": {
+        "lane_id": {
+          "title": "Lane Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        }
+      },
+      "required": [
+        "lane_id",
+        "name",
+        "description"
+      ],
+      "title": "WorkLane",
+      "type": "object"
+    },
+    "WorkTaskV2": {
+      "additionalProperties": false,
+      "properties": {
+        "task_id": {
+          "title": "Task Id",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "lane_id": {
+          "title": "Lane Id",
+          "type": "string"
+        },
+        "depends_on": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Depends On",
+          "type": "array"
+        },
+        "maps_to_requirements": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Maps To Requirements",
+          "type": "array"
+        },
+        "maps_to_acceptance_tests": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Maps To Acceptance Tests",
+          "type": "array"
+        },
+        "profile_id": {
+          "title": "Profile Id",
+          "type": "string"
+        },
+        "satisfies_expectations": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Satisfies Expectations",
+          "type": "array"
+        },
+        "verifies_expectations": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Verifies Expectations",
+          "type": "array"
+        },
+        "remote_ops": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Remote Ops",
+          "type": "array"
+        }
+      },
+      "required": [
+        "task_id",
+        "title",
+        "lane_id",
+        "profile_id"
+      ],
+      "title": "WorkTaskV2",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "lanes": {
+      "items": {
+        "$ref": "#/$defs/WorkLane"
+      },
+      "title": "Lanes",
+      "type": "array"
+    },
+    "tasks": {
+      "items": {
+        "$ref": "#/$defs/WorkTaskV2"
+      },
+      "title": "Tasks",
+      "type": "array"
+    },
+    "patchset_limits": {
+      "$ref": "#/$defs/PatchsetLimits"
+    },
+    "generated_at": {
+      "format": "date-time",
+      "title": "Generated At",
+      "type": "string"
+    }
+  },
+  "required": [
+    "lanes",
+    "tasks",
+    "patchset_limits",
+    "generated_at"
+  ],
+  "title": "WorkPlanPayloadV2",
+  "type": "object"
+}

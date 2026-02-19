@@ -1,0 +1,64 @@
+{
+  "$defs": {
+    "QualityCheck": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "pass",
+            "fail",
+            "warn"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "details": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Details"
+        }
+      },
+      "required": [
+        "name",
+        "status"
+      ],
+      "title": "QualityCheck",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "checks": {
+      "items": {
+        "$ref": "#/$defs/QualityCheck"
+      },
+      "title": "Checks",
+      "type": "array"
+    },
+    "overall_status": {
+      "enum": [
+        "PASS",
+        "FAIL"
+      ],
+      "title": "Overall Status",
+      "type": "string"
+    }
+  },
+  "required": [
+    "checks",
+    "overall_status"
+  ],
+  "title": "QualityReportsPayload",
+  "type": "object"
+}

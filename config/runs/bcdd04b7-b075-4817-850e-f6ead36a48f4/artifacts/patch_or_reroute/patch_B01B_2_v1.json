@@ -1,0 +1,16 @@
+{
+  "artifact_type": "patch_or_reroute",
+  "artifact_id": "patch_B01B_2_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T19:04:20.763799Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B01B_v1"
+  ],
+  "payload": {
+    "action": "reroute",
+    "rationale": "Id-integrity blockers require changing existing deliverable IDs and option-risk references, which violates the rule against renaming IDs or adding new ID-bearing entities. Additional fixes would require edits to locked sections (/requirements, /acceptance_tests, /architecture/options, /risk_register) and broad governance/tool policy changes beyond safe patches. Request reroute to synthesis/repair owner.",
+    "patch": [],
+    "reroute_target": "synthesis_repair"
+  }
+}

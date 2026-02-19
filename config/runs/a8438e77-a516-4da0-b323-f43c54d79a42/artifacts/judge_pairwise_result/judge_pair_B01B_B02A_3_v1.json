@@ -1,0 +1,66 @@
+{
+  "artifact_type": "judge_pairwise_result",
+  "artifact_id": "judge_pair_B01B_B02A_3_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T23:18:54.093935Z",
+  "source_run_id": "a8438e77-a516-4da0-b323-f43c54d79a42",
+  "parents": [
+    "plan_candidate_B01B_v3",
+    "plan_candidate_B02A_v3"
+  ],
+  "payload": {
+    "comparison": {
+      "a": "Provides a simpler, more directly testable linear workflow with explicit stage gates, handoffs, and a concrete per-stage tool policy, reducing integration-related nondeterminism. Trade-offs (speed/budget risk) are explicit and paired with clear governance/validator controls.",
+      "b": "Parallel-lane O2 can reduce wall-clock time but introduces substantial deterministic-integration complexity that is not fully closed with concrete, evidenced policies (ordering/thresholds) in this package. Several key decisions and warnings lack supporting evidence pointers, weakening audit-ready traceability."
+    },
+    "judge_id": "pairwise_judge",
+    "judge_model": "unavailable",
+    "winner": "a",
+    "scores": {
+      "feasibility": 8,
+      "testability": 9,
+      "governance": 9,
+      "architecture": 8,
+      "clarity": 8
+    },
+    "evidence": [
+      {
+        "artifact_ref": "plan_candidate_B01B_v3",
+        "entity_id": "O1",
+        "json_pointer": "/inputs/candidate_a/plan_package/architecture/chosen",
+        "note": "A chooses the sequential pipeline with explicit rationale tied to determinism, checkpoints, and role separation.",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B01B_v3",
+        "entity_id": null,
+        "json_pointer": "/inputs/candidate_a/plan_package/governance/tool_policy/stage_policies",
+        "note": "A specifies a detailed deny-by-default tool permission matrix with stage-specific restrictions and HITL triggers.",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B02A_v3",
+        "entity_id": "O2",
+        "json_pointer": "/inputs/candidate_b/plan_package/architecture/chosen",
+        "note": "B chooses the parallel fan-out/fan-in architecture, explicitly adding merge ordering and conflict-handling as critical dependencies.",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B02A_v3",
+        "entity_id": "DEC1",
+        "json_pointer": "/inputs/candidate_b/plan_package/decision_log/0/evidence_pointers",
+        "note": "Key architectural decision in B provides no evidence pointers, weakening evidence-backed governance readiness.",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      }
+    ],
+    "notes": "Candidate A is more closure-ready due to lower orchestration complexity and stronger concretization of governance/validator enforcement. Candidate B’s parallelism benefits are offset by less evidenced decisioning around deterministic integration."
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "run_context": {{RUN_CONTEXT_JSON}},
+  "artifact_refs": {{ARTIFACT_REFS_JSON}},
+  "allowed_id_prefixes": ["{{REQ_DRAFT_PREFIX}}"],
+  "inputs": {
+    "id_prefix": "{{REQ_DRAFT_PREFIX}}",
+    "project_capsule": {{CAPSULE_JSON}}
+  },
+  "task": "Draft requirements (8-25).",
+  "output_schema": {{REQ_DRAFT_SCHEMA_JSON}}
+}

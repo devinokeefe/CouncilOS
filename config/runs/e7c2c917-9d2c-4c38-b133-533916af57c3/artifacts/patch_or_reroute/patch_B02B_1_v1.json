@@ -1,0 +1,16 @@
+{
+  "artifact_type": "patch_or_reroute",
+  "artifact_id": "patch_B02B_1_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T20:35:37.799947Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B02B_v1"
+  ],
+  "payload": {
+    "action": "reroute",
+    "rationale": "Hard-gate id_integrity failures cannot be repaired within allowed patch constraints. (1) Deliverable IDs (e.g., M1-D1) are flagged as not matching required DL# format, but changing any existing /id value is disallowed. (2) Architecture option risk representation is flagged as referencing missing risks; fixing likely requires edits to /plan_package/architecture/options (a locked canonical section) and/or introducing new risk IDs (disallowed). (3) Resolving the stage-sequence mismatch would require editing /plan_package/requirements and /plan_package/acceptance_tests (both forbidden to modify). (4) Missing CNS11 would require adding a new ID-bearing constraint object, which is disallowed. Recommend reroute to schema/validator owners to align expected ID formats, risk representation, and stage model before attempting further patching.",
+    "patch": [],
+    "reroute_target": "validator_spec_alignment"
+  }
+}

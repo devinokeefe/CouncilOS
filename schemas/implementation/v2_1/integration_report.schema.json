@@ -1,0 +1,34 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "merge_order": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Merge Order",
+      "type": "array"
+    },
+    "base_commit": {
+      "title": "Base Commit",
+      "type": "string"
+    },
+    "head_commit": {
+      "title": "Head Commit",
+      "type": "string"
+    },
+    "skipped_patchsets": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Skipped Patchsets",
+      "type": "array"
+    }
+  },
+  "required": [
+    "merge_order",
+    "base_commit",
+    "head_commit"
+  ],
+  "title": "IntegrationReportPayload",
+  "type": "object"
+}

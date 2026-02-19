@@ -1,0 +1,293 @@
+{
+  "artifact_type": "triage_report",
+  "artifact_id": "triage_B2B_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T20:58:58.140196Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B2B_v2",
+    "validator_B2B_v2"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2B_v2",
+    "critic_id": "MERGED",
+    "verdict": "reject",
+    "defects": [
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "ID integrity hard-gate failure: milestone deliverable IDs (e.g., M1-D1) do not match the required DL# pattern. Fix requires renaming many existing IDs across milestones, which cannot be safely patched without an ID-authorized repair step.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/milestones/0/deliverables/0/id",
+            "note": "Example deliverable id in M1",
+            "quote": "M1-D1"
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "validator_report",
+            "json_pointer": "/checks/1/violations/0",
+            "note": "Validator: deliverable id mismatch",
+            "quote": "Deliverable id does not match DL#: M1-D1"
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Review stage tool policy forbids any artifact/workspace writes, but reviewers are required to emit review_findings.json (findings-only). As written, Review cannot produce its required output under the stated permissions.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/governance/tool_policy/stage_policies/6/restrictions/0",
+            "note": "Review stage denies writes",
+            "quote": "\"artifact_write\": \"deny\", \"workspace_write\": \"deny\""
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/architecture/options/1/components/5/responsibilities/1",
+            "note": "Reviewer must produce review_findings.json",
+            "quote": "Produce per-lane review_findings.json with RFC 6901 evidence pointers; flag cross-lane dependency issues."
+          }
+        ],
+        "violated_gate": "contradiction_heuristic",
+        "patch": [
+          {
+            "op": "add",
+            "path": "/governance/tool_policy/stage_policies/6/allowlisted_tools/-",
+            "value": "artifact_write"
+          },
+          {
+            "op": "replace",
+            "path": "/governance/tool_policy/stage_policies/6/restrictions/0/artifact_write",
+            "value": "canonical_allowed_only_for_review_findings"
+          }
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Intake stage tool policy allows only non-canonical writes, but Intake responsibilities/requirements require creating canonical audit-spine artifacts (implementation_run_manifest, implementation_event_log) at Intake. This conflicts with stated Intake restrictions.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/governance/tool_policy/stage_policies/0/restrictions/0",
+            "note": "Intake write restrictions",
+            "quote": "\"workspace_write\": \"allow_noncanonical_only\", \"artifact_write\": \"allow_noncanonical_only\""
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/architecture/options/1/components/1/responsibilities/0",
+            "note": "Intake initializes run_manifest/event_log/workspace_index",
+            "quote": "Validate plan_package_final.json, repo_context.json, workspace_context.json and initialize run_manifest/event_log/workspace_index."
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/requirements/7/text",
+            "note": "Audit spine requirement",
+            "quote": "The audit spine SHALL include an implementation_run_manifest that is immutable once created and an implementation_event_log that is append-only..."
+          }
+        ],
+        "violated_gate": "contradiction_heuristic",
+        "patch": [
+          {
+            "op": "add",
+            "path": "/governance/tool_policy/stage_policies/0/allowlisted_tools/-",
+            "value": "artifact_write"
+          },
+          {
+            "op": "replace",
+            "path": "/governance/tool_policy/stage_policies/0/restrictions/0/artifact_write",
+            "value": "canonical_allowed_only_for_audit_spine"
+          },
+          {
+            "op": "replace",
+            "path": "/governance/tool_policy/stage_policies/0/restrictions/0/workspace_write",
+            "value": "canonical_versioned_only_for_stage_handoffs"
+          }
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Evidence pointer standard is internally inconsistent: requirements/glossary define the sole evidence pointer shape as {artifact_ref, entity_id|null, json_pointer, note}, but decision_log uses objects with candidate_id and artifact_id and omits entity_id. This can break evidence-pointer validation and is also flagged as id_integrity failures for missing referenced IDs.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/requirements/9/text",
+            "note": "R10 evidence pointer structure",
+            "quote": "RFC 6901 JSON Pointer objects with the structure {artifact_ref, entity_id|null, json_pointer, note}"
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/project_capsule/glossary/3/definition",
+            "note": "Glossary evidence pointer definition",
+            "quote": "An RFC 6901 JSON Pointer object {artifact_ref, entity_id|null, json_pointer, note} referencing a versioned JSON artifact location"
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/decision_log/0/evidence_pointers/0",
+            "note": "Decision log uses extra fields and omits entity_id",
+            "quote": "{\"candidate_id\":\"B2B\",\"artifact_ref\":\"architecture_canonical_v1\",\"artifact_id\":\"architecture_canonical\"...}"
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "validator_report",
+            "json_pointer": "/checks/1/violations/34",
+            "note": "Validator flags missing referenced evidence id",
+            "quote": "Evidence pointer references missing id: architecture_canonical"
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": []
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Milestone M1 exit criteria claims AT4 passes as a \"single-lane subset\" (ending at Patch), but AT4's own pass criteria requires Judge and Freeze. This makes Phase 1 gating ambiguous/inconsistent.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/acceptance_tests/3/pass_criteria",
+            "note": "AT4 pass criteria includes Judge and Freeze",
+            "quote": "Stage sequence includes at minimum Intake → Generate → Validate → Review → Judge → Freeze..."
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/milestones/0/exit_criteria/3",
+            "note": "M1 exit criteria claims an AT4 subset",
+            "quote": "AT4 passes (single-lane subset): stage sequence Intake→Generate→Validate→Review→Patch verified with checkpoint at each transition"
+          }
+        ],
+        "violated_gate": "milestone_exit_criteria",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/milestones/0/exit_criteria/3",
+            "value": "Stage sequence for Phase 1 is verified for implemented stages (Intake→Generate→Validate→Review→PatchApply) with a checkpoint at each transition; AT4 (full minimum sequence through Judge→Freeze) is deferred to Phase 4."
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Stage taxonomy is inconsistent across requirements vs governance tool policy vs architecture (e.g., requirements omit WorkPlanning/PatchApply/IntegrateAndValidate). Without an explicit alignment, stage_handoff requirements and tool permissions risk misapplication.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/requirements/3/text",
+            "note": "R4 defines minimum stage names",
+            "quote": "Intake → Generate → Validate → Review → Judge → Freeze"
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/governance/tool_policy/stage_policies",
+            "note": "Governance stage policies include WorkPlanning/PatchApply/IntegrateAndValidate",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/architecture/chosen/high_level_dataflow",
+            "note": "Chosen architecture includes Integration sub-flow",
+            "quote": "Intake → Parallel Lanes → Integration → Judge → Freeze"
+          }
+        ],
+        "violated_gate": "contradiction_heuristic",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/requirements/3/text",
+            "value": "The Implementation Council workflow SHALL be defined as a deterministic staged state machine with at minimum the stages: Intake → WorkPlanning → Generate → PatchApply → Validate → Review → Judge → Freeze; architectures with parallel lanes SHALL additionally include an explicit Integration (IntegrateAndValidate) stage between lane completion and Judge. The workflow SHALL include an explicit checkpoint boundary at every stage transition."
+          }
+        ]
+      },
+      {
+        "label": "note",
+        "severity": "high",
+        "summary": "Architecture options list freeform risks, but id_integrity reports these as \"references missing risk\" (suggesting the schema expects option risks to link to risk_register entries). Fix likely requires normalizing option risk lists to reference existing K# IDs (or explicitly defining a risk-reference mechanism), which needs a targeted repair pass to avoid inventing mappings.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "validator_report",
+            "json_pointer": "/checks/1/violations/26",
+            "note": "Example missing-risk reference error",
+            "quote": "Option O2 references missing risk Merge conflicts between lanes may be frequent in tightly-coupled repos, driving escalation rates."
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/architecture/options/1/risks",
+            "note": "O2 option risks are freeform strings",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/risk_register",
+            "note": "Risk register uses K# IDs",
+            "quote": null
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Review stage tool policy forbids artifact_write, but reviewers must emit review_findings.json per architecture and requirements. This makes the Review stage inoperable.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/governance/tool_policy/stage_policies/6/restrictions/0",
+            "note": "Review stage denies artifact_write and workspace_write",
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {}
+        ]
+      }
+    ],
+    "reroute_target": "plan_repair.id_integrity_and_evidence_normalization",
+    "reroute_reason": "Multiple hard-gate id_integrity failures require ID-bearing edits (deliverable ID renames; evidence pointer normalization; possible risk reference normalization). These changes are broad/mechanical and should be handled by an ID-authorized repair step rather than ad-hoc patches in triage."
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "artifact_type": "judge_pairwise_result",
+  "artifact_id": "judge_pair_B01B_B2B_3_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T23:19:22.371624Z",
+  "source_run_id": "a8438e77-a516-4da0-b323-f43c54d79a42",
+  "parents": [
+    "plan_candidate_B01B_v3",
+    "plan_candidate_B2B_v3"
+  ],
+  "payload": {
+    "comparison": {
+      "a": "B01B is a conservative linear pipeline with big-bang freeze and high HITL, which is clear but risks budget exhaustion without partial-freeze options.",
+      "b": "B2B provides phased adoption of parallel lanes with explicit integration controls and acceptance-test gating, offering stronger throughput while preserving governance."
+    },
+    "judge_id": "pairwise_judge",
+    "judge_model": "gpt-5",
+    "winner": "b",
+    "scores": {
+      "feasibility": 7,
+      "testability": 8,
+      "governance": 8,
+      "architecture": 8,
+      "clarity": 7
+    },
+    "evidence": [
+      {
+        "artifact_ref": "plan_candidate_B01B_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/executive_summary",
+        "note": "Linear big-bang strategy and high HITL posture described",
+        "candidate_id": "B01B",
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B01B_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/architecture/chosen",
+        "note": "O1 sequential pipeline rationale",
+        "candidate_id": "B01B",
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B2B_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/executive_summary",
+        "note": "O2 parallel lanes with phased rollout and integration focus",
+        "candidate_id": "B2B",
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B2B_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/milestones",
+        "note": "Hybrid phased milestones with acceptance-test gates",
+        "candidate_id": "B2B",
+        "artifact_id": null,
+        "quote": null
+      }
+    ],
+    "notes": "B2B better balances delivery speed with deterministic integration safeguards. B01B’s simplicity is offset by higher risk of no output if budgets are exceeded."
+  }
+}

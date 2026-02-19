@@ -1,0 +1,36 @@
+{
+  "artifact_type": "patch_apply_result",
+  "artifact_id": "patch_apply_B02A_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T20:35:20.908553Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B02A_v1",
+    "patch_B02A_1_v1",
+    "patch_B02A_2_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B02A_v1",
+    "selected_patch_ref": null,
+    "reroute_target": "validator/schema_owner",
+    "applied_candidate_ref": null,
+    "candidates": [
+      {
+        "patch_ref": "patch_B02A_1_v1",
+        "applied": false,
+        "validator_status": "FAIL_REPAIRABLE",
+        "op_count": 0,
+        "paths_touched": 0,
+        "reason": "reroute"
+      },
+      {
+        "patch_ref": "patch_B02A_2_v1",
+        "applied": false,
+        "validator_status": "FAIL_REPAIRABLE",
+        "op_count": 0,
+        "paths_touched": 0,
+        "reason": "reroute"
+      }
+    ]
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "artifact_type": "judge_pairwise_result",
+  "artifact_id": "judge_pair_B2A_B2B_2_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T23:17:59.390710Z",
+  "source_run_id": "a8438e77-a516-4da0-b323-f43c54d79a42",
+  "parents": [
+    "plan_candidate_B2A_v3",
+    "plan_candidate_B2B_v3"
+  ],
+  "payload": {
+    "comparison": {
+      "a": "Provides a solid O2 selection with phased rollout and deterministic integration details, but coverage of alignment warnings and branch-specific rationale is thinner.",
+      "b": "Adds clearer deterministic merge ordering and explicit alignment-warning resolution plus more decision-log depth tied to branch strategy."
+    },
+    "judge_id": "a8438e77-a516-4da0-b323-f43c54d79a42",
+    "judge_model": "openai/gpt-5.2",
+    "winner": "b",
+    "scores": {
+      "feasibility": 8,
+      "testability": 8,
+      "governance": 9,
+      "architecture": 9,
+      "clarity": 8
+    },
+    "evidence": [
+      {
+        "artifact_ref": "plan_candidate_B2A_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/architecture/chosen/rationale",
+        "note": "O2 selection and phased rollout rationale, but less explicit alignment-warning handling.",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B2A_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/milestones",
+        "note": "Phase structure exists but fewer branch/AL references.",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B2B_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/decision_log/2",
+        "note": "Deterministic merge ordering independent of completion timing, explicitly addressing AL006.",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B2B_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/architecture/chosen/rationale",
+        "note": "Stronger rationale ties O2 choice to alignment warning AL006 and K12 mitigation.",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      }
+    ],
+    "notes": "B2B is stronger on explicit determinism and alignment-warning coverage while maintaining governance detail. Both are close in structure and requirements coverage."
+  }
+}

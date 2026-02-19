@@ -1,0 +1,182 @@
+{
+  "$defs": {
+    "WorkGraphBudget": {
+      "additionalProperties": false,
+      "properties": {
+        "max_runtime_sec": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Runtime Sec"
+        },
+        "max_cost_usd": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Cost Usd"
+        },
+        "max_calls": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Calls"
+        }
+      },
+      "title": "WorkGraphBudget",
+      "type": "object"
+    },
+    "WorkGraphTask": {
+      "additionalProperties": false,
+      "properties": {
+        "task_id": {
+          "title": "Task Id",
+          "type": "string"
+        },
+        "kind": {
+          "title": "Kind",
+          "type": "string"
+        },
+        "deps": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Deps",
+          "type": "array"
+        },
+        "profile_id": {
+          "title": "Profile Id",
+          "type": "string"
+        },
+        "program_check_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Program Check Ids",
+          "type": "array"
+        },
+        "expectation_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Expectation Ids",
+          "type": "array"
+        },
+        "assumption_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Assumption Ids",
+          "type": "array"
+        },
+        "surfaces": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Surfaces",
+          "type": "array"
+        },
+        "job_specs": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Job Specs",
+          "type": "array"
+        },
+        "risk_class": {
+          "default": "low",
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ],
+          "title": "Risk Class",
+          "type": "string"
+        },
+        "budget": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WorkGraphBudget"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "rollback_or_comp_plan_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rollback Or Comp Plan Ref"
+        },
+        "priority": {
+          "default": 0,
+          "title": "Priority",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "task_id",
+        "kind",
+        "profile_id"
+      ],
+      "title": "WorkGraphTask",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "default": "2.1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "work_graph_id": {
+      "title": "Work Graph Id",
+      "type": "string"
+    },
+    "tasks": {
+      "items": {
+        "$ref": "#/$defs/WorkGraphTask"
+      },
+      "title": "Tasks",
+      "type": "array"
+    },
+    "generated_at": {
+      "format": "date-time",
+      "title": "Generated At",
+      "type": "string"
+    }
+  },
+  "required": [
+    "work_graph_id",
+    "generated_at"
+  ],
+  "title": "WorkGraphPayload",
+  "type": "object"
+}

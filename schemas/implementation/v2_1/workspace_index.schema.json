@@ -1,0 +1,93 @@
+{
+  "$defs": {
+    "WorkspaceItemV21": {
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "item_type": {
+          "title": "Item Type",
+          "type": "string"
+        },
+        "version": {
+          "title": "Version",
+          "type": "string"
+        },
+        "provenance": {
+          "$ref": "#/$defs/WorkspaceProvenanceV21"
+        },
+        "canonical": {
+          "title": "Canonical",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "path",
+        "item_type",
+        "version",
+        "provenance",
+        "canonical"
+      ],
+      "title": "WorkspaceItemV21",
+      "type": "object"
+    },
+    "WorkspaceProvenanceV21": {
+      "additionalProperties": false,
+      "properties": {
+        "created_by_stage": {
+          "title": "Created By Stage",
+          "type": "string"
+        },
+        "run_id": {
+          "title": "Run Id",
+          "type": "string"
+        },
+        "hash": {
+          "title": "Hash",
+          "type": "string"
+        },
+        "role": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Role"
+        }
+      },
+      "required": [
+        "created_by_stage",
+        "run_id",
+        "hash"
+      ],
+      "title": "WorkspaceProvenanceV21",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "default": "2.1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "items": {
+      "items": {
+        "$ref": "#/$defs/WorkspaceItemV21"
+      },
+      "title": "Items",
+      "type": "array"
+    }
+  },
+  "required": [
+    "items"
+  ],
+  "title": "WorkspaceIndexPayloadV21",
+  "type": "object"
+}

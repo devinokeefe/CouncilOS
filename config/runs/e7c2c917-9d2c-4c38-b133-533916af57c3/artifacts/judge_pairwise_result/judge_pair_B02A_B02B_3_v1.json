@@ -1,0 +1,102 @@
+{
+  "artifact_type": "judge_pairwise_result",
+  "artifact_id": "judge_pair_B02A_B02B_3_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T22:51:13.378348Z",
+  "source_run_id": "e7c2c917-9d2c-4c38-b133-533916af57c3",
+  "parents": [
+    "plan_candidate_B02A_v3",
+    "plan_candidate_B02B_v3"
+  ],
+  "payload": {
+    "comparison": {
+      "a": "More closure-ready overall: slightly more explicit end-to-end milestone decomposition through integration to final Judge→Freeze, and fewer internal consistency risks relative to the stated evidence-pointer object shape.",
+      "b": "Comparable technical approach and strong governance/tests; adds a useful explicit warning about lane-partitioning correctness lacking a dedicated acceptance test, but is somewhat more verbose and (per the judge’s reading) risks evidence-pointer format drift via extra embedded metadata."
+    },
+    "judge_id": "",
+    "judge_model": "",
+    "winner": "a",
+    "scores": {
+      "feasibility": 8,
+      "testability": 8,
+      "governance": 8,
+      "architecture": 8,
+      "clarity": 7
+    },
+    "evidence": [
+      {
+        "artifact_ref": "plan_candidate_B02A_v3",
+        "entity_id": "R10",
+        "json_pointer": "/plan_package/requirements/9/text",
+        "note": "A defines the evidence pointer structure as {artifact_ref, entity_id|null, json_pointer, note}.",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B02B_v3",
+        "entity_id": "R10",
+        "json_pointer": "/plan_package/requirements/9/text",
+        "note": "B defines the evidence pointer structure as {artifact_ref, entity_id|null, json_pointer, note}.",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B02A_v3",
+        "entity_id": "DEC1",
+        "json_pointer": "/plan_package/decision_log/0/evidence_pointers",
+        "note": "A does not embed expanded evidence pointer objects in decision_log (empty array), avoiding internal format drift.",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B02A_v3",
+        "entity_id": "M5",
+        "json_pointer": "/plan_package/milestones/4",
+        "note": "A includes an explicit final milestone for Judge + Freeze (M5) after integration.",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B02B_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/milestones",
+        "note": "B’s milestone set ends at M4 (Judge & Freeze), with fewer total milestones than A (less granular staging).",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B02A_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/architecture/chosen/option_id",
+        "note": "A selects O2 (task-parallel fan-out/fan-in with governed deterministic integration).",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B02B_v3",
+        "entity_id": "W3",
+        "json_pointer": "/plan_package/synthesis_warnings/2/summary",
+        "note": "B explicitly flags a gap: lane partitioning quality is a single point of failure and there is no acceptance test validating partitioning correctness.",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B02A_v3",
+        "entity_id": "W2",
+        "json_pointer": "/plan_package/synthesis_warnings/1/summary",
+        "note": "A flags blocking uncertainties needed for enforceable implementation readiness (e.g., diff format/normalization, conflict policy details).",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      }
+    ],
+    "notes": "Winner: A. Both candidates converge on essentially the same O2 parallel-lanes + deterministic integration approach with strong staged governance and acceptance-test coverage. A edges out B on closure readiness via a slightly more explicit end-to-end milestone decomposition and fewer internal inconsistencies around the declared evidence-pointer object shape. B contributes a useful explicit warning about lane-partitioning correctness lacking a dedicated acceptance test, but also introduces a format-consistency risk by embedding evidence pointers with extra fields relative to its own declared structure."
+  }
+}

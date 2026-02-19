@@ -1,0 +1,15 @@
+{
+  "run_context": {{RUN_CONTEXT_JSON}},
+  "artifact_refs": {{ARTIFACT_REFS_JSON}},
+  "inputs": {
+    "match_context": {{JUDGE_MATCH_CONTEXT_JSON}},
+    "weights_for_orchestrator": {{WEIGHTS_JSON}},
+    "candidate_a_ref": "{{CANDIDATE_A_REF}}",
+    "candidate_a": {{CANDIDATE_A_JSON}},
+    "candidate_b_ref": "{{CANDIDATE_B_REF}}",
+    "candidate_b": {{CANDIDATE_B_JSON}},
+    "summaries": {{JUDGE_SUMMARIES_JSON}}
+  },
+  "task": "Return pairwise winner + rubric scores + paired evidence.",
+  "output_schema": {{JUDGE_PAIRWISE_SCHEMA_JSON}}
+}

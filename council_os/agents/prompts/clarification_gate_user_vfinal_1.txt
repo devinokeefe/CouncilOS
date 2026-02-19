@@ -1,0 +1,10 @@
+{
+  "run_context": {{RUN_CONTEXT_JSON}},
+  "artifact_refs": {{ARTIFACT_REFS_JSON}},
+  "allowed_id_prefixes": ["QX","AX"],
+  "inputs": {
+    "project_capsule": {{CAPSULE_JSON}}
+  },
+  "task": "Produce a clarification plan.",
+  "output_schema": {{CLARIFY_SCHEMA_JSON}}
+}

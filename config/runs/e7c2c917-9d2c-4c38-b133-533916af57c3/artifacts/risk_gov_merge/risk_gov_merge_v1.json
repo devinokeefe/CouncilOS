@@ -1,0 +1,643 @@
+{
+  "artifact_type": "risk_gov_merge",
+  "artifact_id": "risk_gov_merge_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T18:51:57.479847Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "requirements_draft_1_v1",
+    "requirements_draft_2_v1",
+    "architecture_draft_1_v1",
+    "architecture_draft_2_v1",
+    "qa_templates_draft_1_v1",
+    "qa_templates_draft_2_v1",
+    "risk_gov_draft_1_v1",
+    "risk_gov_draft_2_v1"
+  ],
+  "payload": {
+    "risk_register": [
+      {
+        "id": "RISK_U_1",
+        "severity": "critical",
+        "description": "Silent plan-semantics drift / scope expansion: implementation artifacts or code changes effectively alter the meaning of upstream R#/AT#/O#/K# without an explicit ChangeRequest + governed decision, violating no-scope-expansion constraints.",
+        "mitigation": {
+          "text": "Add deterministic semantic-drift/trace gates: (1) require explicit mapping from each change/patchset and decision clause to referenced R#/AT#/O#/K# IDs; (2) validator rejects any patchset/decision_record that introduces new requirements/acceptance criteria not present in plan_package_final.json unless a ChangeRequest artifact is present and approved per policy; (3) enforce reviewer role emits findings-only and cannot author ChangeRequest/patchsets; (4) Intake validator reroutes upstream if plan ambiguities force assumptions that would change semantics.",
+          "owner": "Orchestrator+Validators",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_1",
+          "RISK_B_03"
+        ]
+      },
+      {
+        "id": "RISK_U_2",
+        "severity": "critical",
+        "description": "Audit spine breakage: missing/overwritten run_manifest, non-append-only event_log, or unversioned artifacts leads to irreproducible outcomes and invalidates evidence pointers.",
+        "mitigation": {
+          "text": "Enforce immutability/append-only at storage interface; validator requires: run_manifest immutable hash recorded at first emission, event_log monotonic sequence numbers, artifact_ref uniqueness + content hashes; stage transitions blocked if any required audit artifacts are missing or mutated.",
+          "owner": "Orchestrator+ArtifactStore+Validators",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_2"
+        ]
+      },
+      {
+        "id": "RISK_U_3",
+        "severity": "high",
+        "description": "Evidence pointer standard (RFC 6901) not used consistently: artifacts embed freeform citations (paths/prose/non-RFC6901 references), causing unverifiable traceability and broken downstream consumption.",
+        "mitigation": {
+          "text": "Add strict evidence-reference linter validator: only allow evidence pointer objects {artifact_ref, entity_id|null, json_pointer, note}; reject any nonconforming reference fields; require trace_report.json to enumerate all evidence pointers and validate pointers resolve against versioned JSON artifacts before freeze.",
+          "owner": "Validators",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_3",
+          "RISK_B_14"
+        ]
+      },
+      {
+        "id": "RISK_U_4",
+        "severity": "critical",
+        "description": "An agent generates a code patchset that introduces a severe security vulnerability (e.g., RCE, data exfiltration) that is missed by automated validators.",
+        "mitigation": {
+          "text": "Implement and mandate a comprehensive suite of security validators (e.g., SAST/DAST/dependency scanning as applicable) as a freeze gate. Critical findings must trigger a mandatory HITL review by Security/Compliance prior to any freeze/release decision.",
+          "owner": "Security/Compliance Team",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_B_01"
+        ]
+      },
+      {
+        "id": "RISK_U_5",
+        "severity": "critical",
+        "description": "Repository protection bypass: patchsets or tools modify forbidden/protected paths or perform high-risk operations outside policy (e.g., CI/release config, auth/deploy/credential handling), leading to security/compliance incidents.",
+        "mitigation": {
+          "text": "Enforce deterministic forbidden/protected-path controls at both patch-apply time and tool-sandbox policy using repo_context.json patterns: reject before apply/execute; require HITL for any change touching protected paths or release/deploy/auth configuration; enforce operation caps and file-type restrictions; block any tool execution attempt to write forbidden paths and record in audit log.",
+          "owner": "Orchestrator Policy+Validators+Platform/DevOps",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_4",
+          "RISK_B_12"
+        ]
+      },
+      {
+        "id": "RISK_U_6",
+        "severity": "high",
+        "description": "Nondeterministic tool executions (flaky tests/builds) cause inconsistent gate outcomes, leading to incorrect freezes or endless repair loops / exhausted budgets.",
+        "mitigation": {
+          "text": "Define deterministic retry/quarantine rules: fixed retry budget, fixed backoff schedule, record all attempts in event_log, classify failures as flaky using deterministic thresholds, and block freeze unless gates pass under the deterministic policy; add stabilization/quarantine path with bounded changes and deterministic escalation (patch → reroute → HITL → ChangeRequest).",
+          "owner": "Orchestrator Policy+Validators",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_5",
+          "RISK_B_05"
+        ]
+      },
+      {
+        "id": "RISK_U_7",
+        "severity": "high",
+        "description": "Secrets leakage into canonical artifacts or workspace (event log, patches, snapshots, context packs, stage handoffs), violating secrets policy and creating durable compromise.",
+        "mitigation": {
+          "text": "Mandatory secrets scanning at each checkpoint and before freeze across patchsets/logs/repo_snapshot/context_packs/stage_handoffs; deterministic redaction/blocking rules (block persistence and require remediation patchset); deny network exfiltration by default; ensure scanner findings are stored as structured artifacts without embedding secrets.",
+          "owner": "Orchestrator Policy+Security Validators",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_6",
+          "RISK_B_04"
+        ]
+      },
+      {
+        "id": "RISK_U_8",
+        "severity": "high",
+        "description": "Workspace integrity failure or corruption: canonical vs non-canonical separation is violated (overwrites/unversioned state), or workspace becomes inconsistent, breaking deterministic resume and traceability.",
+        "mitigation": {
+          "text": "Run workspace integrity validators at each stage handoff: schema compliance, index completeness, artifact checksums, and immutability flags. Enforce workspace namespace policy: canonical paths append-only/versioned; non-canonical append-only with provenance; workspace_index.json must enumerate all items; validator rejects unindexed items or canonical overwrites; checkpoint immutable workspace versions.",
+          "owner": "Orchestrator+Workspace Validators",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_7",
+          "RISK_B_02"
+        ]
+      },
+      {
+        "id": "RISK_U_9",
+        "severity": "medium",
+        "description": "Context pack overflow or under-selection: bounded context packs omit critical artifacts or exceed size limits, causing incorrect decisions/patches or truncation-driven errors.",
+        "mitigation": {
+          "text": "Deterministic, versioned context-pack selection rules with priorities and explicit byte/token budgets; validator checks pack completeness against stage-required sets and rejects out-of-bounds packs. Include a structured mechanism to flag missing context and a context-adequacy check during Review.",
+          "owner": "Orchestrator+Validators",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_8",
+          "RISK_B_06"
+        ]
+      },
+      {
+        "id": "RISK_U_10",
+        "severity": "high",
+        "description": "Role separation failure: writer/reviewer/judge boundaries and/or multi-vendor diversity are not enforced, allowing self-review/self-approval and undermining independence/governance.",
+        "mitigation": {
+          "text": "Orchestrator-enforced output-type allowlists by role (reviewers findings-only; judges decisions-only; writers/patchers write/patch only) plus multi-vendor routing constraints (review/judge model family must differ from writer). Record agent/model/vendor provenance in run_manifest for each stage output and validate separation constraints before stage transitions/freeze.",
+          "owner": "Orchestrator Policy",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_9",
+          "RISK_B_11"
+        ]
+      },
+      {
+        "id": "RISK_U_11",
+        "severity": "high",
+        "description": "RFC 6902 JSON Patch misuse: syntactically valid patches touch forbidden JSON Pointer paths, exceed op caps, or create schema/logic-invalid states, corrupting canonical JSON artifacts (e.g., work_plan).",
+        "mitigation": {
+          "text": "Validator enforces: (1) op count caps, (2) forbidden JSON Pointer path rules per artifact type, (3) schema revalidation after patch application, (4) deterministic patch ordering and tie-breakers; for critical artifacts, add semantic validators for logical consistency; reject nonconforming patches before apply.",
+          "owner": "Orchestrator+Schema/Validation Team",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_10",
+          "RISK_B_08"
+        ]
+      },
+      {
+        "id": "RISK_U_12",
+        "severity": "high",
+        "description": "Integration/merge conflicts: multiple patchsets (including parallel pods) produce overlapping diffs causing conflicts, inconsistent base/head commits, or partial application that breaks reproducibility; automated conflict resolution may lack safe fallback.",
+        "mitigation": {
+          "text": "Require explicit base_commit in each patchset; deterministic apply/merge ordering rules independent of wall-clock completion timing; strict limits for automated conflict resolution; if limits exceeded, block and trigger reroute to integration stage or HITL with a pre-packaged conflict summary. Emit a structured integration_report/conflict_report describing classification and chosen deterministic escalation path.",
+          "owner": "Orchestrator Policy+Integration Validators",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_11",
+          "RISK_B_07"
+        ]
+      },
+      {
+        "id": "RISK_U_13",
+        "severity": "medium",
+        "description": "Acceptance-test trace mismatch: test_results cannot be deterministically mapped to AT# acceptance tests, breaking trace completeness gates and weakening validation credibility.",
+        "mitigation": {
+          "text": "Define required AT# linkage fields in test metadata; validator requires that each AT# has either a passing mapped test or an explicit, approved waiver/ChangeRequest; trace_report must enumerate AT#→test evidence pointers.",
+          "owner": "QA/Trace Validators",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_12"
+        ]
+      },
+      {
+        "id": "RISK_U_14",
+        "severity": "high",
+        "description": "Release artifact unsafe/incorrect: release_bundle produced without passing all gates, includes unreviewed binaries, or references non-reproducible build steps.",
+        "mitigation": {
+          "text": "Freeze gate requires reproducible build recipe captured in structured artifact; release_bundle allowed only after all validators pass; require hashed build outputs and provenance record; disallow network-dependent build steps unless explicitly allowlisted and captured in dependency policy artifacts.",
+          "owner": "Orchestrator+Release Validators",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_13"
+        ]
+      },
+      {
+        "id": "RISK_U_15",
+        "severity": "high",
+        "description": "Supply-chain/network risk: package manager operations or network access pull unpinned dependencies, introduce version drift across runs, or leak information, undermining reproducibility and security.",
+        "mitigation": {
+          "text": "Default network deny; allow network only in explicitly designated stages with allowlisted domains and deterministic lockfile requirements. Mandate lockfiles and/or audited offline mirrors/caching proxies when network is enabled. Validator checks dependency changes are pinned and justified with evidence pointers.",
+          "owner": "Orchestrator Policy+Security/Compliance Validators+Platform/DevOps",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_14",
+          "RISK_B_15"
+        ]
+      },
+      {
+        "id": "RISK_U_16",
+        "severity": "medium",
+        "description": "Over-broad refactors: patchsets attempt repo-wide rewrites contrary to bounded-change constraints, increasing failure rate and review burden.",
+        "mitigation": {
+          "text": "Define patchset size limits (files changed, diff hunks, bytes, risk-weighted thresholds) and require decomposition into staged patchsets; validator rejects oversized patchsets unless approved via HITL with rationale captured in decision_record.",
+          "owner": "Orchestrator Policy+Validators",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_15"
+        ]
+      },
+      {
+        "id": "RISK_U_17",
+        "severity": "medium",
+        "description": "Checkpoint/resume inconsistency: missing or incomplete stage_handoff artifacts cause inability to resume deterministically, leading to duplicated work or inconsistent outcomes.",
+        "mitigation": {
+          "text": "Require stage_handoff emission at every checkpoint boundary with mandatory pointers to work_plan, current patchsets, validation outputs, and pending blockers; validator blocks stage transition if handoff missing or pointers do not resolve.",
+          "owner": "Orchestrator+Workspace Validators",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_16"
+        ]
+      },
+      {
+        "id": "RISK_U_18",
+        "severity": "high",
+        "description": "Decision integrity risk: judge outputs or decision_record include conclusions/waivers without linked evidence pointers, allowing ungrounded approvals/waivers.",
+        "mitigation": {
+          "text": "Decision validator: every approval/waiver must include evidence pointers to passing gate artifacts or an explicit policy exception with HITL signoff; disallow freeze if any decision clause lacks evidence pointers.",
+          "owner": "Judge Policy+Validators",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_17"
+        ]
+      },
+      {
+        "id": "RISK_U_19",
+        "severity": "high",
+        "description": "Misconfigured tool permissions: stages accidentally permit destructive commands, broad filesystem writes, undeclared entrypoints, or unbounded artifact mutation, enabling accidental damage or policy bypass.",
+        "mitigation": {
+          "text": "Machine-enforced tool permission matrix per stage with deny-by-default; validate effective permissions (policy-as-data) continuously; audit logging of tool invocations and denials; HITL required to expand permissions beyond baseline.",
+          "owner": "Orchestrator Policy",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_18"
+        ]
+      },
+      {
+        "id": "RISK_U_20",
+        "severity": "high",
+        "description": "Upstream plan_package_final.json is ambiguous or incomplete, forcing the Implementation Council to make assumptions that later turn out to be incorrect, requiring costly rework and/or semantic drift.",
+        "mitigation": {
+          "text": "Intake stage includes validator that checks the input plan for completeness/clarity. If validation fails, orchestrator immediately reroutes upstream to the Planning Council rather than allowing assumption-based implementation.",
+          "owner": "Intake & Validation Team",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_B_10"
+        ]
+      },
+      {
+        "id": "RISK_U_21",
+        "severity": "medium",
+        "description": "The 'smallest passing repair' selection logic is too simplistic and consistently chooses a sub-optimal patch from multiple valid proposals, leading to technical debt.",
+        "mitigation": {
+          "text": "Add deterministic secondary evaluation signals (e.g., style/lint adherence, complexity deltas) as additional structured validators or deterministic scoring, while keeping selection rules auditable and reproducible. Escalate to HITL when multiple passing candidates have materially different long-term maintenance risk.",
+          "owner": "Orchestrator Design Team",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_B_09"
+        ]
+      },
+      {
+        "id": "RISK_U_22",
+        "severity": "low",
+        "description": "Non-canonical workspace data (e.g., scratchpad notes) grows indefinitely, making audits difficult and potentially exceeding storage quotas.",
+        "mitigation": {
+          "text": "Define and implement automated compaction and retention policies for non-canonical data. Create summarization artifacts (non-canonical, with provenance) before purging to preserve audit intent.",
+          "owner": "Workspace Backend Team",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_B_13"
+        ]
+      }
+    ],
+    "tool_policy": {
+      "stage_policies": [
+        {
+          "stage": "Intake",
+          "allowlisted_tools": [
+            "artifact_read",
+            "schema_validate"
+          ],
+          "restrictions": [
+            {
+              "network": "deny",
+              "repo_write": "deny",
+              "workspace_write": "allow_noncanonical_only",
+              "artifact_write": "allow_noncanonical_only",
+              "notes": "Ingest and validate plan_package_final.json and required context artifacts; no code changes; do not persist secrets."
+            }
+          ],
+          "hitl_triggers": [
+            "Missing required inputs (plan_package_final.json, repo_context.json, workspace_context.json)",
+            "Schema validation failures that cannot be repaired via RFC6902 without changing semantics",
+            "Input plan_package_final.json incomplete/ambiguous per intake validator (reroute upstream)"
+          ]
+        },
+        {
+          "stage": "WorkPlanning",
+          "allowlisted_tools": [
+            "artifact_read",
+            "artifact_write",
+            "schema_validate"
+          ],
+          "restrictions": [
+            {
+              "network": "deny",
+              "repo_write": "deny",
+              "workspace_write": "canonical_versioned_only",
+              "artifact_write": "canonical_allowed_only_for_declared_types",
+              "evidence_standard": "rfc6901_only",
+              "notes": "Compile/update work_plan and trace mappings only; no repo mutation."
+            }
+          ],
+          "hitl_triggers": [
+            "Proposed work requires changing plan semantics (must raise ChangeRequest)",
+            "Work plan implies assumptions due to ambiguous plan semantics (reroute upstream)"
+          ]
+        },
+        {
+          "stage": "Generate",
+          "allowlisted_tools": [
+            "artifact_read",
+            "artifact_write",
+            "workspace_write",
+            "schema_validate"
+          ],
+          "restrictions": [
+            {
+              "network": "deny",
+              "repo_write": "deny",
+              "artifact_write": "canonical_allowed_only_for_declared_types",
+              "workspace_write": "canonical_versioned_only",
+              "evidence_standard": "rfc6901_only",
+              "notes": "Draft patchsets and required mappings as artifacts; no direct repo mutation."
+            }
+          ],
+          "hitl_triggers": [
+            "Proposed work requires changing plan semantics (must raise ChangeRequest)",
+            "Proposed patchsets touch protected/forbidden paths per repo_context"
+          ]
+        },
+        {
+          "stage": "PatchApply",
+          "allowlisted_tools": [
+            "artifact_read",
+            "patch_apply",
+            "repo_snapshot",
+            "artifact_write",
+            "schema_validate"
+          ],
+          "restrictions": [
+            {
+              "network": "deny",
+              "repo_write": "allow_via_patch_apply_only",
+              "repo_write_paths": "enforced_by_repo_context",
+              "patchset_limits": {
+                "max_files_changed": "policy_defined",
+                "max_diff_bytes": "policy_defined",
+                "forbidden_file_globs": "from_repo_context"
+              },
+              "notes": "Only apply diff-only patchsets against declared base_commit; direct edits prohibited."
+            }
+          ],
+          "hitl_triggers": [
+            "Patch application conflict beyond deterministic thresholds",
+            "Any attempted modification of forbidden/protected paths",
+            "Patchset exceeds size/risk limits"
+          ]
+        },
+        {
+          "stage": "Validate",
+          "allowlisted_tools": [
+            "artifact_read",
+            "run_build",
+            "run_tests",
+            "run_lint",
+            "run_typecheck",
+            "security_scan",
+            "secrets_scan",
+            "artifact_write",
+            "schema_validate"
+          ],
+          "restrictions": [
+            {
+              "network": "deny",
+              "repo_write": "deny",
+              "tool_entrypoints": "must_be_declared_in_repo_context",
+              "retry_policy": "deterministic_budgets_only",
+              "notes": "Execute deterministic validators and emit structured results; do not run undeclared commands."
+            }
+          ],
+          "hitl_triggers": [
+            "Secrets detected in any artifact/workspace output",
+            "Flaky failure classification exceeds retry/quarantine policy thresholds",
+            "Security validator reports critical finding",
+            "Validator outputs indicate policy violations requiring exception"
+          ]
+        },
+        {
+          "stage": "IntegrateAndValidate",
+          "allowlisted_tools": [
+            "artifact_read",
+            "patch_apply",
+            "repo_snapshot",
+            "run_build",
+            "run_tests",
+            "security_scan",
+            "secrets_scan",
+            "artifact_write",
+            "schema_validate"
+          ],
+          "restrictions": [
+            {
+              "network": "deny",
+              "repo_write": "allow_via_patch_apply_only",
+              "repo_write_paths": "enforced_by_repo_context",
+              "retry_policy": "deterministic_budgets_only",
+              "notes": "Deterministic integration merge/apply and full-repo validation; emits structured conflict/integration reports."
+            }
+          ],
+          "hitl_triggers": [
+            "patch_conflict_unresolved",
+            "security_validator_critical_finding",
+            "build_failure",
+            "Deterministic retry budget exhausted"
+          ]
+        },
+        {
+          "stage": "Review",
+          "allowlisted_tools": [
+            "artifact_read",
+            "schema_validate"
+          ],
+          "restrictions": [
+            {
+              "network": "deny",
+              "repo_write": "deny",
+              "artifact_write": "deny",
+              "workspace_write": "deny",
+              "notes": "Reviewers are findings-only; they do not emit canonical writing/patch artifacts."
+            }
+          ],
+          "hitl_triggers": [
+            "critical_finding_proposed",
+            "Reviewer identifies high-risk area requiring manual security/compliance approval",
+            "Reviewer flags ambiguity that implies upstream plan defect (reroute to Planning Council)"
+          ]
+        },
+        {
+          "stage": "Judge",
+          "allowlisted_tools": [
+            "artifact_read",
+            "artifact_write",
+            "schema_validate"
+          ],
+          "restrictions": [
+            {
+              "network": "deny",
+              "repo_write": "deny",
+              "decision_requirements": "all_approvals_must_have_rfc6901_evidence_pointers",
+              "notes": "Judge emits decisions/waivers only; no patch authoring."
+            }
+          ],
+          "hitl_triggers": [
+            "Any waiver of a gate (tests/build/security/trace/reproducibility/workspace integrity) is requested",
+            "Any ChangeRequest approval is requested",
+            "Any permission expansion beyond baseline is requested"
+          ]
+        },
+        {
+          "stage": "Freeze",
+          "allowlisted_tools": [
+            "artifact_read",
+            "artifact_write",
+            "bundle_release",
+            "secrets_scan",
+            "schema_validate"
+          ],
+          "restrictions": [
+            {
+              "network": "deny",
+              "repo_write": "deny",
+              "freeze_condition": "all_required_gates_pass_and_trace_complete",
+              "notes": "Emit Implementation Freeze Bundle only when validators confirm all gates; otherwise block."
+            }
+          ],
+          "hitl_triggers": [
+            "Attempt to freeze with any failing gate",
+            "Missing required artifacts in the freeze bundle list",
+            "Unresolved trace/evidence pointer validation errors",
+            "Secrets detected during pre-freeze scan"
+          ]
+        }
+      ]
+    },
+    "hitl_policy": {
+      "when_to_interrupt": [
+        "Any proposed ChangeRequest (plan-semantics change) or any evidence of silent scope expansion",
+        "Any attempt to modify forbidden/protected paths or perform high-risk repo operations (auth, deploy, credential handling)",
+        "Any secrets detection event in artifacts/workspace/logs or suspected exfiltration vector",
+        "Any security validator reports a 'critical' severity finding",
+        "Any deterministic retry budget for a failing validator is exhausted",
+        "Any merge/integration conflict beyond deterministic resolution thresholds",
+        "Any waiver request for required freeze gates (build/test/lint/typecheck/security/trace/reproducibility/workspace integrity)",
+        "Any tool-permission expansion beyond baseline (e.g., enabling network, broad filesystem writes, executing undeclared entrypoints)",
+        "The orchestrator detects a potential integrity violation in the audit spine or workspace"
+      ],
+      "approval_roles": [
+        "Orchestrator Policy Owner",
+        "Security/Compliance Approver",
+        "Implementation Council Judge (HITL signatory)",
+        "Repo Owner/Maintainer (for protected paths and release approval)",
+        "Implementation Council Lead",
+        "Platform/DevOps Lead",
+        "Planning Council Representative"
+      ]
+    },
+    "taxonomy_categories": [
+      "Plan semantics & scope control",
+      "Audit spine integrity (manifest/event log/artifact immutability)",
+      "Evidence & traceability compliance (RFC6901 pointers)",
+      "Schema correctness & JSON Patch safety (RFC6902)",
+      "Patchset safety & deterministic application",
+      "Repo protection (forbidden/protected paths)",
+      "Tool permissioning & sandbox escape/misuse",
+      "Secrets handling & sensitive data retention",
+      "Workspace governance (canonical vs non-canonical, indexing)",
+      "Context pack determinism & boundedness",
+      "Validation determinism (build/test/lint/typecheck) & flaky policy",
+      "Integration/merge conflict handling & parallelism hazards",
+      "Release safety & provenance/reproducibility",
+      "Supply-chain/network dependency control",
+      "Role separation & multi-vendor governance",
+      "Decision quality (evidence-backed approvals/waivers)",
+      "Checkpoint/resume correctness (stage handoffs)",
+      "Operational limits (budgets, op caps) and escalation pathways",
+      "Specification Error",
+      "Model Error: Hallucination",
+      "Model Error: Logical Error",
+      "Model Error: Scope Creep",
+      "Model Error: Formatting/Schema Violation",
+      "Tool Error: Bug",
+      "Tool Error: Flaky/Nondeterministic Output",
+      "Tool Error: Misconfiguration",
+      "Workspace Integrity Error",
+      "Environment Error: Dependency Failure",
+      "Environment Error: Resource Exhaustion",
+      "Orchestration Error"
+    ],
+    "merge_log": [
+      "MERGE RISK_U_1 <= /inputs/risk_drafts/0/risk_register/0 (RISK_A_1) + /inputs/risk_drafts/1/risk_register/2 (RISK_B_03).",
+      "KEEP RISK_U_2 <= /inputs/risk_drafts/0/risk_register/1 (RISK_A_2).",
+      "MERGE RISK_U_3 <= /inputs/risk_drafts/0/risk_register/2 (RISK_A_3) + /inputs/risk_drafts/1/risk_register/13 (RISK_B_14).",
+      "KEEP RISK_U_4 <= /inputs/risk_drafts/1/risk_register/0 (RISK_B_01).",
+      "MERGE RISK_U_5 <= /inputs/risk_drafts/0/risk_register/3 (RISK_A_4) + /inputs/risk_drafts/1/risk_register/11 (RISK_B_12).",
+      "MERGE RISK_U_6 <= /inputs/risk_drafts/0/risk_register/4 (RISK_A_5) + /inputs/risk_drafts/1/risk_register/4 (RISK_B_05).",
+      "MERGE RISK_U_7 <= /inputs/risk_drafts/0/risk_register/5 (RISK_A_6) + /inputs/risk_drafts/1/risk_register/3 (RISK_B_04).",
+      "MERGE RISK_U_8 <= /inputs/risk_drafts/0/risk_register/6 (RISK_A_7) + /inputs/risk_drafts/1/risk_register/1 (RISK_B_02).",
+      "MERGE RISK_U_9 <= /inputs/risk_drafts/0/risk_register/7 (RISK_A_8) + /inputs/risk_drafts/1/risk_register/5 (RISK_B_06).",
+      "MERGE RISK_U_10 <= /inputs/risk_drafts/0/risk_register/8 (RISK_A_9) + /inputs/risk_drafts/1/risk_register/10 (RISK_B_11).",
+      "MERGE RISK_U_11 <= /inputs/risk_drafts/0/risk_register/9 (RISK_A_10) + /inputs/risk_drafts/1/risk_register/7 (RISK_B_08).",
+      "MERGE RISK_U_12 <= /inputs/risk_drafts/0/risk_register/10 (RISK_A_11) + /inputs/risk_drafts/1/risk_register/6 (RISK_B_07).",
+      "KEEP RISK_U_13 <= /inputs/risk_drafts/0/risk_register/11 (RISK_A_12).",
+      "KEEP RISK_U_14 <= /inputs/risk_drafts/0/risk_register/12 (RISK_A_13).",
+      "MERGE RISK_U_15 <= /inputs/risk_drafts/0/risk_register/13 (RISK_A_14) + /inputs/risk_drafts/1/risk_register/14 (RISK_B_15).",
+      "KEEP RISK_U_16 <= /inputs/risk_drafts/0/risk_register/14 (RISK_A_15).",
+      "KEEP RISK_U_17 <= /inputs/risk_drafts/0/risk_register/15 (RISK_A_16).",
+      "KEEP RISK_U_18 <= /inputs/risk_drafts/0/risk_register/16 (RISK_A_17).",
+      "KEEP RISK_U_19 <= /inputs/risk_drafts/0/risk_register/17 (RISK_A_18).",
+      "KEEP RISK_U_20 <= /inputs/risk_drafts/1/risk_register/9 (RISK_B_10).",
+      "KEEP RISK_U_21 <= /inputs/risk_drafts/1/risk_register/8 (RISK_B_09).",
+      "KEEP RISK_U_22 <= /inputs/risk_drafts/1/risk_register/12 (RISK_B_13).",
+      "TOOL_POLICY CONSOLIDATION <= /inputs/risk_drafts/0/tool_policy/stage_policies + /inputs/risk_drafts/1/tool_policy/stage_policies; standardized to conservative deny-by-default, network-deny baseline, and repo-write only via patch_apply.",
+      "HITL_POLICY CONSOLIDATION <= /inputs/risk_drafts/0/hitl_policy + /inputs/risk_drafts/1/hitl_policy; unioned interruption triggers and approval roles.",
+      "TAXONOMY CONSOLIDATION <= /inputs/risk_drafts/0/taxonomy_categories + /inputs/risk_drafts/1/taxonomy_categories; merged/deduped while preserving draft ordering."
+    ]
+  }
+}

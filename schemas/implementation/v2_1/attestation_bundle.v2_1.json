@@ -1,0 +1,122 @@
+{
+  "$defs": {
+    "AttestationInputRef": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_ref": {
+          "title": "Artifact Ref",
+          "type": "string"
+        },
+        "hash": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Hash"
+        }
+      },
+      "required": [
+        "artifact_ref"
+      ],
+      "title": "AttestationInputRef",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "default": "2.0.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "run_id": {
+      "title": "Run Id",
+      "type": "string"
+    },
+    "stage": {
+      "title": "Stage",
+      "type": "string"
+    },
+    "lane_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Lane Id"
+    },
+    "code_sha": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Code Sha",
+      "type": "object"
+    },
+    "profile_id": {
+      "title": "Profile Id",
+      "type": "string"
+    },
+    "base_image_digest": {
+      "title": "Base Image Digest",
+      "type": "string"
+    },
+    "tool_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Tool Id"
+    },
+    "inputs": {
+      "items": {
+        "$ref": "#/$defs/AttestationInputRef"
+      },
+      "title": "Inputs",
+      "type": "array"
+    },
+    "spec_versions": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Spec Versions",
+      "type": "object"
+    },
+    "timestamps": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Timestamps",
+      "type": "object"
+    },
+    "runner_version": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Runner Version",
+      "type": "object"
+    }
+  },
+  "required": [
+    "run_id",
+    "stage",
+    "code_sha",
+    "profile_id",
+    "base_image_digest"
+  ],
+  "title": "AttestationBundlePayload",
+  "type": "object"
+}

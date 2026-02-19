@@ -1,0 +1,63 @@
+{
+  "artifact_type": "freeze_record",
+  "artifact_id": "freeze_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T23:19:22.387637Z",
+  "source_run_id": "a8438e77-a516-4da0-b323-f43c54d79a42",
+  "parents": [
+    "plan_candidate_B2B_v3"
+  ],
+  "payload": {
+    "winner_candidate_ref": "plan_candidate_B2B_v3",
+    "frozen_plan_ref": "frozen_B2B_vFinal",
+    "why_winner": [
+      "Passed validators",
+      "Won tournament"
+    ],
+    "tradeoffs": [
+      {
+        "topic": "tradeoff",
+        "winner_reason": "Higher score",
+        "runner_up_reason": "Lower score"
+      }
+    ],
+    "judge_summary_refs": [
+      "judge_pair_B01A_B01B_1_v1",
+      "judge_pair_B01A_B01B_2_v1",
+      "judge_pair_B01A_B01B_3_v1",
+      "judge_pair_B02A_B02B_1_v1",
+      "judge_pair_B02A_B02B_2_v1",
+      "judge_pair_B02A_B02B_3_v1",
+      "judge_pair_B2A_B2B_1_v1",
+      "judge_pair_B2A_B2B_2_v1",
+      "judge_pair_B2A_B2B_3_v1",
+      "judge_pair_B01B_B02A_1_v1",
+      "judge_pair_B01B_B02A_2_v1",
+      "judge_pair_B01B_B02A_3_v1",
+      "judge_pair_B01B_B2B_1_v1",
+      "judge_pair_B01B_B2B_2_v1",
+      "judge_pair_B01B_B2B_3_v1"
+    ],
+    "validator_summary_ref": "validator_B2B_v3",
+    "remaining_open_questions": [
+      "Q1",
+      "Q2",
+      "Q3",
+      "Q4",
+      "Q5",
+      "Q6",
+      "Q7",
+      "Q8",
+      "Q9",
+      "Q10",
+      "Q11",
+      "Q12",
+      "Q13",
+      "Q14",
+      "Q15",
+      "Q16",
+      "Q17"
+    ],
+    "accepted_risks": []
+  }
+}

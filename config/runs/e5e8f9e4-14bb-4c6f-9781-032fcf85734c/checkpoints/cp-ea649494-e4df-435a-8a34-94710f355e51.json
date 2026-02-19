@@ -1,0 +1,18 @@
+{
+  "checkpoint_id": "cp-ea649494-e4df-435a-8a34-94710f355e51",
+  "run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "created_at": "2026-02-15T18:39:59.584285Z",
+  "stage_name": "intake.capsule_reconcile",
+  "stage_index": 1,
+  "event_cursor": "bb837d73-8689-4b55-8593-039e5b270fa3",
+  "artifact_refs": {
+    "capsule_draft_a": "capsule_draft_a_v1",
+    "capsule_draft_b": "capsule_draft_b_v1",
+    "capsule": "capsule_canonical_v1"
+  },
+  "routing_state": {
+    "stage": "intake.capsule_reconcile",
+    "index": 1
+  },
+  "tool_side_effect_ledger_ref": null
+}

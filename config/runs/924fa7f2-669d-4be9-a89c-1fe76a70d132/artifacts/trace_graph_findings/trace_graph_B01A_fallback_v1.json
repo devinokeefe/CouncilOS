@@ -1,0 +1,119 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B01A_fallback_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T20:10:18.813904Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B01A_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B01A_v1",
+    "findings": [
+      {
+        "id": "TG001",
+        "severity": "high",
+        "summary": "R1 requirement text contains semantic ambiguity: 'associated structured handoff bundle' is undefined and not traceable to any schema or artifact definition in the plan package.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "requirements_canonical",
+            "artifact_id": "requirements_canonical_v1",
+            "json_pointer": "/requirements/requirements/0/text",
+            "note": "R1 references 'associated structured handoff bundle' without defining it or linking to a schema.",
+            "quote": "SHALL accept exactly one frozen plan_package_final.json (plus its associated structured handoff bundle) as its sole canonical planning input"
+          }
+        ],
+        "routing_target": "requirements_canonical"
+      },
+      {
+        "id": "TG002",
+        "severity": "medium",
+        "summary": "R2 milestone mapping is incomplete: M1 deliverable M1-2 claims to cover 'required inputs (repo_context.json, workspace_context.json)' but does not explicitly enumerate R2's minimum field requirements (repository root, language/build-system entrypoints, validator commands/entrypoints, protected/forbidden path patterns, branch/commit metadata).",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "requirements_canonical",
+            "artifact_id": "requirements_canonical_v1",
+            "json_pointer": "/requirements/requirements/1/text",
+            "note": "R2 specifies minimum required fields for repo_context.json schema.",
+            "quote": "SHALL declare at minimum: repository root, language/build-system entrypoints, validator commands/entrypoints, protected/forbidden path patterns, and branch/commit metadata"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "plan_candidate_B01A_v1",
+            "json_pointer": "/plan_package/milestones/0/deliverables/1/text",
+            "note": "M1-2 does not enumerate the specific minimum fields required by R2.",
+            "quote": "Typed/versioned JSON schema set covering required inputs (repo_context.json, workspace_context.json) and required Freeze outputs"
+          }
+        ],
+        "routing_target": "requirements_canonical"
+      },
+      {
+        "id": "TG003",
+        "severity": "medium",
+        "summary": "R3 milestone mapping is incomplete: M1 deliverable M1-2 claims to cover workspace_context.json schema but does not explicitly enumerate R3's minimum field requirements (workspace root, namespace/layout rules, canonical vs non-canonical partition rules, retention/compaction policies, access-control declarations).",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "requirements_canonical",
+            "artifact_id": "requirements_canonical_v1",
+            "json_pointer": "/requirements/requirements/2/text",
+            "note": "R3 specifies minimum required fields for workspace_context.json schema.",
+            "quote": "SHALL declare at minimum: workspace root, namespace/layout rules, canonical vs non-canonical partition rules, retention/compaction policies, and access-control declarations"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v1",
+            "artifact_id": "plan_candidate_B01A_v1",
+            "json_pointer": "/plan_package/milestones/0/deliverables/1/text",
+            "note": "M1-2 does not enumerate the specific minimum fields required by R3.",
+            "quote": "Typed/versioned JSON schema set covering required inputs (repo_context.json, workspace_context.json) and required Freeze outputs"
+          }
+        ],
+        "routing_target": "requirements_canonical"
+      },
+      {
+        "id": "TG004",
+        "severity": "low",
+        "summary": "AT1 pass criteria uses informal language ('structured errors') without defining what constitutes a 'structured error' or linking to an error schema artifact.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "acceptance_canonical",
+            "artifact_id": "acceptance_canonical_v1",
+            "json_pointer": "/acceptance_tests/acceptance_tests/0/pass_criteria",
+            "note": "AT1 references 'structured errors' without definition or schema reference.",
+            "quote": "runs (b) and (c) are rejected with structured errors indicating non-canonical planning inputs are not authoritative"
+          }
+        ],
+        "routing_target": "acceptance_canonical"
+      },
+      {
+        "id": "TG005",
+        "severity": "medium",
+        "summary": "AT2 and AT3 pass criteria claim 'validation success' is recorded but do not specify which artifact or event log entry will contain this record, creating ambiguity for validator implementation.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "acceptance_canonical",
+            "artifact_id": "acceptance_canonical_v1",
+            "json_pointer": "/acceptance_tests/acceptance_tests/1/pass_criteria",
+            "note": "AT2 does not specify where validation success is recorded.",
+            "quote": "run with schema-valid repo_context.json is accepted and records validation success"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "acceptance_canonical",
+            "artifact_id": "acceptance_canonical_v1",
+            "json_pointer": "/acceptance_tests/acceptance_tests/2/pass_criteria",
+            "note": "AT3 does not specify where validation success is recorded.",
+            "quote": "run with schema-valid workspace_context.json is accepted and records validation success"
+          }
+        ],
+        "routing_target": "acceptance_canonical"
+      }
+    ]
+  }
+}

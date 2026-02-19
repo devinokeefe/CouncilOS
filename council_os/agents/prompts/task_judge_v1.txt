@@ -1,0 +1,1 @@
+﻿Compare candidate a vs b using this rubric: feasibility, testability, governance, architecture, clarity (0-10 each). Select winner 'a' or 'b'. Include evidence pointers.

@@ -1,0 +1,349 @@
+{
+  "$defs": {
+    "ArchitectureChosen": {
+      "additionalProperties": false,
+      "properties": {
+        "option_id": {
+          "title": "Option Id",
+          "type": "string"
+        },
+        "rationale": {
+          "title": "Rationale",
+          "type": "string"
+        },
+        "high_level_dataflow": {
+          "title": "High Level Dataflow",
+          "type": "string"
+        },
+        "key_design_decisions": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Key Design Decisions",
+          "type": "array"
+        }
+      },
+      "required": [
+        "option_id",
+        "rationale",
+        "high_level_dataflow",
+        "key_design_decisions"
+      ],
+      "title": "ArchitectureChosen",
+      "type": "object"
+    },
+    "DecisionLogItem": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "question": {
+          "title": "Question",
+          "type": "string"
+        },
+        "choice": {
+          "title": "Choice",
+          "type": "string"
+        },
+        "rationale": {
+          "title": "Rationale",
+          "type": "string"
+        },
+        "alternatives_considered": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Alternatives Considered",
+          "type": "array"
+        },
+        "what_would_change_this_decision": {
+          "items": {
+            "type": "string"
+          },
+          "title": "What Would Change This Decision",
+          "type": "array"
+        },
+        "evidence_pointers": {
+          "items": {
+            "$ref": "#/$defs/EvidencePointer"
+          },
+          "title": "Evidence Pointers",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "question",
+        "choice",
+        "rationale",
+        "alternatives_considered",
+        "what_would_change_this_decision",
+        "evidence_pointers"
+      ],
+      "title": "DecisionLogItem",
+      "type": "object"
+    },
+    "EvidencePointer": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_ref": {
+          "title": "Artifact Ref",
+          "type": "string"
+        },
+        "entity_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Entity Id"
+        },
+        "json_pointer": {
+          "title": "Json Pointer",
+          "type": "string"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        },
+        "candidate_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Candidate Id"
+        },
+        "artifact_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Artifact Id"
+        },
+        "quote": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Quote"
+        }
+      },
+      "required": [
+        "artifact_ref",
+        "json_pointer"
+      ],
+      "title": "EvidencePointer",
+      "type": "object"
+    },
+    "Milestone": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "deliverables": {
+          "items": {
+            "$ref": "#/$defs/MilestoneDeliverable"
+          },
+          "title": "Deliverables",
+          "type": "array"
+        },
+        "exit_criteria": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Exit Criteria",
+          "type": "array"
+        },
+        "depends_on": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Depends On",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "deliverables",
+        "exit_criteria"
+      ],
+      "title": "Milestone",
+      "type": "object"
+    },
+    "MilestoneDeliverable": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "text"
+      ],
+      "title": "MilestoneDeliverable",
+      "type": "object"
+    },
+    "SupplementalEvaluation": {
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "notes": {
+          "title": "Notes",
+          "type": "string"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/EvidencePointer"
+          },
+          "title": "Evidence",
+          "type": "array"
+        }
+      },
+      "required": [
+        "title",
+        "notes"
+      ],
+      "title": "SupplementalEvaluation",
+      "type": "object"
+    },
+    "SynthesisWarning": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "severity": {
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "summary": {
+          "title": "Summary",
+          "type": "string"
+        },
+        "routing_target": {
+          "title": "Routing Target",
+          "type": "string"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/EvidencePointer"
+          },
+          "title": "Evidence",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "severity",
+        "summary",
+        "routing_target"
+      ],
+      "title": "SynthesisWarning",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "candidate_id": {
+      "title": "Candidate Id",
+      "type": "string"
+    },
+    "executive_summary": {
+      "title": "Executive Summary",
+      "type": "string"
+    },
+    "architecture_choice": {
+      "$ref": "#/$defs/ArchitectureChosen"
+    },
+    "milestones": {
+      "items": {
+        "$ref": "#/$defs/Milestone"
+      },
+      "title": "Milestones",
+      "type": "array"
+    },
+    "decision_log": {
+      "items": {
+        "$ref": "#/$defs/DecisionLogItem"
+      },
+      "title": "Decision Log",
+      "type": "array"
+    },
+    "supplemental_evaluations": {
+      "items": {
+        "$ref": "#/$defs/SupplementalEvaluation"
+      },
+      "title": "Supplemental Evaluations",
+      "type": "array"
+    },
+    "synthesis_warnings": {
+      "items": {
+        "$ref": "#/$defs/SynthesisWarning"
+      },
+      "title": "Synthesis Warnings",
+      "type": "array"
+    }
+  },
+  "required": [
+    "candidate_id",
+    "executive_summary",
+    "architecture_choice",
+    "milestones",
+    "decision_log"
+  ],
+  "title": "CandidateDeltaPayload",
+  "type": "object"
+}

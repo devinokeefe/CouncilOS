@@ -1,0 +1,10 @@
+{
+  "run_context": {{RUN_CONTEXT_JSON}},
+  "artifact_refs": {{ARTIFACT_REFS_JSON}},
+  "allowed_id_prefixes": ["G","NG","CNS","A","Q","SM"],
+  "inputs": {
+    "brief": {{BRIEF_JSON_STRING}}
+  },
+  "task": "Create a Project Capsule.",
+  "output_schema": {{CAPSULE_SCHEMA_JSON}}
+}

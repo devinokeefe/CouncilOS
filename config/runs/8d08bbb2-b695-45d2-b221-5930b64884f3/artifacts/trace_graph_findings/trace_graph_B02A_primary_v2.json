@@ -1,0 +1,79 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B02A_primary_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T20:55:29.905196Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B02A_v2"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B02A_v2",
+    "findings": [
+      {
+        "id": "TG-101",
+        "severity": "medium",
+        "summary": "Interface IF1 and Milestone M1-D1 dataflow definitions omit the 'associated structured handoff bundle' mandated by Requirement R1 and Acceptance Test AT1, creating a completeness gap in the intake specification.",
+        "evidence": [
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/requirements/0",
+            "note": "R1 mandates accepting plan_package_final.json 'plus its associated structured handoff bundle'.",
+            "quote": "The Implementation Council subsystem SHALL accept exactly one frozen plan_package_final.json (plus its associated structured handoff bundle)..."
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/architecture/interfaces/0",
+            "note": "IF1 lists only plan_package_final.json, omitting the handoff bundle.",
+            "quote": "Provide plan_package_final.json + repo_context.json + workspace_context.json..."
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/milestones/0/deliverables/0",
+            "note": "M1-D1 validates plan_package_final.json but omits the handoff bundle in description.",
+            "quote": "Validated inputs: plan_package_final.json accepted as sole canonical planning input..."
+          }
+        ],
+        "routing_target": "clarification.required.intake_specification"
+      },
+      {
+        "id": "TG-102",
+        "severity": "high",
+        "summary": "Requirement R2 mandates a strict schema for 'protected/forbidden path patterns', but Open Question Q14 and Warning W3 confirm this schema is currently undefined, blocking verification of the requirement.",
+        "evidence": [
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/requirements/1",
+            "note": "R2 requires defining a typed schema for protected/forbidden path patterns.",
+            "quote": "The Implementation Council subsystem SHALL define and require a typed, versioned repo_context.json schema... and SHALL declare at minimum: ...protected/forbidden path patterns..."
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/project_capsule/open_questions/13",
+            "note": "Q14 asks for the specific schema required by R2, acknowledging it as a high-impact blocking question.",
+            "quote": "What is the required schema for repo_context.json protected paths/forbidden paths and how exactly are they enforced..."
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/synthesis_warnings/2",
+            "note": "W3 identifies that enforcement requires the concrete schema which is currently blocking.",
+            "quote": "Tool permission matrix and protected/forbidden path enforcement require a concrete repo_context.json schema definition..."
+          }
+        ],
+        "routing_target": "clarification.required.repo_context_protected_paths_schema"
+      }
+    ]
+  }
+}

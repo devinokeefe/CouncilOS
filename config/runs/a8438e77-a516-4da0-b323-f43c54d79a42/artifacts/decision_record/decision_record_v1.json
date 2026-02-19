@@ -1,0 +1,118 @@
+{
+  "artifact_type": "decision_record",
+  "artifact_id": "decision_record_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T23:19:50.390788Z",
+  "source_run_id": "a8438e77-a516-4da0-b323-f43c54d79a42",
+  "parents": [
+    "plan_candidate_B2B_v3",
+    "freeze_v1"
+  ],
+  "payload": {
+    "winner_ref": "plan_candidate_B2B_v3",
+    "winner_summary": "Selected candidate B2B (Branch B2) because it adopts architecture option O2: task-parallel fan-out/fan-in with a dedicated, deterministic integration sub-flow, delivered via a de-risking 4-phase milestone strategy that validates single-lane foundations before adding parallel lanes and integration, while retaining strict governance (sandboxed tools + high HITL strictness).",
+    "reasons": [
+      "O2 delivers the best wall-clock throughput potential for independent tasks by executing Generate→Validate→Review→Patch in parallel lanes while still preserving the required staged governance and freeze gating via an explicit Integration→Judge→Freeze path.",
+      "B2B’s hybrid milestone strategy reduces delivery risk by proving the single-lane (O1-equivalent) foundations first (intake validation, audit spine, workspace governance, stage handoffs, tool/secrets policy enforcement), then layering parallelism and integration with phase-specific exit criteria.",
+      "B2B explicitly addresses reproducibility and alignment warning AL006 by requiring deterministic merge ordering in the Integration Merge Engine (C18) that is independent of wall-clock lane completion timing, directly targeting the primary elevated risk K12 (merge conflicts from parallel lanes).",
+      "Namespaced workspace partitions and per-lane orchestration provide stronger isolation boundaries for parallel work and support bounded, lane-scoped context packs, improving safety and reducing cross-contamination risk in a multi-lane design.",
+      "Given that key implementation details remain blocked by open questions (notably patchset diff format, smallest-passing-repair selection, and conflict resolution strategy), B2B’s governance posture intentionally retains high HITL strictness and sandboxed tooling to avoid unsafe automation under uncertainty."
+    ],
+    "tradeoffs": [
+      "Higher orchestration and implementation complexity (DAG scheduling, per-lane budgets, deterministic merge ordering, and conflict handling) compared to sequential options.",
+      "Integration remains a critical path; in tightly-coupled repositories, conflict/regression frequency can erode throughput advantages and increase escalation/HITL load.",
+      "Parallel execution can increase total compute/token cost due to multiple concurrent role invocations and repeated validation at lane + integration levels.",
+      "The approach relies on low-confidence assumptions about workspace backends and tool sandbox granularity; if those assumptions fail, lane isolation and deterministic enforcement may require redesign."
+    ],
+    "evidence": [
+      {
+        "artifact_ref": "architecture_canonical_v1",
+        "entity_id": null,
+        "json_pointer": "/chosen",
+        "note": "Architecture selection: O2 chosen with rationale emphasizing parallel lanes + deterministic integration sub-flow",
+        "candidate_id": "B2B",
+        "artifact_id": "architecture_canonical",
+        "quote": null
+      },
+      {
+        "artifact_ref": "branch_set_v1",
+        "entity_id": null,
+        "json_pointer": "/branches/B2",
+        "note": "Branch B2 strategy: O2 with hybrid milestone phasing and governance posture",
+        "candidate_id": "B2B",
+        "artifact_id": "branch_set",
+        "quote": null
+      },
+      {
+        "artifact_ref": "architecture_canonical_v1",
+        "entity_id": null,
+        "json_pointer": "/options/1/components/7",
+        "note": "C18 Integration Merge Engine responsibilities include deterministic merge ordering and conflict reporting",
+        "candidate_id": "B2B",
+        "artifact_id": "architecture_canonical",
+        "quote": null
+      },
+      {
+        "artifact_ref": "alignment_warnings_v1",
+        "entity_id": null,
+        "json_pointer": "/AL006",
+        "note": "Alignment warning AL006 on merge-order determinism; addressed by deterministic merge ordering decision",
+        "candidate_id": "B2B",
+        "artifact_id": "alignment_warnings",
+        "quote": null
+      },
+      {
+        "artifact_ref": "risk_gov_canonical_v1",
+        "entity_id": null,
+        "json_pointer": "/risk_register/11",
+        "note": "K12 merge conflict risk entry and mitigation requiring deterministic apply/merge ordering and escalation thresholds",
+        "candidate_id": "B2B",
+        "artifact_id": "risk_gov_canonical",
+        "quote": null
+      },
+      {
+        "artifact_ref": "risk_gov_canonical_v1",
+        "entity_id": null,
+        "json_pointer": "/tool_policy",
+        "note": "Tool policy: sandboxed, deny-by-default, per-stage allowlists; supports high HITL strictness posture",
+        "candidate_id": "B2B",
+        "artifact_id": "risk_gov_canonical",
+        "quote": null
+      },
+      {
+        "artifact_ref": "capsule_canonical_v1",
+        "entity_id": null,
+        "json_pointer": "/open_questions/6",
+        "note": "Q7 (diff format for patchsets) is blocking and impacts patchset producers and integration",
+        "candidate_id": "B2B",
+        "artifact_id": "capsule_canonical",
+        "quote": null
+      },
+      {
+        "artifact_ref": "capsule_canonical_v1",
+        "entity_id": null,
+        "json_pointer": "/open_questions/7",
+        "note": "Q8 (deterministic smallest passing repair selection) is blocking and impacts orchestrator selection logic",
+        "candidate_id": "B2B",
+        "artifact_id": "capsule_canonical",
+        "quote": null
+      },
+      {
+        "artifact_ref": "capsule_canonical_v1",
+        "entity_id": null,
+        "json_pointer": "/open_questions/8",
+        "note": "Q9 (conflict resolution for overlapping patchsets) is blocking and directly impacts the integration model",
+        "candidate_id": "B2B",
+        "artifact_id": "capsule_canonical",
+        "quote": null
+      }
+    ],
+    "runner_ups": [
+      "plan_candidate_B01A_v3",
+      "plan_candidate_B01B_v3",
+      "plan_candidate_B02A_v3",
+      "plan_candidate_B02B_v3",
+      "plan_candidate_B2A_v3"
+    ]
+  }
+}

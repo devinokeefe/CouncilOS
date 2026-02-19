@@ -1,0 +1,387 @@
+{
+  "artifact_type": "candidate_delta",
+  "artifact_id": "candidate_delta_B01A_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T18:58:56.928708Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "branch_set_v1"
+  ],
+  "payload": {
+    "candidate_id": "B01A",
+    "executive_summary": "B01A selects architecture option O1 (sequential staged pipeline) and executes the Implementation Council plan as a single conservative, linear flow with strict orchestrator enforcement, high HITL involvement, and one comprehensive freeze bundle at the end. This maximizes determinism, auditability, and separation-of-powers while minimizing risks of silent scope expansion, audit-spine breakage, and policy bypass, at the cost of wall-clock speed and increased risk of end-of-pipeline discovery of issues.",
+    "architecture_choice": {
+      "option_id": "O1",
+      "rationale": "O1 best matches this branch’s extremely risk-averse posture and “big_bang” acceptance strategy by keeping all work in one orchestrator-owned linear state machine with explicit checkpoint boundaries, role separation, and validator-gated transitions. A sequential pipeline provides the simplest audit spine, clearest enforcement points for tool permissions and forbidden/protected paths, and the lowest orchestration complexity—reducing the likelihood of governance failure modes (scope drift, evidence noncompliance, workspace integrity violations).",
+      "high_level_dataflow": "Intake validates plan_package_final.json + repo_context.json + workspace_context.json and initializes immutable run_manifest + append-only event_log. WorkPlanning compiles work_plan.json and trace mappings (no repo mutation). Generate produces diff-only patchset artifacts (no direct repo writes). PatchApply applies patchsets deterministically under forbidden/protected-path rules and op caps, emitting repo_snapshot.json. Validate runs deterministic gates (build/test/lint/typecheck/security/secrets/trace/workspace integrity) and emits test_results.json + quality_reports.json. Review (findings-only) emits review_findings.json with RFC6901 evidence pointers. Patch (bounded repair) produces RFC6902 JSON patches for canonical JSON artifacts and replacement patchsets for code. Judge emits trace_report.json and freeze/no-freeze recommendation with evidence-backed decisions. Freeze assembles and validates the full Implementation Freeze Bundle (CNS10) and emits decision_record.json + release_bundle.json when—and only when—all gates pass.",
+      "key_design_decisions": [
+        "Use a linear, sequential stage order (Intake → Generate → Validate → Review → Judge → Freeze) with an explicit checkpoint boundary and required stage_handoff at every transition (R4–R6).",
+        "Treat versioned JSON artifacts as the sole source of truth and the sole citeable substrate; enforce RFC6901 evidence pointers everywhere (R10–R11, K3).",
+        "Enforce deterministic repair mechanisms only: RFC6902 JSON Patch for canonical JSON artifacts and diff-only patchsets for code, with smallest-passing selection rules (R12–R15, K11).",
+        "Default-deny tool permissions and network access; allow repo writes only via orchestrator-controlled patch_apply and only within repo_context-declared safe paths (R19, K5, K15, K19).",
+        "Adopt a single end-of-pipeline freeze decision (“big_bang”) that requires all gates to pass simultaneously; no partial freezes in this branch (Acceptance strategy).",
+        "Maximize HITL triggers for policy-sensitive events (ChangeRequests, protected paths, secrets, critical security findings, retry budget exhaustion) to reduce governance and compliance risk (risk posture; K1/K5/K7/K10/K18/K19)."
+      ]
+    },
+    "milestones": [
+      {
+        "id": "M1",
+        "name": "Single comprehensive pipeline to final Implementation Freeze Bundle (big-bang freeze)",
+        "deliverables": [
+          {
+            "id": "M1.D1",
+            "text": "Canonical input/output contracts specified: plan intake contract; repo_context.json schema; workspace_context.json schema; ChangeRequest schema; evidence pointer object shape; patchset artifact schema (diff-only) and JSON Patch (RFC6902) constraints."
+          },
+          {
+            "id": "M1.D2",
+            "text": "Deterministic linear workflow definition (Intake → Generate → Validate → Review → Judge → Freeze) with explicit checkpoint boundaries and stage_handoff schema + required fields enforced."
+          },
+          {
+            "id": "M1.D3",
+            "text": "Tool permission matrix per stage/role, secrets policy guardrails, and deterministic retry/quarantine/escalation rules captured as policy-as-data and referenced by validators."
+          },
+          {
+            "id": "M1.D4",
+            "text": "Validator/gate specifications sufficient to enforce: schema validity, audit spine immutability/append-only guarantees, forbidden/protected-path enforcement, patchset op caps, evidence-pointer linting and resolution, trace completeness, workspace integrity, reproducibility, security/secrets checks, and freeze gating."
+          },
+          {
+            "id": "M1.D5",
+            "text": "Implementation Freeze Bundle specification (CNS10 minimum set) including workspace_index.json, context_packs/ rules, and stage_handoffs/ requirements, plus decision_record expectations (evidence-backed approvals/waivers only)."
+          },
+          {
+            "id": "M1.D6",
+            "text": "Acceptance test coverage mapping (AT1–AT23) demonstrating requirement-level enforceability, with emphasis on: single-source-of-truth intake (AT1), checkpoint+handoff completeness (AT4–AT6), evidence-pointer compliance (AT10–AT11), patch/patchset constraints (AT12–AT15), role separation (AT22), secrets policy (AT20), and freeze gates (AT21)."
+          }
+        ],
+        "exit_criteria": [
+          "All MUST requirements R1–R23 are satisfied by the produced workflow/policy/contracts design (no semantic deviations from upstream plan entities).",
+          "The staged state machine includes at minimum Intake → Generate → Validate → Review → Judge → Freeze and defines a required stage_handoff at every transition, with validators that fail missing/invalid handoffs (R4–R6; AT4–AT6).",
+          "The defined freeze output includes all minimum artifacts listed in R7/CNS10 and specifies validator-gated assembly rules (AT7; AT21).",
+          "Evidence-pointer standard is singular (RFC6901), structurally validated, and required in trace/report/decision/findings/handoffs (R10–R11; AT10–AT11).",
+          "Repair model constraints are fully enforceable: canonical JSON changes only via RFC6902 patches; code changes only via diff-only patchsets; smallest-passing deterministic selection rules documented (R12–R15; AT12–AT15).",
+          "Governance and safety policies are explicit and testable: role separation + multi-vendor routing constraints (R22; AT22), tool permission enforcement (R19; AT19), secrets prevention (R20; AT20), and flaky failure deterministic retries/escalation (R23; AT23)."
+        ],
+        "depends_on": []
+      }
+    ],
+    "decision_log": [
+      {
+        "id": "DEC1",
+        "question": "Which architecture option is selected for this candidate?",
+        "choice": "Select O1 (Sequential staged pipeline with explicit role pods) as the core Implementation Council architecture.",
+        "rationale": "This branch prioritizes auditability, determinism, and governance enforceability over throughput. O1 minimizes orchestration complexity and provides the clearest enforcement points for checkpoints, tool permissions, evidence/trace rules, and role separation.",
+        "alternatives_considered": [
+          "O2 (Task-parallel fan-out/fan-in with deterministic integration)",
+          "O3 (Checkpoint-driven micro-cycle with partial freeze)",
+          "O4 (Monolithic council component behind a single interface)"
+        ],
+        "what_would_change_this_decision": [
+          "If wall-clock latency becomes a primary success metric and the repo/task graph supports safe partitioning, reconsider O2.",
+          "If long-horizon execution regularly exceeds budgets and partial freezes are required for practicality, reconsider O3 (note: conflicts with this branch’s big-bang acceptance posture).",
+          "If organizational constraints require a single deployable boundary and internal stage artifact emission can be proven equivalent, reconsider O4."
+        ],
+        "evidence_pointers": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "O1",
+            "json_pointer": "/options/0",
+            "note": "O1 option definition used for candidate architecture selection.",
+            "quote": "Sequential staged pipeline with explicit council role pods... linear state machine."
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "branch_set_v1",
+            "artifact_id": "B01",
+            "json_pointer": "/branch/selected_arch_option_id",
+            "note": "Branch explicitly selects O1.",
+            "quote": "O1"
+          }
+        ]
+      },
+      {
+        "id": "DEC2",
+        "question": "What milestone and acceptance strategy is used for this candidate?",
+        "choice": "Adopt a single “big_bang” milestone culminating in one comprehensive freeze event; acceptance requires the final freeze bundle to pass all gates in one go.",
+        "rationale": "A single freeze point supports holistic review and reduces incremental drift risks by requiring the full set of contracts/policies/validators to cohere before anything is considered accepted. This aligns with a conservative governance posture and reduces the chance of partial outputs being treated as authoritative.",
+        "alternatives_considered": [
+          "Incremental milestones with intermediate internal freezes",
+          "Partial-freeze/resume model (O3)",
+          "Parallel lane milestones (O2)"
+        ],
+        "what_would_change_this_decision": [
+          "If token/time budgets or organizational timelines require incremental delivery, shift to incremental milestones or O3-style checkpointed partial freezes.",
+          "If stakeholder risk tolerance allows controlled incremental acceptance, introduce intermediate acceptance gates with strict change control."
+        ],
+        "evidence_pointers": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "branch_set_v1",
+            "artifact_id": "B01",
+            "json_pointer": "/branch/milestone_strategy",
+            "note": "Branch milestone strategy is explicitly big_bang.",
+            "quote": "big_bang"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "branch_set_v1",
+            "artifact_id": "B01",
+            "json_pointer": "/branch/acceptance_strategy",
+            "note": "Branch acceptance requires a single final freeze bundle passing all gates.",
+            "quote": "single, comprehensive freeze bundle"
+          }
+        ]
+      },
+      {
+        "id": "DEC3",
+        "question": "How are checkpoints and resumability enforced across the sequential pipeline?",
+        "choice": "Enforce an explicit checkpoint boundary at every stage transition, with mandatory stage_handoff emission and validator enforcement at each boundary.",
+        "rationale": "This directly satisfies R4–R6 and mitigates checkpoint/resume inconsistency risk by ensuring cold-start resumability without relying on ephemeral agent state or chat logs. It also strengthens auditability by making each transition explicit and verifiable.",
+        "alternatives_considered": [
+          "Checkpoint only at major phases (e.g., before Freeze)",
+          "Implicit state via event log without dedicated handoff artifacts"
+        ],
+        "what_would_change_this_decision": [
+          "If storage or operational costs of frequent handoffs become prohibitive, consider compressing handoffs while still meeting R5/R6 via deterministic compaction (would require policy/schema changes)."
+        ],
+        "evidence_pointers": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "R4",
+            "json_pointer": "/requirements/3",
+            "note": "Stage-machine and checkpoint requirement.",
+            "quote": "deterministic staged state machine... explicit checkpoint boundary at every stage transition"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "R5",
+            "json_pointer": "/requirements/4",
+            "note": "Mandatory stage_handoff presence at each transition.",
+            "quote": "emit a stage_handoff JSON artifact... fail the run if any required stage_handoff is absent"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "R6",
+            "json_pointer": "/requirements/5",
+            "note": "Mandatory stage_handoff content for cold-start resume.",
+            "quote": "capture resumable state sufficient for cold-start resume"
+          }
+        ]
+      },
+      {
+        "id": "DEC4",
+        "question": "What is the single enforceable evidence/traceability standard for canonical artifacts?",
+        "choice": "Require RFC 6901 JSON Pointer evidence pointer objects for all citations, with validators rejecting any alternative citation format.",
+        "rationale": "A single linter-checkable standard is necessary for deterministic, machine-verifiable traceability and to prevent drift into prose/path-based citations. This reduces K3 and supports downstream councils consuming only canonical artifacts.",
+        "alternatives_considered": [
+          "Allow mixed citation formats (file paths, prose, URLs)",
+          "Use code-pointer standards alongside JSON pointers"
+        ],
+        "what_would_change_this_decision": [
+          "If repo/code state cannot be adequately represented as JSON artifacts for key trace needs, define additional JSON snapshot artifacts rather than introducing alternate pointer standards (would require upstream schema work)."
+        ],
+        "evidence_pointers": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "R10",
+            "json_pointer": "/requirements/9",
+            "note": "Single evidence standard requirement.",
+            "quote": "All evidence pointers... SHALL use a single standard: RFC 6901 JSON Pointer objects"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "R11",
+            "json_pointer": "/requirements/10",
+            "note": "Citeable state must be represented as versioned JSON artifacts.",
+            "quote": "Repository, code, and workspace state... SHALL be represented as versioned JSON artifacts"
+          }
+        ]
+      },
+      {
+        "id": "DEC5",
+        "question": "What repair and mutation mechanisms are permitted for canonical JSON artifacts and code changes?",
+        "choice": "Permit only RFC 6902 JSON Patch arrays for canonical JSON artifacts and diff-only patchset JSON artifacts for code changes, with deterministic smallest-passing repair selection.",
+        "rationale": "This enforces a bounded, auditable mutation model with deterministic selection, preventing untracked edits or subjective choice among passing repairs. It directly supports R12–R15 and mitigates K11 and K21 by ensuring repair actions are explicit, validated, and consistently selected.",
+        "alternatives_considered": [
+          "Allow direct JSON replacement writes",
+          "Allow non-diff code mutations (direct file writes, agent tool edits)",
+          "Allow judges/reviewers to author repairs"
+        ],
+        "what_would_change_this_decision": [
+          "If JSON Patch proves too restrictive for some artifacts, add artifact-specific patch constraints or helper transformations, but keep RFC 6902 as the only mutation form for canonical JSON.",
+          "If diff-only patchsets cannot represent necessary changes deterministically, define a more structured diff schema—but still diff-based and deterministic. (Requires resolving Q7.)"
+        ],
+        "evidence_pointers": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "R12",
+            "json_pointer": "/requirements/11",
+            "note": "RFC6902-only rule for canonical JSON artifact repairs.",
+            "quote": "Repairs to canonical JSON artifacts SHALL be expressed exclusively as RFC 6902 JSON Patch arrays"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "R13",
+            "json_pointer": "/requirements/12",
+            "note": "Diff-only patchset rule for code changes.",
+            "quote": "All code changes... emitted exclusively as diff-only patchset JSON artifacts"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "R15",
+            "json_pointer": "/requirements/14",
+            "note": "Deterministic smallest passing repair selection tie-breakers.",
+            "quote": "tie-breakers... fewest operations... fewest bytes changed... first-generated"
+          }
+        ]
+      },
+      {
+        "id": "DEC6",
+        "question": "What governance posture is applied to tool permissions, network access, and HITL escalation?",
+        "choice": "Adopt deny-by-default tool permissions (including network deny) and high HITL strictness for policy-sensitive events (ChangeRequests, protected paths, secrets, critical security findings, retry budget exhaustion, waivers).",
+        "rationale": "A strict posture reduces the probability of policy bypass (K5/K19), secrets leakage (K7), and unreviewed security regressions (K4), and aligns with the branch’s stated risk aversion. Deterministic enforcement plus mandatory escalation for exceptions preserves separation of powers and auditability.",
+        "alternatives_considered": [
+          "Permit network/package-manager access during Generate/Validate by default",
+          "Allow tool permission expansion via agent request without HITL",
+          "Allow waivers without evidence pointers"
+        ],
+        "what_would_change_this_decision": [
+          "If the supported repos require networked dependency resolution, introduce a tightly-scoped, allowlisted network stage with reproducibility constraints (requires answering Q11).",
+          "If organizational compliance policies allow more automation, reduce HITL triggers only after validators demonstrate low false-negative rates and stable enforcement logs."
+        ],
+        "evidence_pointers": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "risk_gov_canonical_v1",
+            "artifact_id": "K5",
+            "json_pointer": "/risk_register/4",
+            "note": "Repository protection bypass risk motivates strict permissions and HITL triggers.",
+            "quote": "Repository protection bypass... modify forbidden/protected paths... high-risk operations"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "risk_gov_canonical_v1",
+            "artifact_id": "K7",
+            "json_pointer": "/risk_register/6",
+            "note": "Secrets leakage risk motivates strict guardrails and mandatory scans.",
+            "quote": "Secrets leakage into canonical artifacts or workspace"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "risk_gov_canonical_v1",
+            "artifact_id": "K19",
+            "json_pointer": "/risk_register/18",
+            "note": "Misconfigured tool permissions risk motivates deny-by-default and HITL for expansions.",
+            "quote": "Misconfigured tool permissions... permit destructive commands... policy bypass"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "risk_gov_canonical_v1",
+            "artifact_id": "tool_policy",
+            "json_pointer": "/tool_policy/stage_policies",
+            "note": "Conservative stage tool policies (network deny baseline; repo write via patch_apply only).",
+            "quote": null
+          }
+        ]
+      }
+    ],
+    "supplemental_evaluations": [
+      {
+        "title": "Big-bang freeze implications (serialized risk vs governance strength)",
+        "notes": "This candidate’s single end-of-pipeline freeze maximizes governance clarity (one final, comprehensive gate) but increases the chance that late-stage validation failures force large rework cycles within bounded iteration budgets. This elevates the importance of strict intermediate validators, aggressive evidence/trace linting early, and conservative op/size caps on patchsets to prevent runaway end-stage surprises. If operational realities show frequent budget exhaustion before convergence, the orchestrator should route to resolve Q13 and consider a checkpointed partial-freeze approach (O3) in a different branch.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "O1",
+            "json_pointer": "/options/0/risks",
+            "note": "O1 risk: serialized execution can exceed budgets; context packs can grow.",
+            "quote": "Long-horizon implementations may exceed token/time budgets due to serialized execution."
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "capsule_canonical_v1",
+            "artifact_id": "Q13",
+            "json_pointer": "/open_questions/12",
+            "note": "Open question on incremental implementation vs budgets; relevant tension with big-bang strategy.",
+            "quote": "How should the system handle incremental implementation... (partial freezes vs checkpoints only)?"
+          }
+        ]
+      }
+    ],
+    "synthesis_warnings": [
+      {
+        "id": "W1",
+        "severity": "high",
+        "summary": "Big-bang single-freeze strategy is in tension with blocking open question Q13 (handling budget/time overruns without partial freezes). If runs routinely exceed budgets, this candidate may be operationally infeasible without adopting O3-like checkpoint/partial-freeze semantics (which would change branch strategy).",
+        "routing_target": "program_management_orchestrator_policy",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "capsule_canonical_v1",
+            "artifact_id": "Q13",
+            "json_pointer": "/open_questions/12",
+            "note": "Blocking question about incremental implementation vs budgets.",
+            "quote": "partial freezes vs checkpoints only"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "O1",
+            "json_pointer": "/options/0/risks/0",
+            "note": "O1 explicitly calls out long-horizon/budget risk under serialized execution.",
+            "quote": "may exceed token/time budgets due to serialized execution"
+          }
+        ]
+      },
+      {
+        "id": "W2",
+        "severity": "high",
+        "summary": "Several repo/tooling determinism details remain blocking (e.g., diff format Q7, smallest-repair selection implementation Q8, retry budget policy Q10, dependency/network handling Q11). Without these, validators and deterministic enforcement rules cannot be fully specified, risking non-reproducible behavior.",
+        "routing_target": "requirements_and_policy_clarification",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "capsule_canonical_v1",
+            "artifact_id": "Q7",
+            "json_pointer": "/open_questions/6",
+            "note": "Diff format/normalization affects deterministic patch application.",
+            "quote": "What specific diff format should be used... and what normalization rules are required"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "capsule_canonical_v1",
+            "artifact_id": "Q8",
+            "json_pointer": "/open_questions/7",
+            "note": "Smallest passing repair selection needs deterministic implementation details.",
+            "quote": "deterministically select the “smallest passing repair”"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "capsule_canonical_v1",
+            "artifact_id": "Q10",
+            "json_pointer": "/open_questions/9",
+            "note": "Retry budgets/backoff need concrete deterministic requirements.",
+            "quote": "retry budget and backoff strategy requirements"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "capsule_canonical_v1",
+            "artifact_id": "Q11",
+            "json_pointer": "/open_questions/10",
+            "note": "Network/package-manager policy details needed for reproducibility and security.",
+            "quote": "dependencies requiring network access and package-manager operations"
+          }
+        ]
+      }
+    ]
+  }
+}

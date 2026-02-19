@@ -1,0 +1,407 @@
+{
+  "artifact_type": "consistency_findings",
+  "artifact_id": "consistency_B2B_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T19:00:51.612750Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B2B_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2B_v1",
+    "findings": [
+      {
+        "id": "CS1",
+        "severity": "critical",
+        "summary": "Intake tool policy forbids canonical artifact writes, but Intake responsibilities/deliverables require creating canonical run_manifest/event_log/workspace_index (audit spine).",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "artifact_id": "plan_candidate_B2B_v1",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/0/restrictions/0/artifact_write",
+            "note": "Intake restriction says artifact_write is allow_noncanonical_only.",
+            "quote": "allow_noncanonical_only"
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "artifact_id": "plan_candidate_B2B_v1",
+            "json_pointer": "/plan_package/architecture/options/1/components/1/responsibilities/0",
+            "note": "O2 Intake & DAG Work Planner initializes run_manifest/event_log/workspace_index.",
+            "quote": "Validate plan_package_final.json, repo_context.json, workspace_context.json and initialize run_manifest/event_log/workspace_index."
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "artifact_id": "plan_candidate_B2B_v1",
+            "json_pointer": "/plan_package/milestones/0/deliverables/4",
+            "note": "Phase 1 deliverable explicitly includes audit spine artifacts.",
+            "quote": "Audit spine: immutable run_manifest, append-only event_log, versioned artifact store with stage-boundary checkpoints."
+          }
+        ],
+        "routing_target": "governance"
+      },
+      {
+        "id": "CS2",
+        "severity": "critical",
+        "summary": "Review stage tool policy denies artifact_write/workspace_write, but reviewer components are required to emit findings artifacts (review_findings.json / integration review_findings.json).",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "artifact_id": "plan_candidate_B2B_v1",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/6/restrictions/0/artifact_write",
+            "note": "Review stage restriction blocks any artifact output.",
+            "quote": "deny"
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "artifact_id": "plan_candidate_B2B_v1",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/6/restrictions/0/workspace_write",
+            "note": "Review stage restriction blocks any workspace output.",
+            "quote": "deny"
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "artifact_id": "plan_candidate_B2B_v1",
+            "json_pointer": "/plan_package/architecture/options/1/components/5/responsibilities/1",
+            "note": "Per-lane reviewer must produce review_findings.json.",
+            "quote": "Produce per-lane review_findings.json with RFC 6901 evidence pointers; flag cross-lane dependency issues."
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "artifact_id": "plan_candidate_B2B_v1",
+            "json_pointer": "/plan_package/architecture/options/1/components/9/responsibilities/1",
+            "note": "Integration reviewer must also produce an artifacts-based findings output.",
+            "quote": "Produce integration review_findings.json with RFC 6901 evidence pointers; findings-only (CNS12)."
+          }
+        ],
+        "routing_target": "governance"
+      },
+      {
+        "id": "CS3",
+        "severity": "high",
+        "summary": "Milestone M1 claims AT4 passes with a stage sequence that omits required Judge→Freeze and adds Patch; this conflicts with AT4’s own pass criteria and with R4’s minimum stage set.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "artifact_id": "plan_candidate_B2B_v1",
+            "json_pointer": "/plan_package/milestones/0/exit_criteria/3",
+            "note": "M1 exit criterion asserts an AT4 pass using a different stage sequence.",
+            "quote": "AT4 passes (single-lane subset): stage sequence Intake→Generate→Validate→Review→Patch recorded with checkpoint at each transition."
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "artifact_id": "plan_candidate_B2B_v1",
+            "json_pointer": "/plan_package/acceptance_tests/3/pass_criteria",
+            "note": "AT4 requires the minimal sequence to include Judge and Freeze (and does not mention Patch).",
+            "quote": "Stage sequence includes at minimum Intake → Generate → Validate → Review → Judge → Freeze and a checkpoint boundary is recorded at every stage transition."
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "artifact_id": "plan_candidate_B2B_v1",
+            "json_pointer": "/plan_package/requirements/3/text",
+            "note": "R4 defines the minimum required stage set (no Patch stage mentioned).",
+            "quote": "...with at minimum the stages: Intake → Generate → Validate → Review → Judge → Freeze..."
+          }
+        ],
+        "routing_target": "milestones"
+      },
+      {
+        "id": "CS4",
+        "severity": "medium",
+        "summary": "Stage taxonomy is inconsistent across requirements, architecture, milestones, and tool policy (e.g., WorkPlanning vs Plan, Patch vs PatchApply, IntegrateAndValidate vs Integration), creating ambiguity for validators expecting stage_handoff coverage “at every stage transition.”",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "artifact_id": "plan_candidate_B2B_v1",
+            "json_pointer": "/plan_package/requirements/3/text",
+            "note": "R4 lists a minimum stage set.",
+            "quote": "Intake → Generate → Validate → Review → Judge → Freeze"
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "artifact_id": "plan_candidate_B2B_v1",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies",
+            "note": "Tool policy uses a different stage set including WorkPlanning, PatchApply, IntegrateAndValidate.",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "artifact_id": "plan_candidate_B2B_v1",
+            "json_pointer": "/plan_package/architecture/options/0/components/0/responsibilities/0",
+            "note": "O1 linear state machine uses Plan and Patch stages not named in R4/tool policy.",
+            "quote": "Enforce strict stage ordering and closure gates (Intake → Plan → Generate → Validate → Review → Patch → Judge → Freeze)."
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "artifact_id": "plan_candidate_B2B_v1",
+            "json_pointer": "/plan_package/milestones/0/deliverables/6",
+            "note": "M1 deliverable uses stage names including PatchApply distinct from architecture’s “Patch”.",
+            "quote": "Tool permission matrix enforcement for Intake, WorkPlanning, Generate, PatchApply, Validate, and Review stages."
+          }
+        ],
+        "routing_target": "architecture"
+      },
+      {
+        "id": "CS5",
+        "severity": "medium",
+        "summary": "R10 defines evidence pointers as objects with structure {artifact_ref, entity_id|null, json_pointer, note}, but the plan’s own evidence_pointers instances include additional fields (candidate_id, artifact_id, quote), contradicting the claimed single required structure.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "artifact_id": "plan_candidate_B2B_v1",
+            "json_pointer": "/plan_package/requirements/9/text",
+            "note": "R10 specifies a fixed evidence pointer structure.",
+            "quote": "...RFC 6901 JSON Pointer objects with the structure {artifact_ref, entity_id|null, json_pointer, note}..."
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "artifact_id": "plan_candidate_B2B_v1",
+            "json_pointer": "/plan_package/decision_log/0/evidence_pointers/0",
+            "note": "Example evidence pointer includes candidate_id, artifact_id, and quote fields beyond R10’s stated structure.",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "artifact_id": "plan_candidate_B2B_v1",
+            "json_pointer": "/plan_package/glossary/3/definition",
+            "note": "Glossary also defines evidence pointer as {artifact_ref, entity_id|null, json_pointer, note} (no candidate_id/artifact_id).",
+            "quote": "An RFC 6901 JSON Pointer object {artifact_ref, entity_id|null, json_pointer, note} referencing a versioned JSON artifact location; used as the sole standard for traceability across decisions, findings"
+          }
+        ],
+        "routing_target": "requirements"
+      },
+      {
+        "id": "CS001",
+        "severity": "high",
+        "summary": "Milestone M2 exit criteria reference AT12, AT13, AT14, AT22, but M2 deliverables do not include Judge Pod (C23) required for AT22 writer/reviewer/judge separation validation. Judge Pod is not delivered until M4.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "artifact_id": "plan_candidate_B2B_v1",
+            "json_pointer": "/plan_package/milestones/1/exit_criteria",
+            "note": "M2 exit criteria includes AT22 which requires Judge Pod.",
+            "quote": "AT22 passes: writer/reviewer/judge roles distinct per lane; reviewers emit findings-only; multi-vendor routing recorded."
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "artifact_id": "plan_candidate_B2B_v1",
+            "json_pointer": "/plan_package/milestones/1/deliverables",
+            "note": "M2 deliverables do not include Judge Pod.",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "artifact_id": "plan_candidate_B2B_v1",
+            "json_pointer": "/plan_package/milestones/3/deliverables/0",
+            "note": "Judge Pod (C23) is delivered in M4, not M2.",
+            "quote": "Judge Pod (C23) evaluating integrated outputs"
+          }
+        ],
+        "routing_target": "milestones"
+      },
+      {
+        "id": "CS002",
+        "severity": "medium",
+        "summary": "Requirement R22 mandates multi-vendor diversity across writer/reviewer/judge roles, but architecture O2 components C14-C17 (per-lane Writer/Validator/Reviewer/Patcher) do not explicitly specify multi-vendor routing enforcement at the lane level, only at global orchestrator level (C11).",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "artifact_id": "plan_candidate_B2B_v1",
+            "json_pointer": "/plan_package/requirements/21",
+            "note": "R22 requires multi-vendor diversity enforced by orchestrator routing.",
+            "quote": "orchestrator routing SHALL enforce default multi-vendor separation across writer/reviewer/judge roles"
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "artifact_id": "plan_candidate_B2B_v1",
+            "json_pointer": "/plan_package/architecture/options/1/components/0/responsibilities",
+            "note": "C11 Global Orchestrator owns multi-vendor role separation but per-lane components do not restate this.",
+            "quote": "Enforce multi-vendor role separation across writers/reviewers/judges (CNS12)."
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "artifact_id": "plan_candidate_B2B_v1",
+            "json_pointer": "/plan_package/architecture/options/1/components/3",
+            "note": "C14 Writer Pool does not specify multi-vendor enforcement.",
+            "quote": null
+          }
+        ],
+        "routing_target": "architecture"
+      },
+      {
+        "id": "CS003",
+        "severity": "medium",
+        "summary": "Acceptance test AT4 pass criteria states 'Stage sequence includes at minimum Intake → Generate → Validate → Review → Judge → Freeze' but O2 architecture includes an Integration stage between parallel lanes and Judge that is not listed in AT4's expected sequence.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "artifact_id": "plan_candidate_B2B_v1",
+            "json_pointer": "/plan_package/acceptance_tests/3/pass_criteria",
+            "note": "AT4 expected sequence does not include Integration stage.",
+            "quote": "Stage sequence includes at minimum Intake → Generate → Validate → Review → Judge → Freeze"
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "artifact_id": "plan_candidate_B2B_v1",
+            "json_pointer": "/plan_package/architecture/options/1/components/0/responsibilities",
+            "note": "C11 Global Orchestrator owns DAG workflow including Integration stage.",
+            "quote": "Own top-level DAG workflow: Intake → Parallel Lanes → Integration → Judge → Freeze."
+          }
+        ],
+        "routing_target": "acceptance_tests"
+      },
+      {
+        "id": "CS004",
+        "severity": "low",
+        "summary": "Decision DEC5 allocates AT10 (evidence pointer validation) to Phase 3, but AT10 maps to requirement R10 which is a MUST requirement applicable to all stages. Evidence pointer validation should be enforced starting in Phase 1 where canonical artifacts are first emitted.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "artifact_id": "plan_candidate_B2B_v1",
+            "json_pointer": "/plan_package/decision_log/4/choice",
+            "note": "DEC5 allocates AT10 to Phase 3.",
+            "quote": "Phase 3: AT15, AT10, AT16 plus integration-specific merge ordering criterion."
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "artifact_id": "plan_candidate_B2B_v1",
+            "json_pointer": "/plan_package/acceptance_tests/9",
+            "note": "AT10 maps to R10, a MUST requirement for all evidence pointers.",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "artifact_id": "plan_candidate_B2B_v1",
+            "json_pointer": "/plan_package/requirements/9",
+            "note": "R10 is a MUST requirement applicable to all canonical artifacts from the start.",
+            "quote": "All evidence pointers, traceability links, findings references, and decision citations in canonical artifacts SHALL use a single standard"
+          }
+        ],
+        "routing_target": "milestones"
+      },
+      {
+        "id": "CS005",
+        "severity": "medium",
+        "summary": "Milestone M1 deliverable M1-D4 describes 'Single-lane execution path: one Writer (C14), one Validator (C15), one Reviewer (C16), one Patcher (C17)' but these component IDs correspond to O2 multi-lane components, not O1 sequential components. M1 is intended to prove O1-equivalent sequential path but references O2 component IDs.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "artifact_id": "plan_candidate_B2B_v1",
+            "json_pointer": "/plan_package/milestones/0/deliverables/3",
+            "note": "M1-D4 references C14-C17 which are defined as multi-lane components in O2.",
+            "quote": "Single-lane execution path: one Writer (C14), one Validator (C15), one Reviewer (C16), one Patcher (C17) operating sequentially"
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "artifact_id": "plan_candidate_B2B_v1",
+            "json_pointer": "/plan_package/architecture/options/1/components/3",
+            "note": "C14 is defined as 'Writer Pool (Multi-Lane)' not single-lane.",
+            "quote": "Writer Pool (Multi-Lane)"
+          }
+        ],
+        "routing_target": "milestones"
+      },
+      {
+        "id": "CS006",
+        "severity": "high",
+        "summary": "Requirement R7 mandates workspace_index.json, context_packs/, and stage_handoffs/ directories in the freeze bundle, but acceptance test AT7 pass criteria lists these as individual artifacts (workspace_index.json) and directories (context_packs/, stage_handoffs/) without clarifying that context_packs/ and stage_handoffs/ must contain per-stage/per-lane artifacts as implied by the architecture.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "artifact_id": "plan_candidate_B2B_v1",
+            "json_pointer": "/plan_package/requirements/6",
+            "note": "R7 specifies directories context_packs/ and stage_handoffs/ as part of freeze bundle.",
+            "quote": "workspace_index.json, context_packs/, and stage_handoffs/"
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "artifact_id": "plan_candidate_B2B_v1",
+            "json_pointer": "/plan_package/acceptance_tests/6/pass_criteria",
+            "note": "AT7 lists directories but does not specify required contents or structure.",
+            "quote": "Freeze bundle contains all minimum artifacts: implementation_run_manifest.json, implementation_event_log.jsonl, work_plan.json, patchsets (diff-embedded JSON), repo_snapshot.json, test_results.json"
+          }
+        ],
+        "routing_target": "acceptance_tests"
+      },
+      {
+        "id": "CS007",
+        "severity": "medium",
+        "summary": "Risk K12 mitigation states 'deterministic apply/merge ordering rules independent of wall-clock completion timing' but does not specify how this ordering is recorded/audited in the event_log or integration_report to enable reproducibility verification.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "artifact_id": "plan_candidate_B2B_v1",
+            "json_pointer": "/plan_package/risk_register/11/mitigation/text",
+            "note": "K12 mitigation describes deterministic ordering but not audit/recording mechanism.",
+            "quote": "deterministic apply/merge ordering rules independent of wall-clock completion timing"
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "artifact_id": "plan_candidate_B2B_v1",
+            "json_pointer": "/plan_package/architecture/options/1/components/7/responsibilities",
+            "note": "C18 responsibilities mention 'integrated patchset ordering record' but not event_log recording.",
+            "quote": "Produce merged repo_snapshot.json and integrated patchset ordering record."
+          }
+        ],
+        "routing_target": "risk_register"
+      },
+      {
+        "id": "CS008",
+        "severity": "low",
+        "summary": "Glossary defines 'Context Pack' as 'bounded, deterministically-compiled set of workspace artifacts' but does not clarify whether context packs are themselves versioned artifacts with artifact_refs or are ephemeral compilations referenced only via workspace_index.json.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "artifact_id": "plan_candidate_B2B_v1",
+            "json_pointer": "/plan_package/project_capsule/glossary/7",
+            "note": "Context Pack glossary definition does not specify versioning/artifact_ref status.",
+            "quote": "A bounded, deterministically-compiled set of workspace artifacts provided to a role at a stage, selected by explicit rules and cited via evidence pointers."
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "artifact_id": "plan_candidate_B2B_v1",
+            "json_pointer": "/plan_package/requirements/16",
+            "note": "R17 requires context packs cited via evidence pointers but does not clarify if packs themselves have artifact_refs.",
+            "quote": "orchestrator SHALL build bounded context packs deterministically for each stage/role invocation using explicit selection rules, with context pack contents cited via evidence pointers"
+          }
+        ],
+        "routing_target": "requirements"
+      }
+    ]
+  }
+}

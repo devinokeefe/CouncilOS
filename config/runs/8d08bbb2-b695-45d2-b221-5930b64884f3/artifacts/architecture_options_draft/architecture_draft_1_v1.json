@@ -1,0 +1,917 @@
+{
+  "artifact_type": "architecture_options_draft",
+  "artifact_id": "architecture_draft_1_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T18:46:10.970525Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "capsule_canonical_v1"
+  ],
+  "payload": {
+    "options": [
+      {
+        "id": "OPT_A1",
+        "summary": "Strict Linear Pipeline – A single-threaded, strictly sequential stage pipeline (Intake → Generate → Validate → Review → Patch → Judge → Freeze) where each stage must fully complete and pass its closure gate before the next begins. The orchestrator owns a flat state machine with one active stage at a time. Workspace is a single versioned directory tree with stage-scoped write permissions. Context packs are compiled once per stage transition. Repair loops are bounded intra-stage cycles (patch-revalidate) with a global retry budget.",
+        "components": [
+          {
+            "id": "CMP_A1_01",
+            "name": "Intake Gate",
+            "responsibilities": [
+              "Validate plan_package_final.json against input schema",
+              "Validate repo_context.json and workspace_context.json schemas",
+              "Initialize run_manifest, event_log, and workspace_index",
+              "Emit stage_handoff artifact for Intake→Generate boundary",
+              "Reject malformed or incomplete inputs with structured error artifacts"
+            ]
+          },
+          {
+            "id": "CMP_A1_02",
+            "name": "Work Plan Compiler",
+            "responsibilities": [
+              "Decompose plan_package_final.json R#/AT# entries into ordered implementation tasks",
+              "Produce work_plan.json with task dependency graph, acceptance criteria trace, and bounded patchset slots",
+              "Map each task to AT# acceptance test IDs for downstream traceability",
+              "Enforce CNS5 by verifying no semantic deviation from plan entities"
+            ]
+          },
+          {
+            "id": "CMP_A1_03",
+            "name": "Code Generator (Writer Role)",
+            "responsibilities": [
+              "Consume context pack compiled by orchestrator for current task",
+              "Produce diff-only patchset JSON artifacts per work_plan task",
+              "Emit structured code change artifacts with deterministic apply order",
+              "Obey tool permission matrix (filesystem read/write scoped to non-forbidden paths)",
+              "Output JSON-only artifacts matching per-stage schema (CNS2)"
+            ]
+          },
+          {
+            "id": "CMP_A1_04",
+            "name": "Validator Engine",
+            "responsibilities": [
+              "Execute build/test/lint/typecheck validators via repo_context.json entrypoints",
+              "Produce test_results.json and quality_reports.json with AT# trace mappings",
+              "Detect secrets in artifacts and workspace (CNS9)",
+              "Enforce forbidden-path and operation-cap rules on patchsets (CNS7)",
+              "Emit structured pass/fail results consumed by orchestrator for gate decisions"
+            ]
+          },
+          {
+            "id": "CMP_A1_05",
+            "name": "Reviewer Pod (Reviewer Role)",
+            "responsibilities": [
+              "Consume patchsets and validation results as read-only context",
+              "Produce review_findings.json with RFC 6901 evidence pointers into versioned artifacts",
+              "Flag potential scope expansion, risk, or quality issues",
+              "Never emit writing or patch artifacts (CNS12 findings-only constraint)",
+              "Routed to different vendor/model than writer (multi-vendor separation)"
+            ]
+          },
+          {
+            "id": "CMP_A1_06",
+            "name": "Patch Repair Agent (Patcher Role)",
+            "responsibilities": [
+              "Consume review findings and validation failures",
+              "Produce RFC 6902 JSON Patch arrays for JSON artifact repairs",
+              "Produce replacement diff-only patchset artifacts for code repairs",
+              "Operate within orchestrator-enforced iteration/op caps",
+              "Select smallest passing repair per orchestrator deterministic rules"
+            ]
+          },
+          {
+            "id": "CMP_A1_07",
+            "name": "Judge Pod (Judge Role)",
+            "responsibilities": [
+              "Independently evaluate patchsets, test results, review findings, and quality reports",
+              "Produce trace_report.json confirming evidence pointer completeness",
+              "Emit freeze/no-freeze recommendation with structured rationale",
+              "Routed to different vendor/model than writer and reviewer",
+              "Evaluate risk closure against K# risk entries from plan"
+            ]
+          },
+          {
+            "id": "CMP_A1_08",
+            "name": "Orchestrator Core",
+            "responsibilities": [
+              "Own the linear state machine: enforce stage ordering and transitions",
+              "Compile deterministic context packs per stage from workspace_index",
+              "Enforce tool permission matrix per stage/role",
+              "Enforce retry budgets, iteration limits, and backoff for flaky failures",
+              "Produce stage_handoff artifacts at every checkpoint boundary",
+              "Apply deterministic selection logic for smallest passing repair",
+              "Trigger HITL escalation or ChangeRequest when thresholds exceeded",
+              "Manage secrets redaction/blocking guardrails",
+              "Emit final Implementation Freeze Bundle when all gates pass"
+            ]
+          },
+          {
+            "id": "CMP_A1_09",
+            "name": "Workspace Manager",
+            "responsibilities": [
+              "Maintain versioned workspace directory with canonical vs non-canonical separation",
+              "Maintain workspace_index.json with types, versions, provenance for all items",
+              "Enforce stage-scoped read/write permissions",
+              "Support checkpoint/restore for pause/resume via stage_handoff artifacts",
+              "Enforce retention/compaction policies for non-canonical content"
+            ]
+          },
+          {
+            "id": "CMP_A1_10",
+            "name": "Freeze Assembler",
+            "responsibilities": [
+              "Collect all required freeze bundle artifacts per CNS10",
+              "Validate completeness: run_manifest, event_log, work_plan, patchsets, repo_snapshot, test_results, quality_reports, trace_report, review_findings, release_bundle, decision_record, workspace_index, context_packs, stage_handoffs",
+              "Produce release_bundle.json and decision_record.json",
+              "Run final integrity and reproducibility validators before freeze"
+            ]
+          }
+        ],
+        "interfaces": [
+          {
+            "id": "IF_A1_01",
+            "from": "CMP_A1_08",
+            "to": "CMP_A1_01",
+            "contract": "Orchestrator sends plan_package_final.json, repo_context.json, workspace_context.json; Intake Gate returns validated intake_result.json or structured rejection error."
+          },
+          {
+            "id": "IF_A1_02",
+            "from": "CMP_A1_01",
+            "to": "CMP_A1_02",
+            "contract": "Intake Gate emits stage_handoff (intake→generate) plus validated input artifacts; Work Plan Compiler reads plan entities and emits work_plan.json."
+          },
+          {
+            "id": "IF_A1_03",
+            "from": "CMP_A1_08",
+            "to": "CMP_A1_03",
+            "contract": "Orchestrator provides bounded context_pack (workspace artifacts + work_plan task slice + repo state); Writer returns patchset JSON artifacts with diff-embedded changes."
+          },
+          {
+            "id": "IF_A1_04",
+            "from": "CMP_A1_03",
+            "to": "CMP_A1_04",
+            "contract": "Patchsets applied to repo state by orchestrator; Validator Engine invoked with repo_context.json entrypoints; returns test_results.json + quality_reports.json."
+          },
+          {
+            "id": "IF_A1_05",
+            "from": "CMP_A1_08",
+            "to": "CMP_A1_05",
+            "contract": "Orchestrator provides read-only context_pack (patchsets + validation results + work_plan); Reviewer returns review_findings.json with RFC 6901 evidence pointers."
+          },
+          {
+            "id": "IF_A1_06",
+            "from": "CMP_A1_05",
+            "to": "CMP_A1_06",
+            "contract": "Review findings and validation failures provided as context; Patcher returns RFC 6902 patches (JSON) or replacement patchsets (code) within op caps."
+          },
+          {
+            "id": "IF_A1_07",
+            "from": "CMP_A1_08",
+            "to": "CMP_A1_07",
+            "contract": "Orchestrator provides full context_pack (all artifacts from generate through review/patch); Judge returns freeze_recommendation.json with trace_report.json."
+          },
+          {
+            "id": "IF_A1_08",
+            "from": "CMP_A1_08",
+            "to": "CMP_A1_09",
+            "contract": "Orchestrator issues versioned read/write/checkpoint/restore commands; Workspace Manager returns workspace_index.json and artifact content. All mutations logged to event_log."
+          },
+          {
+            "id": "IF_A1_09",
+            "from": "CMP_A1_07",
+            "to": "CMP_A1_10",
+            "contract": "Judge freeze recommendation triggers Freeze Assembler; assembler collects all CNS10-required artifacts and runs final validators; returns freeze_bundle_manifest or failure."
+          },
+          {
+            "id": "IF_A1_10",
+            "from": "CMP_A1_08",
+            "to": "CMP_A1_06",
+            "contract": "Orchestrator routes validation/review failures to Patcher with bounded iteration budget; Patcher returns candidate repairs; orchestrator selects smallest passing via deterministic rules."
+          }
+        ],
+        "tradeoffs": {
+          "pros": [
+            "Simplest mental model: one stage active at a time reduces concurrency bugs and makes audit trail trivially sequential",
+            "Deterministic ordering makes reproducibility straightforward – replay is a simple linear re-execution",
+            "Checkpoint/resume is easy: each stage_handoff is a clean cut point with no in-flight parallel work",
+            "Context pack compilation is simpler since only one stage's artifacts need assembly at a time",
+            "Easier to reason about tool permissions – each stage has exactly one active permission set"
+          ],
+          "cons": [
+            "Slowest wall-clock time: no parallelism across independent tasks in the work plan",
+            "A single failing task blocks the entire pipeline even if other tasks are independent",
+            "Context packs may grow large as all prior stage outputs accumulate linearly",
+            "Does not exploit natural parallelism in multi-file or multi-module implementations",
+            "Retry/repair cycles for one task delay all subsequent tasks"
+          ]
+        },
+        "risks": [
+          "Long-horizon implementations may exceed token/time budgets due to strictly sequential execution with no parallel task overlap",
+          "Large repositories with many independent modules will suffer unnecessary latency from serialized processing",
+          "Context pack sizes may exceed model context window limits as the linear pipeline accumulates artifacts without natural partitioning",
+          "Flaky test retries in the validate stage can cascade into budget exhaustion since there is no parallel fallback path",
+          "Single-threaded repair loops may hit iteration caps before resolving complex multi-file issues that would benefit from decomposition"
+        ]
+      },
+      {
+        "id": "OPT_A2",
+        "summary": "Task-Parallel Fan-Out/Fan-In Pipeline – The work plan is decomposed into independent task groups that can execute Generate→Validate→Review→Patch in parallel lanes, with a deterministic Integration stage that merges patchsets, revalidates, and then proceeds to a single Judge→Freeze sequence. The orchestrator manages a DAG-based state machine with per-lane checkpoints and a merge gate. Workspace uses namespaced partitions per task lane plus a shared canonical partition for merged results.",
+        "components": [
+          {
+            "id": "CMP_A2_01",
+            "name": "Intake & Planning Gate",
+            "responsibilities": [
+              "Validate plan_package_final.json, repo_context.json, workspace_context.json against schemas",
+              "Initialize run_manifest, event_log, workspace_index",
+              "Decompose plan into work_plan.json with task dependency DAG and parallelism annotations",
+              "Identify independent task groups eligible for parallel execution",
+              "Emit stage_handoff for Intake→ParallelGenerate boundary"
+            ]
+          },
+          {
+            "id": "CMP_A2_02",
+            "name": "Task Lane Orchestrator",
+            "responsibilities": [
+              "Spawn parallel execution lanes per independent task group from work_plan DAG",
+              "Manage per-lane state machines (Generate→Validate→Review→Patch) independently",
+              "Compile per-lane context packs scoped to lane's task slice and relevant repo subset",
+              "Enforce per-lane retry budgets and iteration limits",
+              "Emit per-lane stage_handoff artifacts at lane checkpoints",
+              "Enforce tool permissions scoped to lane's file paths"
+            ]
+          },
+          {
+            "id": "CMP_A2_03",
+            "name": "Writer Pool (Writer Role, multi-lane)",
+            "responsibilities": [
+              "Each writer instance consumes lane-scoped context pack",
+              "Produce diff-only patchset JSON artifacts scoped to lane's file set",
+              "Enforce forbidden-path rules within lane scope",
+              "Output JSON-only artifacts matching per-stage schema"
+            ]
+          },
+          {
+            "id": "CMP_A2_04",
+            "name": "Per-Lane Validator",
+            "responsibilities": [
+              "Apply lane patchset to repo state and run scoped validators",
+              "Produce per-lane test_results.json and quality_reports.json",
+              "Map test results to AT# IDs for traceability",
+              "Detect secrets in lane artifacts"
+            ]
+          },
+          {
+            "id": "CMP_A2_05",
+            "name": "Per-Lane Reviewer (Reviewer Role)",
+            "responsibilities": [
+              "Review lane patchsets and validation results (read-only)",
+              "Produce per-lane review_findings.json with RFC 6901 evidence pointers",
+              "Flag scope expansion or cross-lane dependency issues",
+              "Findings-only: no writing or patch artifacts"
+            ]
+          },
+          {
+            "id": "CMP_A2_06",
+            "name": "Per-Lane Patcher (Patcher Role)",
+            "responsibilities": [
+              "Consume per-lane review findings and validation failures",
+              "Produce repair patches (RFC 6902 for JSON, replacement patchsets for code)",
+              "Operate within per-lane iteration/op caps"
+            ]
+          },
+          {
+            "id": "CMP_A2_07",
+            "name": "Integration Merge Gate",
+            "responsibilities": [
+              "Collect all per-lane patchsets after lane completion",
+              "Apply combined patchsets in deterministic order to base repo state",
+              "Detect and flag merge conflicts between lanes",
+              "Run full-repo validators (build/test/lint/typecheck) on merged state",
+              "Produce integrated repo_snapshot.json, test_results.json, quality_reports.json",
+              "Escalate unresolvable conflicts via ChangeRequest or HITL"
+            ]
+          },
+          {
+            "id": "CMP_A2_08",
+            "name": "Judge Pod (Judge Role)",
+            "responsibilities": [
+              "Evaluate integrated results: merged patchsets, full test results, review findings, quality reports",
+              "Produce trace_report.json confirming evidence completeness across all lanes",
+              "Emit freeze/no-freeze recommendation with structured rationale",
+              "Evaluate risk closure against K# entries",
+              "Routed to independent vendor/model from writers and reviewers"
+            ]
+          },
+          {
+            "id": "CMP_A2_09",
+            "name": "Global Orchestrator",
+            "responsibilities": [
+              "Own the top-level DAG state machine: Intake → Parallel Lanes → Integration → Judge → Freeze",
+              "Delegate per-lane orchestration to Task Lane Orchestrator",
+              "Enforce global retry/iteration budgets across all lanes",
+              "Manage workspace namespacing and canonical/non-canonical separation",
+              "Compile integration-stage and judge-stage context packs",
+              "Trigger HITL/ChangeRequest escalation at global level",
+              "Produce stage_handoff artifacts at top-level boundaries",
+              "Enforce secrets redaction/blocking across all lanes"
+            ]
+          },
+          {
+            "id": "CMP_A2_10",
+            "name": "Workspace Manager (Partitioned)",
+            "responsibilities": [
+              "Maintain per-lane workspace partitions with scoped write access",
+              "Maintain shared canonical partition for integrated/merged results",
+              "Maintain global workspace_index.json covering all partitions",
+              "Support per-lane and global checkpoint/restore",
+              "Enforce retention/compaction per partition"
+            ]
+          },
+          {
+            "id": "CMP_A2_11",
+            "name": "Freeze Assembler",
+            "responsibilities": [
+              "Collect all CNS10-required artifacts from integrated results and per-lane outputs",
+              "Validate completeness of freeze bundle",
+              "Produce release_bundle.json and decision_record.json",
+              "Run final integrity, reproducibility, and workspace integrity validators"
+            ]
+          }
+        ],
+        "interfaces": [
+          {
+            "id": "IF_A2_01",
+            "from": "CMP_A2_09",
+            "to": "CMP_A2_01",
+            "contract": "Global orchestrator provides input artifacts; Intake Gate returns validated inputs, work_plan.json with DAG and parallelism annotations, and stage_handoff."
+          },
+          {
+            "id": "IF_A2_02",
+            "from": "CMP_A2_09",
+            "to": "CMP_A2_02",
+            "contract": "Global orchestrator dispatches independent task groups to Task Lane Orchestrator with lane IDs, task slices, and per-lane budgets; receives per-lane completion signals and stage_handoffs."
+          },
+          {
+            "id": "IF_A2_03",
+            "from": "CMP_A2_02",
+            "to": "CMP_A2_03",
+            "contract": "Task Lane Orchestrator provides lane-scoped context_pack; Writer returns patchset JSON artifacts scoped to lane file set."
+          },
+          {
+            "id": "IF_A2_04",
+            "from": "CMP_A2_02",
+            "to": "CMP_A2_04",
+            "contract": "Lane patchsets applied to repo; Per-Lane Validator returns lane test_results.json + quality_reports.json."
+          },
+          {
+            "id": "IF_A2_05",
+            "from": "CMP_A2_02",
+            "to": "CMP_A2_05",
+            "contract": "Lane context_pack (patchsets + validation) provided read-only; Reviewer returns lane review_findings.json."
+          },
+          {
+            "id": "IF_A2_06",
+            "from": "CMP_A2_02",
+            "to": "CMP_A2_06",
+            "contract": "Lane failures/findings provided; Patcher returns lane repair patches within lane op caps."
+          },
+          {
+            "id": "IF_A2_07",
+            "from": "CMP_A2_09",
+            "to": "CMP_A2_07",
+            "contract": "All completed lane patchsets provided with deterministic merge order; Integration Merge Gate returns merged repo_snapshot.json, integrated test_results.json, quality_reports.json, or conflict escalation."
+          },
+          {
+            "id": "IF_A2_08",
+            "from": "CMP_A2_09",
+            "to": "CMP_A2_08",
+            "contract": "Full integrated context_pack provided; Judge returns freeze_recommendation.json + trace_report.json."
+          },
+          {
+            "id": "IF_A2_09",
+            "from": "CMP_A2_09",
+            "to": "CMP_A2_10",
+            "contract": "Orchestrator issues namespaced read/write/checkpoint commands per lane or global; Workspace Manager returns workspace_index.json updates. All mutations logged."
+          },
+          {
+            "id": "IF_A2_10",
+            "from": "CMP_A2_08",
+            "to": "CMP_A2_11",
+            "contract": "Judge freeze recommendation triggers Freeze Assembler; returns freeze_bundle_manifest or failure with missing artifact list."
+          },
+          {
+            "id": "IF_A2_11",
+            "from": "CMP_A2_07",
+            "to": "CMP_A2_09",
+            "contract": "Integration Merge Gate reports merge conflicts or validation failures; Global Orchestrator decides: re-dispatch conflicting lanes, trigger ChangeRequest, or escalate HITL."
+          }
+        ],
+        "tradeoffs": {
+          "pros": [
+            "Significantly faster wall-clock time for multi-module/multi-file implementations via parallel task lanes",
+            "Independent task failures do not block other lanes, improving resilience",
+            "Per-lane context packs are naturally smaller and better scoped than full-pipeline packs",
+            "Workspace partitioning provides natural isolation and reduces accidental cross-contamination",
+            "Scales naturally with the number of independent tasks in the work plan"
+          ],
+          "cons": [
+            "Substantially more complex orchestrator logic: DAG scheduling, per-lane budgets, merge conflict resolution",
+            "Integration Merge Gate is a complex critical path component requiring deterministic conflict detection and resolution",
+            "Per-lane checkpoints and global checkpoints create a more complex resume model",
+            "Cross-lane dependencies that are not detected at planning time can cause integration failures",
+            "Multi-lane workspace partitioning requires more sophisticated access control and indexing",
+            "Higher total token/compute cost due to parallel model invocations and potential redundant context"
+          ]
+        },
+        "risks": [
+          "Merge conflicts between parallel lanes may be frequent in tightly-coupled codebases, causing the Integration Merge Gate to become a bottleneck or require frequent escalation",
+          "Task dependency analysis at planning time may miss implicit coupling (shared state, import chains), leading to integration failures that require rework",
+          "Per-lane budget allocation may be suboptimal: some lanes finish quickly while others exhaust budgets, and rebalancing adds orchestrator complexity",
+          "Workspace partition isolation may be violated if tool execution has side effects outside the lane's scoped paths",
+          "Deterministic merge ordering is sensitive to lane completion order; ensuring reproducibility requires explicit ordering rules independent of wall-clock timing"
+        ]
+      },
+      {
+        "id": "OPT_A3",
+        "summary": "Incremental Checkpoint-Driven Pipeline with Partial Freeze – A sequential-by-default pipeline that processes work_plan tasks one at a time (or in small batches) through a micro-cycle (Generate→Validate→Review→Patch per task), checkpointing after each task. Supports partial freezes: if budget/time limits are reached, the system can freeze completed tasks as a partial Implementation Freeze Bundle with explicit incomplete-task metadata, enabling deterministic resume from the last checkpoint. Designed for long-horizon execution where full completion in one run is not guaranteed.",
+        "components": [
+          {
+            "id": "CMP_A3_01",
+            "name": "Intake & Work Plan Compiler",
+            "responsibilities": [
+              "Validate inputs (plan_package_final.json, repo_context.json, workspace_context.json)",
+              "Initialize or resume run_manifest, event_log, workspace_index from prior checkpoint if resuming",
+              "Produce or update work_plan.json with task ordering and completion status",
+              "Detect resume scenario and load prior stage_handoff for continuation",
+              "Emit stage_handoff for Intake→TaskCycle boundary"
+            ]
+          },
+          {
+            "id": "CMP_A3_02",
+            "name": "Task Cycle Engine",
+            "responsibilities": [
+              "Execute micro-cycles per task: Generate→Validate→Review→Patch",
+              "Checkpoint workspace and emit stage_handoff after each completed task",
+              "Track cumulative budget consumption (tokens, time, retries)",
+              "Signal orchestrator when budget thresholds are approaching",
+              "Support small-batch parallel execution for independent adjacent tasks when enabled"
+            ]
+          },
+          {
+            "id": "CMP_A3_03",
+            "name": "Writer (Writer Role)",
+            "responsibilities": [
+              "Consume task-scoped context pack for current micro-cycle",
+              "Produce diff-only patchset JSON for current task",
+              "Enforce forbidden paths and scope constraints",
+              "JSON-only output per CNS2"
+            ]
+          },
+          {
+            "id": "CMP_A3_04",
+            "name": "Task Validator",
+            "responsibilities": [
+              "Apply task patchset and run incremental validators (affected tests, lint on changed files)",
+              "Produce incremental test_results.json and quality_reports.json",
+              "Map results to AT# IDs",
+              "Detect secrets"
+            ]
+          },
+          {
+            "id": "CMP_A3_05",
+            "name": "Task Reviewer (Reviewer Role)",
+            "responsibilities": [
+              "Review task patchset and incremental validation results (read-only)",
+              "Produce task review_findings.json with RFC 6901 evidence pointers",
+              "Findings-only constraint enforced"
+            ]
+          },
+          {
+            "id": "CMP_A3_06",
+            "name": "Task Patcher (Patcher Role)",
+            "responsibilities": [
+              "Consume task-level findings and failures",
+              "Produce repair patches within task-scoped op caps",
+              "Orchestrator selects smallest passing repair"
+            ]
+          },
+          {
+            "id": "CMP_A3_07",
+            "name": "Regression Revalidation Gate",
+            "responsibilities": [
+              "After each task micro-cycle, run full-repo validators on cumulative repo state",
+              "Detect regressions introduced by latest task's patchset",
+              "Produce cumulative test_results.json overlay",
+              "Trigger repair cycle or rollback if regression detected"
+            ]
+          },
+          {
+            "id": "CMP_A3_08",
+            "name": "Judge Pod (Judge Role)",
+            "responsibilities": [
+              "Evaluate cumulative state when all tasks complete or at partial freeze boundary",
+              "Produce trace_report.json for completed tasks",
+              "Emit freeze or partial-freeze recommendation",
+              "Assess risk closure for completed scope",
+              "Independent vendor/model routing"
+            ]
+          },
+          {
+            "id": "CMP_A3_09",
+            "name": "Orchestrator Core (Checkpoint-Oriented)",
+            "responsibilities": [
+              "Own sequential task-by-task state machine with per-task checkpoints",
+              "Monitor budget consumption and decide continue vs partial-freeze",
+              "Compile task-scoped context packs with sliding window over recent workspace state",
+              "Enforce tool permissions, retry budgets, iteration limits per task",
+              "Produce stage_handoff at every task boundary enabling deterministic resume",
+              "Manage partial freeze logic: mark incomplete tasks, record resume point",
+              "Trigger HITL/ChangeRequest when task failures exceed thresholds",
+              "Enforce secrets redaction/blocking"
+            ]
+          },
+          {
+            "id": "CMP_A3_10",
+            "name": "Workspace Manager (Append-Checkpoint Model)",
+            "responsibilities": [
+              "Maintain workspace with append-only checkpoint log per task completion",
+              "Maintain workspace_index.json with per-task provenance and completion status",
+              "Support deterministic restore to any task checkpoint",
+              "Separate canonical (completed task outputs) from non-canonical (in-progress notes)",
+              "Enforce compaction policies for non-canonical content at checkpoint boundaries"
+            ]
+          },
+          {
+            "id": "CMP_A3_11",
+            "name": "Freeze / Partial-Freeze Assembler",
+            "responsibilities": [
+              "Assemble full or partial Implementation Freeze Bundle",
+              "For partial freeze: include completion_status in run_manifest indicating completed vs pending tasks",
+              "Include all CNS10 artifacts for completed scope; mark pending artifacts as absent with reason",
+              "Run integrity/reproducibility validators on completed scope",
+              "Produce resume_descriptor artifact enabling deterministic continuation run"
+            ]
+          }
+        ],
+        "interfaces": [
+          {
+            "id": "IF_A3_01",
+            "from": "CMP_A3_09",
+            "to": "CMP_A3_01",
+            "contract": "Orchestrator provides input artifacts or prior stage_handoff for resume; Intake returns validated inputs or resumed state plus work_plan.json with completion status."
+          },
+          {
+            "id": "IF_A3_02",
+            "from": "CMP_A3_09",
+            "to": "CMP_A3_02",
+            "contract": "Orchestrator dispatches next task (or small batch) to Task Cycle Engine with task-scoped budget; receives task completion signal, updated patchsets, and stage_handoff."
+          },
+          {
+            "id": "IF_A3_03",
+            "from": "CMP_A3_02",
+            "to": "CMP_A3_03",
+            "contract": "Task Cycle Engine provides task-scoped context_pack; Writer returns patchset JSON for task."
+          },
+          {
+            "id": "IF_A3_04",
+            "from": "CMP_A3_02",
+            "to": "CMP_A3_04",
+            "contract": "Task patchset applied; Validator returns incremental test_results.json + quality_reports.json."
+          },
+          {
+            "id": "IF_A3_05",
+            "from": "CMP_A3_02",
+            "to": "CMP_A3_05",
+            "contract": "Task context_pack (patchset + validation) provided read-only; Reviewer returns task review_findings.json."
+          },
+          {
+            "id": "IF_A3_06",
+            "from": "CMP_A3_02",
+            "to": "CMP_A3_06",
+            "contract": "Task failures/findings provided; Patcher returns task-scoped repair patches."
+          },
+          {
+            "id": "IF_A3_07",
+            "from": "CMP_A3_09",
+            "to": "CMP_A3_07",
+            "contract": "After each task completion, orchestrator triggers Regression Revalidation with cumulative repo state; gate returns cumulative validation results or regression alert."
+          },
+          {
+            "id": "IF_A3_08",
+            "from": "CMP_A3_09",
+            "to": "CMP_A3_08",
+            "contract": "At completion or partial-freeze boundary, orchestrator provides cumulative context_pack; Judge returns freeze/partial-freeze recommendation + trace_report.json."
+          },
+          {
+            "id": "IF_A3_09",
+            "from": "CMP_A3_09",
+            "to": "CMP_A3_10",
+            "contract": "Orchestrator issues checkpoint/restore/append commands per task; Workspace Manager returns updated workspace_index.json. All mutations logged."
+          },
+          {
+            "id": "IF_A3_10",
+            "from": "CMP_A3_08",
+            "to": "CMP_A3_11",
+            "contract": "Judge recommendation triggers Freeze/Partial-Freeze Assembler; returns full or partial freeze_bundle_manifest with completion_status and resume_descriptor."
+          },
+          {
+            "id": "IF_A3_11",
+            "from": "CMP_A3_07",
+            "to": "CMP_A3_09",
+            "contract": "Regression gate reports regression; orchestrator decides: repair cycle on current task, rollback task patchset, escalate via ChangeRequest, or HITL."
+          }
+        ],
+        "tradeoffs": {
+          "pros": [
+            "Naturally handles long-horizon execution: partial freeze enables progress preservation when budgets are exhausted",
+            "Per-task checkpointing provides fine-grained resume with minimal rework on restart",
+            "Task-scoped context packs stay small and focused, reducing context window pressure",
+            "Regression revalidation after each task catches issues early before they compound",
+            "Simpler than full parallel fan-out while still making incremental progress",
+            "Partial freeze bundles provide value even when full implementation is not achievable in one run"
+          ],
+          "cons": [
+            "Sequential task execution is slower than parallel approaches for independent tasks",
+            "Regression revalidation after every task adds overhead proportional to task count × full validation cost",
+            "Partial freeze introduces complexity in downstream consumers that must handle incomplete bundles",
+            "Resume logic must perfectly reconstruct prior state from checkpoint, adding implementation complexity",
+            "Small-batch parallelism (optional) adds complexity without the full benefit of the fan-out approach",
+            "Cumulative repo state may diverge from expectations if early tasks create unexpected dependencies for later tasks"
+          ]
+        },
+        "risks": [
+          "Regression revalidation cost may become prohibitive for large repos with slow test suites, creating pressure to skip or weaken validation",
+          "Partial freeze bundles may not be accepted by downstream consumers that expect complete implementations, requiring additional contract negotiation",
+          "Resume from checkpoint may encounter environment drift (dependency versions, tool versions) if significant time passes between runs",
+          "Task ordering in work_plan may create implicit dependencies that cause later tasks to fail due to assumptions about earlier task outputs",
+          "Budget estimation for partial-freeze decisions is inherently uncertain; the orchestrator may freeze too early or too late"
+        ]
+      },
+      {
+        "id": "OPT_A4",
+        "summary": "Layered Council with Dedicated Integration Council – Separates the implementation workflow into two sub-councils: an Implementation Sub-Council that produces per-module patchsets via parallel or sequential task execution, and a dedicated Integration Sub-Council that merges, revalidates, reviews, and judges the combined output. Each sub-council has its own orchestrator loop, workspace partition, and freeze gate, with a top-level Council Coordinator managing the handoff. This mirrors the Planning Council's separation-of-concerns pattern at a higher level of abstraction.",
+        "components": [
+          {
+            "id": "CMP_A4_01",
+            "name": "Council Coordinator",
+            "responsibilities": [
+              "Top-level orchestrator managing handoff between Intake, Implementation Sub-Council, and Integration Sub-Council",
+              "Enforce global budgets, HITL triggers, and ChangeRequest escalation",
+              "Produce top-level stage_handoff artifacts at sub-council boundaries",
+              "Compile cross-council context packs for Integration Sub-Council intake",
+              "Own the global run_manifest and event_log"
+            ]
+          },
+          {
+            "id": "CMP_A4_02",
+            "name": "Intake Gate",
+            "responsibilities": [
+              "Validate plan_package_final.json, repo_context.json, workspace_context.json",
+              "Initialize run_manifest, event_log, workspace_index",
+              "Produce work_plan.json with module/component decomposition and dependency graph",
+              "Emit stage_handoff for Intake→Implementation Sub-Council"
+            ]
+          },
+          {
+            "id": "CMP_A4_03",
+            "name": "Implementation Sub-Council Orchestrator",
+            "responsibilities": [
+              "Manage internal staged workflow for code generation per module/task",
+              "Support parallel or sequential task execution within sub-council scope",
+              "Compile task-scoped context packs from sub-council workspace partition",
+              "Enforce per-task tool permissions, retry budgets, iteration limits",
+              "Checkpoint per task and emit sub-council stage_handoffs",
+              "Produce per-module patchsets, test_results, quality_reports, review_findings"
+            ]
+          },
+          {
+            "id": "CMP_A4_04",
+            "name": "Implementation Writer Pool",
+            "responsibilities": [
+              "Produce diff-only patchsets per module/task",
+              "Consume task-scoped context packs",
+              "Enforce forbidden paths and JSON-only output"
+            ]
+          },
+          {
+            "id": "CMP_A4_05",
+            "name": "Implementation Validator Pool",
+            "responsibilities": [
+              "Run per-module validators (build, test, lint scoped to module)",
+              "Produce per-module test_results.json and quality_reports.json",
+              "Map to AT# IDs",
+              "Detect secrets"
+            ]
+          },
+          {
+            "id": "CMP_A4_06",
+            "name": "Implementation Reviewer Pool",
+            "responsibilities": [
+              "Review per-module patchsets and validation results (findings-only)",
+              "Produce per-module review_findings.json with RFC 6901 evidence pointers",
+              "Different vendor/model from writers"
+            ]
+          },
+          {
+            "id": "CMP_A4_07",
+            "name": "Implementation Patcher Pool",
+            "responsibilities": [
+              "Repair per-module failures via RFC 6902 patches or replacement patchsets",
+              "Operate within per-module op caps"
+            ]
+          },
+          {
+            "id": "CMP_A4_08",
+            "name": "Integration Sub-Council Orchestrator",
+            "responsibilities": [
+              "Manage internal staged workflow: Merge→FullValidate→IntegrationReview→IntegrationPatch→Judge",
+              "Consume all per-module outputs from Implementation Sub-Council",
+              "Compile integration-scoped context packs",
+              "Enforce integration-specific tool permissions and budgets",
+              "Checkpoint at each integration stage"
+            ]
+          },
+          {
+            "id": "CMP_A4_09",
+            "name": "Merge Engine",
+            "responsibilities": [
+              "Apply all per-module patchsets in deterministic order to base repo",
+              "Detect merge conflicts and file-level collisions",
+              "Produce merged repo_snapshot.json",
+              "Escalate unresolvable conflicts to Council Coordinator"
+            ]
+          },
+          {
+            "id": "CMP_A4_10",
+            "name": "Integration Validator",
+            "responsibilities": [
+              "Run full-repo validators on merged state",
+              "Produce integrated test_results.json and quality_reports.json",
+              "Verify no regressions from per-module to integrated state"
+            ]
+          },
+          {
+            "id": "CMP_A4_11",
+            "name": "Integration Reviewer (Reviewer Role)",
+            "responsibilities": [
+              "Review integrated patchsets and full validation results (findings-only)",
+              "Focus on cross-module interactions, integration issues, and holistic quality",
+              "Produce integration review_findings.json",
+              "Different vendor/model from implementation reviewers and writers"
+            ]
+          },
+          {
+            "id": "CMP_A4_12",
+            "name": "Integration Patcher",
+            "responsibilities": [
+              "Repair integration-level failures",
+              "Produce integration repair patches within integration op caps"
+            ]
+          },
+          {
+            "id": "CMP_A4_13",
+            "name": "Judge Pod (Judge Role)",
+            "responsibilities": [
+              "Evaluate fully integrated and validated results",
+              "Produce trace_report.json covering all modules and integration",
+              "Emit freeze/no-freeze recommendation",
+              "Evaluate risk closure against all K# entries",
+              "Independent vendor/model from all writers, reviewers, patchers"
+            ]
+          },
+          {
+            "id": "CMP_A4_14",
+            "name": "Workspace Manager (Dual-Partition)",
+            "responsibilities": [
+              "Maintain Implementation Sub-Council workspace partition (per-module namespaces)",
+              "Maintain Integration Sub-Council workspace partition (merged/integrated artifacts)",
+              "Maintain unified workspace_index.json spanning both partitions",
+              "Support checkpoint/restore per sub-council",
+              "Enforce canonical vs non-canonical separation in both partitions"
+            ]
+          },
+          {
+            "id": "CMP_A4_15",
+            "name": "Freeze Assembler",
+            "responsibilities": [
+              "Collect all CNS10-required artifacts from both sub-councils",
+              "Validate freeze bundle completeness",
+              "Produce release_bundle.json and decision_record.json",
+              "Run final integrity, reproducibility, and workspace integrity validators"
+            ]
+          }
+        ],
+        "interfaces": [
+          {
+            "id": "IF_A4_01",
+            "from": "CMP_A4_01",
+            "to": "CMP_A4_02",
+            "contract": "Coordinator provides input artifacts; Intake returns validated inputs, work_plan.json, and stage_handoff."
+          },
+          {
+            "id": "IF_A4_02",
+            "from": "CMP_A4_01",
+            "to": "CMP_A4_03",
+            "contract": "Coordinator dispatches work_plan task groups to Implementation Sub-Council with budgets; receives sub-council completion signal with all per-module artifacts and stage_handoff."
+          },
+          {
+            "id": "IF_A4_03",
+            "from": "CMP_A4_03",
+            "to": "CMP_A4_04",
+            "contract": "Sub-council orchestrator provides task-scoped context_pack; Writer returns patchset JSON."
+          },
+          {
+            "id": "IF_A4_04",
+            "from": "CMP_A4_03",
+            "to": "CMP_A4_05",
+            "contract": "Patchsets applied; Validator returns per-module test_results.json + quality_reports.json."
+          },
+          {
+            "id": "IF_A4_05",
+            "from": "CMP_A4_03",
+            "to": "CMP_A4_06",
+            "contract": "Per-module context provided read-only; Reviewer returns per-module review_findings.json."
+          },
+          {
+            "id": "IF_A4_06",
+            "from": "CMP_A4_03",
+            "to": "CMP_A4_07",
+            "contract": "Per-module failures provided; Patcher returns repair patches within op caps."
+          },
+          {
+            "id": "IF_A4_07",
+            "from": "CMP_A4_01",
+            "to": "CMP_A4_08",
+            "contract": "Coordinator provides all Implementation Sub-Council outputs to Integration Sub-Council with integration budget; receives integration completion signal and stage_handoff."
+          },
+          {
+            "id": "IF_A4_08",
+            "from": "CMP_A4_08",
+            "to": "CMP_A4_09",
+            "contract": "Integration orchestrator provides per-module patchsets with merge order; Merge Engine returns merged repo_snapshot.json or conflict report."
+          },
+          {
+            "id": "IF_A4_09",
+            "from": "CMP_A4_08",
+            "to": "CMP_A4_10",
+            "contract": "Merged repo state provided; Integration Validator returns full-repo test_results.json + quality_reports.json."
+          },
+          {
+            "id": "IF_A4_10",
+            "from": "CMP_A4_08",
+            "to": "CMP_A4_11",
+            "contract": "Integrated context provided read-only; Integration Reviewer returns integration review_findings.json."
+          },
+          {
+            "id": "IF_A4_11",
+            "from": "CMP_A4_08",
+            "to": "CMP_A4_12",
+            "contract": "Integration failures provided; Integration Patcher returns integration repair patches."
+          },
+          {
+            "id": "IF_A4_12",
+            "from": "CMP_A4_01",
+            "to": "CMP_A4_13",
+            "contract": "Coordinator provides full integrated context_pack; Judge returns freeze_recommendation.json + trace_report.json."
+          },
+          {
+            "id": "IF_A4_13",
+            "from": "CMP_A4_01",
+            "to": "CMP_A4_14",
+            "contract": "Coordinator issues workspace commands for both partitions; Workspace Manager returns unified workspace_index.json."
+          },
+          {
+            "id": "IF_A4_14",
+            "from": "CMP_A4_13",
+            "to": "CMP_A4_15",
+            "contract": "Judge freeze recommendation triggers Freeze Assembler; returns freeze_bundle_manifest or failure."
+          }
+        ],
+        "tradeoffs": {
+          "pros": [
+            "Strongest separation of concerns: implementation and integration are independently governed sub-councils with their own budgets, validators, and checkpoints",
+            "Integration Sub-Council provides dedicated review of cross-module interactions by specialized reviewers, catching issues that per-module review misses",
+            "Mirrors CouncilOS council-of-councils pattern, making it conceptually consistent with the broader system",
+            "Each sub-council can evolve independently (e.g., swap Implementation Sub-Council's internal strategy without affecting Integration Sub-Council)",
+            "Dual-partition workspace provides strong isolation between implementation and integration artifacts",
+            "Integration reviewers see the holistic picture, providing a second layer of quality assurance beyond per-module review"
+          ],
+          "cons": [
+            "Most complex architecture: two orchestrator loops plus a coordinator, with three levels of checkpoint/resume logic",
+            "Highest overhead in terms of total model invocations (implementation review + integration review + judge)",
+            "Handoff between sub-councils is a complex interface requiring comprehensive artifact transfer",
+            "Workspace duplication across partitions increases storage requirements",
+            "Debugging and auditing spans three orchestration levels, making trace analysis more complex",
+            "Over-engineered for small implementations where a single-council approach would suffice"
+          ]
+        },
+        "risks": [
+          "Three-level orchestration (coordinator + two sub-council orchestrators) creates significant implementation complexity and potential for subtle state synchronization bugs",
+          "Integration Sub-Council may duplicate significant validation work already done per-module, inflating cost without proportional quality improvement",
+          "Handoff contract between sub-councils may become a bottleneck if artifact volume is large or schemas evolve independently",
+          "The coordinator's global budget allocation between sub-councils is a non-trivial optimization problem; misallocation wastes resources",
+          "Resume across sub-council boundaries requires coordinating checkpoint state at three levels, increasing the risk of inconsistent resume states"
+        ]
+      }
+    ]
+  }
+}

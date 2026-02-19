@@ -1,0 +1,95 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B01B_anchor_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T20:56:32.381679Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B01B_v2"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B01B_v2",
+    "findings": [
+      {
+        "id": "TG-001",
+        "severity": "medium",
+        "summary": "R1 requires accepting plan_package_final.json plus its associated structured handoff bundle as canonical planning input, but the architecture/interface contracts are not consistent about the handoff bundle (some contracts list only plan_package_final.json + repo_context.json + workspace_context.json). This could weaken traceability of required upstream handoff materials at intake.",
+        "evidence": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "requirements_canonical",
+            "json_pointer": "/requirements/0",
+            "note": "R1 text explicitly includes the associated structured handoff bundle",
+            "quote": "The Implementation Council subsystem SHALL accept exactly one frozen plan_package_final.json (plus its associated structured handoff bundle)..."
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "architecture_canonical",
+            "json_pointer": "/architecture/options/0/interfaces/0/contract",
+            "note": "IF1 input contract omits the structured handoff bundle",
+            "quote": "Provide plan_package_final.json + repo_context.json + workspace_context.json; receive intake_result.json..."
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "architecture_canonical",
+            "json_pointer": "/architecture/chosen/high_level_dataflow",
+            "note": "Chosen O1 high-level dataflow omits the structured handoff bundle",
+            "quote": "plan_package_final.json + repo_context.json + workspace_context.json → [C3 Intake Gate...]"
+          }
+        ],
+        "routing_target": "requirements_alignment"
+      },
+      {
+        "id": "TG-002",
+        "severity": "high",
+        "summary": "R3 says workspace_context.json MUST be required before any workspace-writing stage begins, but the Intake stage tool policy allows workspace_write (non-canonical) even though Intake is also the stage that validates/collects workspace_context.json. The plan does not explicitly state that workspace_context validation occurs before any allowed Intake workspace_write, creating a potential policy/ordering gap.",
+        "evidence": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "requirements_canonical",
+            "json_pointer": "/requirements/2",
+            "note": "R3 requires workspace_context.json before any workspace-writing stage begins",
+            "quote": "workspace_context.json SHALL be required before any workspace-writing stage begins..."
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "risk_gov_canonical_v1",
+            "artifact_id": "risk_gov_canonical",
+            "json_pointer": "/governance/tool_policy/stage_policies/0/restrictions/0",
+            "note": "Intake restrictions allow workspace_write before the plan explicitly establishes validation ordering",
+            "quote": "{\"network\":\"deny\",\"repo_write\":\"deny\",\"workspace_write\":\"allow_noncanonical_only\",\"artifact_write\":\"allow_noncanonical_only\"...}"
+          }
+        ],
+        "routing_target": "governance_policy"
+      },
+      {
+        "id": "TG-003",
+        "severity": "medium",
+        "summary": "R3/R2 depend on deterministic schema validation enforcement, but the WorkPlanning stage policy is internally inconsistent about workspace writes (allowlisted_tools omits workspace_write while restrictions specify workspace_write behavior). This ambiguity may complicate deterministic enforcement/validation sequencing for context prerequisites.",
+        "evidence": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "risk_gov_canonical_v1",
+            "artifact_id": "risk_gov_canonical",
+            "json_pointer": "/governance/tool_policy/stage_policies/1/allowlisted_tools",
+            "note": "WorkPlanning allowlisted tools do not include workspace_write",
+            "quote": "[\"artifact_read\",\"artifact_write\",\"schema_validate\"]"
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "risk_gov_canonical_v1",
+            "artifact_id": "risk_gov_canonical",
+            "json_pointer": "/governance/tool_policy/stage_policies/1/restrictions/0",
+            "note": "WorkPlanning restrictions specify workspace_write behavior despite not being allowlisted",
+            "quote": "{\"network\":\"deny\",\"repo_write\":\"deny\",\"workspace_write\":\"canonical_versioned_only\",\"artifact_write\":\"canonical_allowed_only_for_declared_types\"...}"
+          }
+        ],
+        "routing_target": "governance_policy"
+      }
+    ]
+  }
+}

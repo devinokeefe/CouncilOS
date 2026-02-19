@@ -1,0 +1,125 @@
+{
+  "artifact_type": "failure_mode_findings",
+  "artifact_id": "failure_modes_B02B_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T21:01:24.294572Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B02B_v2"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B02B_v2",
+    "taxonomy": "CouncilOS Failure-Mode Taxonomy (inputs.taxonomy_categories)",
+    "critical_findings": [
+      {
+        "id": "FM1",
+        "category": "Evidence & traceability compliance (RFC6901 pointers)",
+        "severity": "critical",
+        "finding": "Evidence-pointer objects in decision_log/supplemental evidence appear non-compliant with the declared single evidence standard ({artifact_ref, entity_id|null, json_pointer, note}). Current objects include extra keys (e.g., candidate_id, artifact_id, quote) and omit entity_id, which would cause the evidence linter/validator (R10/AT10) to fail or force validators to accept non-standard evidence (breaking determinism and downstream consumption).",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "closure_target": "All canonical artifacts that contain evidence pointers (decision_record, trace_report, review_findings, stage_handoffs, decision_log if canonical) must use exactly the specified evidence-pointer object shape; remove/relocate any extra metadata or formalize a wrapper schema that still preserves the exact evidence-pointer object in a dedicated field.",
+          "earliest_prevention_stage": "WorkPlanning",
+          "evidence": "/inputs/plan_candidate/plan_package/requirements/9 ; /inputs/plan_candidate/plan_package/acceptance_tests/9 ; /inputs/plan_candidate/plan_package/decision_log/0/evidence_pointers/0 ; /inputs/plan_candidate/plan_package/supplemental_evaluations/0/evidence/0",
+          "validator_update_needed": "Define an explicit schema for any decision_log-like artifact; ensure evidence-pointer fields validate against the exact object contract and reject supersets.",
+          "open_questions": "Clarify whether decision_log and supplemental_evaluations are canonical freeze-bundle artifacts; if non-canonical, ensure they are excluded from the evidence-pointer linter scope."
+        }
+      },
+      {
+        "id": "FM2",
+        "category": "Tool permissioning & sandbox escape/misuse",
+        "severity": "critical",
+        "finding": "Tool policy for the Review stage denies artifact_write/workspace_write, but the architecture/milestones require reviewers to emit findings artifacts (review_findings.json, integration review_findings.json). This creates an operational contradiction that can either block the workflow (no findings can be produced) or incentivize bypass (writing findings in other stages/roles, violating separation and audit controls).",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "closure_target": "Amend tool policy so reviewers can write findings-only artifacts to an allowlisted canonical type/location (and only that), while still denying patches/code/artifact mutation outside findings. Enforce with role-based output-type allowlists (R22/K10 mitigation).",
+          "earliest_prevention_stage": "WorkPlanning",
+          "evidence": "/inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies/6/restrictions/0 ; /inputs/plan_candidate/plan_package/architecture/options/1/components/5/responsibilities/1 ; /inputs/plan_candidate/plan_package/milestones/1/deliverables/2 ; /inputs/plan_candidate/plan_package/milestones/2/deliverables/3"
+        }
+      },
+      {
+        "id": "FM3",
+        "category": "Release safety & provenance/reproducibility",
+        "severity": "critical",
+        "finding": "Parallel-lane completion timing can leak into integration behavior unless deterministic merge ordering is fully specified as a pure function of declared inputs (e.g., lane_id ordering, patchset ids). The plan states “deterministic merge ordering independent of wall-clock completion timing” but does not define the ordering function and conflict-handling normalization, risking non-reproducible integrated states across reruns.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "closure_target": "Specify an explicit deterministic total order for applying lane patchsets (e.g., sort by lane_id, then patchset sequence number, then artifact_ref lexicographic) and define deterministic conflict handling outcomes (escalate vs abort) with recorded inputs/thresholds so reruns produce identical results.",
+          "earliest_prevention_stage": "IntegrateAndValidate",
+          "evidence": "/inputs/plan_candidate/plan_package/architecture/chosen/key_design_decisions/0 ; /inputs/plan_candidate/plan_package/architecture/options/1/components/7/responsibilities/0 ; /inputs/plan_candidate/plan_package/project_capsule/open_questions/8",
+          "open_questions": "Q9 conflict resolution strategy details are blocking for determinism."
+        }
+      },
+      {
+        "id": "FM4",
+        "category": "Audit spine integrity (manifest/event log/artifact immutability)",
+        "severity": "high",
+        "finding": "artifact_ref naming/versioning/identity semantics are unspecified (blocking Q3). Without a canonical artifact_ref scheme (and hashing/provenance rules), evidence pointers may not be resolvable or may be ambiguously resolvable, undermining audit spine integrity and trace validation.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "closure_target": "Define artifact_ref format as a stable, content-addressed and/or version-addressed identifier with collision resistance, immutability semantics, and resolver behavior; update validators to require uniqueness + hash binding in run_manifest/event_log.",
+          "earliest_prevention_stage": "Intake",
+          "evidence": "/inputs/plan_candidate/plan_package/project_capsule/open_questions/2 ; /inputs/plan_candidate/plan_package/requirements/7 ; /inputs/plan_candidate/plan_package/risk_register/1"
+        }
+      },
+      {
+        "id": "FM5",
+        "category": "Patchset safety & deterministic application",
+        "severity": "high",
+        "finding": "Diff format and deterministic patch-application normalization are unresolved (blocking Q7; low-confidence A10). In a parallel-lane architecture, this can produce inconsistent patch applies (whitespace/eol normalization, rename handling, file mode changes), non-deterministic conflict surfaces, and divergent repo_snapshots.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "closure_target": "Choose one patchset diff encoding and specify canonical normalization (line endings, file modes, rename semantics, context lines) plus deterministic apply rules and failure modes; require base_commit in each patchset and verify repo state hash before apply.",
+          "earliest_prevention_stage": "PatchApply",
+          "evidence": "/inputs/plan_candidate/plan_package/project_capsule/open_questions/6 ; /inputs/plan_candidate/plan_package/project_capsule/assumptions/9 ; /inputs/plan_candidate/plan_package/requirements/12 ; /inputs/plan_candidate/plan_package/risk_register/11"
+        }
+      },
+      {
+        "id": "FM6",
+        "category": "Context pack determinism & boundedness",
+        "severity": "high",
+        "finding": "Context-pack bounds/selection/adequacy remain underspecified and low-confidence (A11; blocking Q15). In O2, under-selection can cause incorrect lane implementations and late integration failures; over-selection can exceed model context limits, causing truncation and non-deterministic behavior.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "closure_target": "Define deterministic context-pack selection rules and hard size budgets per role/stage; add a validator that checks required artifact sets are included for each stage/role and that packs are within bounds; define a deterministic summarization/compaction artifact when workspace grows.",
+          "earliest_prevention_stage": "Generate",
+          "evidence": "/inputs/plan_candidate/plan_package/project_capsule/open_questions/14 ; /inputs/plan_candidate/plan_package/project_capsule/assumptions/10 ; /inputs/plan_candidate/plan_package/risk_register/8 ; /inputs/plan_candidate/plan_package/requirements/16"
+        }
+      },
+      {
+        "id": "FM7",
+        "category": "Secrets handling & sensitive data retention",
+        "severity": "high",
+        "finding": "Secrets policy requires “validated before any artifact is persisted,” but the plan mainly specifies checkpoint/boundary scans. With artifact_write allowed in Generate/WorkPlanning and append-only logs, a secret can be durably written before detection unless writes are mediated by a synchronous pre-write scanner/redactor at the storage/workspace gateway.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "closure_target": "Make secrets scanning/redaction a mandatory pre-write gate in the artifact/workspace write path (not only at checkpoints), including event-log append operations; ensure scanner outputs do not echo secrets; define deterministic blocking behavior and remediation steps.",
+          "earliest_prevention_stage": "Generate",
+          "evidence": "/inputs/plan_candidate/plan_package/requirements/19 ; /inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies/2/allowlisted_tools ; /inputs/plan_candidate/plan_package/risk_register/6",
+          "warnings": "If the system cannot guarantee pre-persistence scanning (e.g., third-party log sinks), the design must explicitly accept residual leakage risk or prohibit those sinks."
+        }
+      },
+      {
+        "id": "FM8",
+        "category": "Supply-chain/network dependency control",
+        "severity": "high",
+        "finding": "Network is deny-by-default across stages, but dependency installation/build/test often requires package-manager network access. Blocking Q11 leaves a high likelihood of systematic validation failures or ad-hoc permission expansions (which can be non-deterministic and risky), undermining reproducibility and supply-chain controls.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "closure_target": "Define a deterministic dependency/network policy: offline mirrors or allowlisted registries, lockfile enforcement, caching strategy, and how/when network can be enabled with provenance recorded; incorporate dependency/SBOM validators into quality_reports/release_bundle.",
+          "earliest_prevention_stage": "Validate",
+          "evidence": "/inputs/plan_candidate/plan_package/project_capsule/open_questions/10 ; /inputs/plan_candidate/plan_package/risk_register/14 ; /inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies/4/restrictions/0"
+        }
+      }
+    ],
+    "closure_pass": false
+  }
+}

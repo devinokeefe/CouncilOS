@@ -1,0 +1,121 @@
+{
+  "artifact_type": "failure_mode_findings",
+  "artifact_id": "failure_modes_B01B_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T21:02:06.493631Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B01B_v2"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B01B_v2",
+    "taxonomy": "CouncilOS Implementation Council failure-mode taxonomy",
+    "critical_findings": [
+      {
+        "id": "FM1",
+        "category": "Evidence & traceability compliance (RFC6901 pointers)",
+        "severity": "critical",
+        "finding": "Evidence pointer objects are not consistently using the required canonical structure {artifact_ref, entity_id|null, json_pointer, note}. The decision_log uses evidence_pointers containing extra/nonstandard fields (e.g., candidate_id, artifact_id, quote), which risks validator failure under R10 and breaks the “single evidence standard” contract for downstream consumers.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/decision_log/0/evidence_pointers/0;/inputs/plan_candidate/plan_package/requirements/9",
+          "closure_target": "Standardize evidence pointer schema across all artifacts and enforce via a single linter/validator; migrate decision_log evidence_pointers to the R10 structure (or add a separate, explicitly non-evidence field for ancillary metadata).",
+          "earliest_prevention_stage": "WorkPlanning"
+        }
+      },
+      {
+        "id": "FM2",
+        "category": "Tool permissioning & sandbox escape/misuse",
+        "severity": "critical",
+        "finding": "Tool policy for the Review stage denies artifact_write and workspace_write, but the workflow requires reviewers to emit review_findings.json as a deliverable. This creates an unresolvable contract conflict (review can’t produce its required canonical output under its own permissions), risking deadlock or ad-hoc bypasses that undermine determinism and governance.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies/6/restrictions/0/artifact_write;/inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies/6/restrictions/0/workspace_write;/inputs/plan_candidate/plan_package/milestones/4/deliverables/0/text",
+          "closure_target": "Revise Review stage policy to allow writing a tightly-scoped findings artifact only (e.g., artifact_write=allow_canonical_review_findings_only), while still enforcing “findings-only” (no patch/code outputs). Add an explicit validator that reviewer outputs are limited to review_findings.json schema.",
+          "earliest_prevention_stage": "WorkPlanning"
+        }
+      },
+      {
+        "id": "FM3",
+        "category": "Checkpoint/resume correctness (stage handoffs)",
+        "severity": "critical",
+        "finding": "Stage model is internally inconsistent: requirements define minimum stages (Intake → Generate → Validate → Review → Judge → Freeze), but tool policy includes PatchApply and IntegrateAndValidate stages, and milestones include a Patch & Repair phase. This mismatch risks missing required stage_handoffs, incorrect gate enforcement, or orchestrator rejecting the plan as not matching the declared state machine.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/requirements/3/text;/inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies;/inputs/plan_candidate/plan_package/milestones/5/name",
+          "closure_target": "Make a single canonical stage taxonomy and apply it consistently across: R4/AT4, tool_policy.stage_policies, milestones, and architecture dataflow. Ensure every transition has an enforced stage_handoff requirement and acceptance test coverage.",
+          "earliest_prevention_stage": "WorkPlanning"
+        }
+      },
+      {
+        "id": "FM4",
+        "category": "Audit spine integrity (manifest/event log/artifact immutability)",
+        "severity": "high",
+        "finding": "Secrets handling requirement (“never store secrets in logs/workspace; block persistence”) can conflict with append-only event_log immutability if secrets are detected after a write. Without an explicit “pre-write scan gate” design, the system can end up either violating append-only constraints (by mutating/deleting log entries) or violating secrets policy (by persisting secrets even briefly).",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/requirements/7/text;/inputs/plan_candidate/plan_package/requirements/19/text;/inputs/plan_candidate/plan_package/risk_register/6/mitigation/text",
+          "closure_target": "Define an explicit write-path: (1) pre-persistence secrets_scan must pass for any artifact/event payload; (2) if post-facto detection occurs, append a redaction/incident record and rotate/rekey pointers while preserving immutability (no deletion). Add validator tests ensuring no secret-bearing bytes are ever committed to canonical storage.",
+          "earliest_prevention_stage": "Intake"
+        }
+      },
+      {
+        "id": "FM5",
+        "category": "Evidence & traceability compliance (RFC6901 pointers)",
+        "severity": "high",
+        "finding": "artifact_ref format is explicitly an unresolved blocking open question, yet it is foundational to evidence pointers and workspace_index entries. Without a fixed artifact_ref naming/versioning/addressing spec, evidence pointers cannot be guaranteed to resolve deterministically, undermining trace completeness gates and downstream reproducibility.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/project_capsule/open_questions/2;/inputs/plan_candidate/plan_package/requirements/9/text;/inputs/plan_candidate/plan_package/requirements/17/text",
+          "closure_target": "Resolve Q3 by defining artifact_ref as a typed, versioned identifier with validation rules (e.g., regex + immutable content-hash binding) and include it in schemas for evidence pointers and workspace_index. Add a pointer-resolution validator that fails on any non-resolving reference.",
+          "earliest_prevention_stage": "Intake"
+        }
+      },
+      {
+        "id": "FM6",
+        "category": "Validation determinism (build/test/lint/typecheck) & flaky policy",
+        "severity": "high",
+        "finding": "Deterministic retry/quarantine policy is required (R23) but key parameters remain unspecified (e.g., retry budgets/backoff and how retries are recorded), and are marked as blocking open questions. This risks non-deterministic gate outcomes, inconsistent freeze decisions, or budget-exhaustion deadlocks.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/project_capsule/open_questions/9;/inputs/plan_candidate/plan_package/requirements/22/text",
+          "closure_target": "Specify exact deterministic retry algorithm (max retries per validator per stage, fixed backoff schedule, flaky classification thresholds, quarantine rules) and a strict event_log schema for recording each attempt. Add acceptance tests that assert identical outcomes across replays given the same inputs.",
+          "earliest_prevention_stage": "WorkPlanning"
+        }
+      },
+      {
+        "id": "FM7",
+        "category": "Context pack determinism & boundedness",
+        "severity": "high",
+        "finding": "Big-bang, fully sequential flow with high HITL strictness increases the likelihood of context-pack growth and wall-clock delays, but the plan does not define concrete bounded context-pack selection/eviction rules beyond high-level intent. This can cause either overflow (truncation-driven errors) or under-selection (missing critical artifacts), especially late in the pipeline.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/architecture/chosen/key_design_decisions/5;/inputs/plan_candidate/plan_package/risk_register/8/mitigation/text;/inputs/plan_candidate/plan_package/synthesis_warnings/1",
+          "closure_target": "Define and version explicit context-pack policies: required-minimum artifact sets per stage/role, deterministic prioritization order, byte/token ceilings, and a validator that checks both completeness and bounds. Consider adding a “context adequacy” gate before Judge.",
+          "earliest_prevention_stage": "WorkPlanning"
+        }
+      },
+      {
+        "id": "FM8",
+        "category": "Patchset safety & deterministic application",
+        "severity": "medium",
+        "finding": "The “smallest passing repair” deterministic selection rule may systematically choose a patch that passes current gates but increases long-term risk (maintainability/security posture) because selection criteria are limited to ops/bytes/first-generated. The plan acknowledges this risk (K21) but does not define a deterministic secondary scoring/gating mechanism.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/requirements/14/text;/inputs/plan_candidate/plan_package/risk_register/20",
+          "closure_target": "Add deterministic secondary evaluators (e.g., lint/style deltas, complexity delta thresholds, security scan delta) as additional pass/fail validators or deterministic scoring inputs, with an explicit HITL trigger when candidates differ materially on these signals.",
+          "earliest_prevention_stage": "PatchApply"
+        }
+      }
+    ],
+    "closure_pass": false
+  }
+}

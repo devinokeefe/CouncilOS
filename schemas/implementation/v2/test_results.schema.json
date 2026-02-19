@@ -1,0 +1,95 @@
+{
+  "$defs": {
+    "TestOutcome": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "pass",
+            "fail",
+            "skipped"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "duration_sec": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Duration Sec"
+        },
+        "maps_to_acceptance_tests": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Maps To Acceptance Tests",
+          "type": "array"
+        },
+        "attempts": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Attempts"
+        },
+        "quarantined": {
+          "default": false,
+          "title": "Quarantined",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "name",
+        "status"
+      ],
+      "title": "TestOutcome",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "results": {
+      "items": {
+        "$ref": "#/$defs/TestOutcome"
+      },
+      "title": "Results",
+      "type": "array"
+    },
+    "overall_status": {
+      "enum": [
+        "PASS",
+        "FAIL"
+      ],
+      "title": "Overall Status",
+      "type": "string"
+    },
+    "quarantined_validators": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Quarantined Validators",
+      "type": "array"
+    }
+  },
+  "required": [
+    "results",
+    "overall_status"
+  ],
+  "title": "TestResultsPayload",
+  "type": "object"
+}

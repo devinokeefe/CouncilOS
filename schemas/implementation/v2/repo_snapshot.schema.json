@@ -1,0 +1,35 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "base_commit": {
+      "title": "Base Commit",
+      "type": "string"
+    },
+    "head_commit": {
+      "title": "Head Commit",
+      "type": "string"
+    },
+    "changed_files": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Changed Files",
+      "type": "array"
+    },
+    "file_hashes": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "File Hashes",
+      "type": "object"
+    }
+  },
+  "required": [
+    "base_commit",
+    "head_commit",
+    "changed_files",
+    "file_hashes"
+  ],
+  "title": "RepoSnapshotPayload",
+  "type": "object"
+}

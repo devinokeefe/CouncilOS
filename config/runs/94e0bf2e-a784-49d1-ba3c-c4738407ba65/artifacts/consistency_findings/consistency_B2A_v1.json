@@ -1,0 +1,455 @@
+{
+  "artifact_type": "consistency_findings",
+  "artifact_id": "consistency_B2A_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T18:59:40.665131Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B2A_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2A_v1",
+    "findings": [
+      {
+        "id": "CS1",
+        "severity": "critical",
+        "summary": "Governance tool policy for the Review stage forbids any artifact writes, but the plan requires reviewers to emit review_findings.json (and architecture defines reviewer pods that produce findings artifacts). This makes Review output impossible under the stated permissions.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/6/restrictions/0/artifact_write",
+            "note": null,
+            "quote": "deny"
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/6/restrictions/0/notes",
+            "note": null,
+            "quote": "Reviewers are findings-only; they do not emit canonical writing/patch artifacts."
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/requirements/6/text",
+            "note": null,
+            "quote": "At Freeze, the system SHALL produce an Implementation Freeze Bundle that includes... review_findings.json..."
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/architecture/options/0/components/6/responsibilities/1",
+            "note": null,
+            "quote": "Produce review_findings.json with RFC 6901 evidence pointers into versioned artifacts (CNS6)."
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/acceptance_tests/21/pass_criteria",
+            "note": null,
+            "quote": "Writer/reviewer/judge roles are distinct, reviewers emit findings-only artifacts..."
+          }
+        ],
+        "routing_target": "risk_gov_canonical"
+      },
+      {
+        "id": "CS2",
+        "severity": "high",
+        "summary": "Stage taxonomy is internally inconsistent across requirements, architecture, and governance/tool policy (extra/renamed stages like WorkPlanning/Plan/PatchApply/IntegrateAndValidate/Integration). This creates ambiguity about required stage ordering and what constitutes a stage transition/checkpoint.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/requirements/3/text",
+            "note": null,
+            "quote": "...stages: Intake → Generate → Validate → Review → Judge → Freeze..."
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/architecture/options/0/components/0/responsibilities/0",
+            "note": null,
+            "quote": "Enforce strict stage ordering... (Intake → Plan → Generate → Validate → Review → Patch → Judge → Freeze)."
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/1/stage",
+            "note": null,
+            "quote": "WorkPlanning"
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/3/stage",
+            "note": null,
+            "quote": "PatchApply"
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/5/stage",
+            "note": null,
+            "quote": "IntegrateAndValidate"
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/architecture/chosen/high_level_dataflow",
+            "note": null,
+            "quote": "...fans out lane task slices... When lanes complete, Integration Merge Engine... Integration Validator..."
+          }
+        ],
+        "routing_target": "architecture_canonical"
+      },
+      {
+        "id": "CS3",
+        "severity": "medium",
+        "summary": "Open question Q8 asks how to deterministically select the “smallest passing repair”, but requirement R15 already specifies deterministic tie-breakers. Either Q8 should be marked resolved/narrowed, or R15 should be adjusted if incomplete.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/open_questions/7/text",
+            "note": null,
+            "quote": "How should the orchestrator deterministically select the “smallest passing repair” when multiple candidate patch artifacts are available..."
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/requirements/14/text",
+            "note": null,
+            "quote": "...select the smallest passing repair using deterministic rules, with tie-breakers... (1) fewest operations, (2) fewest bytes changed, (3) first-generated..."
+          }
+        ],
+        "routing_target": "clarification_plan"
+      },
+      {
+        "id": "CS4",
+        "severity": "medium",
+        "summary": "Intake tool policy restrictions reference allowing workspace/artifact writes (non-canonical only), but the Intake stage allowlisted_tools omits workspace_write and artifact_write, creating an internal inconsistency in the policy definition.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/0/allowlisted_tools",
+            "note": null,
+            "quote": "[\"artifact_read\",\"schema_validate\"]"
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/0/restrictions/0/workspace_write",
+            "note": null,
+            "quote": "allow_noncanonical_only"
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/0/restrictions/0/artifact_write",
+            "note": null,
+            "quote": "allow_noncanonical_only"
+          }
+        ],
+        "routing_target": "risk_gov_canonical"
+      },
+      {
+        "id": "CS5",
+        "severity": "medium",
+        "summary": "Requirement R5 mandates a stage_handoff at every stage transition, but because the plan defines multiple, conflicting stage models (linear stages, per-lane sub-stages, and integration stages), “every stage transition” is ambiguous (global vs per-lane vs integration). This is a semantic mismatch that affects acceptance testing and validator logic.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/requirements/4/text",
+            "note": null,
+            "quote": "At every checkpoint boundary (i.e., each stage transition), the system SHALL emit a stage_handoff JSON artifact..."
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/architecture/options/1/components/2/responsibilities/1",
+            "note": null,
+            "quote": "Emit per-lane stage_handoffs and completion signals."
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/acceptance_tests/3/pass_criteria",
+            "note": null,
+            "quote": "Stage sequence includes at minimum Intake → Generate → Validate → Review → Judge → Freeze and a checkpoint boundary is recorded at every stage transition."
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/5/stage",
+            "note": null,
+            "quote": "IntegrateAndValidate"
+          }
+        ],
+        "routing_target": "requirements_canonical"
+      },
+      {
+        "id": "CS001",
+        "severity": "high",
+        "summary": "Component C22 (Workspace Manager) responsibilities conflict with C11 (Global Orchestrator) authority over checkpoint/restore operations. C11 is defined as owning checkpoint/resume logic (CNS1), but C22 is assigned checkpoint/restore operations, creating ambiguous ownership.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "C11",
+            "json_pointer": "/architecture/options/1/components/0/responsibilities/2",
+            "note": "C11 claims checkpoint/resume authority",
+            "quote": "Compile deterministic context packs for each stage from workspace_index and declared selection rules (CNS8)."
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "C22",
+            "json_pointer": "/architecture/options/1/components/11/responsibilities/2",
+            "note": "C22 also claims checkpoint/restore operations",
+            "quote": "Support per-lane and global checkpoint/restore; enforce retention/compaction policies."
+          }
+        ],
+        "routing_target": "architecture_team"
+      },
+      {
+        "id": "CS002",
+        "severity": "critical",
+        "summary": "Requirement R13 mandates diff-only patchsets as the sole code change mechanism, but Risk K12 mitigation references 'automated conflict resolution' without specifying how this is achieved using only diff-only patchsets, creating a potential bypass of the repair model constraint.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "R13",
+            "json_pointer": "/requirements/12/text",
+            "note": "R13 mandates diff-only patchsets exclusively",
+            "quote": "All code changes produced by the Implementation Council SHALL be emitted exclusively as diff-only patchset JSON artifacts with a deterministic apply order"
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "K12",
+            "json_pointer": "/risk_register/11/mitigation/text",
+            "note": "K12 mentions automated conflict resolution without specifying mechanism",
+            "quote": "strict limits for automated conflict resolution; if limits exceeded, block and trigger reroute"
+          }
+        ],
+        "routing_target": "architecture_team"
+      },
+      {
+        "id": "CS003",
+        "severity": "high",
+        "summary": "Acceptance test AT22 validates writer/reviewer/judge separation but does not validate the multi-vendor routing constraint also specified in R22, leaving part of the requirement untested.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "R22",
+            "json_pointer": "/requirements/21/text",
+            "note": "R22 requires both role separation AND multi-vendor routing",
+            "quote": "orchestrator routing SHALL enforce default multi-vendor separation across writer/reviewer/judge roles"
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "AT22",
+            "json_pointer": "/acceptance_tests/21/pass_criteria",
+            "note": "AT22 only validates role separation, not multi-vendor routing enforcement",
+            "quote": "Writer/reviewer/judge roles are distinct, reviewers emit findings-only artifacts, judges emit decisions; multi-vendor routing is recorded"
+          }
+        ],
+        "routing_target": "qa_team"
+      },
+      {
+        "id": "CS004",
+        "severity": "medium",
+        "summary": "Milestone M2 exit criteria reference 'R25 guidance' but R25 is marked as SHOULD priority, creating ambiguity about whether AT# mapping is mandatory for Phase 2 completion.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "M2",
+            "json_pointer": "/milestones/1/exit_criteria/3",
+            "note": "M2 references R25 as guidance",
+            "quote": "Per-lane validation emits structured results with deterministic AT# mappings where applicable (R25 guidance; validate trace pipeline readiness)."
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "R25",
+            "json_pointer": "/requirements/24/priority",
+            "note": "R25 is SHOULD priority, not MUST",
+            "quote": null
+          }
+        ],
+        "routing_target": "milestone_owner"
+      },
+      {
+        "id": "CS005",
+        "severity": "high",
+        "summary": "Decision DEC3 selects namespaced workspace partitions but Warning W2 flags that this depends on unconfirmed workspace backend capabilities (A6, Q2). If backend cannot support partitions, the chosen O2 architecture may be infeasible, but no fallback architecture decision is documented.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "DEC3",
+            "json_pointer": "/decision_log/2/choice",
+            "note": "DEC3 commits to namespaced partitions",
+            "quote": "Use namespaced workspace partitions with a unified workspace_index and an explicit integration partition (C22)."
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "W2",
+            "json_pointer": "/synthesis_warnings/1/summary",
+            "note": "W2 flags partitioning may be infeasible",
+            "quote": "If backend cannot enforce namespace isolation, append-only semantics, and indexing/retention policies, O2 partitioning may be infeasible"
+          }
+        ],
+        "routing_target": "decision_authority"
+      },
+      {
+        "id": "CS006",
+        "severity": "medium",
+        "summary": "Component C18 (Integration Merge Engine) is assigned responsibility to 'detect merge conflicts/collisions' but the tool_policy stage definitions do not include an 'IntegrateMerge' stage with explicit tool permissions for C18, only 'IntegrateAndValidate' which bundles merge and validation.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "C18",
+            "json_pointer": "/architecture/options/1/components/7/responsibilities",
+            "note": "C18 has merge responsibilities",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "tool_policy",
+            "json_pointer": "/governance/tool_policy/stage_policies",
+            "note": "No dedicated IntegrateMerge stage in tool policy",
+            "quote": null
+          }
+        ],
+        "routing_target": "governance_team"
+      },
+      {
+        "id": "CS007",
+        "severity": "critical",
+        "summary": "Requirement R16 mandates ChangeRequest artifact and escalation for semantic deviations, but the ChangeRequest schema is not defined in the plan package, and no acceptance test validates the ChangeRequest artifact structure or approval workflow.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "R16",
+            "json_pointer": "/requirements/15/text",
+            "note": "R16 requires ChangeRequest artifact",
+            "quote": "any required semantic deviation SHALL be expressed as a ChangeRequest artifact and SHALL require a decision record and policy-triggered escalation"
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "AT16",
+            "json_pointer": "/acceptance_tests/15/pass_criteria",
+            "note": "AT16 validates escalation but not ChangeRequest schema",
+            "quote": "ChangeRequest with decision record and escalation approval is required before applying the deviation"
+          }
+        ],
+        "routing_target": "schema_team"
+      },
+      {
+        "id": "CS008",
+        "severity": "high",
+        "summary": "Risk K10 mitigation requires 'output-type allowlists by role' but the tool_policy stage definitions use 'restrictions' fields that do not explicitly enumerate allowed output artifact types per role, only deny/allow for write categories.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "K10",
+            "json_pointer": "/risk_register/9/mitigation/text",
+            "note": "K10 mitigation requires output-type allowlists",
+            "quote": "Orchestrator-enforced output-type allowlists by role (reviewers findings-only; judges decisions-only; writers/patchers write/patch only)"
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "tool_policy",
+            "json_pointer": "/governance/tool_policy/stage_policies/5/restrictions",
+            "note": "Review stage restrictions do not specify allowed output artifact types",
+            "quote": null
+          }
+        ],
+        "routing_target": "governance_team"
+      },
+      {
+        "id": "CS009",
+        "severity": "medium",
+        "summary": "Milestone M3 depends on M2, and M2 exit criteria include 'role separation and reviewers findings-only constraints enforced', but M3 does not explicitly re-validate these constraints in the integration context, risking regression when integration reviewer/patcher roles (C20/C21) are introduced.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "M2",
+            "json_pointer": "/milestones/1/exit_criteria/2",
+            "note": "M2 validates role separation",
+            "quote": "Role separation and reviewers findings-only constraints enforced with recorded multi-vendor routing (R22/AT22)."
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "M3",
+            "json_pointer": "/milestones/2/exit_criteria",
+            "note": "M3 does not re-validate role separation for integration roles",
+            "quote": null
+          }
+        ],
+        "routing_target": "milestone_owner"
+      },
+      {
+        "id": "CS010",
+        "severity": "high",
+        "summary": "Requirement R7 mandates 'context_packs/' directory in freeze bundle, but Requirement R17 and Component C11/C22 describe context packs as deterministically compiled per-stage invocation artifacts, not as freeze-time deliverables. The relationship between runtime context packs and freeze bundle context_packs/ is undefined.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "R7",
+            "json_pointer": "/requirements/6/text",
+            "note": "R7 requires context_packs/ in freeze bundle",
+            "quote": "context_packs/, and stage_handoffs/."
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "R17",
+            "json_pointer": "/requirements/16/text",
+            "note": "R17 describes context packs as runtime stage artifacts",
+            "quote": "orchestrator SHALL build bounded context packs deterministically for each stage/role invocation using explicit selection rules"
+          }
+        ],
+        "routing_target": "schema_team"
+      }
+    ]
+  }
+}

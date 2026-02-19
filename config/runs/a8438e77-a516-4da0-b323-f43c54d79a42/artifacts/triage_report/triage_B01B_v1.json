@@ -1,0 +1,413 @@
+{
+  "artifact_type": "triage_report",
+  "artifact_id": "triage_B01B_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T19:04:07.864111Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B01B_v1",
+    "validator_B01B_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B01B_v1",
+    "critic_id": "MERGED",
+    "verdict": "reject",
+    "defects": [
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Intake tool policy forbids canonical artifact writes and omits artifact_write/workspace_write, but Intake Gate is required to initialize immutable run_manifest, append-only event_log, and emit stage_handoff. This blocks R8/R5 and makes Intake internally inconsistent.",
+        "evidence": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/0/allowlisted_tools",
+            "note": "Intake allowlisted_tools missing artifact_write/workspace_write",
+            "quote": "[\"artifact_read\",\"schema_validate\"]"
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/0/restrictions/0/artifact_write",
+            "note": "Intake restricts artifact writes to non-canonical only",
+            "quote": "allow_noncanonical_only"
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/architecture/options/0/components/2/responsibilities",
+            "note": "C3 Intake Gate requires run_manifest/event_log init and stage_handoff emission",
+            "quote": null
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/requirements/7/text",
+            "note": "R8 requires implementation_run_manifest and implementation_event_log behavior",
+            "quote": "The audit spine"
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/architecture/chosen/rationale",
+            "note": "Chosen rationale claims K12 eliminated entirely",
+            "quote": "The lack of parallelism eliminates merge-conflict risks (K12) entirely and simplifies workspace partitioning."
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/risk_register/11",
+            "note": "K12 retained with high severity",
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency_findings:CS5+CS003+CS004",
+        "patch": [
+          {
+            "patch_type": "json_patch",
+            "target_artifact_ref": "plan_candidate_B01B_v1",
+            "ops": [
+              {
+                "op": "replace",
+                "path": "/plan_package/architecture/chosen/rationale",
+                "value": "O1 is selected because the branch mandate (B01) requires maximum conservatism, determinism, and auditability. The sequential staged pipeline provides the simplest reproducible execution model with unambiguous stage boundaries, a linear audit trail, and straightforward checkpoint/resume semantics. The lack of parallelism reduces merge/integration conflict risk relative to parallel designs, and simplifies workspace partitioning. High HITL strictness compensates for the single-lane bottleneck by ensuring manual scrutiny at every escalation point, which aligns with the extremely risk-averse posture."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Intake stage tool policy forbids canonical artifact writes but Intake Gate must initialize run_manifest, event_log, and emit stage_handoff per R8/R5/C3.",
+        "evidence": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/0/allowlisted_tools",
+            "note": "Intake allowlisted_tools excludes artifact_write",
+            "quote": null
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/0/restrictions/0/artifact_write",
+            "note": "Intake artifact_write restricted to allow_noncanonical_only",
+            "quote": "allow_noncanonical_only"
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/architecture/options/0/components/2/responsibilities",
+            "note": "C3 Intake Gate must initialize run_manifest and event_log",
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency_check",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Review stage tool policy denies artifact_write/workspace_write but Reviewer Pod must emit review_findings.json per R22/C7/AT22.",
+        "evidence": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/6/restrictions/0/artifact_write",
+            "note": "Review stage artifact_write set to deny",
+            "quote": "deny"
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/architecture/options/0/components/6/responsibilities/1",
+            "note": "C7 Reviewer must produce review_findings.json",
+            "quote": "Produce review_findings.json with RFC 6901 evidence pointers into versioned artifacts (CNS6)."
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/acceptance_tests/21/procedure",
+            "note": "AT22 expects reviewers to emit findings artifacts",
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency_check",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Patch stage exists in workflow state machine (M3-D1) but tool_policy omits Patch stage policy entirely, leaving Patcher Pod permissions undefined per R19.",
+        "evidence": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/milestones/2/deliverables/0/text",
+            "note": "M3-D1 includes Patch stage in state machine",
+            "quote": "Intake → WorkPlanning → Generate → PatchApply → Validate → Review → Patch → Judge → Freeze"
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies",
+            "note": "Stage policies list does not include Patch stage entry",
+            "quote": null
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/architecture/options/0/components/7",
+            "note": "C8 Patcher Pod exists and requires permissions",
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency_check",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "IntegrateAndValidate stage policy defined in tool_policy but O1 architecture is sequential without integration stage, creating governance/architecture mismatch.",
+        "evidence": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/5/stage",
+            "note": "IntegrateAndValidate stage policy present",
+            "quote": "IntegrateAndValidate"
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/architecture/chosen/rationale",
+            "note": "O1 rationale claims no parallelism/integration needed",
+            "quote": "The lack of parallelism eliminates merge-conflict risks (K12) entirely"
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/milestones/2/deliverables/0/text",
+            "note": "M3-D1 stage sequence omits IntegrateAndValidate",
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency_check",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Stage naming inconsistent: 'Plan' vs 'WorkPlanning' used interchangeably across components, milestones, and interfaces, breaking deterministic stage validation.",
+        "evidence": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/architecture/options/0/components/0/responsibilities/0",
+            "note": "C1 uses 'Plan' in stage ordering",
+            "quote": "Intake → Plan → Generate"
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/milestones/0/deliverables/3/text",
+            "note": "M1 uses 'WorkPlanning' boundary",
+            "quote": "Intake→WorkPlanning boundary"
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/milestones/2/deliverables/0/text",
+            "note": "M3-D1 uses 'WorkPlanning' in state machine",
+            "quote": "Intake → WorkPlanning → Generate"
+          }
+        ],
+        "violated_gate": "consistency_check",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "R4 minimum stage list omits WorkPlanning, PatchApply, and Patch stages that are present in M3-D1 and architecture, creating inconsistency in minimum requirements.",
+        "evidence": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/requirements/3/text",
+            "note": "R4 lists incomplete minimum stages",
+            "quote": "at minimum the stages: Intake → Generate → Validate → Review → Judge → Freeze"
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/milestones/2/deliverables/0/text",
+            "note": "M3-D1 full stage sequence includes omitted stages",
+            "quote": "Intake → WorkPlanning → Generate → PatchApply → Validate → Review → Patch → Judge → Freeze"
+          }
+        ],
+        "violated_gate": "consistency_check",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "K12 mitigation describes merge conflict handling procedures but DEC1 and O1 rationale claim K12 eliminated entirely, creating semantic inconsistency.",
+        "evidence": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/governance/decision_log/0/rationale",
+            "note": "DEC1 claims K12 eliminated entirely",
+            "quote": "It eliminates merge-conflict risks (K12) entirely"
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/risk_register/11/mitigation/text",
+            "note": "K12 mitigation describes conflict handling",
+            "quote": "deterministic apply/merge ordering rules"
+          }
+        ],
+        "violated_gate": "consistency_check",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "40 deliverable IDs violate DL# naming convention per id_integrity validator.",
+        "evidence": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/milestones",
+            "note": "Validator reports 40 deliverable ID violations",
+            "quote": null
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "14 architecture option risks reference missing risk IDs in risk_register per id_integrity validator.",
+        "evidence": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/architecture/options",
+            "note": "Validator reports 14 missing risk references",
+            "quote": null
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "9 key_design_decisions lack decision_log references per id_integrity validator.",
+        "evidence": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/architecture/chosen/key_design_decisions",
+            "note": "Validator reports 9 missing decision references",
+            "quote": null
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "9 evidence pointers in decision_log reference missing artifact IDs per id_integrity validator.",
+        "evidence": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/decision_log",
+            "note": "Validator reports 9 missing artifact ID references",
+            "quote": null
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "note",
+        "severity": "low",
+        "summary": "AT4 pass criteria lists incomplete stage sequence missing WorkPlanning, PatchApply, and Patch stages.",
+        "evidence": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/acceptance_tests/3/pass_criteria",
+            "note": "AT4 lists minimum stages without full sequence",
+            "quote": "Stage sequence includes at minimum Intake → Generate → Validate → Review → Judge → Freeze"
+          }
+        ],
+        "violated_gate": "consistency_check",
+        "patch": [
+          {}
+        ]
+      }
+    ],
+    "reroute_target": "synthesis_repair",
+    "reroute_reason": "Hard-gate id_integrity failures (deliverable ID convention enforcement, option-risk linkage expectations, and decision_log evidence-pointer artifact-id integrity) appear systemic and likely require coordinated schema/convention changes across milestones/architecture/governance. These fixes may entail broad ID/canonical-array edits beyond safe local patch-hint scope; reroute to synthesis/repair owner is recommended."
+  }
+}

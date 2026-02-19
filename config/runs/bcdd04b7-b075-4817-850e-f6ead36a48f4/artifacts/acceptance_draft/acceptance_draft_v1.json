@@ -1,0 +1,221 @@
+{
+  "artifact_type": "acceptance_draft",
+  "artifact_id": "acceptance_draft_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T18:54:24.537830Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "requirements_canonical_v1"
+  ],
+  "payload": {
+    "acceptance_tests": [
+      {
+        "id": "AT_U_1",
+        "maps_to_requirements": [
+          "R1"
+        ],
+        "type": "system",
+        "procedure": "Attempt to initiate an Implementation Council run with inputs: (a) a valid plan_package_final.json plus its structured handoff bundle; (b) a chat log reference as the only planning input; (c) an unapproved non-canonical artifact as planning input. Record orchestrator accept/reject results.",
+        "pass_criteria": "Run (a) is accepted; runs (b) and (c) are rejected with structured errors indicating non-canonical planning inputs are not authoritative."
+      },
+      {
+        "id": "AT_U_2",
+        "maps_to_requirements": [
+          "R2"
+        ],
+        "type": "system",
+        "procedure": "Start a run without repo_context.json; then start a run with repo_context.json that violates schema; then start a run with schema-valid repo_context.json containing required fields (repo root, build entrypoints, validator entrypoints, protected/forbidden paths, branch/commit metadata).",
+        "pass_criteria": "Runs missing or schema-invalid repo_context.json are rejected before any code-generation stage; run with schema-valid repo_context.json is accepted and records validation success."
+      },
+      {
+        "id": "AT_U_3",
+        "maps_to_requirements": [
+          "R3"
+        ],
+        "type": "system",
+        "procedure": "Start a run without workspace_context.json; then start a run with schema-invalid workspace_context.json; then start a run with schema-valid workspace_context.json containing required fields (workspace root, namespace/layout rules, canonical/non-canonical partition rules, retention/compaction, access-control).",
+        "pass_criteria": "Runs missing or schema-invalid workspace_context.json are rejected before any workspace-writing stage; run with schema-valid workspace_context.json is accepted and records validation success."
+      },
+      {
+        "id": "AT_U_4",
+        "maps_to_requirements": [
+          "R4"
+        ],
+        "type": "system",
+        "procedure": "Execute a run through stages and extract the recorded stage sequence and checkpoint boundaries from implementation_event_log.jsonl and stage_handoff artifacts.",
+        "pass_criteria": "Stage sequence includes at minimum Intake → Generate → Validate → Review → Judge → Freeze and a checkpoint boundary is recorded at every stage transition."
+      },
+      {
+        "id": "AT_U_5",
+        "maps_to_requirements": [
+          "R5"
+        ],
+        "type": "system",
+        "procedure": "Complete a run with all stage transitions and list stage_handoff artifacts present in stage_handoffs/ and workspace_index.json.",
+        "pass_criteria": "A stage_handoff artifact exists for every stage transition; validator fails the run if any required stage_handoff is missing."
+      },
+      {
+        "id": "AT_U_6",
+        "maps_to_requirements": [
+          "R6"
+        ],
+        "type": "system",
+        "procedure": "Inspect each stage_handoff artifact for required fields: objectives, completed work references, pending blockers, next actions, and evidence pointers into work_plan, patchsets, and validation outputs.",
+        "pass_criteria": "Every stage_handoff contains all required fields and valid evidence pointers to the referenced canonical artifacts."
+      },
+      {
+        "id": "AT_U_7",
+        "maps_to_requirements": [
+          "R7"
+        ],
+        "type": "system",
+        "procedure": "At Freeze, enumerate artifacts in the Implementation Freeze Bundle and verify presence of all required items and directories.",
+        "pass_criteria": "Freeze bundle contains all minimum artifacts: implementation_run_manifest.json, implementation_event_log.jsonl, work_plan.json, patchsets (diff-embedded JSON), repo_snapshot.json, test_results.json, quality_reports.json, trace_report.json, review_findings.json, release_bundle.json, decision_record.json, workspace_index.json, context_packs/, stage_handoffs/."
+      },
+      {
+        "id": "AT_U_8",
+        "maps_to_requirements": [
+          "R8"
+        ],
+        "type": "system",
+        "procedure": "Attempt to modify implementation_run_manifest.json after creation and attempt to delete/overwrite past entries in implementation_event_log.jsonl; check artifact store versions and event_log ordering.",
+        "pass_criteria": "Run manifest is immutable (modification rejected or versioned as new artifact without altering original); event log is append-only with monotonic ordering; artifacts are versioned and checkpoints recorded at each stage boundary."
+      },
+      {
+        "id": "AT_U_9",
+        "maps_to_requirements": [
+          "R9"
+        ],
+        "type": "system",
+        "procedure": "Submit a canonical stage artifact containing prose/markdown; submit another artifact that violates schema; then submit a valid JSON-only artifact conforming to schema.",
+        "pass_criteria": "Artifacts with prose/markdown or schema violations are rejected; JSON-only, schema-valid artifact is accepted."
+      },
+      {
+        "id": "AT_U_10",
+        "maps_to_requirements": [
+          "R10"
+        ],
+        "type": "system",
+        "procedure": "Scan all evidence pointers in canonical artifacts (trace_report, review_findings, decision_record, quality_reports, stage_handoffs) for structure and JSON Pointer format.",
+        "pass_criteria": "All evidence pointers use {artifact_ref, entity_id|null, json_pointer, note} with json_pointer starting with '/' and resolving to a valid path; any non-compliant evidence format causes validation failure."
+      },
+      {
+        "id": "AT_U_11",
+        "maps_to_requirements": [
+          "R11"
+        ],
+        "type": "system",
+        "procedure": "Attempt to cite repository/code/workspace state using a non-JSON artifact reference (e.g., file path or code pointer) in a canonical artifact; then cite the same state using a versioned JSON artifact with RFC 6901 pointer.",
+        "pass_criteria": "Non-JSON artifact evidence is rejected; JSON artifact citation via RFC 6901 pointer is accepted."
+      },
+      {
+        "id": "AT_U_12",
+        "maps_to_requirements": [
+          "R12"
+        ],
+        "type": "system",
+        "procedure": "Attempt to modify a canonical JSON artifact via direct replacement (non-patch); then perform the same modification using an RFC 6902 JSON Patch array.",
+        "pass_criteria": "Direct modification is rejected; JSON Patch modification is accepted and recorded."
+      },
+      {
+        "id": "AT_U_13",
+        "maps_to_requirements": [
+          "R13"
+        ],
+        "type": "system",
+        "procedure": "Submit code changes as (a) a diff-only patchset JSON artifact with deterministic apply order; (b) a non-diff mechanism (e.g., direct file writes or prose instructions).",
+        "pass_criteria": "Diff-only patchset artifact is accepted and applied under bounded apply/validate loops; non-diff mechanism is rejected."
+      },
+      {
+        "id": "AT_U_14",
+        "maps_to_requirements": [
+          "R14"
+        ],
+        "type": "system",
+        "procedure": "Create a patchset that attempts to modify a forbidden/protected path from repo_context.json and exceeds operation caps; apply patchset under orchestrator enforcement.",
+        "pass_criteria": "Patchset writes to forbidden/protected paths are blocked; operation caps are enforced and exceedance causes failure; blocks are recorded in the event log."
+      },
+      {
+        "id": "AT_U_15",
+        "maps_to_requirements": [
+          "R15"
+        ],
+        "type": "system",
+        "procedure": "Provide multiple candidate repair patchsets that all pass validation and differ in operation count and bytes changed; record orchestrator selection.",
+        "pass_criteria": "Orchestrator selects the smallest passing repair using tie-breakers: fewest operations, then fewest bytes changed, then first-generated."
+      },
+      {
+        "id": "AT_U_16",
+        "maps_to_requirements": [
+          "R16"
+        ],
+        "type": "system",
+        "procedure": "Propose a semantic change to an upstream R#/AT#/O#/K# entity without ChangeRequest; then propose the same change with a ChangeRequest and decision record plus required escalation.",
+        "pass_criteria": "Unapproved semantic change is rejected; ChangeRequest with decision record and escalation approval is required before applying the deviation."
+      },
+      {
+        "id": "AT_U_17",
+        "maps_to_requirements": [
+          "R17"
+        ],
+        "type": "system",
+        "procedure": "Inspect workspace for canonical vs non-canonical partitions and context pack assembly rules; verify canonical immutability after freeze and append-only behavior for non-canonical notes; verify context packs are deterministically built with evidence pointers.",
+        "pass_criteria": "Workspace enforces canonical vs non-canonical partition rules; canonical artifacts are immutable after freeze; non-canonical notes are append-only with provenance; context packs are deterministically built and cite contents via evidence pointers."
+      },
+      {
+        "id": "AT_U_18",
+        "maps_to_requirements": [
+          "R18"
+        ],
+        "type": "system",
+        "procedure": "Enumerate all workspace items and compare against workspace_index.json entries; verify context pack sizes against configured bounds.",
+        "pass_criteria": "All workspace items are indexed with type, version, provenance; any unindexed item or out-of-bounds context pack causes validation failure."
+      },
+      {
+        "id": "AT_U_19",
+        "maps_to_requirements": [
+          "R19"
+        ],
+        "type": "system",
+        "procedure": "Attempt tool invocations outside the declared permission matrix (filesystem write outside scope, network access, disallowed command execution) and within allowed permissions; inspect implementation_event_log.jsonl for records.",
+        "pass_criteria": "Unauthorized tool invocations are blocked and recorded; authorized invocations succeed; enforcement is deterministic and logged."
+      },
+      {
+        "id": "AT_U_20",
+        "maps_to_requirements": [
+          "R20"
+        ],
+        "type": "system",
+        "procedure": "Inject known secret patterns into a candidate artifact and event log content, then run secrets detection/redaction guardrails prior to persistence.",
+        "pass_criteria": "Secrets are detected and blocked/redacted; validators fail the run if any secret is persisted in event logs, workspace artifacts, or canonical artifacts."
+      },
+      {
+        "id": "AT_U_21",
+        "maps_to_requirements": [
+          "R21"
+        ],
+        "type": "system",
+        "procedure": "Attempt to Freeze when one or more closure gates (build/test/lint/typecheck, artifact integrity, workspace integrity, risk closure, reproducibility, trace completeness) are failing; then attempt Freeze when all gates pass.",
+        "pass_criteria": "Freeze is denied when any gate fails; Freeze is permitted only when all required deterministic gates pass."
+      },
+      {
+        "id": "AT_U_22",
+        "maps_to_requirements": [
+          "R22"
+        ],
+        "type": "system",
+        "procedure": "Run a workflow with distinct writer, reviewer, and judge roles using multi-vendor routing; inspect produced artifacts to ensure reviewers emit findings-only and do not produce patches; verify orchestrator routing records.",
+        "pass_criteria": "Writer/reviewer/judge roles are distinct, reviewers emit findings-only artifacts, judges emit decisions; multi-vendor routing is recorded and no role performs more than one function within the same stage."
+      },
+      {
+        "id": "AT_U_23",
+        "maps_to_requirements": [
+          "R23"
+        ],
+        "type": "system",
+        "procedure": "Induce flaky validator failures that require retries; observe retry counts and outcomes in implementation_event_log.jsonl; exceed retry budget and check escalation path.",
+        "pass_criteria": "Retries follow deterministic policy with bounded budgets and are recorded; when budget is exceeded, failures are quarantined and escalated via the defined deterministic path with records in event log and decision artifacts."
+      }
+    ]
+  }
+}

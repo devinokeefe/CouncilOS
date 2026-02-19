@@ -1,0 +1,142 @@
+{
+  "$defs": {
+    "LeaseHolder": {
+      "additionalProperties": false,
+      "properties": {
+        "run_id": {
+          "title": "Run Id",
+          "type": "string"
+        },
+        "lane_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lane Id"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Task Id"
+        }
+      },
+      "required": [
+        "run_id"
+      ],
+      "title": "LeaseHolder",
+      "type": "object"
+    },
+    "SurfaceLeaseEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "lease_id": {
+          "title": "Lease Id",
+          "type": "string"
+        },
+        "surface": {
+          "$ref": "#/$defs/SurfaceRef"
+        },
+        "holder": {
+          "$ref": "#/$defs/LeaseHolder"
+        },
+        "ttl_seconds": {
+          "title": "Ttl Seconds",
+          "type": "integer"
+        },
+        "granted_at": {
+          "format": "date-time",
+          "title": "Granted At",
+          "type": "string"
+        },
+        "expires_at": {
+          "format": "date-time",
+          "title": "Expires At",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "granted",
+            "denied",
+            "renewed",
+            "released",
+            "preempted",
+            "expired"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "conflicts": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Conflicts",
+          "type": "array"
+        },
+        "decision_reason_code": {
+          "title": "Decision Reason Code",
+          "type": "string"
+        }
+      },
+      "required": [
+        "lease_id",
+        "surface",
+        "holder",
+        "ttl_seconds",
+        "granted_at",
+        "expires_at",
+        "status",
+        "decision_reason_code"
+      ],
+      "title": "SurfaceLeaseEvent",
+      "type": "object"
+    },
+    "SurfaceRef": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "title": "Type",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "id"
+      ],
+      "title": "SurfaceRef",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "default": "2.1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "events": {
+      "items": {
+        "$ref": "#/$defs/SurfaceLeaseEvent"
+      },
+      "title": "Events",
+      "type": "array"
+    }
+  },
+  "title": "SurfaceLeasesPayload",
+  "type": "object"
+}

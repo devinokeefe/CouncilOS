@@ -1,0 +1,164 @@
+{
+  "artifact_type": "requirements_draft",
+  "artifact_id": "requirements_draft_2_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T18:44:01.115232Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "capsule_canonical_v1"
+  ],
+  "payload": {
+    "requirements": [
+      {
+        "id": "REQ_B_1",
+        "priority": "MUST",
+        "text": "The Implementation Council SHALL accept exactly one frozen plan_package_final.json (plus its associated handoff bundle) as its sole input contract; no other upstream artifact or chat log may serve as a source of truth for plan semantics.",
+        "rationale": "Enforces CNS4 (single source of truth) and CNS5 (no silent scope expansion). Evidence: /constraints/3, /constraints/4, /goals/1."
+      },
+      {
+        "id": "REQ_B_2",
+        "priority": "MUST",
+        "text": "The Implementation Council SHALL require a repo_context.json artifact (typed, versioned JSON schema) that declares repository root, language/build-system entrypoints, validator commands, protected/forbidden path patterns, and branch/commit metadata before any code-generation stage begins.",
+        "rationale": "Supports goals/1, goals/5, constraints CNS6/CNS7, and assumption A3/A4. Evidence: /goals/1, /constraints/5, /assumptions/2."
+      },
+      {
+        "id": "REQ_B_3",
+        "priority": "MUST",
+        "text": "The Implementation Council SHALL require a workspace_context.json artifact (typed, versioned JSON schema) that declares workspace root, namespace layout, canonical vs non-canonical partition rules, retention/compaction policies, and access-control declarations before any workspace-writing stage begins.",
+        "rationale": "Supports goal 3 (workspace outputs) and CNS8 (workspace governance). Evidence: /goals/3, /constraints/7."
+      },
+      {
+        "id": "REQ_B_4",
+        "priority": "MUST",
+        "text": "The Implementation Council workflow SHALL be defined as a deterministic staged state machine with at minimum the stages: Intake → Generate → Validate → Review → Judge → Freeze, with explicit checkpoint boundaries emitting a stage_handoff artifact at every stage transition.",
+        "rationale": "Directly addresses goal 0 (staged workflow) and success metric on stage_handoff coverage. Evidence: /goals/0, /success_metrics/1."
+      },
+      {
+        "id": "REQ_B_5",
+        "priority": "MUST",
+        "text": "The orchestrator SHALL be the sole authority for routing, budgets, iteration limits, termination, checkpoint/resume, tool permissions, selection logic, and validator enforcement; no agent role may override or bypass orchestrator decisions.",
+        "rationale": "CNS1 is non-negotiable separation of powers. Evidence: /constraints/0."
+      },
+      {
+        "id": "REQ_B_6",
+        "priority": "MUST",
+        "text": "All LLM agent outputs in canonical stages SHALL be JSON-only artifacts conforming to per-stage schemas; prose, markdown, or unstructured text in canonical outputs SHALL be rejected by the orchestrator.",
+        "rationale": "Enforces CNS2 (JSON-only canonical outputs). Evidence: /constraints/1."
+      },
+      {
+        "id": "REQ_B_7",
+        "priority": "MUST",
+        "text": "The Implementation Freeze Bundle SHALL include, at minimum, the following typed/versioned JSON artifacts: implementation_run_manifest.json, implementation_event_log.jsonl, work_plan.json, patchset artifacts (diff-embedded JSON), repo_snapshot.json, test_results.json, quality_reports.json, trace_report.json, review_findings.json, release_bundle.json, decision_record.json, workspace_index.json, context_packs/, and stage_handoffs/.",
+        "rationale": "Directly specified by CNS10. Evidence: /constraints/9."
+      },
+      {
+        "id": "REQ_B_8",
+        "priority": "MUST",
+        "text": "The run_manifest SHALL be immutable once created, the event_log SHALL be append-only, and the artifact store SHALL version every artifact; the orchestrator SHALL checkpoint state at every stage boundary.",
+        "rationale": "Enforces CNS3 (durable audit spine). Evidence: /constraints/2."
+      },
+      {
+        "id": "REQ_B_9",
+        "priority": "MUST",
+        "text": "All evidence pointers, traceability links, findings references, and decision citations SHALL use a single standard: RFC 6901 JSON Pointer objects with the structure {artifact_ref, entity_id|null, json_pointer, note} referencing versioned JSON artifacts; no alternative evidence formats are permitted.",
+        "rationale": "Enforces CNS6 and goal 4 (single evidence standard). Evidence: /constraints/5, /goals/4."
+      },
+      {
+        "id": "REQ_B_10",
+        "priority": "MUST",
+        "text": "Repository and workspace state that must be cited via evidence pointers SHALL be represented as JSON artifacts (e.g., repo_snapshot.json, workspace_index.json) so that RFC 6901 JSON Pointer addressing is applicable.",
+        "rationale": "Supports CNS6 requirement that repo/code/workspace state be representable as JSON for citation. Evidence: /constraints/5, /goals/4."
+      },
+      {
+        "id": "REQ_B_11",
+        "priority": "MUST",
+        "text": "Repairs to canonical JSON artifacts SHALL be expressed exclusively as RFC 6902 JSON Patch arrays; code changes SHALL be expressed exclusively as diff-only patchset artifacts with deterministic application order and bounded apply/validate loops enforced by the orchestrator.",
+        "rationale": "Enforces CNS7 (repair model constraints). Evidence: /constraints/6."
+      },
+      {
+        "id": "REQ_B_12",
+        "priority": "MUST",
+        "text": "The orchestrator SHALL enforce forbidden-path rules and operation caps during patchset application: no patchset may write to paths declared forbidden/protected in repo_context.json, and total patch operations per repair cycle SHALL be capped by orchestrator policy.",
+        "rationale": "Supports CNS7 and CNS13 (no silent scope expansion in code). Evidence: /constraints/6, /constraints/12."
+      },
+      {
+        "id": "REQ_B_13",
+        "priority": "MUST",
+        "text": "When multiple candidate repair patches pass validation, the orchestrator SHALL select the smallest passing repair using deterministic rules (fewest operations, then fewest bytes changed, then first-generated tiebreaker).",
+        "rationale": "Addresses goal 5 (orchestrator selects smallest passing repair). Evidence: /goals/5, /open_questions/7."
+      },
+      {
+        "id": "REQ_B_14",
+        "priority": "MUST",
+        "text": "The shared workspace SHALL be tool-accessible, versioned, auditable, and checkpointed; it SHALL enforce a strict canonical vs non-canonical partition where canonical artifacts are immutable after freeze and non-canonical notes are append-only with provenance metadata.",
+        "rationale": "Enforces CNS8 (workspace governance). Evidence: /constraints/7, /goals/3."
+      },
+      {
+        "id": "REQ_B_15",
+        "priority": "MUST",
+        "text": "The orchestrator SHALL build bounded context packs deterministically for each stage/role invocation using explicit selection rules; context packs SHALL be cited via evidence pointers and SHALL not exceed declared size bounds.",
+        "rationale": "Supports goal 3 (deterministic context packs) and success metric on bounded packs. Evidence: /goals/3, /success_metrics/4."
+      },
+      {
+        "id": "REQ_B_16",
+        "priority": "MUST",
+        "text": "Stage handoff artifacts SHALL capture resumable state including: stage objectives, completed work references, pending blockers, next actions, and evidence pointers into canonical artifacts (work plan, patchsets, validation outputs) sufficient for a cold-start resume.",
+        "rationale": "Supports goal 3 (explicit stage handoff for pause/resume). Evidence: /goals/3, /glossary/4."
+      },
+      {
+        "id": "REQ_B_17",
+        "priority": "MUST",
+        "text": "Secrets SHALL never be stored in event logs, workspace artifacts, or any canonical/non-canonical artifact; the orchestrator SHALL enforce detection, redaction, and blocking guardrails validated before any artifact is persisted.",
+        "rationale": "Enforces CNS9 (secrets policy). Evidence: /constraints/8."
+      },
+      {
+        "id": "REQ_B_18",
+        "priority": "MUST",
+        "text": "A freeze decision SHALL be permitted only when all deterministic closure gates pass: build/test/lint/typecheck (as applicable per repo_context), artifact integrity, workspace integrity, risk closure, reproducibility, and trace completeness validators.",
+        "rationale": "Enforces goal 7 (closure gates) and success metric on freeze gating. Evidence: /goals/7, /success_metrics/6."
+      },
+      {
+        "id": "REQ_B_19",
+        "priority": "MUST",
+        "text": "The Implementation Council SHALL enforce writer/reviewer/judge separation: writers produce code/artifact outputs, reviewers produce findings-only artifacts (no code/patches), and judges produce accept/reject decisions; no single role may perform more than one of these functions within the same stage.",
+        "rationale": "Enforces CNS12 (role separation). Evidence: /constraints/11."
+      },
+      {
+        "id": "REQ_B_20",
+        "priority": "MUST",
+        "text": "Multi-vendor model diversity SHALL be required: writer, reviewer, and judge roles SHALL be routed to different model vendors/families by default orchestrator policy to preserve independence.",
+        "rationale": "Enforces CNS12 (multi-vendor diversity). Evidence: /constraints/11, /goals/10."
+      },
+      {
+        "id": "REQ_B_21",
+        "priority": "MUST",
+        "text": "The Implementation Council SHALL NOT modify the semantics of upstream R#/AT#/O#/K# entities from the input plan; any required semantic deviation SHALL produce a ChangeRequest artifact with a decision record, and the orchestrator SHALL enforce policy-triggered escalation (HITL or reroute upstream) before the deviation is applied.",
+        "rationale": "Enforces CNS5 (no silent scope expansion). Evidence: /constraints/4, /goals/9."
+      },
+      {
+        "id": "REQ_B_22",
+        "priority": "MUST",
+        "text": "The orchestrator SHALL define and enforce a tool permission matrix per stage specifying allowed/denied capabilities (filesystem read/write scopes, command execution, network access, package managers, artifact IO); tool invocations outside the declared permissions SHALL be blocked.",
+        "rationale": "Supports goal 6 (tool permission matrix). Evidence: /goals/6, /assumptions/7."
+      },
+      {
+        "id": "REQ_B_23",
+        "priority": "MUST",
+        "text": "Flaky and nondeterministic failures SHALL be handled by deterministic retry rules with bounded budgets (max retries per validator per stage); failures exceeding retry budgets SHALL be quarantined and escalated via a deterministic path (patch → reroute → HITL → ChangeRequest); all retries and outcomes SHALL be recorded in the event log.",
+        "rationale": "Addresses goal 8 (flaky failure policy). Evidence: /goals/8, /open_questions/9."
+      },
+      {
+        "id": "REQ_B_24",
+        "priority": "SHOULD",
+        "text": "Large code refactors SHALL be decomposed into bounded patchsets with staged validation and deterministic integration order; the orchestrator SHALL reject any single patchset exceeding a configurable operation/size cap and require decomposition.",
+        "rationale": "Supports CNS13 (prevent rewrite-the-repo loops). Evidence: /constraints/12."
+      },
+      {
+        "id": "REQ_B_25",
+        "priority": "SHOULD",
+        "text": "Test execution results in test_results.json SHALL include deterministic mapping from each test outcome back to the corresponding AT# acceptance test ID from the planning artifacts, enabling automated trace completeness validation.",
+        "rationale": "Supports assumption A9 and success metric on AT# trace coverage. Evidence: /assumptions/8, /success_metrics/9."
+      }
+    ]
+  }
+}

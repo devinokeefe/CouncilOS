@@ -1,0 +1,184 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B2B_v3",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T21:21:27.084552Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "trace_graph_B2B_primary_v3",
+    "trace_graph_B2B_anchor_v3"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2B_v3",
+    "findings": [
+      {
+        "id": "TG-101",
+        "severity": "low",
+        "summary": "Traceability Gap: Sample check links Requirement R1/AT1 to Milestone M2, but the Candidate Plan only verifies AT1 in Milestone M1.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/milestones/0/exit_criteria/0",
+            "note": "Milestone M1 includes AT1 in exit criteria as expected.",
+            "quote": "AT1 passes: valid plan accepted; chat logs and non-canonical inputs rejected."
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/milestones/1/exit_criteria",
+            "note": "Milestone M2 exit criteria lists parallel execution tests (AT12, AT13, etc.) but does not verify the foundational intake test AT1.",
+            "quote": null
+          }
+        ],
+        "routing_target": "trace_graph_correction"
+      },
+      {
+        "id": "TG-102",
+        "severity": "low",
+        "summary": "Traceability Gap: Sample check links Requirement R2/AT2 to Milestone M2, but the Candidate Plan only verifies AT2 in Milestone M1.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/milestones/0/exit_criteria/1",
+            "note": "Milestone M1 includes AT2 in exit criteria as expected.",
+            "quote": "AT2 passes: missing/invalid repo_context.json rejected; valid repo_context.json accepted."
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/milestones/1/exit_criteria",
+            "note": "Milestone M2 relies on repo_context but does not include the AT2 schema validation gate in its exit criteria.",
+            "quote": null
+          }
+        ],
+        "routing_target": "trace_graph_correction"
+      },
+      {
+        "id": "TG-103",
+        "severity": "low",
+        "summary": "Traceability Gap: Sample check links Requirement R3/AT3 to Milestone M2, but the Candidate Plan only verifies AT3 in Milestone M1.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/milestones/0/exit_criteria/2",
+            "note": "Milestone M1 includes AT3 in exit criteria as expected.",
+            "quote": "AT3 passes: missing/invalid workspace_context.json rejected; valid workspace_context.json accepted."
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/milestones/1/exit_criteria",
+            "note": "Milestone M2 utilizes the workspace but does not include the foundational AT3 context validation gate in its exit criteria.",
+            "quote": null
+          }
+        ],
+        "routing_target": "trace_graph_correction"
+      },
+      {
+        "id": "TG1",
+        "severity": "medium",
+        "summary": "R2 requires a typed, versioned repo_context.json schema, but AT2 (mapped to R2) only checks presence + schema validity + a minimum field list; it does not explicitly verify any versioning requirement (e.g., schema_version field or versioned schema identifier), weakening traceability of the 'versioned' constraint.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/requirements/1",
+            "note": "R2 text includes 'typed, versioned repo_context.json schema' but does not specify a concrete versioning mechanism here",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/acceptance_tests/1",
+            "note": "AT2 procedure/pass_criteria validate schema presence/validity and required fields, but do not mention version checks",
+            "quote": null
+          }
+        ],
+        "routing_target": "acceptance"
+      },
+      {
+        "id": "TG2",
+        "severity": "medium",
+        "summary": "R3 requires a typed, versioned workspace_context.json schema, but AT3 (mapped to R3) similarly validates presence + schema validity + minimum fields without explicitly verifying any versioning requirement, leaving the 'versioned' aspect untested in the acceptance mapping.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/requirements/2",
+            "note": "R3 text includes 'typed, versioned workspace_context.json schema' but does not specify a concrete versioning mechanism here",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/acceptance_tests/2",
+            "note": "AT3 procedure/pass_criteria validate schema presence/validity and required fields, but do not mention version checks",
+            "quote": null
+          }
+        ],
+        "routing_target": "acceptance"
+      },
+      {
+        "id": "TG3",
+        "severity": "medium",
+        "summary": "R1 states the system must accept exactly one frozen plan_package_final.json as the sole canonical planning input, but AT1 focuses on rejecting chat logs and unapproved non-canonical artifacts; it does not explicitly test the 'exactly one' constraint (e.g., providing multiple plan_package_final.json inputs or multiple competing planning artifacts) or the edge case of multiple candidate planning sources.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/requirements/0",
+            "note": "R1 includes the 'accept exactly one frozen plan_package_final.json' constraint",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/acceptance_tests/0",
+            "note": "AT1 tests acceptance of valid plan + rejection of chat logs / unapproved artifacts, but does not test multiple plan inputs",
+            "quote": null
+          }
+        ],
+        "routing_target": "acceptance"
+      },
+      {
+        "id": "TG4",
+        "severity": "low",
+        "summary": "R2/R3 require defining typed, versioned schemas for repo_context.json and workspace_context.json, but within this candidate artifact the schemas themselves are only described in prose (minimum fields) rather than being specified as concrete schema artifacts or explicit schema identifiers/version fields, creating ambiguity about where and how the 'typed/versioned schema' is concretely defined.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/requirements/1",
+            "note": "R2 asserts a typed/versioned repo_context.json schema is required but no concrete schema artifact is included in this candidate payload",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/requirements/2",
+            "note": "R3 asserts a typed/versioned workspace_context.json schema is required but no concrete schema artifact is included in this candidate payload",
+            "quote": null
+          }
+        ],
+        "routing_target": "requirements"
+      }
+    ]
+  }
+}

@@ -1,0 +1,129 @@
+{
+  "artifact_type": "failure_mode_findings",
+  "artifact_id": "failure_modes_B2B_v3",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T21:25:47.349039Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B2B_v3"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2B_v3",
+    "taxonomy": "CouncilOS Implementation Council failure-mode taxonomy (provided categories)",
+    "critical_findings": [
+      {
+        "id": "FM1",
+        "category": "Secrets handling & sensitive data retention",
+        "severity": "critical",
+        "finding": "Secrets policy enforcement is not consistently positioned \"before persistence\": tool_policy includes secrets_scan only in Validate / IntegrateAndValidate / Freeze, while WorkPlanning and Generate allow canonical artifact/workspace writes. This creates a plausible path where secrets introduced into patchsets, work_plan, stage_handoffs, or other artifacts could be persisted before any secrets_scan guardrail runs, violating CNS9/R20.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies/1/allowlisted_tools ; /inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies/2/allowlisted_tools ; /inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies/4/allowlisted_tools ; /inputs/plan_candidate/plan_package/requirements/19",
+          "closure_target": "Before Phase 1 (M1) exit criteria involving secrets (AT20); enforce pre-persist scanning/redaction on every artifact/workspace write path, not only Validate.",
+          "earliest_prevention_stage": "Intake",
+          "required_changes": "Update tool_policy so every stage that can write artifacts/workspace (including WorkPlanning, Generate, PatchApply, Judge where artifact_write is allowed) either (a) includes secrets_scan as an allowlisted tool and runs it deterministically before any persistence, or (b) routes all writes through a Workspace/Artifact Gateway that performs mandatory secrets scanning/redaction/blocking inline. Add a validator that fails if any write occurred without a preceding secrets_scan event in the audit log for the same artifact_ref."
+        }
+      },
+      {
+        "id": "FM2",
+        "category": "Tool permissioning & sandbox escape/misuse",
+        "severity": "high",
+        "finding": "Review stage policy forbids artifact_write and workspace_write, but reviewers are expected to emit review_findings artifacts (findings-only). This internal contradiction can deadlock the workflow (no way to produce required findings artifacts) or prompt ad-hoc policy exceptions that undermine determinism and governance.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies/6/restrictions/0 ; /inputs/plan_candidate/plan_package/requirements/21",
+          "closure_target": "Before Phase 1 (M1) since Review exists in the minimum stage machine and is used in milestone exit criteria.",
+          "earliest_prevention_stage": "Review",
+          "required_changes": "Amend Review stage restrictions to allow artifact_write for a tightly-scoped findings artifact type only (e.g., review_findings.json / integration_review_findings.json), still prohibiting patches and any other writes. Add a validator enforcing reviewers can only write findings-schema artifacts and nothing else."
+        }
+      },
+      {
+        "id": "FM3",
+        "category": "Evidence & traceability compliance (RFC6901 pointers)",
+        "severity": "high",
+        "finding": "Traceability depends on RFC6901 evidence pointers resolving via artifact_ref, but the canonical definition/format of artifact_ref is explicitly an open blocking question. Without a fixed artifact_ref naming/versioning/addressing scheme, evidence pointers can be syntactically valid yet non-resolvable across stores/runs, breaking AT10 and downstream auditability.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/project_capsule/open_questions/2 ; /inputs/plan_candidate/plan_package/requirements/9 ; /inputs/plan_candidate/plan_package/acceptance_tests/9",
+          "closure_target": "Resolve before implementing evidence validators / before Phase 3 (integration-wide evidence) and ideally before Phase 1 gates relying on evidence correctness.",
+          "earliest_prevention_stage": "Intake",
+          "required_changes": "Define artifact_ref canonical format (including versioning, immutability addressing, and content-hash behavior) and add an orchestrator-owned resolver contract. Update evidence-pointer validator to require resolution success (not just JSON Pointer syntax) against the artifact store using the canonical artifact_ref scheme."
+        }
+      },
+      {
+        "id": "FM4",
+        "category": "Patchset safety & deterministic application",
+        "severity": "high",
+        "finding": "Diff/patchset format and normalization rules are blocking/unspecified (Q7). In O2 this can yield nondeterministic patch application, inconsistent conflict detection, and merge outcomes that differ by toolchain/version (especially across lanes/integration), undermining reproducibility and K12 mitigation.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/project_capsule/open_questions/6 ; /inputs/plan_candidate/plan_package/requirements/12 ; /inputs/plan_candidate/plan_package/risk_register/11",
+          "closure_target": "Resolve before Phase 2 (parallel lanes) since lane patchsets must be deterministically applyable and scope-checkable.",
+          "earliest_prevention_stage": "Generate",
+          "required_changes": "Specify a single patchset encoding (e.g., normalized unified diff with explicit file modes/newlines, or structured file-op diffs) plus canonical normalization (EOL, encoding, rename handling, binary handling). Add PatchApply validator that rejects non-normalized diffs and records deterministic apply metadata (base_commit, apply_tool_version, normalized_hash)."
+        }
+      },
+      {
+        "id": "FM5",
+        "category": "Supply-chain/network dependency control",
+        "severity": "high",
+        "finding": "Tool policy defaults network=deny across all stages, but dependency installation / build steps for many real repos require network or access to mirrors. Without an explicit offline mirror/allowlist strategy (Q11), teams may introduce ad-hoc permission expansions, undermining reproducibility (different fetched artifacts) and security posture.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies/4/restrictions/0/network ; /inputs/plan_candidate/plan_package/project_capsule/open_questions/10 ; /inputs/plan_candidate/plan_package/risk_register/14",
+          "closure_target": "Resolve before any execution on non-trivial repos (Phase 1), since validators/build may be impossible under current policy.",
+          "earliest_prevention_stage": "Validate",
+          "required_changes": "Define deterministic dependency policy: offline mode baseline, or allowlisted domains + pinned lockfiles + artifact caching/mirror requirements. Encode in repo_context.json and tool_policy; add validator that fails if dependency graph changes are unpinned or if network access occurs outside explicitly allowlisted, logged operations."
+        }
+      },
+      {
+        "id": "FM6",
+        "category": "Validation determinism (build/test/lint/typecheck) & flaky policy",
+        "severity": "high",
+        "finding": "Flaky/nondeterministic failure handling is referenced but still blocking in details (retry budgets/backoff recording), and tool_policy uses a placeholder-like restriction value (\"deterministic_budgets_only\") without specifying concrete deterministic rules. This can lead to inconsistent gate outcomes, budget exhaustion behavior, and non-reproducible pass/fail decisions.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/project_capsule/open_questions/9 ; /inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies/4/restrictions/0/retry_policy ; /inputs/plan_candidate/plan_package/requirements/22",
+          "closure_target": "Define before Phase 4 (AT23) but practically needed before Phase 1 if any validator is flaky.",
+          "earliest_prevention_stage": "Validate",
+          "required_changes": "Specify deterministic retry algorithm (max retries per validator per stage, fixed backoff schedule, classification thresholds for flaky vs persistent), and required event_log fields for each attempt. Add a validator asserting retries followed policy exactly and that freeze decisions only consider outcomes under that policy."
+        }
+      },
+      {
+        "id": "FM7",
+        "category": "Checkpoint/resume correctness (stage handoffs)",
+        "severity": "high",
+        "finding": "Stage model is described as a minimum linear sequence (Intake→Generate→Validate→Review→Judge→Freeze), but O2 introduces per-lane and integration sub-flows plus additional operational stages (WorkPlanning, PatchApply, IntegrateAndValidate). Without a canonical stage graph/identifier set and explicit rule for what constitutes a required \"stage transition\" per lane/integration, stage_handoff coverage can be incomplete or ambiguous, breaking deterministic resume and AT5/AT6 expectations.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/requirements/3 ; /inputs/plan_candidate/plan_package/requirements/4 ; /inputs/plan_candidate/plan_package/architecture/options/1/components/2/responsibilities ; /inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies",
+          "closure_target": "Before Phase 2 (parallel lanes), since per-lane checkpoints must be unambiguous to resume safely.",
+          "earliest_prevention_stage": "WorkPlanning",
+          "required_changes": "Define a canonical stage graph with stable stage IDs (including lane sub-stages and integration) and a deterministic rule: every edge traversal emits a stage_handoff, including per-lane transitions. Add a validator that enumerates the expected transitions for the run DAG and checks stage_handoffs/ contains exactly those (no missing, no extras), with resolvable evidence pointers."
+        }
+      },
+      {
+        "id": "FM8",
+        "category": "Workspace governance (canonical vs non-canonical, indexing)",
+        "severity": "high",
+        "finding": "workspace_index completeness is required, but in a tool-accessible workspace with multiple partitions (lanes + integration), tools can create byproducts (temp files, caches, logs) that may not be indexed, or may land in the wrong partition. If indexing relies on cooperative writes (rather than reconciliation scans), unindexed artifacts can accumulate, undermining auditability, context-pack determinism, and resume correctness.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/requirements/17 ; /inputs/plan_candidate/plan_package/architecture/options/1/components/11/responsibilities ; /inputs/plan_candidate/plan_package/risk_register/7",
+          "closure_target": "Before Phase 1 completion, since workspace governance is a foundation deliverable (M1-D3).",
+          "earliest_prevention_stage": "Intake",
+          "required_changes": "Add a workspace reconciliation validator that scans the workspace partitions for unindexed items at each checkpoint and fails on any drift (or auto-moves/quarantines per deterministic rules). Enforce tool sandbox paths so validators/build tools write only into declared scratch areas that are either excluded by policy (and proven empty on checkpoint) or deterministically indexed/hashed."
+        }
+      }
+    ],
+    "closure_pass": false
+  }
+}

@@ -1,0 +1,273 @@
+{
+  "artifact_type": "triage_report",
+  "artifact_id": "triage_B2A_v3",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T21:23:34.545080Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B2A_v3",
+    "validator_B2A_v3"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2A_v3",
+    "critic_id": "MERGED",
+    "verdict": "reject",
+    "defects": [
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Intake tool policy forbids the canonical writes required to initialize the audit spine (run_manifest/event_log) and emit mandatory stage_handoff artifacts, making R5/R8 unachievable under the stated policy.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/0/allowlisted_tools",
+            "note": "Intake allowlisted_tools lacks artifact_write.",
+            "quote": "[\"artifact_read\",\"schema_validate\"]"
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/0/restrictions/0",
+            "note": "Intake restrictions allow only non-canonical writes.",
+            "quote": "{\"network\":\"deny\",\"repo_write\":\"deny\",\"workspace_write\":\"allow_noncanonical_only\",\"artifact_write\":\"allow_noncanonical_only\"}"
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/requirements/7/text",
+            "note": "R8 requires audit-spine artifacts (run_manifest/event_log).",
+            "quote": "Audit spine SHALL include immutable implementation_run_manifest and append-only implementation_event_log; orchestrator SHALL checkpoint canonical artifacts at every stage boundary."
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/requirements/8/text",
+            "note": "R9 is broadly phrased as rejecting any artifact containing prose/markdown/unstructured text.",
+            "quote": "Canonical-stage outputs SHALL be JSON-only per schema; orchestrator SHALL reject artifacts containing prose/markdown/unstructured text or failing schema validation."
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/requirements/0/text",
+            "note": "Plan uses natural-language text in structured fields (which should remain allowed).",
+            "quote": "Council SHALL accept exactly one frozen plan_package_final.json as its sole canonical planning input; reject chat logs or non-canonical/unapproved upstream artifacts as authoritative."
+          }
+        ],
+        "violated_gate": "requirements_semantics_clarity",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/requirements/8/text",
+            "value": "All LLM agent outputs in canonical stages SHALL be JSON-only artifacts conforming to per-stage schemas; the orchestrator SHALL reject any output that is not valid JSON per schema (e.g., markdown/prose wrappers, mixed-format responses, or unstructured text blobs not contained within schema-defined fields)."
+          }
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Tool policy for Intake stage forbids canonical artifact writes but Intake must initialize run_manifest, event_log, and stage_handoff per R5/R8. This makes audit spine initialization impossible under stated policy.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/0/restrictions/0/artifact_write",
+            "note": "Intake restricted to allow_noncanonical_only artifact writes",
+            "quote": "\"artifact_write\":\"allow_noncanonical_only\""
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/requirements/7/text",
+            "note": "R8 mandates Intake initialize immutable run_manifest and append-only event_log",
+            "quote": "The audit spine SHALL include an implementation_run_manifest that is immutable once created and an implementation_event_log that is append-only"
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Tool policy for Review stage forbids all artifact/workspace writes but reviewers must produce review_findings.json per R22 and architecture C16/C20. Findings-only output is impossible under stated policy.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/6/restrictions/0",
+            "note": "Review stage denies artifact_write and workspace_write",
+            "quote": "\"artifact_write\":\"deny\",\"workspace_write\":\"deny\""
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/requirements/21/text",
+            "note": "R22 requires reviewers produce findings-only artifacts",
+            "quote": "reviewers produce findings-only artifacts (no writing or patches)"
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Decision DEC3 requires deterministic merge ordering algorithm to be defined and recorded in C18, but C18 responsibilities do not specify algorithm or ordering criteria, leaving determinism unverifiable.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/decision_log/2/choice",
+            "note": "DEC3 mandates defining deterministic merge ordering algorithm",
+            "quote": "Define and record a deterministic merge ordering algorithm in the integration flow (C18)"
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/architecture/options/1/components/7/responsibilities/0",
+            "note": "C18 mentions deterministic order but does not specify algorithm",
+            "quote": "Collect completed lane patchsets and apply in deterministic order to base repo state."
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "Milestone M2 exit criteria require AT22 (judge separation) to pass but M2 deliverables do not implement judge role C23, making AT22 validation incomplete.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/milestones/1/exit_criteria/3",
+            "note": "M2 requires AT22 pass for writer/reviewer/judge separation",
+            "quote": "AT22 passes in multi-lane context (writer/reviewer/judge separation and findings-only reviewer outputs are enforced and recorded)."
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/milestones/1/deliverables",
+            "note": "M2 deliverables cover C14-C17 but not C23 Judge Pod",
+            "quote": null
+          }
+        ],
+        "violated_gate": "milestone_exit_criteria",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "Synthesis warning W1 flags Q7/Q8/Q9 as blocking for Phase 3 integration but M3 deliverables implement C18 without resolving these open questions first.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/synthesis_warnings/0/summary",
+            "note": "W1 identifies Q7/Q8/Q9 as blocking for Phase 3",
+            "quote": "O2 Phase 3 depends on unresolved blocking open questions about patchset diff format (Q7), deterministic smallest-passing repair selection details beyond tie-breakers (Q8)"
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/milestones/2/deliverables/0",
+            "note": "M3 implements C18 without resolving blocking questions",
+            "quote": "Implement/define C18 (Integration Merge Engine) with deterministic merge ordering"
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Stage naming inconsistency across sections: goals/executive_summary omit Review stage; tool_policy uses WorkPlanning/PatchApply/IntegrateAndValidate; architecture uses Plan/Patch. Canonical stage identifiers are ambiguous.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/project_capsule/goals/0",
+            "note": "Goal omits Review and Patch stages",
+            "quote": "staged workflow (Generate → Validate → Judge → Freeze)"
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/requirements/3/text",
+            "note": "R4 mandates Review stage in minimum set",
+            "quote": "at minimum the stages: Intake → Generate → Validate → Review → Judge → Freeze"
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "R9 broadly rejects artifacts containing prose/markdown/unstructured text but plan package itself contains extensive natural-language text fields in requirements/rationales/mitigations, creating semantic mismatch about forbidden content.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/requirements/8/text",
+            "note": "R9 language is broad enough to forbid text content in artifacts",
+            "quote": "orchestrator SHALL reject any artifact containing prose/markdown/unstructured text"
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "note",
+        "severity": "low",
+        "summary": "Validator reports 13 deliverable IDs not matching DL# format and 30 missing risk/decision/evidence references. These are ID integrity violations but appear to be schema/format issues rather than semantic defects.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "artifact_id": "validator_report",
+            "json_pointer": "/checks/1/violations",
+            "note": "ID integrity check reports format violations",
+            "quote": null
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": []
+      }
+    ],
+    "reroute_target": "plan_repair_owner",
+    "reroute_reason": "Hard-gate id_integrity failures likely require ID-bearing edits (deliverable IDs) and/or introducing/normalizing risk identifiers for architecture option risks; these changes exceed safe non-ID patch hints for this triage critic role."
+  }
+}

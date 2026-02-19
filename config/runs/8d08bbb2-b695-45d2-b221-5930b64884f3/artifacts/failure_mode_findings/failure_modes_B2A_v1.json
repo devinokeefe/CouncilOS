@@ -1,0 +1,16 @@
+{
+  "artifact_type": "failure_mode_findings",
+  "artifact_id": "failure_modes_B2A_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T20:37:29.891665Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B2A_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2A_v1",
+    "taxonomy": "none",
+    "critical_findings": [],
+    "closure_pass": true
+  }
+}

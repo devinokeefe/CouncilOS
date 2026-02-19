@@ -1,0 +1,14 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "markdown": {
+      "title": "Markdown",
+      "type": "string"
+    }
+  },
+  "required": [
+    "markdown"
+  ],
+  "title": "MarkdownRenderPayload",
+  "type": "object"
+}

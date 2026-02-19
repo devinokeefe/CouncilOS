@@ -1,0 +1,11 @@
+{
+  "run_context": {{RUN_CONTEXT_JSON}},
+  "artifact_refs": {{ARTIFACT_REFS_JSON}},
+  "allowed_id_prefixes": ["{{RISK_DRAFT_PREFIX}}"],
+  "inputs": {
+    "risk_id_prefix": "{{RISK_DRAFT_PREFIX}}",
+    "project_capsule": {{CAPSULE_JSON}}
+  },
+  "task": "Draft risks (10-25) + tool/HITL posture + failure-mode taxonomy scaffold.",
+  "output_schema": {{RISK_DRAFT_SCHEMA_JSON}}
+}

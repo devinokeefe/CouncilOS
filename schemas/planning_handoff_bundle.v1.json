@@ -1,0 +1,33 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "decision_record": {
+      "additionalProperties": true,
+      "title": "Decision Record",
+      "type": "object"
+    },
+    "validator_reports": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Validator Reports",
+      "type": "array"
+    },
+    "failure_mode_findings": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Failure Mode Findings",
+      "type": "array"
+    }
+  },
+  "required": [
+    "decision_record",
+    "validator_reports",
+    "failure_mode_findings"
+  ],
+  "title": "PlanningHandoffBundlePayload",
+  "type": "object"
+}

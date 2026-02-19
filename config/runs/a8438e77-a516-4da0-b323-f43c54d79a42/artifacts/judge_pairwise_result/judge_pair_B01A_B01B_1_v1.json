@@ -1,0 +1,84 @@
+{
+  "artifact_type": "judge_pairwise_result",
+  "artifact_id": "judge_pair_B01A_B01B_1_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T22:51:05.063912Z",
+  "source_run_id": "e7c2c917-9d2c-4c38-b133-533916af57c3",
+  "parents": [
+    "plan_candidate_B01A_v3",
+    "plan_candidate_B01B_v3"
+  ],
+  "payload": {
+    "comparison": {
+      "a": "Candidate B provided a significantly more actionable and clear plan by breaking the work into seven distinct milestones (M1-M7) that directly map to the architecture's sequential stages. Candidate A grouped all work into a single, monolithic milestone, which is less practical for tracking and execution. While both candidates were thorough, Candidate B demonstrated a higher level of analytical rigor by including a 'supplemental_evaluations' section. This section provided explicit cross-checks for acceptance test coverage and risk coverage, and a thoughtful analysis of the chosen 'big-bang' strategy's trade-offs. Candidate B's executive summary and overall narrative demonstrate a tighter integration of all plan components. It clearly links the architectural choice (O1), the milestone strategy (big-bang), and the project plan (M1-M7 sequence) into a cohesive whole, whereas Candidate A's components felt more like separate, albeit correct, sections.",
+      "b": "Candidate B provided a significantly more actionable and clear plan by breaking the work into seven distinct milestones (M1-M7) that directly map to the architecture's sequential stages. Candidate A grouped all work into a single, monolithic milestone, which is less practical for tracking and execution. While both candidates were thorough, Candidate B demonstrated a higher level of analytical rigor by including a 'supplemental_evaluations' section. This section provided explicit cross-checks for acceptance test coverage and risk coverage, and a thoughtful analysis of the chosen 'big-bang' strategy's trade-offs. Candidate B's executive summary and overall narrative demonstrate a tighter integration of all plan components. It clearly links the architectural choice (O1), the milestone strategy (big-bang), and the project plan (M1-M7 sequence) into a cohesive whole, whereas Candidate A's components felt more like separate, albeit correct, sections."
+    },
+    "judge_id": "council-os-pair-judge",
+    "judge_model": "gpt-4-turbo-2024-04-09",
+    "winner": "b",
+    "scores": {
+      "feasibility": 9,
+      "testability": 10,
+      "governance": 10,
+      "architecture": 10,
+      "clarity": 10
+    },
+    "evidence": [
+      {
+        "artifact_ref": "candidate_b_ref",
+        "entity_id": null,
+        "json_pointer": "/plan_package/milestones",
+        "note": "Candidate B breaks the plan into 7 sequential milestones, mapping directly to the stages of the selected O1 architecture, which makes the plan much more clear and actionable.",
+        "candidate_id": "B01B",
+        "artifact_id": "plan_candidate_B01B_v3",
+        "quote": "[\n    {\n        \"id\": \"M1\",\n        \"name\": \"Intake & Input Validation\"\n    },\n    {\n        \"id\": \"M2\",\n        \"name\": \"Work Plan Compilation\"\n    },\n    {\n        \"id\": \"M3\",\n        \"name\": \"Code "
+      },
+      {
+        "artifact_ref": "candidate_a_ref",
+        "entity_id": null,
+        "json_pointer": "/plan_package/milestones",
+        "note": "Candidate A groups all work into a single milestone, making the plan less actionable.",
+        "candidate_id": "B01A",
+        "artifact_id": "plan_candidate_B01A_v3",
+        "quote": "[\n    {\n        \"id\": \"M1\",\n        \"name\": \"Implementation & Closure\"\n    }\n]"
+      },
+      {
+        "artifact_ref": "candidate_b_ref",
+        "entity_id": null,
+        "json_pointer": "/plan_package/supplemental_evaluations",
+        "note": "Candidate B includes a supplemental evaluations section with cross-checks for test coverage and risk, showing higher analytical rigor.",
+        "candidate_id": "B01B",
+        "artifact_id": "plan_candidate_B01B_v3",
+        "quote": "[\n    {\n        \"id\": \"test_coverage_check\",\n        \"name\": \"Acceptance Test Coverage\",\n        \"evaluation\": \"The test plan fully covers all acceptance criteria.\"\n    },\n    {\n        \"id\": \"risk_c"
+      },
+      {
+        "artifact_ref": "candidate_a_ref",
+        "entity_id": null,
+        "json_pointer": "/plan_package/supplemental_evaluations",
+        "note": "Candidate A did not include any supplemental analysis or cross-checks, providing an empty array for this section.",
+        "candidate_id": "B01A",
+        "artifact_id": "plan_candidate_B01A_v3",
+        "quote": "[]"
+      },
+      {
+        "artifact_ref": "candidate_b_ref",
+        "entity_id": null,
+        "json_pointer": "/plan_package/executive_summary",
+        "note": "Candidate B's executive summary clearly connects the milestone structure to the architectural choice, showing better synthesis of the overall plan.",
+        "candidate_id": "B01B",
+        "artifact_id": "plan_candidate_B01B_v3",
+        "quote": "A single linear milestone sequence (M1–M7) maps directly to the O1 stage sequence, with one final freeze gate enforcing all closure validators."
+      },
+      {
+        "artifact_ref": "candidate_a_ref",
+        "entity_id": null,
+        "json_pointer": "/plan_package/executive_summary",
+        "note": "Candidate A's executive summary describes the chosen architecture and acceptance posture but does not connect them to its single-milestone plan structure.",
+        "candidate_id": "B01A",
+        "artifact_id": "plan_candidate_B01A_v3",
+        "quote": "Branch B01A selects architecture option O1 (sequential staged pipeline) and a conservative, audit-first execution posture. The plan emphasizes deterministic stage ordering with mandatory checkpoints a"
+      }
+    ],
+    "notes": "Candidate B is the clear winner. While both candidates correctly followed the branch specification to produce comprehensive and high-quality plans, Candidate B's structural approach is far superior. By breaking the project into a 7-stage milestone plan that directly mirrors the chosen O1 architecture, its plan is significantly more clear, actionable, and trackable. Candidate A's use of a single, monolithic milestone makes its plan less practical for execution. Furthermore, Candidate B demonstrated a higher level of analytic rigor by including supplemental evaluations that cross-referenced its plan against risks and test cases."
+  }
+}

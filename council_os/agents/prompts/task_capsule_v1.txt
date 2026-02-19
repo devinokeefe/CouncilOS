@@ -1,0 +1,1 @@
+﻿Convert the project brief into a project capsule. Include at least one assumption A#, open question Q#, and one constraint.

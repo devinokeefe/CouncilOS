@@ -1,0 +1,366 @@
+{
+  "artifact_type": "alignment_warnings",
+  "artifact_id": "alignment_warnings_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T18:56:31.756318Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "acceptance_canonical_v1"
+  ],
+  "payload": {
+    "warnings": [
+      {
+        "id": "AL_WARN_001",
+        "severity": "critical",
+        "summary": "Architecture Option O4 (Monolith) prevents mandatory stage-boundary checkpointing and handoff enforcement required by Requirements R4 and R5.",
+        "evidence": [
+          {
+            "candidate_id": "O4",
+            "artifact_ref": "architecture_canonical",
+            "artifact_id": "architecture_canonical_v1",
+            "json_pointer": "/options/3/summary",
+            "note": "Option O4 explicitly encapsulates the full workflow behind a single external interface, obscuring internal stage transitions.",
+            "quote": "Monolithic Implementation Council component that encapsulates the full workflow (intake through freeze) behind a single external interface."
+          },
+          {
+            "candidate_id": "O4",
+            "artifact_ref": "architecture_canonical",
+            "artifact_id": "architecture_canonical_v1",
+            "json_pointer": "/options/3/components/1/responsibilities/1",
+            "note": "Component C37 internally manages stages, preventing the external orchestrator from accessing checkpoints at stage boundaries.",
+            "quote": "Internally manage stages/roles (writer/reviewer/judge/patch/validate)..."
+          },
+          {
+            "candidate_id": "R4",
+            "artifact_ref": "requirements_canonical",
+            "artifact_id": "requirements_canonical_v1",
+            "json_pointer": "/requirements/3",
+            "note": "Requires explicit checkpoint boundaries at every stage transition in the state machine.",
+            "quote": "The Implementation Council workflow SHALL be defined as a deterministic staged state machine... and SHALL include an explicit checkpoint boundary at every stage transition."
+          },
+          {
+            "candidate_id": "R5",
+            "artifact_ref": "requirements_canonical",
+            "artifact_id": "requirements_canonical_v1",
+            "json_pointer": "/requirements/4",
+            "note": "Requires emission of stage_handoff artifacts at every checkpoint boundary, which O4's monolithic interface does not expose.",
+            "quote": "At every checkpoint boundary (i.e., each stage transition), the system SHALL emit a stage_handoff JSON artifact..."
+          }
+        ],
+        "routing_target": "Architecture Designer"
+      },
+      {
+        "id": "AL_WARN_002",
+        "severity": "high",
+        "summary": "Architecture Option O4 (Monolith) conflicts with Requirement R22 regarding Orchestrator-enforced role separation and multi-vendor routing.",
+        "evidence": [
+          {
+            "candidate_id": "O4",
+            "artifact_ref": "architecture_canonical",
+            "artifact_id": "architecture_canonical_v1",
+            "json_pointer": "/options/3/components/1/responsibilities/1",
+            "note": "O4 delegates role management to the internal monolith, bypassing the external orchestrator's routing authority.",
+            "quote": "Internally manage stages/roles (writer/reviewer/judge/patch/validate)..."
+          },
+          {
+            "candidate_id": "R22",
+            "artifact_ref": "requirements_canonical",
+            "artifact_id": "requirements_canonical_v1",
+            "json_pointer": "/requirements/21",
+            "note": "R22 explicitly places the authority for role separation and routing on the orchestrator, not the council component.",
+            "quote": "orchestrator routing SHALL enforce default multi-vendor separation across writer/reviewer/judge roles."
+          }
+        ],
+        "routing_target": "Architecture Designer"
+      },
+      {
+        "id": "AL_WARN_003",
+        "severity": "medium",
+        "summary": "Strict 'network: deny' policy in Validate stage is likely to cause widespread blocking of Requirement R21 (build/test gates) due to dependency resolution failures.",
+        "evidence": [
+          {
+            "candidate_id": "ToolPolicy",
+            "artifact_ref": "risk_gov_canonical",
+            "artifact_id": "risk_gov_canonical_v1",
+            "json_pointer": "/tool_policy/stage_policies/4/restrictions/0/network",
+            "note": "Network is denied for the Validate stage, blocking standard dependency fetching during builds/tests.",
+            "quote": "deny"
+          },
+          {
+            "candidate_id": "R21",
+            "artifact_ref": "requirements_canonical",
+            "artifact_id": "requirements_canonical_v1",
+            "json_pointer": "/requirements/20",
+            "note": "R21 mandates that build and test gates must pass for freeze, which usually implies successful dependency resolution.",
+            "quote": "Freeze SHALL be permitted only when all deterministic, code-owned closure gates pass, including: build/test/lint/typecheck..."
+          },
+          {
+            "candidate_id": "K15",
+            "artifact_ref": "risk_gov_canonical",
+            "artifact_id": "risk_gov_canonical_v1",
+            "json_pointer": "/risk_register/14/mitigation/text",
+            "note": "Mitigation allows network in 'explicitly designated stages', but the provided policy designates none.",
+            "quote": "allow network only in explicitly designated stages with allowlisted domains..."
+          }
+        ],
+        "routing_target": "Policy/Security Lead"
+      },
+      {
+        "id": "AL001",
+        "severity": "high",
+        "summary": "Requirements R2 and R3 mandate schema validation failures SHALL fail the run, but architecture options do not specify which component enforces this gate or how the orchestrator receives structured rejection signals.",
+        "evidence": [
+          {
+            "candidate_id": "requirements_canonical_v1",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "R2",
+            "json_pointer": "/requirements/1/text",
+            "note": "R2 requires orchestrator validators to fail the run if repo_context.json is missing or schema-invalid, but no architecture option explicitly assigns this validation responsibility to a named component.",
+            "quote": "orchestrator validators SHALL fail the run if repo_context.json is missing or schema-invalid"
+          },
+          {
+            "candidate_id": "requirements_canonical_v1",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "R3",
+            "json_pointer": "/requirements/2/text",
+            "note": "R3 requires orchestrator validators to fail the run if workspace_context.json is missing or schema-invalid, but architecture options do not show which component performs this check.",
+            "quote": "orchestrator validators SHALL fail the run if workspace_context.json is missing or schema-invalid"
+          },
+          {
+            "candidate_id": "architecture_canonical_v1",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "C3",
+            "json_pointer": "/options/0/components/2/responsibilities",
+            "note": "O1 Intake Gate (C3) lists schema validation but does not explicitly state it enforces R2/R3 failure semantics.",
+            "quote": "Validate plan_package_final.json, repo_context.json, workspace_context.json against schemas."
+          }
+        ],
+        "routing_target": "architecture.clarify_component_responsibilities"
+      },
+      {
+        "id": "AL002",
+        "severity": "critical",
+        "summary": "Requirements R10 and R11 mandate RFC 6901 JSON Pointer as the sole evidence standard and require repo/code/workspace state to be represented as JSON artifacts, but architecture options do not specify how code/repo state is converted to JSON artifacts or which component owns this transformation.",
+        "evidence": [
+          {
+            "candidate_id": "requirements_canonical_v1",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "R11",
+            "json_pointer": "/requirements/10/text",
+            "note": "R11 requires repo/code/workspace state to be represented as versioned JSON artifacts addressable via RFC 6901, but no architecture option describes a component responsible for producing repo_snapshot.json or code-state JSON artifacts.",
+            "quote": "Repository, code, and workspace state that must be cited for traceability SHALL be represented as versioned JSON artifacts addressable via RFC 6901 JSON Pointers"
+          },
+          {
+            "candidate_id": "architecture_canonical_v1",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "C6",
+            "json_pointer": "/options/0/components/5/responsibilities",
+            "note": "O1 Validator Engine (C6) emits test_results.json and quality_reports.json but does not list responsibility for producing repo_snapshot.json or code-state JSON artifacts.",
+            "quote": "Emit structured test_results.json and quality_reports.json with AT# trace mapping."
+          }
+        ],
+        "routing_target": "architecture.add_missing_component_or_responsibility"
+      },
+      {
+        "id": "AL003",
+        "severity": "high",
+        "summary": "Requirement R15 mandates deterministic smallest-passing-repair selection with explicit tie-breakers, but architecture options do not specify which component implements this selection logic or how candidates are compared.",
+        "evidence": [
+          {
+            "candidate_id": "requirements_canonical_v1",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "R15",
+            "json_pointer": "/requirements/14/text",
+            "note": "R15 requires orchestrator to select smallest passing repair using deterministic tie-breakers (fewest operations, fewest bytes, first-generated), but no architecture option assigns this logic to a component.",
+            "quote": "the orchestrator SHALL select the smallest passing repair using deterministic rules, with tie-breakers in order: (1) fewest operations, (2) fewest bytes changed, (3) first-generated tiebreaker."
+          },
+          {
+            "candidate_id": "architecture_canonical_v1",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "C1",
+            "json_pointer": "/options/0/components/0/responsibilities",
+            "note": "O1 Orchestrator Core (C1) does not list smallest-passing-repair selection logic in its responsibilities.",
+            "quote": "Enforce strict stage ordering and closure gates..."
+          }
+        ],
+        "routing_target": "architecture.add_missing_component_or_responsibility"
+      },
+      {
+        "id": "AL004",
+        "severity": "high",
+        "summary": "Requirement R17 mandates deterministic context pack compilation with explicit selection rules, but architecture options do not define what those selection rules are or how context packs are bounded when workspace state exceeds limits.",
+        "evidence": [
+          {
+            "candidate_id": "requirements_canonical_v1",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "R17",
+            "json_pointer": "/requirements/16/text",
+            "note": "R17 requires orchestrator to build bounded context packs deterministically using explicit selection rules, but no architecture option specifies the selection algorithm or prioritization criteria.",
+            "quote": "the orchestrator SHALL build bounded context packs deterministically for each stage/role invocation using explicit selection rules"
+          },
+          {
+            "candidate_id": "architecture_canonical_v1",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "C1",
+            "json_pointer": "/options/0/components/0/responsibilities/2",
+            "note": "O1 Orchestrator Core (C1) states it compiles context packs from workspace_index and declared selection rules, but does not define what those rules are.",
+            "quote": "Compile deterministic context packs for each stage from workspace_index and declared selection rules (CNS8)."
+          }
+        ],
+        "routing_target": "architecture.define_missing_algorithm_or_policy"
+      },
+      {
+        "id": "AL005",
+        "severity": "medium",
+        "summary": "Acceptance test AT15 validates smallest-passing-repair selection tie-breakers, but requirement R15 does not specify how 'bytes changed' is measured (e.g., diff bytes, file bytes, or normalized content bytes), creating ambiguity for deterministic implementation.",
+        "evidence": [
+          {
+            "candidate_id": "requirements_canonical_v1",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "R15",
+            "json_pointer": "/requirements/14/text",
+            "note": "R15 specifies 'fewest bytes changed' as a tie-breaker but does not define the measurement unit.",
+            "quote": "(2) fewest bytes changed"
+          },
+          {
+            "candidate_id": "acceptance_canonical_v1",
+            "artifact_ref": "acceptance_canonical_v1",
+            "artifact_id": "AT15",
+            "json_pointer": "/acceptance_tests/14/pass_criteria",
+            "note": "AT15 requires orchestrator to select using tie-breakers including 'fewest bytes changed' but does not clarify the measurement method.",
+            "quote": "Orchestrator selects the smallest passing repair using tie-breakers: fewest operations, then fewest bytes changed, then first-generated."
+          }
+        ],
+        "routing_target": "requirements.clarify_measurement_definition"
+      },
+      {
+        "id": "AL006",
+        "severity": "high",
+        "summary": "Risk K12 describes integration/merge conflict handling and requires deterministic apply/merge ordering independent of wall-clock timing, but architecture option O2 (parallel lanes) does not specify the deterministic ordering algorithm or how base_commit conflicts are resolved.",
+        "evidence": [
+          {
+            "candidate_id": "risk_gov_canonical_v1",
+            "artifact_ref": "risk_gov_canonical_v1",
+            "artifact_id": "K12",
+            "json_pointer": "/risk_register/11/mitigation/text",
+            "note": "K12 mitigation requires deterministic apply/merge ordering rules independent of wall-clock completion timing, but O2 does not define these rules.",
+            "quote": "deterministic apply/merge ordering rules independent of wall-clock completion timing"
+          },
+          {
+            "candidate_id": "architecture_canonical_v1",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "C18",
+            "json_pointer": "/options/1/components/7/responsibilities",
+            "note": "O2 Integration Merge Engine (C18) lists applying patchsets in deterministic order but does not specify the ordering algorithm.",
+            "quote": "Collect completed lane patchsets and apply in deterministic order to base repo state."
+          }
+        ],
+        "routing_target": "architecture.define_missing_algorithm_or_policy"
+      },
+      {
+        "id": "AL007",
+        "severity": "critical",
+        "summary": "Requirements R19 and R20 mandate tool permission enforcement and secrets blocking, but architecture options do not specify which component implements the tool permission matrix enforcement or secrets detection/redaction guardrails at runtime.",
+        "evidence": [
+          {
+            "candidate_id": "requirements_canonical_v1",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "R19",
+            "json_pointer": "/requirements/18/text",
+            "note": "R19 requires orchestrator to enforce tool permission matrix per stage and block unauthorized invocations, but no architecture option assigns this enforcement to a component.",
+            "quote": "the orchestrator SHALL define a tool permission matrix per stage...and SHALL enforce it deterministically"
+          },
+          {
+            "candidate_id": "requirements_canonical_v1",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "R20",
+            "json_pointer": "/requirements/19/text",
+            "note": "R20 requires orchestrator to enforce secrets detection, redaction, and blocking guardrails before artifact persistence, but no architecture option specifies which component performs this check.",
+            "quote": "the orchestrator SHALL enforce detection, redaction, and blocking guardrails validated before any artifact is persisted"
+          },
+          {
+            "candidate_id": "architecture_canonical_v1",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "C2",
+            "json_pointer": "/options/0/components/1/responsibilities",
+            "note": "O1 Workspace Gateway (C2) lists blocking/redacting secrets per policy but does not clarify if this is the sole enforcement point or if orchestrator also enforces.",
+            "quote": "Validate artifact writes against expected schemas; block/redact secrets per policy (CNS9)."
+          }
+        ],
+        "routing_target": "architecture.clarify_component_responsibilities"
+      },
+      {
+        "id": "AL008",
+        "severity": "high",
+        "summary": "Requirement R24 (SHOULD) recommends decomposing large refactors into bounded patchsets, but architecture options do not specify which component detects oversized patchsets or enforces decomposition, and no acceptance test validates this behavior.",
+        "evidence": [
+          {
+            "candidate_id": "requirements_canonical_v1",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "R24",
+            "json_pointer": "/requirements/23/text",
+            "note": "R24 states orchestrator SHOULD reject oversized patchsets and require decomposition, but no architecture option assigns this responsibility.",
+            "quote": "the orchestrator SHOULD reject any single patchset exceeding a configurable operation/size cap and require decomposition."
+          },
+          {
+            "candidate_id": "acceptance_canonical_v1",
+            "artifact_ref": "acceptance_canonical_v1",
+            "artifact_id": "AT13",
+            "json_pointer": "/acceptance_tests/12",
+            "note": "AT13 validates diff-only patchset acceptance but does not test size/decomposition enforcement.",
+            "quote": "Submit code changes as (a) a diff-only patchset JSON artifact with deterministic apply order"
+          }
+        ],
+        "routing_target": "architecture.add_missing_component_or_responsibility"
+      },
+      {
+        "id": "AL009",
+        "severity": "medium",
+        "summary": "Risk K9 warns of context pack overflow/under-selection and requires deterministic selection rules with priorities and byte/token budgets, but architecture options do not specify how token budgets are calculated or enforced across different model vendors.",
+        "evidence": [
+          {
+            "candidate_id": "risk_gov_canonical_v1",
+            "artifact_ref": "risk_gov_canonical_v1",
+            "artifact_id": "K9",
+            "json_pointer": "/risk_register/8/mitigation/text",
+            "note": "K9 mitigation requires deterministic context-pack selection rules with explicit byte/token budgets, but no architecture option defines how token budgets are computed or enforced.",
+            "quote": "Deterministic, versioned context-pack selection rules with priorities and explicit byte/token budgets"
+          },
+          {
+            "candidate_id": "architecture_canonical_v1",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "C1",
+            "json_pointer": "/options/0/components/0/responsibilities/2",
+            "note": "O1 Orchestrator Core (C1) compiles context packs from declared selection rules but does not specify token budget enforcement.",
+            "quote": "Compile deterministic context packs for each stage from workspace_index and declared selection rules (CNS8)."
+          }
+        ],
+        "routing_target": "architecture.define_missing_algorithm_or_policy"
+      },
+      {
+        "id": "AL010",
+        "severity": "high",
+        "summary": "Requirement R22 mandates multi-vendor routing for writer/reviewer/judge separation, but architecture options do not specify how vendor/model assignments are made deterministically or how the orchestrator enforces vendor diversity constraints.",
+        "evidence": [
+          {
+            "candidate_id": "requirements_canonical_v1",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "R22",
+            "json_pointer": "/requirements/21/text",
+            "note": "R22 requires orchestrator routing to enforce default multi-vendor separation across writer/reviewer/judge roles, but no architecture option describes the routing algorithm or vendor selection logic.",
+            "quote": "orchestrator routing SHALL enforce default multi-vendor separation across writer/reviewer/judge roles."
+          },
+          {
+            "candidate_id": "architecture_canonical_v1",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "C11",
+            "json_pointer": "/options/1/components/0/responsibilities",
+            "note": "O2 Global Orchestrator (C11) lists enforcing multi-vendor role separation but does not define the routing mechanism.",
+            "quote": "Enforce multi-vendor role separation across writers/reviewers/judges (CNS12)."
+          }
+        ],
+        "routing_target": "architecture.define_missing_algorithm_or_policy"
+      }
+    ]
+  }
+}

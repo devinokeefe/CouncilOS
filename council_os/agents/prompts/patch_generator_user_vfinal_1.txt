@@ -1,0 +1,14 @@
+{
+  "run_context": {{RUN_CONTEXT_JSON}},
+  "artifact_refs": {{ARTIFACT_REFS_JSON}},
+  "inputs": {
+    "candidate_ref": "{{CANDIDATE_REF}}",
+    "plan_candidate": {{PLAN_CANDIDATE_JSON}},
+    "validator_report": {{VALIDATOR_REPORT_JSON}},
+    "triage_report": {{TRIAGE_REPORT_JSON}},
+    "failure_mode_findings": {{FAILURE_MODE_FINDINGS_JSON_OR_EMPTY}},
+    "trace_graph_findings": {{TRACE_GRAPH_FINDINGS_JSON_OR_EMPTY}}
+  },
+  "task": "Return JSON Patch ops OR reroute request.",
+  "output_schema": {{PATCH_OR_REROUTE_SCHEMA_JSON}}
+}

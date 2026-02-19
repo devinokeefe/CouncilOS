@@ -1,0 +1,692 @@
+{
+  "$defs": {
+    "DependencyPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "network_installs_allowed": {
+          "default": false,
+          "title": "Network Installs Allowed",
+          "type": "boolean"
+        },
+        "required_lockfiles": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Required Lockfiles",
+          "type": "array"
+        }
+      },
+      "title": "DependencyPolicy",
+      "type": "object"
+    },
+    "ExecutionProfilesConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "catalog_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Catalog Ref"
+        },
+        "allowed_profile_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Allowed Profile Ids",
+          "type": "array"
+        },
+        "default_profile_id_by_stage": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Default Profile Id By Stage",
+          "type": "object"
+        }
+      },
+      "title": "ExecutionProfilesConfig",
+      "type": "object"
+    },
+    "Expectation": {
+      "additionalProperties": false,
+      "properties": {
+        "expectation_id": {
+          "title": "Expectation Id",
+          "type": "string"
+        },
+        "level": {
+          "enum": [
+            "plan",
+            "subsystem",
+            "test",
+            "component",
+            "artifact"
+          ],
+          "title": "Level",
+          "type": "string"
+        },
+        "source": {
+          "$ref": "#/$defs/ExpectationSource"
+        },
+        "subject": {
+          "$ref": "#/$defs/ExpectationSubject"
+        },
+        "oracle": {
+          "$ref": "#/$defs/OracleSpec"
+        },
+        "tolerance": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ToleranceSpec"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "inputs": {
+          "items": {
+            "$ref": "#/$defs/ExpectationInput"
+          },
+          "title": "Inputs",
+          "type": "array"
+        },
+        "parents": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Parents",
+          "type": "array"
+        },
+        "children": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Children",
+          "type": "array"
+        },
+        "must_exist_before_remote_ops": {
+          "default": false,
+          "title": "Must Exist Before Remote Ops",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "expectation_id",
+        "level",
+        "source",
+        "subject",
+        "oracle"
+      ],
+      "title": "Expectation",
+      "type": "object"
+    },
+    "ExpectationInput": {
+      "additionalProperties": false,
+      "properties": {
+        "dataset_snapshot_ref": {
+          "title": "Dataset Snapshot Ref",
+          "type": "string"
+        }
+      },
+      "required": [
+        "dataset_snapshot_ref"
+      ],
+      "title": "ExpectationInput",
+      "type": "object"
+    },
+    "ExpectationSource": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "title": "Type",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "id"
+      ],
+      "title": "ExpectationSource",
+      "type": "object"
+    },
+    "ExpectationSubject": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "title": "Kind",
+          "type": "string"
+        },
+        "artifact_type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Artifact Type"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "ExpectationSubject",
+      "type": "object"
+    },
+    "OracleCheck": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "title": "Type",
+          "type": "string"
+        },
+        "path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Path"
+        },
+        "value": {
+          "anyOf": [
+            {},
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        },
+        "metric": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Metric"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "title": "OracleCheck",
+      "type": "object"
+    },
+    "OracleSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "title": "Type",
+          "type": "string"
+        },
+        "schema_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Schema Ref"
+        },
+        "checks": {
+          "items": {
+            "$ref": "#/$defs/OracleCheck"
+          },
+          "title": "Checks",
+          "type": "array"
+        },
+        "expected_hash": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expected Hash"
+        },
+        "baseline_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Baseline Ref"
+        },
+        "metric": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Metric"
+        },
+        "threshold": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Threshold"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "title": "OracleSpec",
+      "type": "object"
+    },
+    "RepoBuildEntrypoint": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "command": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Command",
+          "type": "array"
+        },
+        "working_dir": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Working Dir"
+        }
+      },
+      "required": [
+        "name",
+        "command"
+      ],
+      "title": "RepoBuildEntrypoint",
+      "type": "object"
+    },
+    "RepoValidatorEntrypoint": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "command": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Command"
+        },
+        "mode": {
+          "default": "command",
+          "enum": [
+            "command",
+            "mock"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "outcomes": {
+          "items": {
+            "enum": [
+              "pass",
+              "fail"
+            ],
+            "type": "string"
+          },
+          "title": "Outcomes",
+          "type": "array"
+        },
+        "maps_to_acceptance_tests": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Maps To Acceptance Tests",
+          "type": "array"
+        },
+        "retryable": {
+          "default": true,
+          "title": "Retryable",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ],
+      "title": "RepoValidatorEntrypoint",
+      "type": "object"
+    },
+    "SurfaceBudget": {
+      "additionalProperties": false,
+      "properties": {
+        "max_bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Bytes"
+        },
+        "max_files": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Files"
+        },
+        "max_breaking_changes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Breaking Changes"
+        }
+      },
+      "title": "SurfaceBudget",
+      "type": "object"
+    },
+    "SurfaceDefinition": {
+      "additionalProperties": false,
+      "properties": {
+        "surface_id": {
+          "title": "Surface Id",
+          "type": "string"
+        },
+        "type": {
+          "title": "Type",
+          "type": "string"
+        },
+        "path_globs": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Path Globs",
+          "type": "array"
+        },
+        "interface_contract_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Interface Contract Id"
+        },
+        "change_budget": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SurfaceBudget"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "surface_id",
+        "type"
+      ],
+      "title": "SurfaceDefinition",
+      "type": "object"
+    },
+    "ToleranceSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "title": "Type",
+          "type": "string"
+        },
+        "abs": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Abs"
+        },
+        "rel": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rel"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "title": "ToleranceSpec",
+      "type": "object"
+    },
+    "ValidatorRunner": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "cmd": {
+          "title": "Cmd",
+          "type": "string"
+        },
+        "profile_id": {
+          "title": "Profile Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "cmd",
+        "profile_id"
+      ],
+      "title": "ValidatorRunner",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "repo_root": {
+      "title": "Repo Root",
+      "type": "string"
+    },
+    "base_commit": {
+      "title": "Base Commit",
+      "type": "string"
+    },
+    "head_commit": {
+      "title": "Head Commit",
+      "type": "string"
+    },
+    "branch_name": {
+      "title": "Branch Name",
+      "type": "string"
+    },
+    "build_entrypoints": {
+      "items": {
+        "$ref": "#/$defs/RepoBuildEntrypoint"
+      },
+      "title": "Build Entrypoints",
+      "type": "array"
+    },
+    "validator_entrypoints": {
+      "items": {
+        "$ref": "#/$defs/RepoValidatorEntrypoint"
+      },
+      "title": "Validator Entrypoints",
+      "type": "array"
+    },
+    "protected_paths": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Protected Paths",
+      "type": "array"
+    },
+    "forbidden_paths": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Forbidden Paths",
+      "type": "array"
+    },
+    "metadata": {
+      "additionalProperties": true,
+      "title": "Metadata",
+      "type": "object"
+    },
+    "execution_profiles": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExecutionProfilesConfig"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "validator_runners": {
+      "items": {
+        "$ref": "#/$defs/ValidatorRunner"
+      },
+      "title": "Validator Runners",
+      "type": "array"
+    },
+    "dependency_policy": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/DependencyPolicy"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "surfaces": {
+      "items": {
+        "$ref": "#/$defs/SurfaceDefinition"
+      },
+      "title": "Surfaces",
+      "type": "array"
+    },
+    "default_expectations": {
+      "items": {
+        "$ref": "#/$defs/Expectation"
+      },
+      "title": "Default Expectations",
+      "type": "array"
+    }
+  },
+  "required": [
+    "repo_root",
+    "base_commit",
+    "head_commit",
+    "branch_name",
+    "build_entrypoints",
+    "validator_entrypoints",
+    "protected_paths",
+    "forbidden_paths"
+  ],
+  "title": "RepoContextPayloadV21",
+  "type": "object"
+}

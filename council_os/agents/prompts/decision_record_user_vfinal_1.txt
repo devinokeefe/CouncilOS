@@ -1,0 +1,12 @@
+{
+  "run_context": {{RUN_CONTEXT_JSON}},
+  "artifact_refs": {{ARTIFACT_REFS_JSON}},
+  "inputs": {
+    "winner_ref": "{{WINNER_REF}}",
+    "winner_plan": {{WINNER_PLAN_JSON}},
+    "runner_ups": {{RUNNER_UPS_JSON_OR_EMPTY}},
+    "tournament_record": {{TOURNAMENT_RECORD_JSON}}
+  },
+  "task": "Write decision record (audit-ready).",
+  "output_schema": {{DECISION_RECORD_SCHEMA_JSON}}
+}

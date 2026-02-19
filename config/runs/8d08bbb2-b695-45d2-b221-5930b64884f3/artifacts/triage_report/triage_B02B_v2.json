@@ -1,0 +1,479 @@
+{
+  "artifact_type": "triage_report",
+  "artifact_id": "triage_B02B_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T20:59:29.188442Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B02B_v2",
+    "validator_B02B_v2"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B02B_v2",
+    "critic_id": "MERGED",
+    "verdict": "reject",
+    "defects": [
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Evidence pointer objects in decision_log/supplemental evidence do not conform to the plan’s own mandated evidence-pointer standard ({artifact_ref, entity_id|null, json_pointer, note}); current objects include candidate_id/artifact_id/quote and omit entity_id, triggering internal standards violations and downstream id_integrity failures.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/requirements/9/text",
+            "note": "R10 mandates evidence pointer structure {artifact_ref, entity_id|null, json_pointer, note}",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/project_capsule/constraints/5/text",
+            "note": "CNS6 mandates evidence pointer structure {artifact_ref, entity_id|null, json_pointer, note}",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/decision_log/0/evidence_pointers/0",
+            "note": "DEC1 evidence pointer object uses candidate_id/artifact_id and omits entity_id",
+            "quote": null
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/0/evidence_pointers/0",
+            "value": {
+              "artifact_ref": "architecture_canonical_v1",
+              "entity_id": null,
+              "json_pointer": "/options/1",
+              "note": "O2 architecture definition with components C11-C24"
+            }
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/0/evidence_pointers/1",
+            "value": {
+              "artifact_ref": "branch_set_v1",
+              "entity_id": null,
+              "json_pointer": "/branches/1",
+              "note": "Branch B02 selects O2 with hybrid milestone strategy"
+            }
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/1/evidence_pointers/0",
+            "value": {
+              "artifact_ref": "branch_set_v1",
+              "entity_id": null,
+              "json_pointer": "/branches/1/milestone_strategy",
+              "note": "Hybrid strategy: independent lanes as intermediate milestones, integration as final"
+            }
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/1/evidence_pointers/1",
+            "value": {
+              "artifact_ref": "branch_set_v1",
+              "entity_id": null,
+              "json_pointer": "/branches/1/acceptance_strategy",
+              "note": "Two-tier acceptance: lane gates then integrated system-level validation"
+            }
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/2/evidence_pointers/0",
+            "value": {
+              "artifact_ref": "risk_gov_canonical_v1",
+              "entity_id": null,
+              "json_pointer": "/risk_register/11",
+              "note": "K12: Integration/merge conflicts risk and mitigation"
+            }
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/2/evidence_pointers/1",
+            "value": {
+              "artifact_ref": "branch_set_v1",
+              "entity_id": null,
+              "json_pointer": "/branches/1/risk_posture",
+              "note": "Accepts integration complexity, focuses on mitigating K12"
+            }
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/3/evidence_pointers/0",
+            "value": {
+              "artifact_ref": "branch_set_v1",
+              "entity_id": null,
+              "json_pointer": "/branches/1/governance_posture",
+              "note": "Sandboxed tooling, medium HITL strictness"
+            }
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/3/evidence_pointers/1",
+            "value": {
+              "artifact_ref": "risk_gov_canonical_v1",
+              "entity_id": null,
+              "json_pointer": "/tool_policy",
+              "note": "Per-stage tool permission matrix with deny-by-default"
+            }
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/4/evidence_pointers/0",
+            "value": {
+              "artifact_ref": "acceptance_canonical_v1",
+              "entity_id": null,
+              "json_pointer": "/acceptance_tests",
+              "note": "Full acceptance test suite AT1-AT23"
+            }
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/4/evidence_pointers/1",
+            "value": {
+              "artifact_ref": "branch_set_v1",
+              "entity_id": null,
+              "json_pointer": "/branches/1/acceptance_strategy",
+              "note": "Two-tier: lane gates then integrated system-level validation"
+            }
+          }
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Tool policy for the Review stage forbids artifact_write/workspace_write, but the plan requires reviewers to emit findings artifacts (review_findings.json) and include them in the freeze bundle; required outputs are impossible under current permissions.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/6",
+            "note": "Review stage restrictions set artifact_write=deny and workspace_write=deny",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/milestones/1/deliverables/2/text",
+            "note": "M2 requires per-lane review_findings.json deliverable",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/requirements/6/text",
+            "note": "R7 requires review_findings.json in the freeze bundle",
+            "quote": null
+          }
+        ],
+        "violated_gate": "tool_policy_parse",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/governance/tool_policy/stage_policies/6/allowlisted_tools",
+            "value": [
+              "artifact_read",
+              "artifact_write",
+              "schema_validate"
+            ]
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/governance/tool_policy/stage_policies/6/restrictions/0/artifact_write",
+            "value": "canonical_allowed_only_for_declared_types"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/governance/tool_policy/stage_policies/6/restrictions/0/notes",
+            "value": "Reviewers are findings-only; they may emit findings artifacts (e.g., review_findings.json) only, and do not emit patches or other writing artifacts."
+          }
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Intake tool policy disallows canonical artifact writes (and does not allow artifact_write tooling), but Intake milestone/architecture requires initializing canonical audit artifacts (run_manifest/event_log/workspace_index) and emitting an Intake→Parallel stage_handoff.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/0/allowlisted_tools",
+            "note": "Intake allowlisted_tools lacks artifact_write/workspace_write",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/0/restrictions/0",
+            "note": "Intake restrictions set artifact_write/workspace_write to allow_noncanonical_only",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/milestones/0/deliverables/1/text",
+            "note": "M1 requires initializing implementation_run_manifest.json and implementation_event_log.jsonl",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/milestones/0/deliverables/4/text",
+            "note": "M1 requires stage_handoff for Intake→ParallelLanes boundary",
+            "quote": null
+          }
+        ],
+        "violated_gate": "tool_policy_parse",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/governance/tool_policy/stage_policies/0/allowlisted_tools",
+            "value": [
+              "artifact_read",
+              "artifact_write",
+              "workspace_write",
+              "schema_validate"
+            ]
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/governance/tool_policy/stage_policies/0/restrictions/0/workspace_write",
+            "value": "canonical_versioned_only"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/governance/tool_policy/stage_policies/0/restrictions/0/artifact_write",
+            "value": "canonical_allowed_only_for_declared_types"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/governance/tool_policy/stage_policies/0/restrictions/0/notes",
+            "value": "Ingest and validate plan_package_final.json and required context artifacts; initialize canonical audit spine artifacts (run_manifest/event_log/workspace_index) and emit required stage_handoff; no repo mutation; do not persist secrets."
+          }
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Milestone deliverable IDs fail the plan’s id_integrity rules (deliverable IDs reported as not matching the expected DL# pattern). Fixing this requires renaming many deliverable IDs, which is an ID-bearing change and should be rerouted to the owning schema/ID-integrity stage.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/milestones",
+            "note": "Validator id_integrity reports multiple deliverable id pattern violations (e.g., M1-D1..M4-D5)",
+            "quote": null
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Architecture option risk lists are flagged by id_integrity as referencing missing risks (across O1–O4). This indicates a structural mismatch between expected risk entity representation and current string-list representation; requires schema/structure alignment beyond safe localized edits.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/architecture/options",
+            "note": "Validator id_integrity reports multiple 'Option O* references missing risk ...' violations",
+            "quote": null
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": []
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "Stage taxonomy is inconsistent: R4/AT4 assert a minimum state machine (Intake→Generate→Validate→Review→Judge→Freeze), while tool_policy introduces additional stages (WorkPlanning, PatchApply, IntegrateAndValidate) without an explicit mapping. This risks ambiguous checkpoint/stage_handoff expectations and acceptance-test failure.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/requirements/3/text",
+            "note": "R4 defines minimum stages Intake → Generate → Validate → Review → Judge → Freeze",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies",
+            "note": "tool_policy defines WorkPlanning, PatchApply, IntegrateAndValidate (in addition to the minimum set)",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/acceptance_tests/3/procedure",
+            "note": "AT4 validates recorded stage sequence against minimum-stage expectation",
+            "quote": null
+          }
+        ],
+        "violated_gate": "contradiction_heuristic",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/requirements/3/text",
+            "value": "The Implementation Council workflow SHALL be defined as a deterministic staged state machine with at minimum the stages: Intake → Generate → Validate → Review → Judge → Freeze, and SHALL include an explicit checkpoint boundary at every stage transition. The orchestrator MAY refine these minimum stages into explicitly-mapped sub-stages (e.g., WorkPlanning, PatchApply, IntegrateAndValidate) provided the mapping is declared and checkpoint/stage_handoff requirements apply to both minimum stages and declared sub-stage transitions."
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/acceptance_tests/3/pass_criteria",
+            "value": "Stage sequence includes at minimum Intake → Generate → Validate → Review → Judge → Freeze (optionally with explicitly-mapped sub-stages), and a checkpoint boundary is recorded at every declared stage/sub-stage transition."
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Chosen-architecture key_design_decisions are flagged as missing decision references; link each key design decision to the relevant DEC# entry to satisfy decision traceability expectations.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/architecture/chosen/key_design_decisions",
+            "note": "Validator id_integrity reports multiple 'Decision reference missing' violations for key_design_decisions",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/decision_log",
+            "note": "DEC1–DEC5 exist and can be referenced from chosen key design decisions",
+            "quote": null
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/chosen/key_design_decisions/0",
+            "value": "Parallel lane execution with deterministic merge ordering independent of wall-clock completion timing to maximize throughput while preserving reproducibility. (See DEC1, DEC3)"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/chosen/key_design_decisions/1",
+            "value": "Dedicated Integration sub-flow (C18→C19→C20→C21) as a first-class workflow stage with its own validation, review, and repair cycle to catch cross-lane regressions and merge conflicts. (See DEC1, DEC3)"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/chosen/key_design_decisions/2",
+            "value": "Namespaced workspace partitions (C22) isolating per-lane canonical/non-canonical content with a shared integration partition, unified under workspace_index.json. (See DEC1)"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/chosen/key_design_decisions/3",
+            "value": "Medium HITL strictness: automated lane-level validation with HITL triggers concentrated at integration conflicts exceeding deterministic thresholds, security critical findings, secrets detection, and ChangeRequest approvals. (See DEC4, DEC3)"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/chosen/key_design_decisions/4",
+            "value": "Two-tier acceptance: lane-scoped gates must pass before fan-in; integrated state must pass full system-level validators, integration review, and judge assessment before freeze. (See DEC5, DEC2)"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/chosen/key_design_decisions/5",
+            "value": "Sandboxed tooling with deny-by-default network, repo-write only via patch_apply, and per-stage tool permission matrix enforced by C11. (See DEC4)"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/chosen/key_design_decisions/6",
+            "value": "Deterministic smallest-passing-repair selection (fewest ops → fewest bytes → first-generated) applied at both lane and integration repair stages. (See DEC1)"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/chosen/key_design_decisions/7",
+            "value": "Stage handoff artifacts emitted at every checkpoint boundary (lane transitions, integration transitions, judge, freeze) for cold-start resumability. (See DEC2)"
+          }
+        ]
+      },
+      {
+        "label": "note",
+        "severity": "medium",
+        "summary": "Integration conflict_report is required as a deliverable, but no artifact schema/contract is defined for it. Either define it within existing requirements (without minting new IDs) or explicitly route to requirements clarification via an existing open question.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/milestones/2/deliverables/1/text",
+            "note": "M3-D2 requires an integration conflict_report deliverable",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/project_capsule/open_questions/8/text",
+            "note": "Q9 covers conflict resolution strategy; can be expanded to include conflict_report schema/format",
+            "quote": null
+          }
+        ],
+        "violated_gate": "completeness_heuristic",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/milestones/2/deliverables/1/text",
+            "value": "Integration conflict_report (structured JSON artifact; schema/format to be specified as part of conflict-resolution policy; must include evidence pointers to conflicting patchsets/files and chosen deterministic escalation path)."
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/project_capsule/open_questions/8/text",
+            "value": "How should conflict resolution work when parallel implementation pods produce overlapping/competing patchsets (merge strategy, deterministic ordering rules, reroute/rebase stages, escalation thresholds), and what is the required schema/format for the structured integration conflict_report artifact?"
+          }
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Evidence pointer schema mismatch: plan mandates {artifact_ref, entity_id|null, json_pointer, note} but uses {candidate_id, artifact_ref, artifact_id, json_pointer, note, quote} throughout decision_log and supplemental_evaluations, violating R10/CNS6.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/requirements/9/text",
+            "note": "R10 defines required evidence pointer structure",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/decision_log/0/evidence_pointers/0",
+            "note": "DEC1 uses non-compliant evidence pointer with candidate_id/artifact_id",
+            "quote": null
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": []
+      }
+    ],
+    "reroute_target": "schema_alignment",
+    "reroute_reason": "Hard-gate id_integrity failures include ID-bearing deliverable-id renames and structural architecture-risk representation mismatches; these are not safe localized edits under triage constraints and should be handled by the appropriate schema/ID-integrity owner."
+  }
+}

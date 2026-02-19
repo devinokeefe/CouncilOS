@@ -1,0 +1,121 @@
+{
+  "artifact_type": "failure_mode_findings",
+  "artifact_id": "failure_modes_B2B_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T21:00:20.637665Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B2B_v2"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2B_v2",
+    "taxonomy": "Provided taxonomy_categories",
+    "critical_findings": [
+      {
+        "id": "FM1",
+        "category": "Integration/merge conflict handling & parallelism hazards",
+        "severity": "critical",
+        "finding": "Deterministic integration in O2 is not fully closeable with current inputs: conflict-resolution strategy and deterministic diff application across merge conflicts are explicitly blocking/low-confidence (Q9, A10). This can break reproducibility guarantees (integration output depends on wall-clock order, environment, or heuristic conflict resolution), undermining the audit spine and Freeze validity.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/project_capsule/open_questions/8; /inputs/plan_candidate/plan_package/project_capsule/assumptions/9; /inputs/plan_candidate/plan_package/risk_register/11; /inputs/plan_candidate/plan_package/architecture/chosen/key_design_decisions/1",
+          "closure_target": "Before Phase 3 (M3) entry: specify (a) exact diff/patchset format normalization rules used by patch_apply, (b) deterministic merge + deterministic conflict classification + deterministic escalation thresholds, (c) explicit 'no-auto-resolve' classes; add an acceptance test that permutes lane completion order and validates identical merged tree + identical repo_snapshot hashes.",
+          "earliest_prevention_stage": "WorkPlanning"
+        }
+      },
+      {
+        "id": "FM2",
+        "category": "Evidence & traceability compliance (RFC6901 pointers)",
+        "severity": "critical",
+        "finding": "The plan embeds 'evidence_pointers' objects that include extra fields beyond the declared canonical structure {artifact_ref, entity_id|null, json_pointer, note}. If validators enforce strict shape (as required by R10), these artifacts will be rejected or silently diverge from the evidence standard, breaking traceability compliance.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/decision_log/0/evidence_pointers/0; /inputs/plan_candidate/plan_package/decision_log/0/evidence_pointers/1; /inputs/plan_candidate/plan_package/requirements/9",
+          "closure_target": "Before any schema/validator finalization: (1) define the evidence pointer JSON schema (including whether additionalProperties are allowed), (2) update all canonical artifacts to conform exactly, or (3) explicitly version and allow an extended evidence-pointer schema with deterministic downgrade/normalization to the minimal form.",
+          "earliest_prevention_stage": "Intake"
+        }
+      },
+      {
+        "id": "FM3",
+        "category": "Audit spine integrity (manifest/event log/artifact immutability)",
+        "severity": "high",
+        "finding": "artifact_ref naming/versioning/addressing is a blocking open question (Q3), but evidence pointers, workspace_index accounting, and immutability/versioning validators all depend on it. Without a canonical artifact_ref contract, RFC6901 pointers may not resolve deterministically across runs/storage backends, causing audit spine and trace gates to fail or become non-portable.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/project_capsule/open_questions/2; /inputs/plan_candidate/plan_package/requirements/9; /inputs/plan_candidate/plan_package/requirements/17",
+          "closure_target": "Before Phase 1 implementation: define artifact_ref format (including immutability/versioning semantics, content-hash inclusion, and resolution rules), and add a validator that round-trips evidence-pointer resolution across the artifact store interface; update all schemas that reference artifact_ref to the finalized format.",
+          "earliest_prevention_stage": "Intake"
+        }
+      },
+      {
+        "id": "FM4",
+        "category": "Tool permissioning & sandbox escape/misuse",
+        "severity": "high",
+        "finding": "Tool policy for the Review stage denies artifact_write and workspace_write, but the architecture/requirements require reviewers to emit review_findings.json (findings-only). This mismatch can cause either deadlock (cannot produce required artifact) or policy workarounds that weaken separation-of-powers (e.g., writing via another stage/role).",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies/6; /inputs/plan_candidate/plan_package/architecture/options/1/components/9; /inputs/plan_candidate/plan_package/requirements/21",
+          "closure_target": "Before Phase 1: update Review stage permissions to allow writing a strictly-typed findings-only artifact to a dedicated canonical artifact type (or an orchestrator-mediated 'review_findings_submit' interface) while still denying all patch/code writes; add validator that reviewers cannot emit patchsets/JSON patches or modify other artifact types.",
+          "earliest_prevention_stage": "Review"
+        }
+      },
+      {
+        "id": "FM5",
+        "category": "Schema correctness & JSON Patch safety (RFC6902)",
+        "severity": "high",
+        "finding": "JSON Patch constraints are described (caps, forbidden paths, schema revalidation), but 'forbidden JSON Pointer path rules per artifact type' are not concretely defined. This can allow syntactically-valid patches that preserve schema yet violate governance invariants (e.g., editing historical stage_handoffs, rewriting work_plan task dependencies, altering risk severities) while still passing generic schema checks.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/risk_register/10; /inputs/plan_candidate/plan_package/requirements/11; /inputs/plan_candidate/plan_package/requirements/14",
+          "closure_target": "Before Phase 2 (when patching frequency increases): for each canonical artifact type, publish an allowlist of JSON Pointer prefixes that may be patched, and an explicit denylist (e.g., immutable sections, prior checkpoints, provenance fields); implement semantic validators for critical artifacts (work_plan integrity, stage_handoff immutability rules, decision immutability rules).",
+          "earliest_prevention_stage": "WorkPlanning"
+        }
+      },
+      {
+        "id": "FM6",
+        "category": "Secrets handling & sensitive data retention",
+        "severity": "high",
+        "finding": "Secrets blocking is mandated, but the plan relies on scanning/redaction while also requiring rich artifacts (patchsets, repo_snapshot, event logs, context packs). A common failure mode is 'partial redaction' where the secret (or enough of it) is still persisted in scanner reports, diffs, or context packs (e.g., including offending line excerpts), violating CNS9 despite detection.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/requirements/19; /inputs/plan_candidate/plan_package/risk_register/6; /inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies/4/hitl_triggers/0",
+          "closure_target": "Before Phase 1: specify 'no-secret-echo' requirements for all scan outputs (findings must store only fingerprints/locations/hashes, never raw secret substrings); add a pre-persist guard that rejects any artifact containing matching secret patterns even in scanner output; add a context-pack sanitizer that prevents inclusion of any artifact quarantined for secrets.",
+          "earliest_prevention_stage": "Validate"
+        }
+      },
+      {
+        "id": "FM7",
+        "category": "Validation determinism (build/test/lint/typecheck) & flaky policy",
+        "severity": "medium",
+        "finding": "The plan requires deterministic retries/quarantine and full gating, but does not pin the validator execution environment/toolchain (beyond 'entrypoints declared in repo_context'). This can yield nondeterministic outcomes across resumes/checkpoints (dependency drift, tool version changes), causing irreproducible validation results and erroneous Freeze/No-Freeze decisions even when retry policy is deterministic.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/project_capsule/assumptions/3; /inputs/plan_candidate/plan_package/risk_register/5; /inputs/plan_candidate/plan_package/requirements/20",
+          "closure_target": "Before Phase 4 Freeze gating: add explicit requirements for environment capture (toolchain versions, container digest or hermetic runner ID, dependency lock verification) and include these in run_manifest/release_bundle provenance; validator must fail if environment/provenance is incomplete.",
+          "earliest_prevention_stage": "Intake"
+        }
+      },
+      {
+        "id": "FM8",
+        "category": "Checkpoint/resume correctness (stage handoffs)",
+        "severity": "medium",
+        "finding": "O2 introduces per-lane + global + integration checkpoints, but the requirements/acceptance tests focus on existence of stage_handoff artifacts rather than verifying they are sufficient to restore deterministically across parallel state (lane completion sets, merge ordering inputs, budgets/retry counters). This can lead to 'resume drift' where a resumed run makes different routing/merge decisions than the original run state.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/requirements/4; /inputs/plan_candidate/plan_package/acceptance_tests/5; /inputs/plan_candidate/plan_package/architecture/chosen/high_level_dataflow",
+          "closure_target": "Before Phase 2: extend stage_handoff schema to include deterministic resume-critical fields for O2 (lane states, completed lane artifact_ref sets, deterministic merge-order seed/inputs, retry counters, remaining budgets, quarantine state); add an acceptance test that pauses mid-parallel execution and resumes, asserting identical next-action selection and eventual integrated output.",
+          "earliest_prevention_stage": "IntegrateAndValidate"
+        }
+      }
+    ],
+    "closure_pass": false
+  }
+}

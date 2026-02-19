@@ -1,0 +1,12 @@
+{
+  "run_context": {{RUN_CONTEXT_JSON}},
+  "artifact_refs": {{ARTIFACT_REFS_JSON}},
+  "allowed_id_prefixes": ["TG"],
+  "inputs": {
+    "candidate_ref": "{{CANDIDATE_REF}}",
+    "plan_candidate": {{PLAN_CANDIDATE_JSON}},
+    "deterministic_sample_checks": {{TRACE_SAMPLE_CHECKS_JSON}}
+  },
+  "task": "Evaluate the provided sample checks only.",
+  "output_schema": {{TRACE_AUDIT_SCHEMA_JSON}}
+}

@@ -1,0 +1,121 @@
+{
+  "artifact_type": "failure_mode_findings",
+  "artifact_id": "failure_modes_B2A_v3",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T21:25:43.168879Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B2A_v3"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2A_v3",
+    "taxonomy": "CouncilOS failure-mode taxonomy (input taxonomy_categories)",
+    "critical_findings": [
+      {
+        "id": "FM1",
+        "category": "Evidence & traceability compliance (RFC6901 pointers)",
+        "severity": "critical",
+        "finding": "Evidence pointer objects in decision_log include extra/non-standard fields (e.g., candidate_id, artifact_id, quote) and omit the explicitly required RFC6901 evidence-pointer shape ({artifact_ref, entity_id|null, json_pointer, note}). A strict validator enforcing R10 may reject these artifacts, breaking traceability and potentially blocking Freeze.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/requirements/9/text ; /inputs/plan_candidate/plan_package/decision_log/0/evidence_pointers/0",
+          "closure_target": "All canonical artifacts use only evidence-pointer objects exactly shaped as {artifact_ref, entity_id|null, json_pointer, note}; eliminate additional keys or formally extend schema + validators consistently everywhere.",
+          "earliest_prevention_stage": "WorkPlanning"
+        }
+      },
+      {
+        "id": "FM2",
+        "category": "Tool permissioning & sandbox escape/misuse",
+        "severity": "critical",
+        "finding": "Tool policy for stage 'Review' denies artifact_write/workspace_write entirely, but the workflow requires reviewers to emit findings artifacts (e.g., review_findings.json, and per-lane/integration findings). This is an internal policy contradiction that can deadlock the Review stage or force out-of-band writes that undermine auditability/role constraints.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/risk_gov_canonical_v1",
+          "closure_target": "Amend tool_policy so reviewers can write a strictly-scoped findings-only artifact channel (e.g., artifact_write allowlisted only for review_findings type, immutable/append-only), while still denying any patch/code/artifact mutations.",
+          "earliest_prevention_stage": "Review"
+        }
+      },
+      {
+        "id": "FM3",
+        "category": "Patchset safety & deterministic application",
+        "severity": "critical",
+        "finding": "Patchset diff format and normalization rules are explicitly unresolved (blocking Q7), yet PatchApply/IntegrateAndValidate stages depend on deterministic patch application and conflict handling. Without a fully specified diff encoding + normalization + apply algorithm, reproducibility, merge determinism, and forbidden-path enforcement cannot be guaranteed.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/project_capsule/open_questions/6 ; /inputs/plan_candidate/plan_package/synthesis_warnings/0",
+          "closure_target": "Specify a single canonical patchset schema and diff format (including file ops, line endings, rename detection policy, binary handling, whitespace normalization, base_commit requirements) and implement deterministic patch_apply with conformance tests; make it a gate before enabling multi-lane O2.",
+          "earliest_prevention_stage": "Generate"
+        }
+      },
+      {
+        "id": "FM4",
+        "category": "Integration/merge conflict handling & parallelism hazards",
+        "severity": "high",
+        "finding": "O2 requires merge ordering independent of lane completion timing, but the concrete deterministic merge-order algorithm, conflict-resolution thresholds, and escalation triggers remain underspecified (blocking Q9; W1). This can lead to non-reproducible integrated states, inconsistent conflict outcomes, and brittle replay/checkpoint behavior.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/project_capsule/open_questions/8 ; /inputs/plan_candidate/plan_package/milestones/2/deliverables/0 ; /inputs/plan_candidate/plan_package/risk_register/11",
+          "closure_target": "Define a deterministic merge ordering function (inputs, tie-breakers, stable sort keys, dependency-aware constraints) and deterministic conflict classification + thresholds; require Integration Merge Engine to emit a canonical ordering artifact and conflict_report with deterministic escalation routing.",
+          "earliest_prevention_stage": "IntegrateAndValidate"
+        }
+      },
+      {
+        "id": "FM5",
+        "category": "Secrets handling & sensitive data retention",
+        "severity": "high",
+        "finding": "The design requires secrets to be blocked/redacted before persistence, but it does not specify how to prevent secrets from being captured in transient tool outputs (stdout/stderr), patch diffs, or event logs before scanning occurs. If event logging captures raw tool output, secrets can become durably stored in the audit spine, violating R20 irreversibly.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/requirements/19/text ; /inputs/plan_candidate/plan_package/risk_register/6",
+          "closure_target": "Define an explicit 'no-raw-output persistence' rule: tool outputs must be streamed through a secrets-scrubber before any event_log/artifact write; store only redacted outputs + structured findings; add a validator that rejects any artifact/log line containing secret patterns.",
+          "earliest_prevention_stage": "Validate"
+        }
+      },
+      {
+        "id": "FM6",
+        "category": "Workspace governance (canonical vs non-canonical, indexing)",
+        "severity": "high",
+        "finding": "Workspace governance requires canonical vs non-canonical separation, indexing completeness, and canonical immutability after Freeze, but enforcement details are not fully specified (e.g., what constitutes canonical immutability pre-freeze vs versioned updates, how compaction preserves auditability, and how to prevent unindexed side-effect files created by tools). This can break deterministic resume, evidence resolution, and audit completeness.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/requirements/16/text ; /inputs/plan_candidate/plan_package/requirements/17/text ; /inputs/plan_candidate/plan_package/risk_register/7",
+          "closure_target": "Define enforceable workspace invariants and validator rules: canonical paths are versioned-only (no overwrite), non-canonical is append-only with provenance, all writes must go through Workspace Manager API, periodic reconciliation scan compares filesystem/object-store listing to workspace_index and fails on any unindexed item.",
+          "earliest_prevention_stage": "Intake"
+        }
+      },
+      {
+        "id": "FM7",
+        "category": "Role separation & multi-vendor governance",
+        "severity": "high",
+        "finding": "R22 requires multi-vendor separation across writer/reviewer/judge, but the plan relies on a low-confidence assumption that a multi-vendor portfolio is available (A5). If the portfolio is unavailable or routing cannot be deterministically enforced, governance can degrade to self-review/self-approval, invalidating the separation-of-powers requirement.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/project_capsule/assumptions/4 ; /inputs/plan_candidate/plan_package/requirements/21/text",
+          "closure_target": "Add an explicit fallback governance mode: if multi-vendor is unavailable, enforce separation via different model instances with stricter conflict-of-interest rules + mandatory HITL for Judge, and block Freeze unless independence criteria are met and recorded in run_manifest provenance.",
+          "earliest_prevention_stage": "Intake"
+        }
+      },
+      {
+        "id": "FM8",
+        "category": "Supply-chain/network dependency control",
+        "severity": "high",
+        "finding": "Tool policy is network-deny by default across stages, but dependency acquisition/builds may require network access; Q11 is blocking and K15 is high. Without a specified offline mirror/allowlist/lockfile policy, runs may be unable to validate/build, or teams may expand permissions ad hoc, harming reproducibility and supply-chain safety.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/project_capsule/open_questions/10 ; /inputs/plan_candidate/plan_package/risk_register/14 ; /inputs/plan_candidate/plan_package/risk_register/15",
+          "closure_target": "Specify a deterministic dependency policy: mandatory lockfiles, approved offline mirrors/caches, allowlisted domains (if any), and a dedicated stage for dependency fetch with full provenance logging; add validators that fail on unpinned dependency resolution or unauthorized network attempts.",
+          "earliest_prevention_stage": "Validate"
+        }
+      }
+    ],
+    "closure_pass": false
+  }
+}

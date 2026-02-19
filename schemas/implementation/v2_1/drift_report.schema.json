@@ -1,0 +1,47 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "default": "2.1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "drift_id": {
+      "title": "Drift Id",
+      "type": "string"
+    },
+    "pre_snapshot_ref": {
+      "title": "Pre Snapshot Ref",
+      "type": "string"
+    },
+    "post_snapshot_ref": {
+      "title": "Post Snapshot Ref",
+      "type": "string"
+    },
+    "summary": {
+      "title": "Summary",
+      "type": "string"
+    },
+    "classification": {
+      "title": "Classification",
+      "type": "string"
+    },
+    "diffs": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Diffs",
+      "type": "array"
+    }
+  },
+  "required": [
+    "drift_id",
+    "pre_snapshot_ref",
+    "post_snapshot_ref",
+    "summary",
+    "classification"
+  ],
+  "title": "DriftReportPayload",
+  "type": "object"
+}

@@ -1,0 +1,10 @@
+{
+  "run_context": {{RUN_CONTEXT_JSON}},
+  "artifact_refs": {{ARTIFACT_REFS_JSON}},
+  "inputs": {
+    "project_capsule": {{CAPSULE_JSON}},
+    "qa_template_drafts": {{QA_DRAFTS_JSON_ARRAY}}
+  },
+  "task": "Merge QA templates into a canonical QA strategy.",
+  "output_schema": {{QA_STRATEGY_SCHEMA_JSON}}
+}

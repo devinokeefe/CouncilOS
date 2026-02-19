@@ -1,0 +1,105 @@
+{
+  "$defs": {
+    "EvidencePointer": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_ref": {
+          "title": "Artifact Ref",
+          "type": "string"
+        },
+        "entity_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Entity Id"
+        },
+        "json_pointer": {
+          "title": "Json Pointer",
+          "type": "string"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        }
+      },
+      "required": [
+        "artifact_ref",
+        "json_pointer"
+      ],
+      "title": "EvidencePointer",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "default": "1.0.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "pack_id": {
+      "title": "Pack Id",
+      "type": "string"
+    },
+    "stage": {
+      "title": "Stage",
+      "type": "string"
+    },
+    "role": {
+      "title": "Role",
+      "type": "string"
+    },
+    "artifact_refs": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Artifact Refs",
+      "type": "array"
+    },
+    "evidence": {
+      "items": {
+        "$ref": "#/$defs/EvidencePointer"
+      },
+      "title": "Evidence",
+      "type": "array"
+    },
+    "max_items": {
+      "title": "Max Items",
+      "type": "integer"
+    },
+    "max_bytes": {
+      "title": "Max Bytes",
+      "type": "integer"
+    },
+    "size_bytes": {
+      "title": "Size Bytes",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "pack_id",
+    "stage",
+    "role",
+    "artifact_refs",
+    "evidence",
+    "max_items",
+    "max_bytes",
+    "size_bytes"
+  ],
+  "title": "ContextPackPayload",
+  "type": "object"
+}

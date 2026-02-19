@@ -1,0 +1,241 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B02B_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T19:02:31.379049Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "trace_graph_B02B_primary_v1",
+    "trace_graph_B02B_anchor_v1",
+    "trace_graph_B02B_fallback_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B02B_v1",
+    "findings": [
+      {
+        "id": "TG-CHK-01",
+        "severity": "low",
+        "summary": "Trace gap: Sample check expects R1 (Input Contract) and AT1 Coverage in Milestone M2 (Parallel Lane Execution), but M2 exit criteria do not explicitly reference AT1. Coverage is semantically provided via M1 dependency, but the explicit trace graph link requested by the sample check is missing.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_package_final",
+            "json_pointer": "/plan_package/milestones/1/exit_criteria",
+            "note": "M2 exit criteria list lane-specific tests (AT13, AT14...) but omit AT1 (Intake/Input Contract) which sample checks map to this milestone.",
+            "quote": null
+          }
+        ],
+        "routing_target": "plan_refinement"
+      },
+      {
+        "id": "TG-CHK-02",
+        "severity": "low",
+        "summary": "Trace gap: Sample check expects R2 (Repo Context) and AT2 Coverage in Milestone M2, but M2 exit criteria do not explicitly reference AT2. While R2 is a precondition for code generation (M2), the gate is enforced at M1 and implied at M2, lacking the explicit trace requested.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_package_final",
+            "json_pointer": "/plan_package/milestones/1/exit_criteria",
+            "note": "M2 exit criteria omit AT2 (Repo Context Validity) despite M2 being a code-generation stage where R2 applies.",
+            "quote": null
+          }
+        ],
+        "routing_target": "plan_refinement"
+      },
+      {
+        "id": "TG-CHK-03",
+        "severity": "low",
+        "summary": "Trace gap: Sample check expects R3 (Workspace Context) and AT3 Coverage in Milestone M2, but M2 exit criteria do not explicitly reference AT3. M2 deliverables utilize workspace partitions governed by R3, but the verification gate is not explicitly traced in this milestone's criteria.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_package_final",
+            "json_pointer": "/plan_package/milestones/1/exit_criteria",
+            "note": "M2 exit criteria omit AT3 (Workspace Context Validity) despite M2 utilizing workspace partitions.",
+            "quote": null
+          }
+        ],
+        "routing_target": "plan_refinement"
+      },
+      {
+        "id": "TG1",
+        "severity": "high",
+        "summary": "Sample check R1 coverage gap: AT1 tests rejecting chat logs and unapproved non-canonical inputs, but it does not test the “accept exactly one frozen plan_package_final.json” constraint (e.g., behavior when multiple plan_package_final.json inputs are provided, or when multiple versions/duplicates are present). This weakens traceability that R1’s “exactly one” requirement is enforced.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_candidate/plan_package/requirements/0",
+            "note": "R1 includes “accept exactly one frozen plan_package_final.json”",
+            "quote": "The Implementation Council subsystem SHALL accept exactly one frozen plan_package_final.json"
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_candidate/plan_package/acceptance_tests/0",
+            "note": "AT1 procedures do not include a multi-input/duplicate plan_package_final.json case",
+            "quote": "Attempt to initiate an Implementation Council run with inputs: (a) a valid plan_package_final.json"
+          }
+        ],
+        "routing_target": "acceptance_review"
+      },
+      {
+        "id": "TG2",
+        "severity": "high",
+        "summary": "Sample checks R1–R3 depend on Intake correctly validating inputs and recording outcomes, but Intake tool policy restricts artifact_write to “allow_noncanonical_only”, while M1 deliverables require initializing canonical artifacts (implementation_run_manifest.json, implementation_event_log.jsonl, workspace_index.json, and stage_handoff). This internal inconsistency can block or undermine the intended R1–R3 validation/audit behavior at Intake.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_candidate/plan_package/governance/tool_policy/stage_policies/0/restrictions/0",
+            "note": "Intake restrictions appear to disallow canonical artifact writes",
+            "quote": "artifact_write\": \"allow_noncanonical_only\""
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_candidate/plan_package/milestones/0/deliverables/1",
+            "note": "M1 requires run manifest initialization during Intake milestone",
+            "quote": "Initialized implementation_run_manifest.json (immutable) and implementation_event_log.jsonl (append-only)."
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_candidate/plan_package/milestones/0/deliverables/3",
+            "note": "M1 requires workspace_index initialization during Intake milestone",
+            "quote": "workspace_index.json initialized with namespace/partition layout per workspace_context.json."
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_candidate/plan_package/milestones/0/deliverables/4",
+            "note": "M1 requires stage_handoff emission at Intake→Parallel boundary",
+            "quote": "stage_handoff artifact for Intake→Parallel boundary."
+          }
+        ],
+        "routing_target": "governance_review"
+      },
+      {
+        "id": "TG3",
+        "severity": "medium",
+        "summary": "Sample checks for R2 and R3 assert “typed, versioned schema” requirements for repo_context.json and workspace_context.json, and AT2/AT3 assume schema validation exists, but the candidate does not provide explicit schema artifact identifiers/locations or versioning scheme for those schemas within the plan package itself. This leaves a trace gap: the requirements are stated, but the concrete schema sources to be validated are not evidenced in this artifact.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_candidate/plan_package/requirements/1",
+            "note": "R2 requires a typed, versioned repo_context.json schema",
+            "quote": "SHALL define and require a typed, versioned repo_context.json schema"
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_candidate/plan_package/requirements/2",
+            "note": "R3 requires a typed, versioned workspace_context.json schema",
+            "quote": "SHALL define and require a typed, versioned workspace_context.json schema"
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_candidate/plan_package/acceptance_tests/1",
+            "note": "AT2 assumes a schema exists to validate against, but schema artifact ref is not specified here",
+            "quote": "Start a run without repo_context.json; then start a run with repo_context.json that violates schema"
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_candidate/plan_package/acceptance_tests/2",
+            "note": "AT3 assumes a schema exists to validate against, but schema artifact ref is not specified here",
+            "quote": "Start a run without workspace_context.json; then start a run with schema-invalid workspace_context.json"
+          }
+        ],
+        "routing_target": "clarification"
+      },
+      {
+        "id": "TG001",
+        "severity": "medium",
+        "summary": "R1 milestone mapping includes M2 (Parallel Lane Execution) but R1 is an intake-level requirement that should be fully satisfied at M1 only",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/inputs/deterministic_sample_checks/0",
+            "note": "R1 maps to both M1 and M2, but R1 text specifies acceptance of plan_package_final.json as sole input, which is an Intake concern completed at M1",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_package/requirements/0",
+            "note": "R1 requirement text focuses on input acceptance and rejection of non-canonical sources",
+            "quote": "SHALL accept exactly one frozen plan_package_final.json (plus its associated structured handoff bundle) as its sole canonical planning input"
+          }
+        ],
+        "routing_target": "trace_review"
+      },
+      {
+        "id": "TG002",
+        "severity": "medium",
+        "summary": "R2 milestone mapping includes M2 (Parallel Lane Execution) but R2 is an intake-level prerequisite requirement that should be fully satisfied at M1 only",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/inputs/deterministic_sample_checks/1",
+            "note": "R2 maps to both M1 and M2, but R2 explicitly states repo_context.json SHALL be required before any code-generation stage begins, making it an M1 exit criterion only",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_package/requirements/1",
+            "note": "R2 requirement text specifies repo_context.json must be present before code-generation",
+            "quote": "SHALL be required before any code-generation stage begins"
+          }
+        ],
+        "routing_target": "trace_review"
+      },
+      {
+        "id": "TG003",
+        "severity": "medium",
+        "summary": "R3 milestone mapping includes M2 (Parallel Lane Execution) but R3 is an intake-level prerequisite requirement that should be fully satisfied at M1 only",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/inputs/deterministic_sample_checks/2",
+            "note": "R3 maps to both M1 and M2, but R3 explicitly states workspace_context.json SHALL be required before any workspace-writing stage begins, making it an M1 exit criterion only",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_package/requirements/2",
+            "note": "R3 requirement text specifies workspace_context.json must be present before workspace-writing",
+            "quote": "SHALL be required before any workspace-writing stage begins"
+          }
+        ],
+        "routing_target": "trace_review"
+      }
+    ]
+  }
+}

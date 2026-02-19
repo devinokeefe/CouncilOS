@@ -1,0 +1,209 @@
+{
+  "artifact_type": "validator_report",
+  "artifact_id": "validator_B2A_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T18:58:55.494624Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B2A_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2A_v1",
+    "overall_status": "FAIL_REPAIRABLE",
+    "checks": [
+      {
+        "name": "schema",
+        "hard_gate": true,
+        "pass": true,
+        "violations": []
+      },
+      {
+        "name": "id_integrity",
+        "hard_gate": true,
+        "pass": false,
+        "violations": [
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/milestones",
+            "message": "Deliverable id does not match DL#: M1",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/milestones",
+            "message": "Deliverable id does not match DL#: M2",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/milestones",
+            "message": "Deliverable id does not match DL#: M3",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/milestones",
+            "message": "Deliverable id does not match DL#: M4",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O1 references missing risk Long-horizon implementations may exceed token/time budgets due to serialized execution.",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O1 references missing risk Linear accumulation of artifacts can pressure context-window bounds if context-pack selection is not strict.",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O1 references missing risk Flaky validator behavior can exhaust retry budgets and stall the only active lane.",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O2 references missing risk Merge conflicts between lanes may be frequent in tightly-coupled repos, driving escalation rates.",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O2 references missing risk Missed dependencies in task partitioning can cause late integration failures and rework.",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O2 references missing risk Reproducibility depends on merge ordering rules that must be independent of wall-clock completion timing.",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O2 references missing risk Workspace partition boundaries can be violated by side-effecting tools unless sandboxing and path scoping are strict.",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O3 references missing risk Validation cost may pressure teams to weaken regression gates, reducing safety.",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O3 references missing risk Environment drift between runs can break deterministic replay/resume unless toolchains are pinned.",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O3 references missing risk Budget thresholds for partial-freeze decisions can be misestimated, freezing too early/late.",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O3 references missing risk Task ordering may hide implicit dependencies that cause late-task failures.",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O4 references missing risk Internal complexity may grow and undermine CNS12 separation (reviewers/judges becoming entangled with writing/patching).",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O4 references missing risk Hidden internal state transitions can make checkpoint/resume and traceability less explicit unless the monolith emits full stage_handoff artifacts.",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O4 references missing risk Monolith becomes a high-blast-radius component for failures and changes.",
+            "repair_hint": null
+          },
+          {
+            "severity": "medium",
+            "json_pointer": "/plan_package/architecture/chosen/key_design_decisions",
+            "message": "Decision reference missing: Adopt O2 fan-out/fan-in with deterministic integration flow rather than purely sequential execution (O1).",
+            "repair_hint": null
+          },
+          {
+            "severity": "medium",
+            "json_pointer": "/plan_package/architecture/chosen/key_design_decisions",
+            "message": "Decision reference missing: Use a hybrid rollout: single-lane foundation first, then limited parallel lanes, then deterministic integration, then full Judge/Freeze closure.",
+            "repair_hint": null
+          },
+          {
+            "severity": "medium",
+            "json_pointer": "/plan_package/architecture/chosen/key_design_decisions",
+            "message": "Decision reference missing: Enforce namespaced workspace partitions (C22) to reduce cross-lane contamination and bound lane context packs.",
+            "repair_hint": null
+          },
+          {
+            "severity": "medium",
+            "json_pointer": "/plan_package/architecture/chosen/key_design_decisions",
+            "message": "Decision reference missing: Define deterministic integration merge ordering that is independent of lane completion timing, with explicit conflict escalation thresholds (K12).",
+            "repair_hint": null
+          },
+          {
+            "severity": "medium",
+            "json_pointer": "/plan_package/architecture/chosen/key_design_decisions",
+            "message": "Decision reference missing: Maintain high HITL strictness for parallel-lane complexity and unresolved merge/patch-format policy details (Q7–Q9).",
+            "repair_hint": null
+          }
+        ]
+      },
+      {
+        "name": "coverage",
+        "hard_gate": true,
+        "pass": true,
+        "violations": []
+      },
+      {
+        "name": "milestone_exit_criteria",
+        "hard_gate": true,
+        "pass": true,
+        "violations": []
+      },
+      {
+        "name": "risk_closure",
+        "hard_gate": true,
+        "pass": true,
+        "violations": []
+      },
+      {
+        "name": "tool_policy_parse",
+        "hard_gate": true,
+        "pass": true,
+        "violations": []
+      },
+      {
+        "name": "measurability_heuristic",
+        "hard_gate": false,
+        "pass": true,
+        "violations": []
+      },
+      {
+        "name": "contradiction_heuristic",
+        "hard_gate": false,
+        "pass": true,
+        "violations": []
+      },
+      {
+        "name": "completeness_heuristic",
+        "hard_gate": false,
+        "pass": true,
+        "violations": []
+      }
+    ]
+  }
+}

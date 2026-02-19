@@ -1,0 +1,765 @@
+{
+  "artifact_type": "architecture_canonical",
+  "artifact_id": "architecture_canonical_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T18:49:55.110734Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "architecture_merge_v1"
+  ],
+  "payload": {
+    "options": [
+      {
+        "id": "O1",
+        "summary": "Sequential staged pipeline with explicit council role pods (Writer/Reviewer/Patcher/Judge) routed by an orchestrator-owned linear state machine. State lives in a governed workspace/artifact store; deterministic context packs are compiled per stage boundary; repair loops are bounded and enforced by validators and orchestrator policy.",
+        "components": [
+          {
+            "id": "C1",
+            "name": "Orchestrator Core (Linear State Machine)",
+            "responsibilities": [
+              "Enforce strict stage ordering and closure gates (Intake → Plan → Generate → Validate → Review → Patch → Judge → Freeze).",
+              "Own routing, budgets, retry/iteration caps, and termination/checkpoint logic (CNS1).",
+              "Compile deterministic context packs for each stage from workspace_index and declared selection rules (CNS8).",
+              "Enforce tool permission matrix per stage/role and forbidden-path / operation-cap rules (CNS7).",
+              "Trigger escalation via ChangeRequest and/or HITL when policy thresholds are exceeded (CNS5)."
+            ]
+          },
+          {
+            "id": "C2",
+            "name": "Workspace Gateway / Manager",
+            "responsibilities": [
+              "Provide the sole API for workspace and artifact IO, abstracting underlying storage.",
+              "Maintain workspace_index.json with types/versions/provenance; separate canonical vs non-canonical content (CNS8).",
+              "Support checkpoint/restore and emit/verify stage_handoff artifacts at boundaries (CNS3).",
+              "Validate artifact writes against expected schemas; block/redact secrets per policy (CNS9)."
+            ]
+          },
+          {
+            "id": "C3",
+            "name": "Intake Gate",
+            "responsibilities": [
+              "Validate plan_package_final.json, repo_context.json, workspace_context.json against schemas.",
+              "Initialize run_manifest and append-only event_log (CNS3).",
+              "Emit structured rejection errors for malformed/incomplete inputs.",
+              "Emit stage_handoff for Intake→Plan boundary."
+            ]
+          },
+          {
+            "id": "C4",
+            "name": "Work Plan Compiler",
+            "responsibilities": [
+              "Decompose plan entities (R#/AT#/O#/K#) into ordered implementation tasks.",
+              "Produce work_plan.json with dependency graph, bounded patchset slots, and AT# trace mapping.",
+              "Enforce no semantic deviation from frozen plan entities (CNS5)."
+            ]
+          },
+          {
+            "id": "C5",
+            "name": "Writer Pod",
+            "responsibilities": [
+              "Consume orchestrator-compiled context pack for a task/task-batch.",
+              "Produce diff-only patchset JSON artifacts with deterministic apply order (CNS7).",
+              "Obey tool permissions and forbidden-path rules; output JSON-only artifacts (CNS2)."
+            ]
+          },
+          {
+            "id": "C6",
+            "name": "Validator Engine",
+            "responsibilities": [
+              "Run deterministic validators via repo_context.json entrypoints (build/test/lint/typecheck/etc.).",
+              "Emit structured test_results.json and quality_reports.json with AT# trace mapping.",
+              "Detect secrets in artifacts/workspace; enforce policy blocking (CNS9).",
+              "Produce pass/fail gate results consumed by orchestrator."
+            ]
+          },
+          {
+            "id": "C7",
+            "name": "Reviewer Pod (Findings-Only)",
+            "responsibilities": [
+              "Review patchsets and validation outputs read-only.",
+              "Produce review_findings.json with RFC 6901 evidence pointers into versioned artifacts (CNS6).",
+              "Flag scope expansion, risks, and quality issues; never emit code/patch artifacts (CNS12)."
+            ]
+          },
+          {
+            "id": "C8",
+            "name": "Patcher Pod",
+            "responsibilities": [
+              "Produce RFC 6902 JSON Patch arrays for JSON artifact repairs (CNS7).",
+              "Produce replacement diff-only patchsets for code repairs (CNS7).",
+              "Operate within orchestrator-enforced iteration/op caps; provide candidates for deterministic smallest-passing selection."
+            ]
+          },
+          {
+            "id": "C9",
+            "name": "Judge Pod",
+            "responsibilities": [
+              "Independently evaluate patchsets, validator outputs, and review findings.",
+              "Produce trace_report.json verifying evidence completeness (CNS6).",
+              "Emit freeze/no-freeze recommendation and risk-closure assessment against K# entries."
+            ]
+          },
+          {
+            "id": "C10",
+            "name": "Freeze Assembler",
+            "responsibilities": [
+              "Collect and validate the required Implementation Freeze Bundle artifacts (CNS10).",
+              "Run final integrity/reproducibility/workspace-integrity checks before freeze (CNS3/CNS8).",
+              "Emit decision_record.json and release_bundle.json and a bundle manifest."
+            ]
+          }
+        ],
+        "interfaces": [
+          {
+            "id": "IF1",
+            "from": "C1",
+            "to": "C3",
+            "contract": "Provide plan_package_final.json + repo_context.json + workspace_context.json; receive intake_result.json or structured schema/policy rejection plus stage_handoff."
+          },
+          {
+            "id": "IF2",
+            "from": "C3",
+            "to": "C4",
+            "contract": "Provide validated inputs + intake stage_handoff; receive work_plan.json with task graph and AT# trace mapping."
+          },
+          {
+            "id": "IF3",
+            "from": "C1",
+            "to": "C2",
+            "contract": "Checkpoint/restore and artifact IO operations; return updated workspace_index.json and versioned artifact_refs; append mutations to event_log."
+          },
+          {
+            "id": "IF4",
+            "from": "C1",
+            "to": "C5",
+            "contract": "Dispatch task slice + context_pack_ref; receive patchset artifact_refs (diff-only JSON) for deterministic apply."
+          },
+          {
+            "id": "IF5",
+            "from": "C1",
+            "to": "C6",
+            "contract": "Invoke validators on applied patchsets using repo_context.json entrypoints; receive test_results.json + quality_reports.json + gate status."
+          },
+          {
+            "id": "IF6",
+            "from": "C1",
+            "to": "C7",
+            "contract": "Provide read-only context pack (patchsets + validation + work_plan slice); receive review_findings.json with RFC 6901 evidence pointers."
+          },
+          {
+            "id": "IF7",
+            "from": "C1",
+            "to": "C8",
+            "contract": "Provide failures/findings + constraints/op caps; receive candidate RFC 6902 JSON Patches and/or replacement patchsets for bounded repair."
+          },
+          {
+            "id": "IF8",
+            "from": "C1",
+            "to": "C9",
+            "contract": "Provide full run context pack (work_plan, patchsets, validation, findings, workspace index); receive trace_report.json and freeze recommendation."
+          },
+          {
+            "id": "IF9",
+            "from": "C9",
+            "to": "C10",
+            "contract": "On freeze-eligible recommendation, assemble CNS10 bundle and run final validators; return freeze bundle manifest or structured missing/failed-gate report."
+          }
+        ],
+        "tradeoffs": {
+          "pros": [
+            "Simplest reproducible execution model: one active stage and a linear audit trail.",
+            "Clear separation of powers between orchestrator policy enforcement and role pods (writer/reviewer/judge).",
+            "Easier checkpoint/resume because stage boundaries are unambiguous and there is no parallel in-flight work.",
+            "Modular decomposition supports independent testing of stage components while keeping overall flow sequential."
+          ],
+          "cons": [
+            "Slowest wall-clock time for repos with many independent tasks due to lack of parallelism.",
+            "Single failing task can block pipeline progress even when other tasks are independent.",
+            "Context packs may grow across stages unless bounded/filtered aggressively."
+          ]
+        },
+        "risks": [
+          "Long-horizon implementations may exceed token/time budgets due to serialized execution.",
+          "Linear accumulation of artifacts can pressure context-window bounds if context-pack selection is not strict.",
+          "Flaky validator behavior can exhaust retry budgets and stall the only active lane."
+        ]
+      },
+      {
+        "id": "O2",
+        "summary": "Task-parallel fan-out/fan-in architecture with deterministic per-lane execution and a governed integration sub-flow. Independent lanes run Generate→Validate→Review→Patch in parallel partitions; an Integration Merge/Validate/Review/Patch sequence produces a single integrated state for Judge→Freeze. Optionally modeled as a dedicated Integration Sub-Council for stronger separation and specialized integration review.",
+        "components": [
+          {
+            "id": "C11",
+            "name": "Global Orchestrator / Council Coordinator (DAG + Budgets)",
+            "responsibilities": [
+              "Own top-level DAG workflow: Intake → Parallel Lanes → Integration → Judge → Freeze.",
+              "Allocate and enforce global/per-lane budgets, retry/iteration caps, and escalation policy (CNS1/CNS5).",
+              "Compile deterministic context packs for lanes and integration stages from partitioned workspace_index (CNS8).",
+              "Enforce multi-vendor role separation across writers/reviewers/judges (CNS12)."
+            ]
+          },
+          {
+            "id": "C12",
+            "name": "Intake & DAG Work Planner",
+            "responsibilities": [
+              "Validate plan_package_final.json, repo_context.json, workspace_context.json and initialize run_manifest/event_log/workspace_index.",
+              "Produce work_plan.json with dependency DAG, parallelism annotations, and lane partitioning hints.",
+              "Emit stage_handoff for Intake→Parallel boundary."
+            ]
+          },
+          {
+            "id": "C13",
+            "name": "Task Lane Orchestrator",
+            "responsibilities": [
+              "Spawn and manage per-lane state machines (Generate→Validate→Review→Patch).",
+              "Emit per-lane stage_handoffs and completion signals.",
+              "Enforce lane-scoped tool permissions and file-path scoping for patchsets."
+            ]
+          },
+          {
+            "id": "C14",
+            "name": "Writer Pool (Multi-Lane)",
+            "responsibilities": [
+              "Consume lane-scoped context pack and produce diff-only patchset artifacts scoped to lane file sets.",
+              "Output JSON-only artifacts per schema; obey forbidden-path and operation caps."
+            ]
+          },
+          {
+            "id": "C15",
+            "name": "Per-Lane Validator",
+            "responsibilities": [
+              "Run scoped validators per lane; emit per-lane test_results.json and quality_reports.json with AT# mapping.",
+              "Detect secrets in lane artifacts/workspace partitions."
+            ]
+          },
+          {
+            "id": "C16",
+            "name": "Per-Lane Reviewer (Findings-Only)",
+            "responsibilities": [
+              "Review lane patchsets and lane validation results read-only.",
+              "Produce per-lane review_findings.json with RFC 6901 evidence pointers; flag cross-lane dependency issues.",
+              "Enforce findings-only constraint (CNS12)."
+            ]
+          },
+          {
+            "id": "C17",
+            "name": "Per-Lane Patcher",
+            "responsibilities": [
+              "Produce lane-scoped repairs: RFC 6902 patches for JSON artifacts and replacement diff-only patchsets for code.",
+              "Operate within lane iteration/op caps; provide candidates for deterministic selection."
+            ]
+          },
+          {
+            "id": "C18",
+            "name": "Integration Merge Engine",
+            "responsibilities": [
+              "Collect completed lane patchsets and apply in deterministic order to base repo state.",
+              "Detect merge conflicts/collisions and emit structured conflict reports for reroute/escalation.",
+              "Produce merged repo_snapshot.json and integrated patchset ordering record."
+            ]
+          },
+          {
+            "id": "C19",
+            "name": "Integration Validator",
+            "responsibilities": [
+              "Run full-repo validators on merged state and emit integrated test_results.json and quality_reports.json.",
+              "Verify regressions and ensure cross-lane interactions are validated."
+            ]
+          },
+          {
+            "id": "C20",
+            "name": "Integration Reviewer (Findings-Only)",
+            "responsibilities": [
+              "Perform holistic integration review focused on cross-module interactions and system-level quality.",
+              "Produce integration review_findings.json with RFC 6901 evidence pointers; findings-only (CNS12)."
+            ]
+          },
+          {
+            "id": "C21",
+            "name": "Integration Patcher",
+            "responsibilities": [
+              "Produce integration-level repairs for conflicts/regressions discovered at merge/validation time.",
+              "Operate within integration op caps and escalation thresholds."
+            ]
+          },
+          {
+            "id": "C22",
+            "name": "Workspace Manager (Namespaced Partitions)",
+            "responsibilities": [
+              "Maintain per-lane workspace partitions plus a shared canonical integration partition (CNS8).",
+              "Maintain unified workspace_index.json spanning partitions with provenance and checkpoint metadata.",
+              "Support per-lane and global checkpoint/restore; enforce retention/compaction policies."
+            ]
+          },
+          {
+            "id": "C23",
+            "name": "Judge Pod",
+            "responsibilities": [
+              "Evaluate integrated outputs (merged patchsets, integrated validation, lane + integration findings).",
+              "Produce trace_report.json across lanes and integration and freeze/no-freeze recommendation.",
+              "Assess risk closure against K# entries."
+            ]
+          },
+          {
+            "id": "C24",
+            "name": "Freeze Assembler",
+            "responsibilities": [
+              "Collect CNS10-required artifacts from integrated state plus required lane artifacts as specified.",
+              "Run final integrity/reproducibility/workspace-integrity checks; emit decision_record.json and release_bundle.json."
+            ]
+          }
+        ],
+        "interfaces": [
+          {
+            "id": "IF10",
+            "from": "C11",
+            "to": "C12",
+            "contract": "Provide input artifacts; receive validated inputs, work_plan.json with DAG/lane annotations, and stage_handoff for fan-out."
+          },
+          {
+            "id": "IF11",
+            "from": "C11",
+            "to": "C13",
+            "contract": "Dispatch lane IDs + task slices + per-lane budgets; receive per-lane stage_handoffs and completion signals with lane artifact_refs."
+          },
+          {
+            "id": "IF12",
+            "from": "C13",
+            "to": "C14",
+            "contract": "Provide lane context_pack_ref; receive lane patchset artifact_refs (diff-only JSON) scoped to lane file set."
+          },
+          {
+            "id": "IF13",
+            "from": "C13",
+            "to": "C15",
+            "contract": "Invoke scoped validators for lane; receive lane test_results.json + quality_reports.json + gate status."
+          },
+          {
+            "id": "IF14",
+            "from": "C13",
+            "to": "C16",
+            "contract": "Provide read-only lane context pack; receive lane review_findings.json with RFC 6901 evidence pointers."
+          },
+          {
+            "id": "IF15",
+            "from": "C13",
+            "to": "C17",
+            "contract": "Provide lane failures/findings; receive lane-scoped repairs (RFC 6902 patches and/or replacement patchsets)."
+          },
+          {
+            "id": "IF16",
+            "from": "C11",
+            "to": "C18",
+            "contract": "Provide completed lane patchsets and deterministic merge order; receive merged repo_snapshot.json and conflict report (if any)."
+          },
+          {
+            "id": "IF17",
+            "from": "C11",
+            "to": "C19",
+            "contract": "Provide merged repo state; receive integrated test_results.json + quality_reports.json + gate status."
+          },
+          {
+            "id": "IF18",
+            "from": "C11",
+            "to": "C20",
+            "contract": "Provide read-only integrated context pack; receive integration review_findings.json."
+          },
+          {
+            "id": "IF19",
+            "from": "C11",
+            "to": "C21",
+            "contract": "Provide integration failures/conflicts; receive integration-level repair artifacts within op caps or escalation recommendation."
+          },
+          {
+            "id": "IF20",
+            "from": "C11",
+            "to": "C22",
+            "contract": "Namespaced workspace operations (lane/integration partitions) + checkpoint/restore; receive unified workspace_index.json updates with provenance."
+          },
+          {
+            "id": "IF21",
+            "from": "C11",
+            "to": "C23",
+            "contract": "Provide full integrated context pack including lane and integration artifacts; receive trace_report.json and freeze recommendation."
+          },
+          {
+            "id": "IF22",
+            "from": "C23",
+            "to": "C24",
+            "contract": "On freeze-eligible recommendation, assemble CNS10 bundle and run final validators; return freeze bundle manifest or structured failure report."
+          }
+        ],
+        "tradeoffs": {
+          "pros": [
+            "Faster wall-clock time via parallel execution lanes for independent tasks.",
+            "Smaller, lane-scoped context packs reduce context-window pressure.",
+            "Integration-focused validation and review improves cross-module quality and catches coupling issues.",
+            "Isolation via workspace partitions reduces accidental cross-contamination across tasks."
+          ],
+          "cons": [
+            "Higher orchestration complexity (DAG scheduling, lane budgets, deterministic merge ordering, conflict handling).",
+            "Integration is a critical path and can become a bottleneck when conflicts/regressions are common.",
+            "More complex checkpoint/resume model (per-lane + global + integration checkpoints).",
+            "Higher total compute/token cost due to parallel role invocations."
+          ]
+        },
+        "risks": [
+          "Merge conflicts between lanes may be frequent in tightly-coupled repos, driving escalation rates.",
+          "Missed dependencies in task partitioning can cause late integration failures and rework.",
+          "Reproducibility depends on merge ordering rules that must be independent of wall-clock completion timing.",
+          "Workspace partition boundaries can be violated by side-effecting tools unless sandboxing and path scoping are strict."
+        ]
+      },
+      {
+        "id": "O3",
+        "summary": "Checkpoint-driven, sequential-by-default micro-cycle pipeline that processes work_plan tasks one at a time (Generate→Validate→Review→Patch), emitting a stage_handoff after each task. Supports deterministic partial-freeze bundles when budgets are reached, enabling long-horizon execution with resumable checkpoints.",
+        "components": [
+          {
+            "id": "C25",
+            "name": "Orchestrator Core (Checkpoint-Oriented)",
+            "responsibilities": [
+              "Own task-by-task state machine and enforce per-task budgets/retry/iteration limits (CNS1).",
+              "Compile task-scoped context packs with bounded selection rules and sliding window over recent state (CNS8).",
+              "Decide continue vs partial-freeze based on deterministic budget thresholds; enforce escalation (CNS5).",
+              "Require and verify stage_handoff at every task boundary for resumability (CNS3)."
+            ]
+          },
+          {
+            "id": "C26",
+            "name": "Intake & Resume + Work Plan Compiler",
+            "responsibilities": [
+              "Validate inputs and initialize run_manifest/event_log/workspace_index, or resume from prior checkpoint.",
+              "Produce or update work_plan.json with completion status and deterministic next-task selection metadata.",
+              "Load prior stage_handoff for continuation and emit Intake→TaskCycle stage_handoff."
+            ]
+          },
+          {
+            "id": "C27",
+            "name": "Task Cycle Engine",
+            "responsibilities": [
+              "Execute micro-cycles per task: Generate→Validate→Review→Patch until task gate passes or caps are hit.",
+              "Emit checkpoint and stage_handoff after each completed task.",
+              "Track cumulative budget consumption and signal orchestrator when thresholds approach."
+            ]
+          },
+          {
+            "id": "C28",
+            "name": "Writer Pod",
+            "responsibilities": [
+              "Consume task-scoped context pack and produce diff-only patchset JSON for the current task (CNS7).",
+              "Enforce forbidden paths and JSON-only outputs (CNS2)."
+            ]
+          },
+          {
+            "id": "C29",
+            "name": "Task Validator (Incremental)",
+            "responsibilities": [
+              "Apply task patchset and run incremental validators (changed-files lint/tests as configured).",
+              "Emit incremental test_results.json and quality_reports.json with AT# mapping.",
+              "Detect secrets in artifacts/workspace (CNS9)."
+            ]
+          },
+          {
+            "id": "C30",
+            "name": "Task Reviewer (Findings-Only)",
+            "responsibilities": [
+              "Review task patchset and incremental validation outputs read-only.",
+              "Produce task review_findings.json with RFC 6901 evidence pointers (CNS6).",
+              "Findings-only enforcement (CNS12)."
+            ]
+          },
+          {
+            "id": "C31",
+            "name": "Task Patcher",
+            "responsibilities": [
+              "Produce task-scoped repairs: RFC 6902 JSON patches and/or replacement patchsets (CNS7).",
+              "Operate within task op caps; provide candidates for deterministic smallest-passing selection."
+            ]
+          },
+          {
+            "id": "C32",
+            "name": "Regression Revalidation Gate (Cumulative)",
+            "responsibilities": [
+              "After each task completion, run full-repo validators on cumulative repo state as configured.",
+              "Detect regressions introduced by the latest task and emit cumulative validation overlays.",
+              "Trigger repair/rollback/escalation signals to orchestrator based on deterministic rules."
+            ]
+          },
+          {
+            "id": "C33",
+            "name": "Workspace Manager (Append-Checkpoint Model)",
+            "responsibilities": [
+              "Maintain append-only checkpoint log per task completion; support deterministic restore to any checkpoint.",
+              "Maintain workspace_index.json with per-task provenance and completion status; separate canonical vs non-canonical (CNS8).",
+              "Enforce compaction policies for non-canonical content at checkpoint boundaries."
+            ]
+          },
+          {
+            "id": "C34",
+            "name": "Judge Pod",
+            "responsibilities": [
+              "Evaluate cumulative state at full completion or partial-freeze boundary.",
+              "Produce trace_report.json for completed tasks and freeze/partial-freeze recommendation.",
+              "Assess risk closure for completed scope against K# entries."
+            ]
+          },
+          {
+            "id": "C35",
+            "name": "Freeze / Partial-Freeze Assembler",
+            "responsibilities": [
+              "Assemble full or partial Implementation Freeze Bundle.",
+              "For partial freeze: include completion_status metadata and a resume_descriptor artifact to enable deterministic continuation.",
+              "Run integrity/reproducibility/workspace-integrity checks on completed scope (CNS3/CNS8)."
+            ]
+          }
+        ],
+        "interfaces": [
+          {
+            "id": "IF23",
+            "from": "C25",
+            "to": "C26",
+            "contract": "Provide inputs and (optionally) prior stage_handoff for resume; receive validated/resumed state plus work_plan.json with completion status."
+          },
+          {
+            "id": "IF24",
+            "from": "C25",
+            "to": "C27",
+            "contract": "Dispatch next task (or small batch) with task-scoped budget; receive task completion signal, patchset refs, and stage_handoff."
+          },
+          {
+            "id": "IF25",
+            "from": "C27",
+            "to": "C28",
+            "contract": "Provide task context_pack_ref; receive task patchset artifact_ref (diff-only JSON)."
+          },
+          {
+            "id": "IF26",
+            "from": "C27",
+            "to": "C29",
+            "contract": "Invoke incremental validators on task patchset; receive incremental test_results.json + quality_reports.json + gate status."
+          },
+          {
+            "id": "IF27",
+            "from": "C27",
+            "to": "C30",
+            "contract": "Provide read-only task context; receive task review_findings.json with RFC 6901 evidence pointers."
+          },
+          {
+            "id": "IF28",
+            "from": "C27",
+            "to": "C31",
+            "contract": "Provide task failures/findings; receive bounded task repair artifacts (RFC 6902 patches and/or replacement patchsets)."
+          },
+          {
+            "id": "IF29",
+            "from": "C25",
+            "to": "C32",
+            "contract": "After task completion, trigger cumulative regression revalidation; receive cumulative results or regression alert with evidence pointers."
+          },
+          {
+            "id": "IF30",
+            "from": "C25",
+            "to": "C33",
+            "contract": "Append/checkpoint/restore operations per task; receive updated workspace_index.json with checkpoint IDs and provenance."
+          },
+          {
+            "id": "IF31",
+            "from": "C25",
+            "to": "C34",
+            "contract": "At completion or partial-freeze boundary, provide cumulative context pack; receive trace_report.json and freeze/partial-freeze recommendation."
+          },
+          {
+            "id": "IF32",
+            "from": "C34",
+            "to": "C35",
+            "contract": "Assemble full/partial freeze bundle; return bundle manifest plus resume_descriptor (for partial) or structured failure report."
+          }
+        ],
+        "tradeoffs": {
+          "pros": [
+            "Best fit for long-horizon work: fine-grained checkpoints minimize rework and enable deterministic resume.",
+            "Partial freeze preserves completed progress when budgets are exhausted.",
+            "Task-scoped context packs remain small and focused.",
+            "Early regression detection via frequent cumulative revalidation (when enabled)."
+          ],
+          "cons": [
+            "Slower than parallel approaches for independent tasks.",
+            "Full regression revalidation after each task can be expensive for large repos with slow test suites.",
+            "Partial freeze adds complexity for downstream consumers who must handle incomplete bundles.",
+            "Resume correctness depends on stable environment/toolchain and faithful checkpoint restoration."
+          ]
+        },
+        "risks": [
+          "Validation cost may pressure teams to weaken regression gates, reducing safety.",
+          "Environment drift between runs can break deterministic replay/resume unless toolchains are pinned.",
+          "Budget thresholds for partial-freeze decisions can be misestimated, freezing too early/late.",
+          "Task ordering may hide implicit dependencies that cause late-task failures."
+        ]
+      },
+      {
+        "id": "O4",
+        "summary": "Monolithic Implementation Council component that encapsulates the full workflow (intake through freeze) behind a single external interface. The external orchestrator still enforces global policy, tool permissions, budgets, and audit spine, while the monolith manages internal stage logic and role separation.",
+        "components": [
+          {
+            "id": "C36",
+            "name": "Orchestrator (External Policy Authority)",
+            "responsibilities": [
+              "Initiate runs and enforce system-wide policies, budgets, routing, iteration limits, and termination (CNS1).",
+              "Enforce tool permissions and secrets policy guardrails (CNS9).",
+              "Manage checkpointing boundaries and immutable audit spine requirements (CNS3)."
+            ]
+          },
+          {
+            "id": "C37",
+            "name": "Implementation Council (Monolithic)",
+            "responsibilities": [
+              "Consume plan_package_final.json and related required context artifacts as inputs.",
+              "Internally manage stages/roles (writer/reviewer/judge/patch/validate) and produce required artifacts (work plan, patchsets, validations, findings, decision record).",
+              "Write the final Implementation Freeze Bundle to the artifact store/workspace per CNS10.",
+              "Request tool/workspace operations via orchestrator-controlled interfaces (no direct policy override)."
+            ]
+          },
+          {
+            "id": "C38",
+            "name": "Artifact Store & Workspace (External)",
+            "responsibilities": [
+              "Provide durable, versioned storage for canonical artifacts and append-only logs (CNS3).",
+              "Host shared workspace with canonical vs non-canonical separation (CNS8).",
+              "Support addressing via artifact references and JSON Pointer evidence (CNS6)."
+            ]
+          }
+        ],
+        "interfaces": [
+          {
+            "id": "IF33",
+            "from": "C36",
+            "to": "C37",
+            "contract": "start_run(plan_package_final.json, repo_context.json, workspace_context.json) with orchestrator-enforced budgets/permissions; receive run outputs/status."
+          },
+          {
+            "id": "IF34",
+            "from": "C37",
+            "to": "C38",
+            "contract": "read/write/query versioned artifacts and workspace items via artifact_ref; all writes validated and logged per policy."
+          },
+          {
+            "id": "IF35",
+            "from": "C36",
+            "to": "C37",
+            "contract": "Policy enforcement channel: tool permission decisions, retry budgets, checkpoint/termination directives; monolith must comply."
+          }
+        ],
+        "tradeoffs": {
+          "pros": [
+            "Simplified external system boundary with a single main council component.",
+            "Potentially lower inter-component interface overhead inside the council boundary.",
+            "Encapsulates internal workflow evolution behind one interface."
+          ],
+          "cons": [
+            "Low modularity: harder to independently test/scale stages and enforce role separation internally.",
+            "Auditability can degrade if internal sub-stages are not surfaced as explicit artifacts/handoffs.",
+            "Risk of inadvertently weakening separation of powers and findings-only constraints without strict internal controls."
+          ]
+        },
+        "risks": [
+          "Internal complexity may grow and undermine CNS12 separation (reviewers/judges becoming entangled with writing/patching).",
+          "Hidden internal state transitions can make checkpoint/resume and traceability less explicit unless the monolith emits full stage_handoff artifacts.",
+          "Monolith becomes a high-blast-radius component for failures and changes."
+        ]
+      }
+    ],
+    "option_id_map": {
+      "OPT_U_1": "O1",
+      "OPT_U_2": "O2",
+      "OPT_U_3": "O3",
+      "OPT_U_4": "O4"
+    },
+    "component_id_map": {
+      "CMP_U_1_01": "C1",
+      "CMP_U_1_02": "C2",
+      "CMP_U_1_03": "C3",
+      "CMP_U_1_04": "C4",
+      "CMP_U_1_05": "C5",
+      "CMP_U_1_06": "C6",
+      "CMP_U_1_07": "C7",
+      "CMP_U_1_08": "C8",
+      "CMP_U_1_09": "C9",
+      "CMP_U_1_10": "C10",
+      "CMP_U_2_01": "C11",
+      "CMP_U_2_02": "C12",
+      "CMP_U_2_03": "C13",
+      "CMP_U_2_04": "C14",
+      "CMP_U_2_05": "C15",
+      "CMP_U_2_06": "C16",
+      "CMP_U_2_07": "C17",
+      "CMP_U_2_08": "C18",
+      "CMP_U_2_09": "C19",
+      "CMP_U_2_10": "C20",
+      "CMP_U_2_11": "C21",
+      "CMP_U_2_12": "C22",
+      "CMP_U_2_13": "C23",
+      "CMP_U_2_14": "C24",
+      "CMP_U_3_01": "C25",
+      "CMP_U_3_02": "C26",
+      "CMP_U_3_03": "C27",
+      "CMP_U_3_04": "C28",
+      "CMP_U_3_05": "C29",
+      "CMP_U_3_06": "C30",
+      "CMP_U_3_07": "C31",
+      "CMP_U_3_08": "C32",
+      "CMP_U_3_09": "C33",
+      "CMP_U_3_10": "C34",
+      "CMP_U_3_11": "C35",
+      "CMP_U_4_01": "C36",
+      "CMP_U_4_02": "C37",
+      "CMP_U_4_03": "C38"
+    },
+    "interface_id_map": {
+      "IF_U_1_01": "IF1",
+      "IF_U_1_02": "IF2",
+      "IF_U_1_03": "IF3",
+      "IF_U_1_04": "IF4",
+      "IF_U_1_05": "IF5",
+      "IF_U_1_06": "IF6",
+      "IF_U_1_07": "IF7",
+      "IF_U_1_08": "IF8",
+      "IF_U_1_09": "IF9",
+      "IF_U_2_01": "IF10",
+      "IF_U_2_02": "IF11",
+      "IF_U_2_03": "IF12",
+      "IF_U_2_04": "IF13",
+      "IF_U_2_05": "IF14",
+      "IF_U_2_06": "IF15",
+      "IF_U_2_07": "IF16",
+      "IF_U_2_08": "IF17",
+      "IF_U_2_09": "IF18",
+      "IF_U_2_10": "IF19",
+      "IF_U_2_11": "IF20",
+      "IF_U_2_12": "IF21",
+      "IF_U_2_13": "IF22",
+      "IF_U_3_01": "IF23",
+      "IF_U_3_02": "IF24",
+      "IF_U_3_03": "IF25",
+      "IF_U_3_04": "IF26",
+      "IF_U_3_05": "IF27",
+      "IF_U_3_06": "IF28",
+      "IF_U_3_07": "IF29",
+      "IF_U_3_08": "IF30",
+      "IF_U_3_09": "IF31",
+      "IF_U_3_10": "IF32",
+      "IF_U_4_01": "IF33",
+      "IF_U_4_02": "IF34",
+      "IF_U_4_03": "IF35"
+    },
+    "merge_log": [
+      "MERGE /inputs/architecture_option_drafts/0/options/0 (OPT_A1) + /inputs/architecture_option_drafts/1/options/1 (OPT_B_STAGED_PIPELINE) + /inputs/architecture_option_drafts/1/options/2 (OPT_B_ROLE_PODS) -> OPT_U_1 (sequential staged pipeline with role pods and workspace gateway responsibilities consolidated).",
+      "MERGE /inputs/architecture_option_drafts/0/options/1 (OPT_A2) + /inputs/architecture_option_drafts/0/options/3 (OPT_A4) -> OPT_U_2 (parallel lanes with deterministic integration flow; Integration Sub-Council treated as integration-stage specialization).",
+      "KEEP /inputs/architecture_option_drafts/0/options/2 (OPT_A3) -> OPT_U_3 (distinct partial-freeze + per-task checkpoint/resume semantics).",
+      "KEEP /inputs/architecture_option_drafts/1/options/0 (OPT_B_MONOLITH) -> OPT_U_4 (distinct monolithic boundary; not a near-duplicate of staged/parallel/checkpointed options).",
+      "MAP OPT_A1 -> OPT_U_1; MAP OPT_B_STAGED_PIPELINE -> OPT_U_1; MAP OPT_B_ROLE_PODS -> OPT_U_1.",
+      "MAP OPT_A2 -> OPT_U_2; MAP OPT_A4 -> OPT_U_2.",
+      "MAP OPT_A3 -> OPT_U_3.",
+      "MAP OPT_B_MONOLITH -> OPT_U_4."
+    ]
+  }
+}

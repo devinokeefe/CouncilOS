@@ -1,0 +1,341 @@
+{
+  "$defs": {
+    "Expectation": {
+      "additionalProperties": false,
+      "properties": {
+        "expectation_id": {
+          "title": "Expectation Id",
+          "type": "string"
+        },
+        "level": {
+          "enum": [
+            "plan",
+            "subsystem",
+            "test",
+            "component",
+            "artifact"
+          ],
+          "title": "Level",
+          "type": "string"
+        },
+        "source": {
+          "$ref": "#/$defs/ExpectationSource"
+        },
+        "subject": {
+          "$ref": "#/$defs/ExpectationSubject"
+        },
+        "oracle": {
+          "$ref": "#/$defs/OracleSpec"
+        },
+        "tolerance": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ToleranceSpec"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "inputs": {
+          "items": {
+            "$ref": "#/$defs/ExpectationInput"
+          },
+          "title": "Inputs",
+          "type": "array"
+        },
+        "parents": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Parents",
+          "type": "array"
+        },
+        "children": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Children",
+          "type": "array"
+        },
+        "must_exist_before_remote_ops": {
+          "default": false,
+          "title": "Must Exist Before Remote Ops",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "expectation_id",
+        "level",
+        "source",
+        "subject",
+        "oracle"
+      ],
+      "title": "Expectation",
+      "type": "object"
+    },
+    "ExpectationInput": {
+      "additionalProperties": false,
+      "properties": {
+        "dataset_snapshot_ref": {
+          "title": "Dataset Snapshot Ref",
+          "type": "string"
+        }
+      },
+      "required": [
+        "dataset_snapshot_ref"
+      ],
+      "title": "ExpectationInput",
+      "type": "object"
+    },
+    "ExpectationSource": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "title": "Type",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "id"
+      ],
+      "title": "ExpectationSource",
+      "type": "object"
+    },
+    "ExpectationSubject": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "title": "Kind",
+          "type": "string"
+        },
+        "artifact_type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Artifact Type"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "ExpectationSubject",
+      "type": "object"
+    },
+    "OracleCheck": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "title": "Type",
+          "type": "string"
+        },
+        "path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Path"
+        },
+        "value": {
+          "anyOf": [
+            {},
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        },
+        "metric": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Metric"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "title": "OracleCheck",
+      "type": "object"
+    },
+    "OracleSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "title": "Type",
+          "type": "string"
+        },
+        "schema_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Schema Ref"
+        },
+        "checks": {
+          "items": {
+            "$ref": "#/$defs/OracleCheck"
+          },
+          "title": "Checks",
+          "type": "array"
+        },
+        "expected_hash": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expected Hash"
+        },
+        "baseline_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Baseline Ref"
+        },
+        "metric": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Metric"
+        },
+        "threshold": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Threshold"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "title": "OracleSpec",
+      "type": "object"
+    },
+    "ToleranceSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "title": "Type",
+          "type": "string"
+        },
+        "abs": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Abs"
+        },
+        "rel": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rel"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "title": "ToleranceSpec",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "default": "2.0.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "registry_id": {
+      "title": "Registry Id",
+      "type": "string"
+    },
+    "expectations": {
+      "items": {
+        "$ref": "#/$defs/Expectation"
+      },
+      "title": "Expectations",
+      "type": "array"
+    }
+  },
+  "required": [
+    "registry_id"
+  ],
+  "title": "ExpectationRegistryPayload",
+  "type": "object"
+}

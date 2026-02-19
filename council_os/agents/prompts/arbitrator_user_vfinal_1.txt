@@ -1,0 +1,11 @@
+{
+  "run_context": {{RUN_CONTEXT_JSON}},
+  "artifact_refs": {{ARTIFACT_REFS_JSON}},
+  "inputs": {
+    "dispute_context": {{DISPUTE_CONTEXT_JSON}},
+    "candidates": {{CANDIDATES_REFS_AND_JSON}},
+    "judge_outputs": {{JUDGE_OUTPUTS_JSON}}
+  },
+  "task": "Select winner or request HITL.",
+  "output_schema": {{ARBITRATOR_SCHEMA_JSON}}
+}

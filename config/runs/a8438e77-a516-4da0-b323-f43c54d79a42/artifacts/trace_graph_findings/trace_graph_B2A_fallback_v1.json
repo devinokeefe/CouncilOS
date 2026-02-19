@@ -1,0 +1,95 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B2A_fallback_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T20:24:45.087590Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B2A_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2A_v1",
+    "findings": [
+      {
+        "id": "TG001",
+        "severity": "high",
+        "summary": "R1 requirement text does not match the actual enforcement described in AT1 and M1 deliverables. R1 states the subsystem SHALL reject non-canonical inputs, but AT1 only tests orchestrator accept/reject at run initiation, not subsystem-level enforcement. M1-D1 describes 'Intake validation flow aligned to R1–R3' but does not specify whether rejection is orchestrator-owned or subsystem-owned, creating ambiguity about separation of powers (CNS1).",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "requirements_canonical",
+            "json_pointer": "/requirements/0",
+            "note": "R1 states 'subsystem SHALL accept exactly one frozen plan_package_final.json... and SHALL reject chat logs or any non-canonical/unapproved upstream artifacts'.",
+            "quote": "The Implementation Council subsystem SHALL accept exactly one frozen plan_package_final.json... and SHALL reject chat logs or any non-canonical/unapproved upstream artifacts"
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "acceptance_canonical_v1",
+            "artifact_id": "acceptance_canonical",
+            "json_pointer": "/acceptance_tests/0",
+            "note": "AT1 tests orchestrator accept/reject, not subsystem enforcement.",
+            "quote": "Attempt to initiate an Implementation Council run with inputs... Record orchestrator accept/reject results."
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "architecture_canonical",
+            "json_pointer": "/milestones/0/deliverables/0",
+            "note": "M1-D1 does not clarify orchestrator vs subsystem responsibility for rejection.",
+            "quote": "Intake validation flow aligned to R1–R3: enforce plan_package_final.json-only semantics... and structured rejection errors."
+          }
+        ],
+        "routing_target": "requirements_canonical"
+      },
+      {
+        "id": "TG002",
+        "severity": "medium",
+        "summary": "R2 and R3 milestone mapping is incomplete. Both R2 and R3 map to milestones M1 and M2, but M2 deliverables do not explicitly address repo_context.json or workspace_context.json schema validation or enforcement. M2 focuses on per-lane state machines and role separation, with no mention of context schema prerequisites being re-validated or extended for lane-scoped operations.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "requirements_canonical",
+            "json_pointer": "/requirements/1",
+            "note": "R2 maps to AT2 and milestones M1, M2.",
+            "quote": "The Implementation Council subsystem SHALL define and require a typed, versioned repo_context.json schema"
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "requirements_canonical",
+            "json_pointer": "/requirements/2",
+            "note": "R3 maps to AT3 and milestones M1, M2.",
+            "quote": "The Implementation Council subsystem SHALL define and require a typed, versioned workspace_context.json schema"
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "architecture_canonical",
+            "json_pointer": "/milestones/1/deliverables",
+            "note": "M2 deliverables do not mention repo_context or workspace_context schema validation or lane-scoped extensions.",
+            "quote": null
+          }
+        ],
+        "routing_target": "architecture_canonical"
+      },
+      {
+        "id": "TG003",
+        "severity": "low",
+        "summary": "AT1 pass criteria uses ambiguous phrasing 'structured errors indicating non-canonical planning inputs are not authoritative' which does not specify whether the error must cite the specific violated requirement (R1) or provide evidence pointers to the rejected artifacts, reducing traceability and making the acceptance test less deterministic.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "acceptance_canonical_v1",
+            "artifact_id": "acceptance_canonical",
+            "json_pointer": "/acceptance_tests/0/pass_criteria",
+            "note": "Pass criteria does not require structured error to cite R1 or provide evidence pointers.",
+            "quote": "runs (b) and (c) are rejected with structured errors indicating non-canonical planning inputs are not authoritative."
+          }
+        ],
+        "routing_target": "acceptance_canonical"
+      }
+    ]
+  }
+}

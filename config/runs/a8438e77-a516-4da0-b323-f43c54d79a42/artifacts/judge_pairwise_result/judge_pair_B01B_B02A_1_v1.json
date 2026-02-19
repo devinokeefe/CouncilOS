@@ -1,0 +1,66 @@
+{
+  "artifact_type": "judge_pairwise_result",
+  "artifact_id": "judge_pair_B01B_B02A_1_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T23:18:54.080436Z",
+  "source_run_id": "a8438e77-a516-4da0-b323-f43c54d79a42",
+  "parents": [
+    "plan_candidate_B01B_v3",
+    "plan_candidate_B02A_v3"
+  ],
+  "payload": {
+    "comparison": {
+      "a": "Candidate A selects a conservative, sequential architecture (O1) that perfectly aligns with its branch's risk-averse posture. Its plan is exceptionally detailed, with granular milestones and deep self-evaluation, demonstrating high readiness.",
+      "b": "Candidate B selects a parallel architecture (O2) to prioritize speed, correctly aligning with its branch spec. The plan correctly identifies and proposes mitigations for the added complexity and integration risks."
+    },
+    "judge_id": "council-os-pair-judge",
+    "judge_model": "gemini-1.5-pro",
+    "winner": "a",
+    "scores": {
+      "feasibility": 8,
+      "testability": 10,
+      "governance": 10,
+      "architecture": 9,
+      "clarity": 9
+    },
+    "evidence": [
+      {
+        "artifact_ref": "plan_candidate_B01B_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/architecture/chosen/rationale",
+        "note": "Selection of the sequential (O1) architecture is explicitly justified by the branch's conservative, risk-averse posture, demonstrating strong alignment.",
+        "candidate_id": "B01B",
+        "artifact_id": "plan_package",
+        "quote": "O1 is selected because this branch (B01B) demands the most conservative, risk-averse posture. The sequential staged pipeline provides: (1) the simplest reproducible execution model with a single activ"
+      },
+      {
+        "artifact_ref": "plan_candidate_B01B_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/supplemental_evaluations",
+        "note": "The inclusion of detailed supplemental evaluations for test coverage and risk coverage indicates a higher level of completeness and self-scrutiny.",
+        "candidate_id": "B01B",
+        "artifact_id": "plan_package",
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B02A_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/architecture/chosen/rationale",
+        "note": "Selection of the parallel (O2) architecture is justified by the branch's priority on speed, demonstrating alignment with its given requirements.",
+        "candidate_id": "B02A",
+        "artifact_id": "plan_package",
+        "quote": "O2 best matches branch B02's priority on speed for divisible work by enabling parallel Generate→Validate→Review→Patch lanes while retaining deterministic governance."
+      },
+      {
+        "artifact_ref": "plan_candidate_B02A_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/decision_log/4/choice",
+        "note": "The plan correctly identifies merge conflicts as a key risk of parallelism and proposes a specific, governed escalation strategy.",
+        "candidate_id": "B02A",
+        "artifact_id": "plan_package",
+        "quote": "Treat conflicts/regressions as first-class integration artifacts (conflict/integration reports) that drive deterministic escalation: attempt bounded integration patching within op caps; if thresholds "
+      }
+    ],
+    "notes": "Candidate A is chosen for its exceptional detail, rigor, and stronger evidence of closure readiness. Its structure is more granular and actionable compared to Candidate B, even though both are strong submissions."
+  }
+}

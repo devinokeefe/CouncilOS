@@ -1,0 +1,753 @@
+version: "1.0.0"
+name: "council-os-hq"
+description: "High-budget, quality-first, multi-model Council OS planning council configuration."
+timezone: "Europe/Berlin"
+schemas_version: "1.0.0"
+
+runtime:
+  orchestrator:
+    max_full_cycles_without_pass: 3
+    max_repairs_per_candidate: 3
+    max_pod_reruns: 2
+    max_branch_rebuilds: 2
+    default_max_attempts_per_llm_call: 2
+    checkpoint_candidates: true
+    checkpoint_repair_rounds: true
+    llm_timeout_sec: 900
+    concurrency:
+      max_parallel_llm_calls: 12
+
+  audit:
+    log_prompts: true
+    log_model_metadata: true
+    log_raw_model_text: false
+
+  artifacts:
+    immutable_writes: true
+    store_dir: "runs/{{run_id}}/artifacts"
+    schema_dir: "schemas"
+
+providers:
+  openai:
+    adapter: "openrouter"
+    api_key_env: "OPENROUTER_API_KEY"
+
+  anthropic:
+    adapter: "openrouter"
+    api_key_env: "OPENROUTER_API_KEY"
+
+  google_vertex_ai:
+    adapter: "openrouter"
+    api_key_env: "OPENROUTER_API_KEY"
+
+guardrails:
+  json:
+    require_valid_json: true
+    disallow_markdown: true
+    enforce_json_pointer_evidence_only: true
+
+  structured_outputs:
+    require_for_schema_required_stages: true
+    max_schema_repair_attempts: 2
+    hard_fail_on_non_json: true
+
+  openai:
+    forbid_sampling_params_when_reasoning_effort_not_none: true
+    sampling_params_only_when_reasoning_effort_none:
+      - temperature
+      - top_p
+      - logprobs
+    forbid_reasoning_effort_none_models:
+      - "gpt-5.2-codex"
+      - "gpt-5.2-pro"
+    disallow_models_without_structured_outputs_in_schema_stages:
+      - "gpt-5.2-pro"
+
+  google:
+    gemini3:
+      enforce_temperature_default: 1.0
+      control_depth_via_thinking_level: true
+      forbid_thinking_budget: true
+
+model_families:
+  openai: ["openai/*"]
+  anthropic: ["anthropic/*"]
+  google: ["google/*"]
+
+models:
+  openai/gpt-5.2:
+    provider: openai
+    model_id: "openai/gpt-5.2"
+    family: openai
+    structured_outputs: true
+    reasoning_effort_supported: ["none", "low", "medium", "high", "xhigh"]
+    max_input_tokens: 400000
+    max_output_tokens: 128000
+
+  openai/gpt-5.2-codex:
+    provider: openai
+    model_id: "openai/gpt-5.2-codex"
+    family: openai
+    structured_outputs: true
+    reasoning_effort_supported: ["low", "medium", "high", "xhigh"]
+    max_input_tokens: 400000
+    max_output_tokens: 128000
+
+  openai/gpt-5.2-pro:
+    provider: openai
+    model_id: "openai/gpt-5.2-pro"
+    family: openai
+    structured_outputs: false
+    reasoning_effort_supported: ["medium", "high", "xhigh"]
+    max_input_tokens: 400000
+    max_output_tokens: 128000
+
+  anthropic/claude-opus-4-6:
+    provider: anthropic
+    model_id: "anthropic/claude-opus-4-6"
+    family: anthropic
+    structured_outputs: true
+
+  anthropic/claude-sonnet-4-5:
+    provider: anthropic
+    model_id: "anthropic/claude-sonnet-4-5"
+    family: anthropic
+    structured_outputs: true
+
+  google/gemini-2.5-pro:
+    provider: google_vertex_ai
+    model_id: "google/gemini-2.5-pro"
+    family: google
+    structured_outputs: true
+    max_input_tokens: 1048576
+    max_output_tokens: 65535
+
+  google/gemini-3-pro-preview:
+    provider: google_vertex_ai
+    model_id: "google/gemini-3-pro-preview"
+    family: google
+    structured_outputs: true
+    max_input_tokens: 1048576
+    max_output_tokens: 65535
+
+
+profiles:
+  STRICT_SCHEMA_WRITER:
+    openai:
+      reasoning_effort: "high"
+      text_verbosity: "medium"
+      temperature: null
+      top_p: null
+    anthropic:
+      temperature: 0.2
+    google:
+      thinking_level: "low"
+      temperature: 1.0
+
+  MERGE_LOW_CHURN:
+    openai:
+      reasoning_effort: "xhigh"
+      text_verbosity: "low"
+      temperature: null
+
+  IDEATION_SCHEMA:
+    anthropic:
+      temperature: 0.8
+    google:
+      thinking_level: "high"
+      temperature: 1.0
+
+  AUDIT_JUDGE:
+    openai:
+      reasoning_effort: "high"
+      text_verbosity: "low"
+    anthropic:
+      temperature: 0.1
+    google:
+      thinking_level: "low"
+      temperature: 1.0
+
+  CLARIFY_DIVERSE_SCHEMA:
+    openai:
+      reasoning_effort: "high"
+      text_verbosity: "medium"
+      temperature: null
+    anthropic:
+      temperature: 0.7
+    google:
+      thinking_level: "high"
+      temperature: 1.1
+
+  PATCH_DET:
+    openai:
+      reasoning_effort: "none"
+      temperature: 0.0
+      text_verbosity: "low"
+
+  PATCH_CODEX:
+    openai:
+      reasoning_effort: "high"
+      text_verbosity: "low"
+
+  RENDERER_DET:
+    openai:
+      reasoning_effort: "none"
+      temperature: 0.0
+      text_verbosity: "low"
+
+workflow:
+  branches_max: 4
+  branches_kept_after_prune: 3
+  candidates_per_branch: 2
+  enable_candidate_c_google: false
+  enable_fm_gemini3: false
+  allow_preview_models: true
+  preview_models_require_anchor: true
+  preview_anchor_default: "openai/gpt-5.2"
+
+judge_policy:
+  preferred_judge_pool:
+    - "google/gemini-2.5-pro"
+    - "anthropic/claude-sonnet-4-5"
+    - "openai/gpt-5.2"
+    - "openai/gpt-5.2-codex"
+  rules:
+    panel_size: 3
+    min_outside_candidate_families: 1
+    allow_same_family_if_needed: true
+    mark_same_family_in_audit_log: true
+    tie_breaker: "judge.arbitrator"
+  tie_break:
+    arbitrator_model: "openai/gpt-5.2"
+    arbitrator_profile: "AUDIT_JUDGE"
+
+stages:
+  - id: "intake.capsule_normalize"
+    kind: "llm"
+    prompt_id: "capsule_normalizer_v3"
+    output_kind: "json_object"
+    output_schema: "schemas/project_capsule.v1.json"
+    schema_required: true
+    tooling_allowed: "none"
+    max_attempts: 2
+    calls:
+      - name: "capsule_writer"
+        model: "openai/gpt-5.2"
+        profile: "STRICT_SCHEMA_WRITER"
+        max_output_tokens: 8000
+      - name: "capsule_writer_b"
+        model: "anthropic/claude-sonnet-4-5"
+        profile: "STRICT_SCHEMA_WRITER"
+        max_output_tokens: 8000
+
+  - id: "intake.capsule_reconcile"
+    kind: "llm"
+    prompt_id: "capsule_reconciler_v1"
+    output_kind: "json_object"
+    output_schema: "schemas/project_capsule.v1.json"
+    schema_required: true
+    tooling_allowed: "none"
+    max_attempts: 2
+    calls:
+      - name: "capsule_reconciler"
+        model: "openai/gpt-5.2"
+        profile: "MERGE_LOW_CHURN"
+        max_output_tokens: 8000
+
+  - id: "clarify.clarification_gate"
+    kind: "llm"
+    prompt_id: "clarification_gate_v3"
+    output_kind: "json_object"
+    output_schema: "schemas/clarification_plan.v1.json"
+    schema_required: true
+    tooling_allowed: "none"
+    max_attempts: 2
+    calls:
+      - name: "clarifier_primary"
+        model: "openai/gpt-5.2"
+        profile: "AUDIT_JUDGE"
+        max_output_tokens: 8000
+      - name: "clarifier_diversity"
+        model: "google/gemini-3-pro-preview"
+        profile: "CLARIFY_DIVERSE_SCHEMA"
+        max_output_tokens: 16000
+      - name: "clarifier_diversity_b"
+        model: "google/gemini-2.5-pro"
+        profile: "CLARIFY_DIVERSE_SCHEMA"
+        max_output_tokens: 16000
+    selection:
+      strategy: "union_and_rank_questions"
+      ranker: "code.semantic_dedupe_then_sort_by_blocking_then_impact"
+
+  - id: "pods.requirements_draft"
+    kind: "llm"
+    prompt_id: "requirements_drafter_v3"
+    output_kind: "json_object"
+    output_schema: "schemas/requirements_draft.v1.json"
+    schema_required: true
+    tooling_allowed: "none"
+    max_attempts: 2
+    calls:
+      - name: "req_drafter_a"
+        model: "openai/gpt-5.2"
+        profile: "STRICT_SCHEMA_WRITER"
+        max_output_tokens: 24000
+      - name: "req_drafter_b"
+        model: "anthropic/claude-opus-4-6"
+        profile: "IDEATION_SCHEMA"
+        max_output_tokens: 24000
+
+  - id: "pods.architecture_options_draft"
+    kind: "llm"
+    prompt_id: "arch_options_drafter_v3"
+    output_kind: "json_object"
+    output_schema: "schemas/architecture_options_draft.v1.json"
+    schema_required: true
+    tooling_allowed: "none"
+    max_attempts: 2
+    calls:
+      - name: "arch_drafter_a"
+        model: "anthropic/claude-opus-4-6"
+        profile: "IDEATION_SCHEMA"
+        max_output_tokens: 28000
+      - name: "arch_drafter_b"
+        model: "google/gemini-2.5-pro"
+        profile: "IDEATION_SCHEMA"
+        max_output_tokens: 28000
+
+  - id: "pods.qa_templates_draft"
+    kind: "llm"
+    prompt_id: "qa_templates_drafter_v3"
+    output_kind: "json_object"
+    output_schema: "schemas/qa_templates_draft.v1.json"
+    schema_required: true
+    tooling_allowed: "none"
+    max_attempts: 2
+    calls:
+      - name: "qa_drafter_a"
+        model: "openai/gpt-5.2-codex"
+        profile: "STRICT_SCHEMA_WRITER"
+        max_output_tokens: 24000
+      - name: "qa_drafter_b"
+        model: "anthropic/claude-sonnet-4-5"
+        profile: "IDEATION_SCHEMA"
+        max_output_tokens: 24000
+
+  - id: "pods.risk_gov_draft"
+    kind: "llm"
+    prompt_id: "risk_gov_drafter_v3"
+    output_kind: "json_object"
+    output_schema: "schemas/risk_gov_draft.v1.json"
+    schema_required: true
+    tooling_allowed: "none"
+    max_attempts: 2
+    calls:
+      - name: "risk_drafter_a"
+        model: "openai/gpt-5.2"
+        profile: "STRICT_SCHEMA_WRITER"
+        max_output_tokens: 28000
+      - name: "risk_drafter_b"
+        model: "google/gemini-2.5-pro"
+        profile: "STRICT_SCHEMA_WRITER"
+        max_output_tokens: 28000
+
+  - id: "merge.requirements_merge"
+    kind: "llm"
+    prompt_id: "requirements_merger_v3"
+    output_kind: "json_object"
+    output_schema: "schemas/requirements_merge.v1.json"
+    schema_required: true
+    tooling_allowed: "none"
+    max_attempts: 2
+    calls:
+      - name: "req_merge"
+        model: "openai/gpt-5.2"
+        profile: "MERGE_LOW_CHURN"
+        max_output_tokens: 50000
+
+  - id: "canonicalize.requirements"
+    kind: "code"
+    output_kind: "json_object"
+    output_schema: "schemas/requirements_canonical.v1.json"
+    schema_required: true
+
+  - id: "merge.architecture_merge"
+    kind: "llm"
+    prompt_id: "arch_merger_v3"
+    output_kind: "json_object"
+    output_schema: "schemas/architecture_merge.v1.json"
+    schema_required: true
+    tooling_allowed: "none"
+    max_attempts: 2
+    calls:
+      - name: "arch_merge"
+        model: "openai/gpt-5.2"
+        profile: "MERGE_LOW_CHURN"
+        max_output_tokens: 50000
+    fallbacks:
+      - name: "arch_merge_fallback"
+        model: "openai/gpt-5.2-codex"
+        profile: "MERGE_LOW_CHURN"
+        max_output_tokens: 50000
+
+  - id: "canonicalize.architecture"
+    kind: "code"
+    output_kind: "json_object"
+    output_schema: "schemas/architecture_canonical.v1.json"
+    schema_required: true
+
+  - id: "merge.risk_gov_merge"
+    kind: "llm"
+    prompt_id: "risk_gov_merger_v3"
+    output_kind: "json_object"
+    output_schema: "schemas/risk_gov_merge.v1.json"
+    schema_required: true
+    tooling_allowed: "none"
+    max_attempts: 2
+    calls:
+      - name: "risk_merge"
+        model: "openai/gpt-5.2"
+        profile: "MERGE_LOW_CHURN"
+        max_output_tokens: 50000
+
+  - id: "canonicalize.risk_gov"
+    kind: "code"
+    output_kind: "json_object"
+    output_schema: "schemas/risk_gov_canonical.v1.json"
+    schema_required: true
+
+  - id: "merge.qa_strategy"
+    kind: "llm"
+    prompt_id: "qa_strategy_merger_v1"
+    output_kind: "json_object"
+    output_schema: "schemas/qa_strategy_canonical.v1.json"
+    schema_required: true
+    tooling_allowed: "none"
+    max_attempts: 2
+    calls:
+      - name: "qa_merge"
+        model: "openai/gpt-5.2"
+        profile: "STRICT_SCHEMA_WRITER"
+        max_output_tokens: 20000
+
+  - id: "acceptance.generate"
+    kind: "llm"
+    prompt_id: "acceptance_generator_v3"
+    output_kind: "json_object"
+    output_schema: "schemas/acceptance_draft.v1.json"
+    schema_required: true
+    tooling_allowed: "none"
+    max_attempts: 2
+    calls:
+      - name: "acceptance_gen_primary"
+        model: "openai/gpt-5.2-codex"
+        profile: "STRICT_SCHEMA_WRITER"
+        max_output_tokens: 120000
+      - name: "acceptance_audit"
+        model: "anthropic/claude-sonnet-4-5"
+        profile: "AUDIT_JUDGE"
+        max_output_tokens: 12000
+
+  - id: "acceptance.canonicalize"
+    kind: "code"
+    output_kind: "json_object"
+    output_schema: "schemas/acceptance_canonical.v1.json"
+    schema_required: true
+
+  - id: "audit.alignment"
+    kind: "llm"
+    prompt_id: "alignment_auditor_v3"
+    output_kind: "json_object"
+    output_schema: "schemas/alignment_warnings.v1.json"
+    schema_required: true
+    tooling_allowed: "none"
+    max_attempts: 2
+    calls:
+      - name: "alignment_primary"
+        model: "google/gemini-3-pro-preview"
+        profile: "AUDIT_JUDGE"
+        max_output_tokens: 16000
+      - name: "alignment_control"
+        model: "google/gemini-2.5-pro"
+        profile: "AUDIT_JUDGE"
+        max_output_tokens: 10000
+      - name: "alignment_anchor"
+        model: "anthropic/claude-sonnet-4-5"
+        profile: "AUDIT_JUDGE"
+        max_output_tokens: 12000
+    selection:
+      disable_preview_anchor: true
+
+  - id: "branch.build"
+    kind: "llm"
+    prompt_id: "branch_builder_v3"
+    output_kind: "json_object"
+    output_schema: "schemas/branch_set.v1.json"
+    schema_required: true
+    tooling_allowed: "none"
+    max_attempts: 2
+    calls:
+      - name: "branch_primary"
+        model: "anthropic/claude-opus-4-6"
+        profile: "IDEATION_SCHEMA"
+        max_output_tokens: 16000
+      - name: "branch_secondary"
+        model: "google/gemini-2.5-pro"
+        profile: "IDEATION_SCHEMA"
+        max_output_tokens: 16000
+    selection:
+      strategy: "union_dedupe_then_code_prune"
+      pruner: "code.branch_score_and_prune"
+
+  - id: "synthesis.candidate_delta"
+    kind: "llm"
+    prompt_id: "candidate_delta_synthesizer_v3"
+    output_kind: "json_object"
+    output_schema: "schemas/candidate_delta.v1.json"
+    schema_required: true
+    tooling_allowed: "none"
+    max_attempts: 2
+    map_over: "branches_kept"
+    calls:
+      - name: "candidate_a_openai"
+        model: "openai/gpt-5.2"
+        profile: "STRICT_SCHEMA_WRITER"
+        overrides:
+          openai:
+            reasoning_effort: "xhigh"
+            text_verbosity: "high"
+        max_output_tokens: 60000
+      - name: "candidate_b_anthropic"
+        model: "anthropic/claude-opus-4-6"
+        profile: "STRICT_SCHEMA_WRITER"
+        overrides:
+          anthropic:
+            temperature: 0.3
+        max_output_tokens: 60000
+      - name: "candidate_c_google_optional"
+        enabled_if: "workflow.enable_candidate_c_google"
+        model: "google/gemini-3-pro-preview"
+        profile: "STRICT_SCHEMA_WRITER"
+        overrides:
+          google:
+            thinking_level: "high"
+            temperature: 1.0
+        max_output_tokens: 60000
+
+  - id: "assemble.plan_candidate"
+    kind: "code"
+    output_kind: "json_object"
+    output_schema: "schemas/plan_package.v1.json"
+    schema_required: true
+
+  - id: "audit.consistency"
+    kind: "llm"
+    prompt_id: "consistency_auditor_v3"
+    output_kind: "json_object"
+    output_schema: "schemas/consistency_findings.v1.json"
+    schema_required: true
+    tooling_allowed: "none"
+    max_attempts: 2
+    calls:
+      - name: "consistency_primary"
+        model: "openai/gpt-5.2"
+        profile: "AUDIT_JUDGE"
+        max_output_tokens: 20000
+      - name: "consistency_secondary"
+        model: "anthropic/claude-sonnet-4-5"
+        profile: "AUDIT_JUDGE"
+        max_output_tokens: 20000
+
+  - id: "audit.trace_graph"
+    kind: "llm"
+    prompt_id: "trace_graph_auditor_v3"
+    output_kind: "json_object"
+    output_schema: "schemas/trace_graph_findings.v1.json"
+    schema_required: true
+    tooling_allowed: "none"
+    max_attempts: 2
+    calls:
+      - name: "trace_primary"
+        model: "google/gemini-3-pro-preview"
+        profile: "AUDIT_JUDGE"
+        overrides:
+          google:
+            thinking_level: "medium"
+            temperature: 1.0
+        max_output_tokens: 16000
+      - name: "trace_anchor"
+        model: "openai/gpt-5.2"
+        profile: "AUDIT_JUDGE"
+        max_output_tokens: 12000
+      - name: "trace_fallback"
+        model: "anthropic/claude-sonnet-4-5"
+        profile: "AUDIT_JUDGE"
+        max_output_tokens: 12000
+
+  - id: "validate.plan_candidate"
+    kind: "code"
+    output_kind: "json_object"
+    output_schema: "schemas/validator_report.v1.json"
+    schema_required: true
+
+  - id: "triage.critics"
+    kind: "llm"
+    prompt_id: "triage_critic_v3"
+    output_kind: "json_object"
+    output_schema: "schemas/triage_report.v1.json"
+    schema_required: true
+    tooling_allowed: "none"
+    max_attempts: 2
+    calls:
+      - name: "triage_a"
+        model: "openai/gpt-5.2"
+        profile: "AUDIT_JUDGE"
+        max_output_tokens: 16000
+      - name: "triage_b"
+        model: "anthropic/claude-sonnet-4-5"
+        profile: "AUDIT_JUDGE"
+        max_output_tokens: 16000
+    selection:
+      strategy: "merge_blockers_union"
+      rule: "any_blocker_is_blocker_unless_arbitrated"
+
+  - id: "repair.patch_generate"
+    kind: "llm"
+    prompt_id: "patch_generator_v3"
+    output_kind: "json_object"
+    output_schema: "schemas/patch_or_reroute.v1.json"
+    schema_required: true
+    tooling_allowed: "none"
+    max_attempts: 2
+    calls:
+      - name: "patch_a_det"
+        model: "openai/gpt-5.2"
+        profile: "PATCH_DET"
+        max_output_tokens: 8000
+      - name: "patch_b_codex"
+        model: "openai/gpt-5.2-codex"
+        profile: "PATCH_CODEX"
+        max_output_tokens: 12000
+
+  - id: "repair.patch_apply_and_select"
+    kind: "code"
+    output_kind: "json_object"
+    output_schema: "schemas/patch_apply_result.v1.json"
+    schema_required: true
+    policy:
+      max_patch_ops: 25
+      forbidden_paths:
+        - "/requirements"
+        - "/requirements/*/id"
+        - "/acceptance_tests/*/id"
+        - "/architecture/options/*/id"
+        - "/risk_register/*/id"
+      forbidden_ops:
+        - op: "add"
+          path_prefix: "/requirements"
+      selection_criteria_order:
+        - "passes_validators"
+        - "passes_forbidden_path_checks"
+        - "min_op_count"
+        - "min_touched_paths"
+    selection:
+      strategy: "smallest_valid_patch"
+      tiebreakers:
+        - "min_op_count"
+        - "min_paths_touched"
+
+  - id: "analysis.failure_modes"
+    kind: "llm"
+    prompt_id: "failure_mode_analyst_v3"
+    output_kind: "json_object"
+    output_schema: "schemas/failure_mode_findings.v1.json"
+    schema_required: true
+    tooling_allowed: "none"
+    max_attempts: 2
+    calls:
+      - name: "fm_openai_anchor"
+        model: "openai/gpt-5.2"
+        profile: "AUDIT_JUDGE"
+        max_output_tokens: 12000
+      - name: "fm_sonnet"
+        model: "anthropic/claude-sonnet-4-5"
+        profile: "AUDIT_JUDGE"
+        max_output_tokens: 16000
+      - name: "fm_gemini25"
+        model: "google/gemini-2.5-pro"
+        profile: "AUDIT_JUDGE"
+        max_output_tokens: 16000
+      - name: "fm_gemini3_optional"
+        enabled_if: "workflow.enable_fm_gemini3"
+        model: "google/gemini-3-pro-preview"
+        profile: "AUDIT_JUDGE"
+        overrides:
+          google:
+            thinking_level: "medium"
+            temperature: 1.0
+        max_output_tokens: 16000
+
+  - id: "judge.pairwise"
+    kind: "llm"
+    prompt_id: "judge_pairwise_v3"
+    output_kind: "json_object"
+    output_schema: "schemas/judge_pairwise_result.v1.json"
+    schema_required: true
+    tooling_allowed: "none"
+    max_attempts: 2
+    calls:
+      - name: "judge_dynamic_panel"
+        model: "code.select_from_judge_pool"
+
+  - id: "judge.arbitrator"
+    kind: "llm"
+    prompt_id: "arbitrator_v3"
+    output_kind: "json_object"
+    output_schema: "schemas/arbitration_decision.v1.json"
+    schema_required: true
+    tooling_allowed: "none"
+    max_attempts: 1
+    calls:
+      - name: "arbitrator_primary"
+        model: "openai/gpt-5.2"
+        profile: "AUDIT_JUDGE"
+        overrides:
+          openai:
+            reasoning_effort: "xhigh"
+            text_verbosity: "medium"
+        max_output_tokens: 24000
+
+  - id: "freeze.freeze"
+    kind: "code"
+    output_kind: "json_object"
+    output_schema: "schemas/freeze_record.v1.json"
+    schema_required: true
+
+  - id: "freeze.decision_record"
+    kind: "llm"
+    prompt_id: "decision_record_writer_v3"
+    output_kind: "json_object"
+    output_schema: "schemas/decision_record.v1.json"
+    schema_required: true
+    tooling_allowed: "none"
+    max_attempts: 2
+    calls:
+      - name: "decision_record_writer"
+        model: "openai/gpt-5.2"
+        profile: "STRICT_SCHEMA_WRITER"
+        max_output_tokens: 20000
+
+  - id: "freeze.renderer"
+    kind: "llm"
+    prompt_id: "plan_renderer_v3"
+    output_kind: "json_object"
+    output_schema: "schemas/markdown_render.v1.json"
+    schema_required: false
+    tooling_allowed: "none"
+    max_attempts: 2
+    calls:
+      - name: "renderer_det"
+        model: "openai/gpt-5.2"
+        profile: "RENDERER_DET"
+        max_output_tokens: 32000
+

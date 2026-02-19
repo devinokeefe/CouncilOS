@@ -1,0 +1,12 @@
+{
+  "run_context": {{RUN_CONTEXT_JSON}},
+  "artifact_refs": {{ARTIFACT_REFS_JSON}},
+  "allowed_id_prefixes": ["FM"],
+  "inputs": {
+    "taxonomy_categories": {{TAXONOMY_CATEGORIES_JSON}},
+    "candidate_ref": "{{CANDIDATE_REF}}",
+    "plan_candidate": {{PLAN_CANDIDATE_JSON}}
+  },
+  "task": "Produce failure-mode findings (bounded).",
+  "output_schema": {{FAILURE_MODE_SCHEMA_JSON}}
+}

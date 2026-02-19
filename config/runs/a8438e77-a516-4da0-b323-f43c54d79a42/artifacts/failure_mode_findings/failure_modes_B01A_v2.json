@@ -1,0 +1,121 @@
+{
+  "artifact_type": "failure_mode_findings",
+  "artifact_id": "failure_modes_B01A_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T21:17:29.357772Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B01A_v2"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B01A_v2",
+    "taxonomy": "taxonomy_categories (provided in inputs.taxonomy_categories)",
+    "critical_findings": [
+      {
+        "id": "FM1",
+        "category": "Audit spine integrity (manifest/event log/artifact immutability)",
+        "severity": "critical",
+        "finding": "The canonical addressing contract for artifact_ref is explicitly unspecified (blocking Q3). This can break: (a) evidence pointer resolution (RFC6901 pointers reference artifact_ref), (b) workspace_index referential integrity, and (c) immutability/versioning guarantees needed for audit-spine replay. Without a deterministic artifact_ref format + version semantics, traceability and reproducibility become non-enforceable.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "[\"/inputs/plan_candidate/plan_package/open_questions/2\", \"/inputs/plan_candidate/plan_package/constraints/5\", \"/inputs/plan_candidate/plan_package/requirements\"]",
+          "closure_target": "Define an explicit, versioned artifact_ref schema (format, uniqueness, versioning, content-hash binding, namespace rules) and add validators that: (1) resolve every evidence pointer artifact_ref to an immutable stored artifact, (2) fail on ambiguous/non-canonical refs, (3) enforce monotonic versioning and immutability rules. Add conformance tests that replay a run from event_log + artifact store and verify all pointers resolve identically.",
+          "earliest_prevention_stage": "Intake"
+        }
+      },
+      {
+        "id": "FM2",
+        "category": "Tool permissioning & sandbox escape/misuse",
+        "severity": "critical",
+        "finding": "Review stage policy denies artifact_write and workspace_write, but reviewers are required to produce findings artifacts (e.g., review_findings.json) for downstream Judge/Freeze and for the Freeze bundle minimum set. This policy/contract mismatch can deadlock the workflow, force an out-of-policy write exception, or cause reviewers to embed findings out-of-band (breaking auditability).",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "[\"/inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies/6\", \"/inputs/plan_candidate/plan_package/requirements\", \"/inputs/plan_candidate/plan_package/acceptance_tests\"]",
+          "closure_target": "Amend Review stage policy to allow writing a single, tightly-scoped findings artifact type (e.g., allow artifact_write only for review_findings.json to canonical store with schema validation; optionally forbid any other writes). Add an orchestrator validator ensuring reviewers cannot emit patchsets/JSON patches and can only emit findings artifacts, preserving findings-only constraints while keeping audit spine complete.",
+          "earliest_prevention_stage": "Review"
+        }
+      },
+      {
+        "id": "FM3",
+        "category": "Secrets handling & sensitive data retention",
+        "severity": "critical",
+        "finding": "Secrets policy requires that secrets are never stored in logs/workspace/artifacts, including that detection/redaction/blocking happens before persistence. However, the design references secrets_scan as a validation activity without explicitly guaranteeing a pre-write guardrail at the workspace/artifact gateway. If scanning occurs after write (or only at checkpoints), secrets can be durably persisted even if the run later fails.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "[\"/inputs/plan_candidate/plan_package/requirements\", \"/inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies/4\", \"/inputs/plan_candidate/plan_package/constraints/8\"]",
+          "closure_target": "Specify and enforce a pre-persistence secret scanning hook in the Workspace Gateway / artifact write path: any write attempt is scanned and blocked/redacted deterministically before commit. Add a validator that asserts all persisted artifacts passed prewrite scanning (with non-sensitive scan attestation metadata) and that no stage can bypass the gateway.",
+          "earliest_prevention_stage": "Intake"
+        }
+      },
+      {
+        "id": "FM4",
+        "category": "Patchset safety & deterministic application",
+        "severity": "high",
+        "finding": "Patchset diff format and normalization rules are unspecified (Q7). Without a canonical diff representation + normalization (line endings, file modes, rename semantics, binary handling, path canonicalization), patch_apply can become nondeterministic across environments, and 'smallest passing repair' comparisons by bytes/ops can become inconsistent.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "[\"/inputs/plan_candidate/plan_package/open_questions/6\", \"/inputs/plan_candidate/plan_package/requirements\", \"/inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies/3\"]",
+          "closure_target": "Define a single patchset schema: allowed operations, deterministic ordering, encoding, and normalization rules (including rename/delete, executable bit, symlink policy, binary policy). Require each patchset to declare base_commit and include a canonical hash over normalized diff content. Add a patch_apply conformance test suite that applies patchsets across environments and verifies identical repo_snapshot outputs.",
+          "earliest_prevention_stage": "Generate"
+        }
+      },
+      {
+        "id": "FM5",
+        "category": "Operational limits (budgets, op caps) and escalation pathways",
+        "severity": "high",
+        "finding": "Multiple policies rely on 'policy_defined' caps (e.g., max_files_changed, max_diff_bytes, op caps) but no concrete default values or deterministic derivation rules are provided. This can lead to inconsistent enforcement across runs/environments, accidental acceptance of overly-large changes, or arbitrary failures depending on configuration drift.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "[\"/inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies/3/restrictions/0/patchset_limits\", \"/inputs/plan_candidate/plan_package/requirements\", \"/inputs/plan_candidate/plan_package/risk_register\"]",
+          "closure_target": "Define explicit default cap values (and any repo_context override mechanism), plus deterministic risk-weighted cap calculation rules if caps depend on repo size/type. Require caps to be recorded in implementation_run_manifest and referenced in event_log entries for enforcement decisions. Add validators that fail if caps are missing/undefined at runtime.",
+          "earliest_prevention_stage": "Intake"
+        }
+      },
+      {
+        "id": "FM6",
+        "category": "Supply-chain/network dependency control",
+        "severity": "high",
+        "finding": "Network-deny baseline is specified across stages, but the dependency/network policy for package managers and external fetches remains blocking (Q11). In practice, builds/tests/security scans may require network. If unresolved, teams may introduce ad-hoc exceptions (breaking determinism and security posture) or runs will fail systematically for many repos.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "[\"/inputs/plan_candidate/plan_package/open_questions/10\", \"/inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies\", \"/inputs/plan_candidate/plan_package/risk_register\"]",
+          "closure_target": "Define a deterministic dependency acquisition model: offline mirrors or allowlisted domains, required lockfiles/SBOM, hermetic build requirements, and an explicit 'network-enabled' stage (if any) with strict allowlists and audit logging. Add validators that ensure any dependency changes are pinned and reproducible and that network access is only possible in the explicitly designated stage.",
+          "earliest_prevention_stage": "Validate"
+        }
+      },
+      {
+        "id": "FM7",
+        "category": "Validation determinism (build/test/lint/typecheck) & flaky policy",
+        "severity": "high",
+        "finding": "Deterministic retry budget/backoff and flake classification thresholds are blocking (Q10). Without fixed parameters and recording rules, the same run could freeze/non-freeze depending on transient flake behavior or environment timing, undermining reproducibility and auditability of gate outcomes.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "[\"/inputs/plan_candidate/plan_package/open_questions/9\", \"/inputs/plan_candidate/plan_package/requirements\", \"/inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies/4\"]",
+          "closure_target": "Specify deterministic retry policy as data: max retries per validator, fixed backoff schedule, flake classification rules, and quarantine/escalation thresholds. Require each attempt to be logged with a deterministic attempt_id and captured outputs. Add a validator that replays retry decisions from event_log and confirms policy compliance.",
+          "earliest_prevention_stage": "Validate"
+        }
+      },
+      {
+        "id": "FM8",
+        "category": "Audit spine integrity (manifest/event log/artifact immutability)",
+        "severity": "high",
+        "finding": "Append-only event_log requirements exist, but the event ordering/identity scheme is not concretely specified (e.g., monotonic sequence numbers, concurrency model, clock vs counter). Without an explicit ordering rule, checkpoint/resume and replay can diverge, especially if any component writes events concurrently or if storage reorders writes.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "[\"/inputs/plan_candidate/plan_package/constraints/2\", \"/inputs/plan_candidate/plan_package/requirements\", \"/inputs/plan_candidate/plan_package/risk_register/1\"]",
+          "closure_target": "Define a strict event schema with monotonically increasing sequence_number (or equivalent deterministic ordering), immutable content hashes, and explicit producer identity. Require the orchestrator to be the sole event appender (or enforce a single-writer log abstraction). Add integrity validators: detect gaps/rewrites/reordering and block stage transitions on any anomaly.",
+          "earliest_prevention_stage": "Intake"
+        }
+      }
+    ],
+    "closure_pass": false
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "artifact_type": "patch_or_reroute",
+  "artifact_id": "patch_B02A_2_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T20:35:20.897553Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B02A_v1"
+  ],
+  "payload": {
+    "action": "reroute",
+    "rationale": "Blockers require changes to locked or ID-bearing sections that Patch Generator cannot modify: deliverable id format mismatches require renaming existing /id values; architecture option risks require edits to /architecture/options; several fixes require edits to /requirements and /acceptance_tests. These are disallowed. Reroute needed to schema/requirements owner to define canonical ID conventions and update locked sections.",
+    "patch": [],
+    "reroute_target": "requirements_canonical"
+  }
+}

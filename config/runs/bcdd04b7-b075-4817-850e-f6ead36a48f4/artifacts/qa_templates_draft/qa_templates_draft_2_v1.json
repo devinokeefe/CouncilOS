@@ -1,0 +1,333 @@
+{
+  "artifact_type": "qa_templates_draft",
+  "artifact_id": "qa_templates_draft_2_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T18:44:12.257951Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "capsule_canonical_v1"
+  ],
+  "payload": {
+    "templates": [
+      {
+        "id": "ATT-001",
+        "name": "Schema Validation Template",
+        "description": "Verify that all canonical JSON artifacts conform to their declared versioned schemas with 100% validation pass rate. Applies to all artifacts in freeze bundle: run manifest, event log, work plan, patchsets, repo snapshot, test results, quality reports, trace report, review findings, release bundle, decision record, workspace index, context packs, stage handoffs. Includes schema existence check, version compatibility, required field presence, type correctness, and constraint satisfaction.",
+        "applies_to": [
+          "implementation_run_manifest.json",
+          "implementation_event_log.jsonl",
+          "work_plan.json",
+          "patchset artifacts",
+          "repo_snapshot.json",
+          "test_results.json",
+          "quality_reports.json",
+          "trace_report.json",
+          "review_findings.json",
+          "release_bundle.json",
+          "decision_record.json",
+          "workspace_index.json",
+          "context_pack artifacts",
+          "stage_handoff artifacts",
+          "repo_context.json",
+          "workspace_context.json",
+          "ChangeRequest artifacts"
+        ]
+      },
+      {
+        "id": "ATT-002",
+        "name": "Evidence Pointer Standard Compliance Template",
+        "description": "Verify that all evidence pointers across all artifacts use RFC 6901 JSON Pointer standard exclusively: {artifact_ref, entity_id|null, json_pointer, note} structure. Check that json_pointer field starts with '/' and references valid path in target artifact. Confirm zero non-compliant evidence references (no code pointers, no file paths, no chat log references). Validate artifact_ref resolves to versioned artifact in store.",
+        "applies_to": [
+          "trace_report.json",
+          "review_findings.json",
+          "decision_record.json",
+          "quality_reports.json",
+          "stage_handoff artifacts",
+          "ChangeRequest artifacts",
+          "work_plan.json"
+        ]
+      },
+      {
+        "id": "ATT-003",
+        "name": "Repair Model Compliance Template",
+        "description": "Verify that all artifact repairs use RFC 6902 JSON Patch arrays exclusively for JSON artifacts, and diff-only patchset artifacts for code changes. Validate patchset artifacts contain base_commit, target paths, diffs, and deterministic apply order. Confirm no direct file overwrites, no prose instructions. Check forbidden-path rules enforcement: zero writes to protected paths. Validate operation caps are respected.",
+        "applies_to": [
+          "patchset artifacts",
+          "patch cycle outputs",
+          "artifact repair operations",
+          "code change artifacts"
+        ]
+      },
+      {
+        "id": "ATT-004",
+        "name": "Workspace Integrity Template",
+        "description": "Verify workspace_index.json accounts for 100% of workspace items with complete type/version/provenance metadata. Check canonical vs non-canonical separation is enforced. Validate context packs are bounded per deterministic rules and all items are indexed. Confirm stage_handoff artifacts exist at every checkpoint boundary. Check workspace items reference only allowed artifact families and contain valid evidence pointers.",
+        "applies_to": [
+          "workspace_index.json",
+          "context_pack artifacts",
+          "stage_handoff artifacts",
+          "workspace content"
+        ]
+      },
+      {
+        "id": "ATT-005",
+        "name": "Secrets Detection and Blocking Template",
+        "description": "Verify zero secrets are persisted in event log, workspace artifacts, or canonical outputs. Run deterministic secrets scanner on all text content in freeze bundle. Validate redaction/blocking guardrails are active. Check secrets policy enforcement in orchestrator tool permissions. Confirm no API keys, tokens, passwords, certificates, or PII in artifacts.",
+        "applies_to": [
+          "implementation_event_log.jsonl",
+          "workspace artifacts",
+          "patchset artifacts",
+          "repo_snapshot.json",
+          "all canonical artifacts"
+        ]
+      },
+      {
+        "id": "ATT-006",
+        "name": "Audit Spine Integrity Template",
+        "description": "Verify run_manifest is immutable and complete. Verify event_log is append-only with monotonic timestamps and no gaps. Check every stage transition is logged. Validate artifact versioning is consistent and references are resolvable. Confirm checkpoint boundaries are recorded. Verify no silent modifications to frozen artifacts.",
+        "applies_to": [
+          "implementation_run_manifest.json",
+          "implementation_event_log.jsonl",
+          "artifact store integrity",
+          "checkpoint records"
+        ]
+      },
+      {
+        "id": "ATT-007",
+        "name": "Build and Compilation Gate Template",
+        "description": "Execute build/compile validators declared in repo_context.json entrypoints. Verify build completes successfully with zero errors. Check compiler warnings are within policy thresholds. Validate build outputs match expected artifacts. Confirm build is reproducible (deterministic given inputs). Record structured results in test_results.json or quality_reports.json with evidence pointers to patchsets.",
+        "applies_to": [
+          "patchset artifacts",
+          "repo_snapshot.json",
+          "test_results.json",
+          "quality_reports.json"
+        ]
+      },
+      {
+        "id": "ATT-008",
+        "name": "Automated Test Execution and AT# Trace Template",
+        "description": "Execute test suite via repo_context.json entrypoints. Verify all tests pass (or meet policy threshold). Map test results to AT# acceptance test IDs from plan_package_final.json via naming/metadata conventions. Validate trace_report.json contains evidence pointers linking test outcomes to AT# and patchsets. Confirm no untraceable tests and no missing AT# coverage per requirements.",
+        "applies_to": [
+          "test_results.json",
+          "trace_report.json",
+          "work_plan.json",
+          "patchset artifacts"
+        ]
+      },
+      {
+        "id": "ATT-009",
+        "name": "Lint, Format, and Typecheck Gate Template",
+        "description": "Execute lint/format/typecheck validators per repo_context.json. Verify zero policy violations. Check code style compliance. Validate type safety (if applicable). Record findings in quality_reports.json with evidence pointers. Confirm deterministic execution and results reproducibility.",
+        "applies_to": [
+          "patchset artifacts",
+          "quality_reports.json",
+          "repo_snapshot.json"
+        ]
+      },
+      {
+        "id": "ATT-010",
+        "name": "Security and Compliance Scan Template",
+        "description": "Execute required security/compliance checks: SAST, dependency scan, license scan, SBOM generation (as specified in quality_reports.json schema). Verify zero critical/high vulnerabilities or policy violations. Check forbidden licenses are absent. Validate SBOM completeness. Record structured findings with evidence pointers.",
+        "applies_to": [
+          "quality_reports.json",
+          "patchset artifacts",
+          "repo_snapshot.json",
+          "release_bundle.json"
+        ]
+      },
+      {
+        "id": "ATT-011",
+        "name": "Risk Closure Gate Template",
+        "description": "Verify all open risks from planning (K# entities) are addressed or explicitly accepted in decision_record.json. Check risk mitigation evidence pointers reference implemented controls in patchsets or quality reports. Confirm no new high-severity risks introduced without ChangeRequest. Validate risk closure checklist is complete.",
+        "applies_to": [
+          "decision_record.json",
+          "trace_report.json",
+          "quality_reports.json",
+          "ChangeRequest artifacts"
+        ]
+      },
+      {
+        "id": "ATT-012",
+        "name": "Trace Completeness Gate Template",
+        "description": "Verify trace_report.json contains complete bidirectional traceability: R# requirements to work plan items to patchsets to test results to AT# acceptance tests. Check all entities from plan_package_final.json (R#, AT#, O#, K#) are traced. Validate evidence pointers are valid and resolvable. Confirm no orphaned work items or untraceable changes.",
+        "applies_to": [
+          "trace_report.json",
+          "work_plan.json",
+          "patchset artifacts",
+          "test_results.json"
+        ]
+      },
+      {
+        "id": "ATT-013",
+        "name": "Reproducibility Gate Template",
+        "description": "Verify freeze bundle contains sufficient information to reproduce implementation deterministically: base_commit, patchsets with apply order, repo_context.json, build/test entrypoints, dependency lockfiles, tool versions. Check patchsets apply cleanly to base_commit. Validate no undocumented manual steps. Confirm release_bundle.json contains reproducibility attestation with evidence pointers.",
+        "applies_to": [
+          "repo_snapshot.json",
+          "patchset artifacts",
+          "release_bundle.json",
+          "repo_context.json"
+        ]
+      },
+      {
+        "id": "ATT-014",
+        "name": "Review Findings Resolution Template",
+        "description": "Verify all findings in review_findings.json are resolved, accepted, or escalated via ChangeRequest. Check patch cycle outputs reference findings via evidence pointers. Validate reviewers are independent (multi-vendor separation). Confirm no silent dismissal of findings. Check decision_record.json contains rationale for accepted findings.",
+        "applies_to": [
+          "review_findings.json",
+          "patchset artifacts",
+          "decision_record.json",
+          "ChangeRequest artifacts"
+        ]
+      },
+      {
+        "id": "ATT-015",
+        "name": "ChangeRequest Handling Template",
+        "description": "Verify ChangeRequest artifacts conform to schema. Check required escalation occurred (HITL and/or reroute upstream) per policy. Validate no semantic plan changes without approved ChangeRequest. Confirm decision_record.json contains approval authority and rationale. Check event_log records escalation path.",
+        "applies_to": [
+          "ChangeRequest artifacts",
+          "decision_record.json",
+          "implementation_event_log.jsonl"
+        ]
+      },
+      {
+        "id": "ATT-016",
+        "name": "Stage Handoff Completeness Template",
+        "description": "Verify stage_handoff artifact exists at every checkpoint boundary. Check handoff contains objectives, completed work, pending blockers, next actions, and evidence pointers to relevant artifacts. Validate handoff is sufficient to resume work deterministically. Confirm no missing handoffs in workflow.",
+        "applies_to": [
+          "stage_handoff artifacts",
+          "workspace_index.json",
+          "implementation_event_log.jsonl"
+        ]
+      },
+      {
+        "id": "ATT-017",
+        "name": "Tool Permission Enforcement Template",
+        "description": "Verify tool executions respect declared permission matrix per stage. Check no unauthorized filesystem/repo access, command execution, network calls, or package manager operations. Validate orchestrator enforces permissions deterministically. Confirm event_log records tool invocations with permission context.",
+        "applies_to": [
+          "implementation_event_log.jsonl",
+          "repo_snapshot.json",
+          "workspace artifacts"
+        ]
+      },
+      {
+        "id": "ATT-018",
+        "name": "Forbidden Path Protection Template",
+        "description": "Verify zero writes to forbidden/protected paths declared in repo_context.json. Check patchsets respect path rules. Validate orchestrator blocks forbidden operations. Confirm no destructive commands on protected resources. Check event_log for blocked operations.",
+        "applies_to": [
+          "patchset artifacts",
+          "repo_context.json",
+          "implementation_event_log.jsonl"
+        ]
+      },
+      {
+        "id": "ATT-019",
+        "name": "Flaky Failure Handling Template",
+        "description": "Verify flaky test/tool failures are detected and handled per deterministic retry policy. Check retry budgets are respected. Validate quarantine/stabilization procedures are followed. Confirm event_log records retries with outcomes. Check escalation to HITL or ChangeRequest when retry budget exhausted.",
+        "applies_to": [
+          "test_results.json",
+          "implementation_event_log.jsonl",
+          "decision_record.json"
+        ]
+      },
+      {
+        "id": "ATT-020",
+        "name": "Separation of Powers Enforcement Template",
+        "description": "Verify writer/reviewer/judge roles are distinct with multi-vendor routing. Check reviewers emit findings-only (no patches). Validate orchestrator owns all routing/budget/termination decisions. Confirm no agent overrides orchestrator authority. Check event_log records role assignments and model routing.",
+        "applies_to": [
+          "implementation_run_manifest.json",
+          "implementation_event_log.jsonl",
+          "review_findings.json",
+          "patchset artifacts"
+        ]
+      },
+      {
+        "id": "ATT-021",
+        "name": "No Silent Scope Expansion Template",
+        "description": "Verify implementation does not change semantics of R#/AT#/O#/K# from plan_package_final.json without approved ChangeRequest. Check work_plan.json items trace to planning entities. Validate no new requirements introduced. Confirm decision_record.json justifies any deviations with escalation evidence.",
+        "applies_to": [
+          "work_plan.json",
+          "trace_report.json",
+          "ChangeRequest artifacts",
+          "decision_record.json"
+        ]
+      },
+      {
+        "id": "ATT-022",
+        "name": "Context Pack Bounds Validation Template",
+        "description": "Verify context packs are bounded per deterministic selection rules. Check context pack size does not exceed model context window constraints. Validate selection prioritization is deterministic and documented. Confirm all context pack items are indexed in workspace_index.json with evidence pointers.",
+        "applies_to": [
+          "context_pack artifacts",
+          "workspace_index.json"
+        ]
+      },
+      {
+        "id": "ATT-023",
+        "name": "Release Bundle Completeness Template",
+        "description": "Verify release_bundle.json contains all required artifacts: build outputs, test results summary, SBOM, security attestations, reproducibility evidence, versioning metadata. Check release artifacts are signed/attested per policy. Validate evidence pointers to source patchsets and validation results. Confirm release is tagged in repo_snapshot.json.",
+        "applies_to": [
+          "release_bundle.json",
+          "repo_snapshot.json",
+          "quality_reports.json",
+          "test_results.json"
+        ]
+      },
+      {
+        "id": "ATT-024",
+        "name": "Integration Conflict Resolution Template",
+        "description": "Verify parallel implementation pod outputs are integrated deterministically. Check merge strategy is documented and deterministic. Validate conflict resolution follows bounded reroute/rebase rules. Confirm escalation when conflict complexity exceeds thresholds. Check event_log records integration decisions.",
+        "applies_to": [
+          "patchset artifacts",
+          "implementation_event_log.jsonl",
+          "decision_record.json"
+        ]
+      },
+      {
+        "id": "ATT-025",
+        "name": "Dependency and Package Management Template",
+        "description": "Verify dependency operations respect tool/network policies. Check lockfiles are present and deterministic. Validate package sources are allowlisted. Confirm offline mirror usage if required. Check no unapproved network access. Validate reproducibility of dependency resolution.",
+        "applies_to": [
+          "repo_snapshot.json",
+          "quality_reports.json",
+          "release_bundle.json",
+          "repo_context.json"
+        ]
+      }
+    ],
+    "coverage_guidance": [
+      "Every canonical artifact type in freeze bundle must have schema validation coverage (ATT-001).",
+      "All evidence/traceability mechanisms must validate RFC 6901 JSON Pointer compliance (ATT-002).",
+      "All artifact repair and code change mechanisms must validate RFC 6902 JSON Patch and patchset compliance (ATT-003).",
+      "Workspace governance must validate index completeness, context pack bounds, and stage handoff presence (ATT-004, ATT-016, ATT-022).",
+      "Security policy enforcement must validate secrets detection/blocking across all persisted content (ATT-005).",
+      "Audit spine integrity must validate immutability, append-only, and checkpoint recording (ATT-006).",
+      "All freeze gates must be covered: build (ATT-007), test+AT# trace (ATT-008), lint/typecheck (ATT-009), security/compliance (ATT-010), risk closure (ATT-011), trace completeness (ATT-012), reproducibility (ATT-013).",
+      "Review and patch cycles must validate findings resolution and reviewer independence (ATT-014, ATT-020).",
+      "Change control must validate ChangeRequest handling and escalation (ATT-015, ATT-021).",
+      "Tool execution must validate permission enforcement and forbidden path protection (ATT-017, ATT-018).",
+      "Nondeterministic failure handling must validate retry/quarantine/escalation policies (ATT-019).",
+      "Integration and conflict resolution must validate deterministic merge and bounded escalation (ATT-024).",
+      "Release artifacts must validate completeness, attestation, and reproducibility (ATT-023).",
+      "Dependency management must validate lockfile determinism and policy compliance (ATT-025).",
+      "All templates must produce structured findings with evidence pointers into versioned artifacts.",
+      "All templates must be executable deterministically (same inputs → same pass/fail outcome).",
+      "All templates must record results in appropriate canonical artifacts (test_results.json, quality_reports.json, trace_report.json, review_findings.json) with artifact_ref and timestamps.",
+      "Templates should be automatable via orchestrator-invoked validators with declared entrypoints and schemas.",
+      "Templates must not require human interpretation of prose; pass/fail criteria must be machine-checkable.",
+      "Templates must support incremental validation (validate subset of artifacts or stages without full re-execution)."
+    ],
+    "definition_of_done": [
+      "All 25 QA templates are defined with unique ATT IDs, descriptive names, measurable pass/fail criteria, and explicit artifact applicability.",
+      "Every canonical artifact type in freeze bundle is covered by at least one template (100% artifact coverage).",
+      "Every freeze gate (build, test, lint, security, risk, trace, reproducibility) is covered by at least one template (100% gate coverage).",
+      "All policy constraints (separation of powers, no silent scope expansion, evidence standard, repair model, secrets policy, forbidden paths, change control) are covered by at least one template.",
+      "All workflow governance mechanisms (stage handoffs, context packs, workspace index, tool permissions, retry policies, integration) are covered by templates.",
+      "Coverage guidance provides explicit mapping from templates to freeze bundle artifacts and gates.",
+      "Definition of done provides explicit acceptance criteria for template completeness, coverage, measurability, and determinism.",
+      "All templates reference only canonical artifacts (no chat logs, no ephemeral agent memory).",
+      "All templates specify structured output locations (test_results.json, quality_reports.json, trace_report.json, review_findings.json) with evidence pointer requirements.",
+      "All templates are expressed in deterministic, automatable terms suitable for orchestrator-owned validator implementation.",
+      "Templates support the full workflow from intake through freeze, including parallel implementation, integration, validation loops, review+patch cycles, and checkpoint handoffs.",
+      "Templates enable measurable success metrics from project capsule (schema validation 100%, evidence pointer compliance 0 violations, repair model 100% clean apply, workspace integrity 100% indexed, secrets 0 detected, freeze gates 0 failures, trace completeness 100%, reproducibility attestation present)."
+    ]
+  }
+}

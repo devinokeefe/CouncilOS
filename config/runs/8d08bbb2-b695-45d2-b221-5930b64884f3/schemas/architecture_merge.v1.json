@@ -1,0 +1,161 @@
+{
+  "$defs": {
+    "ArchitectureOptionMerge": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "summary": {
+          "title": "Summary",
+          "type": "string"
+        },
+        "components": {
+          "items": {
+            "$ref": "#/$defs/Component"
+          },
+          "title": "Components",
+          "type": "array"
+        },
+        "interfaces": {
+          "items": {
+            "$ref": "#/$defs/Interface"
+          },
+          "title": "Interfaces",
+          "type": "array"
+        },
+        "tradeoffs": {
+          "$ref": "#/$defs/Tradeoffs"
+        },
+        "risks": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Risks",
+          "type": "array"
+        },
+        "source_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Source Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "summary",
+        "components",
+        "interfaces",
+        "tradeoffs",
+        "risks"
+      ],
+      "title": "ArchitectureOptionMerge",
+      "type": "object"
+    },
+    "Component": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "responsibilities": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Responsibilities",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "responsibilities"
+      ],
+      "title": "Component",
+      "type": "object"
+    },
+    "Interface": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "from": {
+          "title": "From",
+          "type": "string"
+        },
+        "to": {
+          "title": "To",
+          "type": "string"
+        },
+        "contract": {
+          "title": "Contract",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "from",
+        "to",
+        "contract"
+      ],
+      "title": "Interface",
+      "type": "object"
+    },
+    "Tradeoffs": {
+      "additionalProperties": false,
+      "properties": {
+        "pros": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Pros",
+          "type": "array"
+        },
+        "cons": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Cons",
+          "type": "array"
+        }
+      },
+      "required": [
+        "pros",
+        "cons"
+      ],
+      "title": "Tradeoffs",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "options": {
+      "items": {
+        "$ref": "#/$defs/ArchitectureOptionMerge"
+      },
+      "title": "Options",
+      "type": "array"
+    },
+    "merge_log": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Merge Log",
+      "type": "array"
+    }
+  },
+  "required": [
+    "options"
+  ],
+  "title": "ArchitectureMergePayload",
+  "type": "object"
+}

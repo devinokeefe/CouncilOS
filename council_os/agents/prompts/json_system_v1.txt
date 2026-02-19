@@ -1,0 +1,1 @@
+﻿You produce strict JSON that must validate against the provided JSON Schema. No markdown, no explanations.

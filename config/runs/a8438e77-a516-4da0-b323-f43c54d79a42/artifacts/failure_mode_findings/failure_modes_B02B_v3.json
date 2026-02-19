@@ -1,0 +1,129 @@
+{
+  "artifact_type": "failure_mode_findings",
+  "artifact_id": "failure_modes_B02B_v3",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T21:25:50.853743Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B02B_v3"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B02B_v3",
+    "taxonomy": "CouncilOS failure-mode taxonomy (inputs.taxonomy_categories)",
+    "critical_findings": [
+      {
+        "id": "FM1",
+        "category": "Integration/merge conflict handling & parallelism hazards",
+        "severity": "critical",
+        "finding": "O2 parallel fan-out/fan-in can become non-reproducible if integration merge/apply ordering (or conflict resolution) depends on wall-clock lane completion timing, nondeterministic patch enumeration, or tool output ordering. This can yield different merged repo states across reruns, breaking auditability and undermining deterministic gates/trace.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "closure_target": "Define and validate a canonical, timing-independent merge ordering + conflict-resolution protocol, and record it as first-class artifacts consumed by validators.",
+          "earliest_prevention_stage": "WorkPlanning",
+          "evidence": "[{\"json_pointer\":\"/inputs/plan_candidate/plan_package/architecture/chosen/key_design_decisions/2\",\"note\":\"States merge ordering must be deterministic and independent of wall-clock timing\"},{\"json_pointer\":\"/inputs/plan_candidate/plan_package/risk_register/11\",\"note\":\"K12 integration/merge conflict risk + mitigation depends on deterministic ordering\"},{\"json_pointer\":\"/inputs/plan_candidate/plan_package/milestones/2/exit_criteria/0\",\"note\":\"M3 exit criteria requires deterministic canonical order independent of wall-clock completion\"}]",
+          "required_mitigation": "Add an Integration Ordering artifact (e.g., integration_order.json) derived solely from work_plan DAG + patchset metadata (base_commit, lane_id, task_id, sequence). Integration Merge Engine must (1) sort deterministically, (2) emit ordered-apply transcript in event_log with stable IDs, (3) block if patchset metadata incomplete, and (4) enforce deterministic conflict handling (no heuristic/LLM-based auto-resolve without bounded, deterministic rules). Validator must replay ordering from artifacts and confirm identical resulting repo_snapshot hashes."
+        }
+      },
+      {
+        "id": "FM2",
+        "category": "Audit spine integrity (manifest/event log/artifact immutability)",
+        "severity": "critical",
+        "finding": "Parallel lanes increase the chance of audit-spine integrity violations: non-monotonic or interleaved event_log sequencing, missing stage_handoffs for sub-lane transitions, or accidental mutation of supposedly immutable artifacts (run_manifest, canonical artifacts) due to concurrent writes or insufficient store-level immutability controls. This can invalidate evidence pointers and make replay/resume untrustworthy.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "closure_target": "Make audit-spine ordering/immutability properties explicit and mechanically enforced under concurrency; ensure per-lane and global checkpoint semantics are unambiguous.",
+          "earliest_prevention_stage": "Intake",
+          "evidence": "[{\"json_pointer\":\"/inputs/plan_candidate/plan_package/requirements/7\",\"note\":\"R8 requires immutable run_manifest + append-only event_log + checkpointing\"},{\"json_pointer\":\"/inputs/plan_candidate/plan_package/risk_register/1\",\"note\":\"K2 audit spine breakage risk\"},{\"json_pointer\":\"/inputs/plan_candidate/plan_package/requirements/4\",\"note\":\"R5 requires stage_handoff at every checkpoint boundary\"}]",
+          "required_mitigation": "Specify: (1) event_log sequence allocation (single global sequencer or lane-scoped sequences + deterministic merge into global order), (2) immutability guarantees at the storage API (write-once + content-hash addressing), (3) stage_handoff cardinality rules for per-lane sub-stages (Generate/Validate/Review/Patch) and global stages, and (4) validator that checks monotonic ordering, presence of required handoffs, and immutability hashes before any stage transition."
+        }
+      },
+      {
+        "id": "FM3",
+        "category": "Repo protection (forbidden/protected paths)",
+        "severity": "critical",
+        "finding": "Forbidden/protected path controls can be bypassed by patchsets that exploit path normalization edge-cases (e.g., symlinks, .. traversal, case-folding), file operation types not covered by simple globs (rename/delete), or tooling side-effects during integration. In O2, integration fan-in amplifies blast radius: a single bypass can alter CI/release/auth/deploy config or other protected surfaces.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "closure_target": "Harden patch_apply and validator enforcement to cover all file operations and path normalization semantics deterministically, including symlink and traversal defense.",
+          "earliest_prevention_stage": "PatchApply",
+          "evidence": "[{\"json_pointer\":\"/inputs/plan_candidate/plan_package/requirements/13\",\"note\":\"R14 requires forbidden/protected-path enforcement during patchset application\"},{\"json_pointer\":\"/inputs/plan_candidate/plan_package/risk_register/4\",\"note\":\"K5 repository protection bypass risk\"},{\"json_pointer\":\"/inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies/3\",\"note\":\"PatchApply policy relies on repo_context patterns + patch_apply-only repo writes\"}]",
+          "required_mitigation": "Define patchset schema to enumerate explicit file operations (add/modify/delete/rename) with normalized absolute paths; patch_apply must reject any path that, after realpath resolution, escapes repo root or crosses symlink boundaries. Enforce protected-path policy both pre-apply (static diff inspection) and post-apply (repo_snapshot changed-files verification). Add explicit deny rules for symlink creation/modification unless allowlisted, and ensure glob matching occurs on normalized canonical paths."
+        }
+      },
+      {
+        "id": "FM4",
+        "category": "Secrets handling & sensitive data retention",
+        "severity": "high",
+        "finding": "Secrets can still persist despite scanning if detection occurs after artifacts/logs are written, if patchsets include encoded/binary content that scanners miss, or if context packs/stage_handoffs copy sensitive substrings. O2 increases artifact surface area (per-lane + integration artifacts), raising leak probability and retention footprint.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "closure_target": "Guarantee pre-persistence secret scanning/redaction and expand coverage to all artifact types produced in parallel lanes (including diffs, snapshots, context packs, stage handoffs, and release bundles).",
+          "earliest_prevention_stage": "Generate",
+          "evidence": "[{\"json_pointer\":\"/inputs/plan_candidate/plan_package/requirements/19\",\"note\":\"R20 secrets policy requires detection/redaction/blocking before persistence\"},{\"json_pointer\":\"/inputs/plan_candidate/plan_package/risk_register/6\",\"note\":\"K7 secrets leakage risk\"},{\"json_pointer\":\"/inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies/4/hitl_triggers/0\",\"note\":\"Validate HITL trigger: secrets detected\"}]",
+          "required_mitigation": "Implement a write-path guard: all artifact_write/workspace_write operations must pass secrets_scan synchronously before commit to storage. Specify scanner requirements for (1) unified diffs, (2) JSON fields, (3) base64 blobs, and (4) generated release artifacts metadata. Require that scanner findings artifacts never include the secret itself (store only salted hashes/pattern IDs + locations). Enforce deterministic block behavior (no partial writes) and record denial events in event_log."
+        }
+      },
+      {
+        "id": "FM5",
+        "category": "Evidence & traceability compliance (RFC6901 pointers)",
+        "severity": "high",
+        "finding": "Evidence pointer validation can fail system-wide if artifact_ref/version semantics are underspecified or inconsistent (open question on artifact_ref format), causing pointers that cannot be resolved deterministically across runs/workspaces. This risks freezes with unverifiable trace or blocks progress late (high rework).",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "closure_target": "Finalize artifact_ref canonical format and enforce resolvability invariants; require resolvable evidence pointers as an early gate (not just at Freeze).",
+          "earliest_prevention_stage": "Intake",
+          "evidence": "[{\"json_pointer\":\"/inputs/plan_candidate/plan_package/open_questions/2\",\"note\":\"Q3: canonical definition/format of artifact_ref is blocking\"},{\"json_pointer\":\"/inputs/plan_candidate/plan_package/requirements/9\",\"note\":\"R10 mandates RFC6901 evidence pointer objects\"},{\"json_pointer\":\"/inputs/plan_candidate/plan_package/risk_register/2\",\"note\":\"K3 evidence pointer inconsistency risk\"}]",
+          "required_mitigation": "Define artifact_ref as content-addressed or version-addressed with immutability guarantees (e.g., {name, semver, content_hash}). Add an Evidence Resolution Validator that runs at each checkpoint: every evidence pointer must resolve to an existing versioned artifact + JSON Pointer path, with stable behavior under workspace compaction. Require repo/workspace state citations to be emitted as JSON artifacts with indexed paths (e.g., repo_snapshot changed-files index) to avoid non-JSON citations."
+        }
+      },
+      {
+        "id": "FM6",
+        "category": "Schema correctness & JSON Patch safety (RFC6902)",
+        "severity": "high",
+        "finding": "RFC6902 patch safety is vulnerable to concurrency and semantic corruption: multiple lanes/integration may patch shared canonical JSON artifacts (work_plan, workspace_index, decision_record) causing lost updates; additionally, 'smallest passing repair' selection (fewest ops/bytes) can deterministically choose a logically wrong but test-passing patch (technical debt or silent spec divergence).",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "closure_target": "Make canonical JSON artifacts single-writer or define deterministic merge semantics; add semantic validators and selection safeguards beyond size-only heuristics for critical artifacts.",
+          "earliest_prevention_stage": "WorkPlanning",
+          "evidence": "[{\"json_pointer\":\"/inputs/plan_candidate/plan_package/requirements/11\",\"note\":\"R12 mandates RFC6902-only repairs\"},{\"json_pointer\":\"/inputs/plan_candidate/plan_package/requirements/14\",\"note\":\"R15 defines smallest-passing selection tie-breakers\"},{\"json_pointer\":\"/inputs/plan_candidate/plan_package/risk_register/10\",\"note\":\"K11 JSON Patch misuse risk\"},{\"json_pointer\":\"/inputs/plan_candidate/plan_package/risk_register/20\",\"note\":\"K21 smallest-passing repair may choose suboptimal patch\"}]",
+          "required_mitigation": "Declare write ownership: e.g., only WorkPlanning stage can mutate work_plan; only Workspace Manager can mutate workspace_index; other stages propose patches but do not apply directly. Require patches to include preconditions (test op) on expected document version/hash. Add artifact-specific forbidden pointer paths + semantic validators (e.g., DAG acyclicity, ID uniqueness, required fields). For selection among passing patches, require deterministic scoring that includes policy/semantic checks, not only diff size."
+        }
+      },
+      {
+        "id": "FM7",
+        "category": "Context pack determinism & boundedness",
+        "severity": "high",
+        "finding": "Bounded per-lane context packs can omit cross-lane dependency signals, leading to locally passing lane outputs that systematically fail at integration; conversely, integration packs may exceed bounds and get truncated, causing reviewer/judge decisions to be made on incomplete evidence. Current acceptance tests do not explicitly validate lane-partition correctness or context pack adequacy for hidden dependencies.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "closure_target": "Add deterministic context-pack adequacy gates and explicit acceptance tests for lane partitioning correctness and required cross-lane context inclusion.",
+          "earliest_prevention_stage": "WorkPlanning",
+          "evidence": "[{\"json_pointer\":\"/inputs/plan_candidate/plan_package/risk_register/8\",\"note\":\"K9 context pack overflow/under-selection risk\"},{\"json_pointer\":\"/inputs/plan_candidate/plan_package/synthesis_warnings/2\",\"note\":\"W3: partitioning quality is a single point of failure; no AT validates partitioning correctness\"},{\"json_pointer\":\"/inputs/plan_candidate/plan_package/requirements/16\",\"note\":\"R17 requires deterministic bounded context packs with explicit selection rules\"}]",
+          "required_mitigation": "Define stage-required minimum artifact sets (must-include lists) and forbid truncation of required items; if bounds exceeded, require a deterministic summarization artifact produced by a designated role and validated for completeness. Add an acceptance test that perturbs dependency edges in work_plan and verifies planner detects/blocks unsafe lane splits. Add a context adequacy check in Review/Judge that can deterministically request missing artifacts (without freeform scope expansion)."
+        }
+      },
+      {
+        "id": "FM8",
+        "category": "Role separation & multi-vendor governance",
+        "severity": "high",
+        "finding": "Multi-vendor writer/reviewer/judge separation can fail in practice due to limited model portfolio availability (assumption low confidence) or misconfigured routing, resulting in self-review/self-approval in lanes or integration. In O2, repeated parallel invocations increase configuration surface area for accidental role-collision.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "closure_target": "Make role/vendor separation constraints machine-checkable and enforce them as a pre-dispatch gate for every stage invocation (including per-lane).",
+          "earliest_prevention_stage": "Intake",
+          "evidence": "[{\"json_pointer\":\"/inputs/plan_candidate/plan_package/requirements/21\",\"note\":\"R22 mandates writer/reviewer/judge separation and multi-vendor diversity\"},{\"json_pointer\":\"/inputs/plan_candidate/plan_package/risk_register/9\",\"note\":\"K10 role separation failure risk\"},{\"json_pointer\":\"/inputs/plan_candidate/plan_package/assumptions/4\",\"note\":\"A5: multi-vendor portfolio availability has low confidence\"}]",
+          "required_mitigation": "Require run_manifest to record vendor/model identity per output, and validate constraints: reviewer_vendor != writer_vendor; judge_vendor != writer_vendor; reviewer output types restricted to findings-only. If portfolio cannot satisfy constraints, require explicit HITL interruption and either (a) accept risk with documented waiver in decision_record, or (b) reroute to a sequential architecture with stronger human review."
+        }
+      }
+    ],
+    "closure_pass": false
+  }
+}

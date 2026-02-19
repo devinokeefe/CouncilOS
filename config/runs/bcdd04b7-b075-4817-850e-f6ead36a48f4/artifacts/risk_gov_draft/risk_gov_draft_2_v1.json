@@ -1,0 +1,299 @@
+{
+  "artifact_type": "risk_gov_draft",
+  "artifact_id": "risk_gov_draft_2_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T18:44:16.728985Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "capsule_canonical_v1"
+  ],
+  "payload": {
+    "risk_register": [
+      {
+        "id": "RISK_B_01",
+        "severity": "critical",
+        "description": "An agent generates a code patchset that introduces a severe security vulnerability (e.g., RCE, data exfiltration) that is missed by automated validators.",
+        "mitigation": {
+          "text": "Implement and mandate a comprehensive suite of security validators (SAST, DAST, dependency scanning) as a freeze gate. Critical findings must trigger a mandatory HITL review by a Security Officer.",
+          "owner": "Security/Compliance Team",
+          "status": "planned"
+        },
+        "acceptance": null
+      },
+      {
+        "id": "RISK_B_02",
+        "severity": "high",
+        "description": "The shared workspace state becomes corrupted or inconsistent due to a bug in a tool or the orchestrator, leading to failed builds or incorrect agent context.",
+        "mitigation": {
+          "text": "Design workspace integrity validators that run at each stage handoff, checking for schema compliance, index completeness, and artifact checksums. Checkpoint immutable workspace versions.",
+          "owner": "Orchestrator Design Team",
+          "status": "planned"
+        },
+        "acceptance": null
+      },
+      {
+        "id": "RISK_B_03",
+        "severity": "high",
+        "description": "An agent expands scope by implementing logic not specified in the plan, and the deviation is not caught by validators, violating the 'No silent scope expansion' constraint (CNS5).",
+        "mitigation": {
+          "text": "Develop fine-grained traceability validators that ensure all generated code and artifacts link back to a specific R#/AT#/O# from the input plan. Require ChangeRequest artifact for any deviation.",
+          "owner": "Traceability & Validation Team",
+          "status": "planned"
+        },
+        "acceptance": null
+      },
+      {
+        "id": "RISK_B_04",
+        "severity": "high",
+        "description": "A tool or agent writes sensitive information (e.g., credentials, PII) into the workspace or event log, violating the secrets policy (CNS9).",
+        "mitigation": {
+          "text": "Implement orchestrator-level guardrails that scan all artifact/log writes for secrets patterns and block them. Enforce this with a validator that scans all freeze bundle artifacts.",
+          "owner": "Security/Compliance Team",
+          "status": "planned"
+        },
+        "acceptance": null
+      },
+      {
+        "id": "RISK_B_05",
+        "severity": "medium",
+        "description": "A flaky test or other non-deterministic tool causes a valid implementation to fail validation repeatedly, exhausting the retry budget and forcing a costly reroute or HITL intervention.",
+        "mitigation": {
+          "text": "Define a clear policy for quarantining flaky tests/tools. The orchestrator should have logic to detect nondeterminism, record it, and potentially bypass the check with a required justification for the run.",
+          "owner": "Platform/DevOps Team",
+          "status": "planned"
+        },
+        "acceptance": null
+      },
+      {
+        "id": "RISK_B_06",
+        "severity": "medium",
+        "description": "The deterministic context pack builder creates an incomplete context for an agent (e.g., omits a relevant file or artifact), leading to inefficient or incorrect work.",
+        "mitigation": {
+          "text": "The context pack selection rules must be versioned and auditable. Include a 'context adequacy' check in the Review stage and allow agents to flag missing context via a structured artifact.",
+          "owner": "Orchestrator Design Team",
+          "status": "planned"
+        },
+        "acceptance": null
+      },
+      {
+        "id": "RISK_B_07",
+        "severity": "high",
+        "description": "The deterministic patch application logic fails on a complex merge conflict, and the system lacks a safe fallback, leading to a blocked workflow or corrupted repository state.",
+        "mitigation": {
+          "text": "Define strict limits for automated conflict resolution. If limits are exceeded, the orchestrator must automatically trigger a HITL review with a pre-packaged conflict summary.",
+          "owner": "Orchestrator Design Team",
+          "status": "planned"
+        },
+        "acceptance": null
+      },
+      {
+        "id": "RISK_B_08",
+        "severity": "medium",
+        "description": "An agent produces an RFC 6902 JSON Patch that is syntactically valid but semantically incorrect, corrupting a canonical JSON artifact like the work plan.",
+        "mitigation": {
+          "text": "All JSON Patch applications must be followed by a schema validation step. For critical artifacts, add semantic validators that check for logical consistency.",
+          "owner": "Validation Team",
+          "status": "planned"
+        },
+        "acceptance": null
+      },
+      {
+        "id": "RISK_B_09",
+        "severity": "medium",
+        "description": "The 'smallest passing repair' selection logic is too simplistic and consistently chooses a sub-optimal patch from multiple valid agent proposals, leading to technical debt.",
+        "mitigation": {
+          "text": "Develop a scored evaluation for repair selection that considers patch size, cyclomatic complexity changes, and adherence to style guides, in addition to just passing validation.",
+          "owner": "Orchestrator Design Team",
+          "status": "planned"
+        },
+        "acceptance": null
+      },
+      {
+        "id": "RISK_B_10",
+        "severity": "high",
+        "description": "The upstream plan_package_final.json is ambiguous or incomplete, forcing the Implementation Council to make assumptions that later turn out to be incorrect, requiring costly rework.",
+        "mitigation": {
+          "text": "The 'Intake' stage must include a validator that checks the input plan for completeness and clarity. If validation fails, the orchestrator should immediately reroute upstream to the Planning Council.",
+          "owner": "Intake & Validation Team",
+          "status": "planned"
+        },
+        "acceptance": null
+      },
+      {
+        "id": "RISK_B_11",
+        "severity": "medium",
+        "description": "Lack of writer/reviewer/judge separation (CNS12) is not enforced by the orchestrator, allowing a single model vendor or agent to write, review, and approve its own flawed code.",
+        "mitigation": {
+          "text": "The orchestrator's routing logic must be configured with a multi-vendor model portfolio and enforce that the agent ID or model family for a review or judge task is different from the one that performed the preceding write task.",
+          "owner": "Orchestrator Design Team",
+          "status": "planned"
+        },
+        "acceptance": null
+      },
+      {
+        "id": "RISK_B_12",
+        "severity": "critical",
+        "description": "A tool with overly broad filesystem permissions modifies a protected path in the repository (e.g., re-writing git history, altering core CI config) in a way that bypasses normal patchset controls.",
+        "mitigation": {
+          "text": "Enforce tool permissions via sandboxing. The orchestrator must apply a 'forbidden paths' list from repo_context.json to the sandbox policy for every tool execution stage.",
+          "owner": "Platform/DevOps Team",
+          "status": "planned"
+        },
+        "acceptance": null
+      },
+      {
+        "id": "RISK_B_13",
+        "severity": "low",
+        "description": "Non-canonical workspace data (e.g., agent scratchpad notes) grows indefinitely, making audits difficult and potentially exceeding storage quotas.",
+        "mitigation": {
+          "text": "Define and implement automated compaction and retention policies for non-canonical data. Summarization artifacts should be created before purging to preserve audit intent.",
+          "owner": "Workspace Backend Team",
+          "status": "planned"
+        },
+        "acceptance": null
+      },
+      {
+        "id": "RISK_B_14",
+        "severity": "medium",
+        "description": "The evidence pointer standard (RFC 6901) is not used consistently by agents, resulting in broken traceability links within the Implementation Freeze Bundle.",
+        "mitigation": {
+          "text": "A validator must run before freeze that inspects all decision records and review findings, ensuring all evidence fields are valid, parseable RFC 6901 pointers to existing artifacts in the run.",
+          "owner": "Validation Team",
+          "status": "planned"
+        },
+        "acceptance": null
+      },
+      {
+        "id": "RISK_B_15",
+        "severity": "high",
+        "description": "Tooling for handling network dependencies (e.g., package managers) is not deterministic, introducing different package versions across runs and violating reproducibility.",
+        "mitigation": {
+          "text": "Mandate the use of lockfiles (e.g., package-lock.json, poetry.lock). All network access must go through an audited, caching proxy or offline mirror. Validator must ensure lockfiles are present and consistent.",
+          "owner": "Platform/DevOps Team",
+          "status": "planned"
+        },
+        "acceptance": null
+      }
+    ],
+    "tool_policy": {
+      "stage_policies": [
+        {
+          "stage": "Intake",
+          "allowlisted_tools": [
+            "artifact_reader",
+            "json_schema_validator"
+          ],
+          "restrictions": [
+            {}
+          ],
+          "hitl_triggers": []
+        },
+        {
+          "stage": "WorkPlanning",
+          "allowlisted_tools": [
+            "artifact_reader",
+            "artifact_writer"
+          ],
+          "restrictions": [
+            {}
+          ],
+          "hitl_triggers": []
+        },
+        {
+          "stage": "Implement",
+          "allowlisted_tools": [
+            "artifact_reader",
+            "artifact_writer",
+            "file_reader",
+            "patchset_generator",
+            "code_linter",
+            "unit_test_runner"
+          ],
+          "restrictions": [
+            {},
+            {}
+          ],
+          "hitl_triggers": []
+        },
+        {
+          "stage": "Review",
+          "allowlisted_tools": [
+            "artifact_reader",
+            "artifact_writer"
+          ],
+          "restrictions": [
+            {}
+          ],
+          "hitl_triggers": [
+            "critical_finding_proposed"
+          ]
+        },
+        {
+          "stage": "IntegrateAndValidate",
+          "allowlisted_tools": [
+            "artifact_reader",
+            "artifact_writer",
+            "patch_applicator",
+            "build_runner",
+            "test_runner",
+            "security_scanner",
+            "quality_scanner",
+            "traceability_validator"
+          ],
+          "restrictions": [
+            {},
+            {}
+          ],
+          "hitl_triggers": [
+            "security_validator_critical_finding",
+            "patch_conflict_unresolved",
+            "build_failure"
+          ]
+        },
+        {
+          "stage": "Judge",
+          "allowlisted_tools": [
+            "artifact_reader",
+            "artifact_writer"
+          ],
+          "restrictions": [
+            {}
+          ],
+          "hitl_triggers": [
+            "change_request_proposed"
+          ]
+        }
+      ]
+    },
+    "hitl_policy": {
+      "when_to_interrupt": [
+        "A ChangeRequest artifact is proposed to deviate from plan semantics.",
+        "A security validator reports a 'critical' severity finding.",
+        "An automated tool attempts to modify a forbidden repository path.",
+        "A deterministic retry budget for a failing validator is exhausted.",
+        "An automated patch integration results in a merge conflict that exceeds complexity thresholds.",
+        "The orchestrator detects a potential integrity violation in the audit spine or workspace."
+      ],
+      "approval_roles": [
+        "Implementation Council Lead",
+        "Security/Compliance Officer",
+        "Platform/DevOps Lead",
+        "Planning Council Representative"
+      ]
+    },
+    "taxonomy_categories": [
+      "Specification Error",
+      "Model Error: Hallucination",
+      "Model Error: Logical Error",
+      "Model Error: Scope Creep",
+      "Model Error: Formatting/Schema Violation",
+      "Tool Error: Bug",
+      "Tool Error: Flaky/Nondeterministic Output",
+      "Tool Error: Misconfiguration",
+      "Workspace Integrity Error",
+      "Environment Error: Dependency Failure",
+      "Environment Error: Resource Exhaustion",
+      "Orchestration Error"
+    ]
+  }
+}

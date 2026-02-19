@@ -1,0 +1,134 @@
+{
+  "artifact_type": "requirements_draft",
+  "artifact_id": "requirements_draft_1_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T18:44:01.105089Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "capsule_canonical_v1"
+  ],
+  "payload": {
+    "requirements": [
+      {
+        "id": "REQ_A_1",
+        "priority": "MUST",
+        "text": "The Implementation Council subsystem SHALL accept plan_package_final.json as its only canonical planning input, and SHALL reject any attempt to use chat logs or non-canonical text as an authoritative input to downstream stages.",
+        "rationale": "Derived from single-source-of-truth and input contract goals. Evidence: /inputs/project_capsule/goals/1, /inputs/project_capsule/constraints/3, /inputs/project_capsule/non_goals/2."
+      },
+      {
+        "id": "REQ_A_2",
+        "priority": "MUST",
+        "text": "The Implementation Council subsystem SHALL define a typed, versioned JSON schema for repo_context.json, and orchestrator validators SHALL fail the run if repo_context.json is missing or schema-invalid.",
+        "rationale": "Needed to standardize repository execution entrypoints and enforcement. Evidence: /inputs/project_capsule/goals/1, /inputs/project_capsule/assumptions/3, /inputs/project_capsule/open_questions/13."
+      },
+      {
+        "id": "REQ_A_3",
+        "priority": "MUST",
+        "text": "The Implementation Council subsystem SHALL define a typed, versioned JSON schema for workspace_context.json, and orchestrator validators SHALL fail the run if workspace_context.json is missing or schema-invalid.",
+        "rationale": "Required to support governed shared workspace and deterministic context packs. Evidence: /inputs/project_capsule/goals/1, /inputs/project_capsule/goals/3, /inputs/project_capsule/constraints/7."
+      },
+      {
+        "id": "REQ_A_4",
+        "priority": "MUST",
+        "text": "The Implementation Council workflow SHALL be specified as a deterministic staged process with at least the stages Generate, Validate, Judge, and Freeze, and SHALL include an explicit checkpoint boundary between every adjacent stage.",
+        "rationale": "Directly required by the end-to-end workflow goal and checkpointing constraint. Evidence: /inputs/project_capsule/goals/0, /inputs/project_capsule/constraints/2, /inputs/project_capsule/success_metrics/1."
+      },
+      {
+        "id": "REQ_A_5",
+        "priority": "MUST",
+        "text": "At every checkpoint boundary, the system SHALL emit a stage_handoff JSON artifact conforming to a typed/versioned schema, and orchestrator validators SHALL fail the run if any required stage_handoff is absent.",
+        "rationale": "Enables pause/resume with explicit handoffs and deterministic checkpointing. Evidence: /inputs/project_capsule/goals/3, /inputs/project_capsule/constraints/7, /inputs/project_capsule/success_metrics/1, /inputs/project_capsule/glossary/4."
+      },
+      {
+        "id": "REQ_A_6",
+        "priority": "MUST",
+        "text": "The system SHALL produce an Implementation Freeze Bundle at Freeze that includes, at minimum, the canonical artifacts: implementation_run_manifest.json, implementation_event_log.jsonl, work_plan.json, patchsets (diff-embedded JSON), repo_snapshot.json, test_results.json, quality_reports.json, trace_report.json, review_findings.json, release_bundle.json, decision_record.json, plus workspace_index.json, context_packs/, and stage_handoffs/.",
+        "rationale": "Minimum freeze bundle contents are explicitly constrained and required for auditable handoff. Evidence: /inputs/project_capsule/constraints/9, /inputs/project_capsule/goals/2, /inputs/project_capsule/glossary/1."
+      },
+      {
+        "id": "REQ_A_7",
+        "priority": "MUST",
+        "text": "All canonical artifacts emitted by LLM roles SHALL be JSON-only and MUST validate against per-stage schemas; orchestrator validators SHALL reject any artifact containing non-JSON or schema-invalid content.",
+        "rationale": "Ensures deterministic machine consumption and CouncilOS-grade contracts. Evidence: /inputs/project_capsule/constraints/1, /inputs/project_capsule/constraints/0, /inputs/project_capsule/success_metrics/0."
+      },
+      {
+        "id": "REQ_A_8",
+        "priority": "MUST",
+        "text": "The audit spine SHALL include an immutable implementation_run_manifest and an append-only implementation_event_log, and the system SHALL checkpoint canonical artifacts in a versioned artifact store at each stage boundary.",
+        "rationale": "Durable auditability and resumability depend on immutable manifest, append-only logs, and checkpointing. Evidence: /inputs/project_capsule/constraints/2, /inputs/project_capsule/problem_statement."
+      },
+      {
+        "id": "REQ_A_9",
+        "priority": "MUST",
+        "text": "Evidence pointers used anywhere in canonical artifacts SHALL use a single standard: RFC 6901 JSON Pointer objects of the form {artifact_ref, entity_id|null, json_pointer, note}, and orchestrator validators SHALL fail the run if any non-compliant evidence reference is present.",
+        "rationale": "Provides a singular enforceable traceability mechanism. Evidence: /inputs/project_capsule/goals/4, /inputs/project_capsule/constraints/5, /inputs/project_capsule/success_metrics/2, /inputs/project_capsule/non_goals/3, /inputs/project_capsule/glossary/3."
+      },
+      {
+        "id": "REQ_A_10",
+        "priority": "MUST",
+        "text": "Repo/code/workspace state that must be cited for traceability SHALL be representable as versioned JSON artifacts addressable by RFC 6901 JSON Pointers, and the system SHALL forbid evidence standards that bypass JSON artifact citation.",
+        "rationale": "Makes traceability machine-verifiable and consistent across repos and workspace state. Evidence: /inputs/project_capsule/goals/4, /inputs/project_capsule/constraints/5, /inputs/project_capsule/non_goals/3."
+      },
+      {
+        "id": "REQ_A_11",
+        "priority": "MUST",
+        "text": "The repair/iteration model SHALL restrict canonical JSON artifact updates to RFC 6902 JSON Patch arrays, and orchestrator validators SHALL reject any canonical artifact modification that is not expressed as a JSON Patch.",
+        "rationale": "Enforces deterministic, auditable repairs. Evidence: /inputs/project_capsule/goals/5, /inputs/project_capsule/constraints/6, /inputs/project_capsule/success_metrics/3."
+      },
+      {
+        "id": "REQ_A_12",
+        "priority": "MUST",
+        "text": "All code changes produced by the Implementation Council SHALL be emitted as diff-only patchset JSON artifacts with a deterministic apply order, and orchestrator validators SHALL fail the run if patchsets include non-diff code mutation mechanisms.",
+        "rationale": "Prevents non-auditable edits and supports reproducible apply/validate loops. Evidence: /inputs/project_capsule/goals/5, /inputs/project_capsule/constraints/6, /inputs/project_capsule/glossary/8."
+      },
+      {
+        "id": "REQ_A_13",
+        "priority": "MUST",
+        "text": "The Implementation Council SHALL not change the semantics of any R#/AT#/O#/K# entities from the frozen input plan; any proposed semantic change SHALL be expressed as a ChangeRequest artifact and SHALL require policy-triggered escalation before implementation proceeds.",
+        "rationale": "Prevents silent scope expansion and preserves upstream governance. Evidence: /inputs/project_capsule/constraints/4, /inputs/project_capsule/non_goals/1, /inputs/project_capsule/goals/10, /inputs/project_capsule/glossary/5."
+      },
+      {
+        "id": "REQ_A_14",
+        "priority": "MUST",
+        "text": "The orchestrator SHALL be the sole authority over routing, budgets, iteration limits, termination, checkpoint/resume, tool permissions, selection logic, and validator enforcement; Implementation Council agents SHALL have no mechanism to override these orchestrator decisions.",
+        "rationale": "Separation of powers is a stated non-negotiable policy constraint. Evidence: /inputs/project_capsule/constraints/0, /inputs/project_capsule/problem_statement."
+      },
+      {
+        "id": "REQ_A_15",
+        "priority": "MUST",
+        "text": "The shared workspace SHALL be tool-accessible, versioned, auditable, and checkpointed; it SHALL enforce separation between canonical and non-canonical content; and it SHALL support deterministically compiled, bounded context_packs produced by the orchestrator.",
+        "rationale": "Enables long-horizon execution with governed context and auditable state. Evidence: /inputs/project_capsule/goals/3, /inputs/project_capsule/constraints/7, /inputs/project_capsule/success_metrics/4, /inputs/project_capsule/glossary/2, /inputs/project_capsule/glossary/7."
+      },
+      {
+        "id": "REQ_A_16",
+        "priority": "MUST",
+        "text": "workspace_index.json SHALL enumerate all workspace items with type, version, and provenance, and orchestrator validators SHALL fail the run if any workspace item is not indexed or if any context_pack exceeds configured bounds.",
+        "rationale": "Required for governance, completeness, and bounded context delivery. Evidence: /inputs/project_capsule/success_metrics/4, /inputs/project_capsule/goals/3, /inputs/project_capsule/constraints/7."
+      },
+      {
+        "id": "REQ_A_17",
+        "priority": "MUST",
+        "text": "The system SHALL define a tool permission matrix per stage and SHALL enforce it deterministically via orchestrator policy; any tool access outside the matrix SHALL be blocked and recorded in the audit log.",
+        "rationale": "Needed for controlled execution and reproducibility with enforced constraints. Evidence: /inputs/project_capsule/goals/6, /inputs/project_capsule/assumptions/7, /inputs/project_capsule/constraints/0."
+      },
+      {
+        "id": "REQ_A_18",
+        "priority": "MUST",
+        "text": "The system SHALL implement and enforce a secrets policy that prevents secrets from being stored in logs or workspace, including detection and redaction/blocking guardrails; validators SHALL fail any run where secrets are detected in canonical artifacts, event logs, or workspace outputs.",
+        "rationale": "Compliance requirement with explicit enforcement and measurable success criteria. Evidence: /inputs/project_capsule/constraints/8, /inputs/project_capsule/success_metrics/5, /inputs/project_capsule/goals/6."
+      },
+      {
+        "id": "REQ_A_19",
+        "priority": "MUST",
+        "text": "Freeze SHALL be permitted only if deterministic, code-owned validators pass for: build/test/lint/typecheck (as applicable), artifact integrity, workspace integrity, risk closure, reproducibility, and trace completeness.",
+        "rationale": "Defines closure gates required for audited, reproducible delivery. Evidence: /inputs/project_capsule/goals/7, /inputs/project_capsule/success_metrics/6, /inputs/project_capsule/constraints/0."
+      },
+      {
+        "id": "REQ_A_20",
+        "priority": "MUST",
+        "text": "The council structure SHALL enforce writer/reviewer/judge separation such that reviewers produce findings-only artifacts and do not emit writing or patch artifacts; orchestrator routing SHALL enforce multi-vendor diversity across these roles.",
+        "rationale": "Prevents conflict of interest and preserves independent review/judgment. Evidence: /inputs/project_capsule/constraints/10, /inputs/project_capsule/goals/11, /inputs/project_capsule/success_metrics/7."
+      }
+    ]
+  }
+}

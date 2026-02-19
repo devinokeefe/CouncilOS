@@ -1,0 +1,119 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B2A_anchor_v3",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T21:21:03.147406Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B2A_v3"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2A_v3",
+    "findings": [
+      {
+        "id": "TG001",
+        "severity": "medium",
+        "summary": "Deterministic sample checks for R1–R3 claim validation in milestones M1 and M2, but the plan’s M2 exit_criteria do not include AT1/AT2/AT3; only M1 explicitly gates on those acceptance tests. This weakens trace accuracy between sample checks and milestone gates.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "artifact_id": "plan_package",
+            "json_pointer": "/inputs/deterministic_sample_checks/0/milestones",
+            "note": "Sample check for R1 lists M1 and M2.",
+            "quote": "[\"M1\",\"M2\"]"
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "artifact_id": "plan_package",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/1/exit_criteria",
+            "note": "M2 exit_criteria list does not include AT1.",
+            "quote": "[\"AT12 passes (RFC6902-only JSON artifact repair for any canonical JSON updates).\",\"AT13 passes (diff-only patchset artifacts; rejection of non-diff mechanisms).\",\"AT14 passes (forbidden/protected ..."
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "artifact_id": "plan_package",
+            "json_pointer": "/inputs/deterministic_sample_checks/1/milestones",
+            "note": "Sample check for R2 lists M1 and M2.",
+            "quote": "[\"M1\",\"M2\"]"
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "artifact_id": "plan_package",
+            "json_pointer": "/inputs/deterministic_sample_checks/2/milestones",
+            "note": "Sample check for R3 lists M1 and M2.",
+            "quote": "[\"M1\",\"M2\"]"
+          }
+        ],
+        "routing_target": "alignment_warnings"
+      },
+      {
+        "id": "TG002",
+        "severity": "medium",
+        "summary": "Potential governance mismatch for R2/R3: requirements state missing or schema-invalid repo_context.json/workspace_context.json MUST fail the run, but the Intake tool_policy frames missing required inputs as a HITL trigger (interrupt) rather than an explicit fail/reject behavior. This is ambiguous for deterministic enforcement.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "artifact_id": "plan_package",
+            "json_pointer": "/inputs/plan_candidate/plan_package/requirements/1/text",
+            "note": "R2 specifies validators SHALL fail the run if repo_context.json is missing or schema-invalid.",
+            "quote": "...orchestrator validators SHALL fail the run if repo_context.json is missing or schema-invalid..."
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "artifact_id": "plan_package",
+            "json_pointer": "/inputs/plan_candidate/plan_package/requirements/2/text",
+            "note": "R3 specifies validators SHALL fail the run if workspace_context.json is missing or schema-invalid.",
+            "quote": "...orchestrator validators SHALL fail the run if workspace_context.json is missing or schema-invalid..."
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "artifact_id": "plan_package",
+            "json_pointer": "/inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies/0/hitl_triggers",
+            "note": "Intake policy lists missing required inputs as a HITL trigger.",
+            "quote": "[\"Missing required inputs (plan_package_final.json, repo_context.json, workspace_context.json)\",\"Schema validation failures that cannot be repaired via RFC6902 without changing semantics\",\"Input plan_"
+          }
+        ],
+        "routing_target": "risk_gov_canonical"
+      },
+      {
+        "id": "TG003",
+        "severity": "low",
+        "summary": "R1 requires acceptance of plan_package_final.json plus an associated structured handoff bundle, but the requirement does not specify a typed/versioned schema for that handoff bundle (unlike R2/R3 which explicitly require typed/versioned schemas). This may leave enforcement underspecified.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "artifact_id": "plan_package",
+            "json_pointer": "/inputs/plan_candidate/plan_package/requirements/0/text",
+            "note": "R1 references an associated structured handoff bundle without naming a schema.",
+            "quote": "...accept exactly one frozen plan_package_final.json (plus its associated structured handoff bundle)..."
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "artifact_id": "plan_package",
+            "json_pointer": "/inputs/plan_candidate/plan_package/requirements/1/text",
+            "note": "Contrast: R2 explicitly requires a typed, versioned schema.",
+            "quote": "...define and require a typed, versioned repo_context.json schema..."
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "artifact_id": "plan_package",
+            "json_pointer": "/inputs/plan_candidate/plan_package/requirements/2/text",
+            "note": "Contrast: R3 explicitly requires a typed, versioned schema.",
+            "quote": "...define and require a typed, versioned workspace_context.json schema..."
+          }
+        ],
+        "routing_target": "requirements_canonical"
+      }
+    ]
+  }
+}

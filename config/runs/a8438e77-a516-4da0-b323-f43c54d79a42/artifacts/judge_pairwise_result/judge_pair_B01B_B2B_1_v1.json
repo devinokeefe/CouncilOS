@@ -1,0 +1,66 @@
+{
+  "artifact_type": "judge_pairwise_result",
+  "artifact_id": "judge_pair_B01B_B2B_1_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T23:19:22.358261Z",
+  "source_run_id": "a8438e77-a516-4da0-b323-f43c54d79a42",
+  "parents": [
+    "plan_candidate_B01B_v3",
+    "plan_candidate_B2B_v3"
+  ],
+  "payload": {
+    "comparison": {
+      "a": "Candidate A proposes a sequential, single-pipeline architecture (O1) with a big-bang milestone strategy. This approach maximizes determinism and simplicity at the cost of being the slowest option for execution.",
+      "b": "Candidate B proposes a task-parallel architecture (O2) with a phased, hybrid milestone strategy. This aims for faster wall-clock time and de-risks the complex implementation by building the system incrementally."
+    },
+    "judge_id": "council-os-hq",
+    "judge_model": "anthropic/claude-3-opus-20240229",
+    "winner": "b",
+    "scores": {
+      "feasibility": 8,
+      "testability": 9,
+      "governance": 9,
+      "architecture": 10,
+      "clarity": 10
+    },
+    "evidence": [
+      {
+        "artifact_ref": "plan_candidate_B01B_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/architecture/chosen/option_id",
+        "note": "Candidate A chose the simpler, sequential O1 architecture.",
+        "candidate_id": "B01B",
+        "artifact_id": null,
+        "quote": "O1"
+      },
+      {
+        "artifact_ref": "plan_candidate_B01B_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/executive_summary",
+        "note": "Candidate A uses a big-bang milestone strategy with a single linear pipeline.",
+        "candidate_id": "B01B",
+        "artifact_id": null,
+        "quote": "...implements the Implementation Council as a sequential staged pipeline (O1) under a big-bang milestone strategy... The entire workflow—Intake → Work Planning → Generate → Validate → Review → Patch →"
+      },
+      {
+        "artifact_ref": "plan_candidate_B2B_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/architecture/chosen/option_id",
+        "note": "Candidate B chose the more complex but faster parallel O2 architecture.",
+        "candidate_id": "B2B",
+        "artifact_id": null,
+        "quote": "O2"
+      },
+      {
+        "artifact_ref": "plan_candidate_B2B_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/milestones/0/name",
+        "note": "Candidate B uses a phased milestone strategy to de-risk implementation, starting with a foundation.",
+        "candidate_id": "B2B",
+        "artifact_id": null,
+        "quote": "Phase 1: Foundation (Single-Lane Equivalent)"
+      }
+    ],
+    "notes": "Candidate B is superior. Its parallel architecture (O2) is a more practical solution for real-world throughput needs. More importantly, its hybrid, phased milestone strategy is a far more realistic and de-risked plan for implementing a complex system than Candidate A's rigid, all-or-nothing 'big-bang' approach."
+  }
+}

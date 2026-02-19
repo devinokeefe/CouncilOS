@@ -1,0 +1,573 @@
+{
+  "artifact_type": "candidate_delta",
+  "artifact_id": "candidate_delta_B2B_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T20:54:43.588389Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "branch_set_v1"
+  ],
+  "payload": {
+    "candidate_id": "B2B",
+    "executive_summary": "Candidate B2B implements the Implementation Council using architecture option O2 (task-parallel fan-out/fan-in with deterministic integration) delivered via a hybrid milestone strategy. Phase 1 establishes the foundation by delivering the Global Orchestrator, Intake & DAG Work Planner, Workspace Manager with namespaced partitions, and a single-lane execution path—effectively proving the O1-equivalent sequential flow works end-to-end with full audit spine, workspace governance, and input-contract validation. Phase 2 adds the Task Lane Orchestrator and per-lane Writer/Validator/Reviewer/Patcher pods running two parallel lanes against a test repository, validating parallel execution isolation and per-lane role separation. Phase 3 introduces the Integration Merge Engine, Integration Validator/Reviewer/Patcher, and the deterministic merge-ordering algorithm that resolves alignment warning AL006, ensuring reproducible integration regardless of lane completion order. Phase 4 completes the system with the Judge Pod, Freeze Assembler, and full closure gates, gating on the complete AT suite. This branch is recommended when wall-clock throughput is a priority and the target repository has low inter-module coupling, as parallel lanes yield significant time savings. High HITL strictness is retained throughout due to the added complexity of parallel execution and unresolved open questions Q7–Q9.",
+    "architecture_choice": {
+      "option_id": "O2",
+      "rationale": "O2 directly addresses the primary weakness of O1 (wall-clock time for repos with many independent tasks) while preserving all MUST requirements. The hybrid milestone strategy de-risks by first proving the single-lane sequential path works (Phase 1), then incrementally layering parallelism (Phase 2) and deterministic integration (Phase 3). K12 (merge conflicts) is the primary elevated risk and is explicitly mitigated in Phase 3 with a deterministic merge-ordering algorithm independent of wall-clock completion timing. Workspace integrity (K8) is addressed by C22's namespaced partitions with per-lane isolation. Role separation (K10) is enforced by per-lane orchestrator output-type allowlists. Context pack overflow (K9) risk is actually lower per-lane due to smaller scoped packs. The architecture's 14 components and 13 interfaces provide clear separation of concerns and independent testability while enabling the parallelism that justifies the additional orchestration complexity.",
+      "high_level_dataflow": "plan_package_final.json + repo_context.json + workspace_context.json → C12 (Intake & DAG Work Planner): validates inputs, initializes run_manifest/event_log/workspace_index, produces work_plan.json with DAG/lane annotations → C11 (Global Orchestrator) fans out to C13 (Task Lane Orchestrators): each lane runs C14 (Writer) → C15 (Validator) → C16 (Reviewer) → C17 (Patcher) cycles within lane-scoped workspace partitions managed by C22 → lane completion signals flow back to C11 → C18 (Integration Merge Engine) applies lane patchsets in deterministic order to base repo state, emitting conflict reports if needed → C19 (Integration Validator) runs full-repo validation → C20 (Integration Reviewer) produces holistic findings → C21 (Integration Patcher) repairs integration issues → C11 routes to C23 (Judge Pod) for trace/risk/freeze evaluation → C24 (Freeze Assembler) collects all artifacts into the Implementation Freeze Bundle. All workspace IO flows through C22; all checkpoint/stage_handoff artifacts are emitted at every boundary.",
+      "key_design_decisions": [
+        "Phase 1 proves the single-lane sequential path (O1-equivalent) before adding parallelism, de-risking the core audit spine, workspace governance, and input contracts.",
+        "Deterministic merge ordering in C18 is independent of wall-clock lane completion timing, directly resolving AL006 and ensuring reproducibility.",
+        "Per-lane workspace partitions (C22) enforce isolation; a shared canonical integration partition is used only during the integration sub-flow.",
+        "Per-lane orchestrators (C13) enforce lane-scoped tool permissions, forbidden-path rules, and output-type allowlists, mitigating K10 role separation risk in parallel contexts.",
+        "High HITL strictness is retained across all phases due to parallel complexity and blocking open questions Q7–Q9 on diff format, smallest-passing-repair selection, and conflict resolution strategy.",
+        "Integration sub-flow (C18→C19→C20→C21) is a dedicated stage with its own review/patch cycle, providing a governed checkpoint before Judge evaluation.",
+        "Context packs are lane-scoped during parallel execution and integration-scoped during merge, keeping pack sizes bounded per K9 mitigation."
+      ]
+    },
+    "milestones": [
+      {
+        "id": "M1",
+        "name": "Phase 1: Foundation (Single-Lane Proof)",
+        "deliverables": [
+          {
+            "id": "M1-D1",
+            "text": "Global Orchestrator (C11) with DAG workflow engine, budget/retry enforcement, and checkpoint logic"
+          },
+          {
+            "id": "M1-D2",
+            "text": "Intake & DAG Work Planner (C12) with input validation (plan_package_final.json, repo_context.json, workspace_context.json), run_manifest/event_log initialization, and work_plan.json with DAG annotations"
+          },
+          {
+            "id": "M1-D3",
+            "text": "Workspace Manager (C22) with namespaced partitions, canonical vs non-canonical separation, workspace_index.json maintenance, and checkpoint/restore support"
+          },
+          {
+            "id": "M1-D4",
+            "text": "Single-lane execution path: one Writer (C14), one Validator (C15), one Reviewer (C16), one Patcher (C17) operating sequentially through C11 routing"
+          },
+          {
+            "id": "M1-D5",
+            "text": "Audit spine: immutable run_manifest, append-only event_log, versioned artifact store with checkpoint at every stage boundary"
+          },
+          {
+            "id": "M1-D6",
+            "text": "Tool permission matrix enforcement for Intake, WorkPlanning, Generate, PatchApply, Validate, and Review stages"
+          },
+          {
+            "id": "M1-D7",
+            "text": "Secrets detection/redaction/blocking guardrails validated at each checkpoint"
+          },
+          {
+            "id": "M1-D8",
+            "text": "Stage_handoff artifacts emitted at every stage transition with required resumable-state fields"
+          }
+        ],
+        "exit_criteria": [
+          "AT1 passes: valid plan accepted, chat logs and non-canonical inputs rejected",
+          "AT2 passes: repo_context.json validation enforced before code generation",
+          "AT3 passes: workspace_context.json validation enforced before workspace writes",
+          "AT4 passes (single-lane subset): stage sequence Intake→Generate→Validate→Review→Patch verified with checkpoint at each transition",
+          "AT5 passes: stage_handoff artifact present for every stage transition",
+          "AT8 passes: run_manifest immutable, event_log append-only, artifacts versioned and checkpointed",
+          "AT9 passes: prose/markdown/schema-invalid artifacts rejected",
+          "AT19 passes: unauthorized tool invocations blocked and logged",
+          "AT20 passes: secrets detected and blocked/redacted before persistence"
+        ],
+        "depends_on": []
+      },
+      {
+        "id": "M2",
+        "name": "Phase 2: Parallel Lanes (Two-Lane Proof)",
+        "deliverables": [
+          {
+            "id": "M2-D1",
+            "text": "Task Lane Orchestrator (C13) managing per-lane state machines (Generate→Validate→Review→Patch) with per-lane stage_handoffs and completion signals"
+          },
+          {
+            "id": "M2-D2",
+            "text": "Multi-lane Writer Pool (C14) producing lane-scoped diff-only patchset artifacts"
+          },
+          {
+            "id": "M2-D3",
+            "text": "Per-Lane Validator (C15) running scoped validators with AT# trace mapping"
+          },
+          {
+            "id": "M2-D4",
+            "text": "Per-Lane Reviewer (C16) producing findings-only artifacts with RFC 6901 evidence pointers"
+          },
+          {
+            "id": "M2-D5",
+            "text": "Per-Lane Patcher (C17) producing lane-scoped RFC 6902 patches and replacement patchsets"
+          },
+          {
+            "id": "M2-D6",
+            "text": "Two parallel lanes executing against a test repository with independent module partitions"
+          },
+          {
+            "id": "M2-D7",
+            "text": "Per-lane workspace partition enforcement via C22 with isolation validation"
+          }
+        ],
+        "exit_criteria": [
+          "AT12 passes: canonical JSON artifact modifications only via RFC 6902 JSON Patch",
+          "AT13 passes: code changes only via diff-only patchset JSON artifacts",
+          "AT14 passes: forbidden/protected path writes blocked, operation caps enforced",
+          "AT22 passes: writer/reviewer/judge roles distinct, reviewers findings-only, multi-vendor routing recorded, no role performs multiple functions within same stage",
+          "Per-lane stage_handoffs emitted and validated for each lane transition",
+          "Workspace partition isolation verified: no cross-lane contamination detected"
+        ],
+        "depends_on": [
+          "M1"
+        ]
+      },
+      {
+        "id": "M3",
+        "name": "Phase 3: Deterministic Integration",
+        "deliverables": [
+          {
+            "id": "M3-D1",
+            "text": "Integration Merge Engine (C18) with deterministic merge ordering algorithm independent of wall-clock lane completion timing"
+          },
+          {
+            "id": "M3-D2",
+            "text": "Integration Validator (C19) running full-repo validators on merged state with regression detection"
+          },
+          {
+            "id": "M3-D3",
+            "text": "Integration Reviewer (C20) producing holistic integration review_findings.json"
+          },
+          {
+            "id": "M3-D4",
+            "text": "Integration Patcher (C21) producing integration-level repair artifacts within op caps"
+          },
+          {
+            "id": "M3-D5",
+            "text": "Structured conflict_report and integration_report artifacts with deterministic escalation classification"
+          },
+          {
+            "id": "M3-D6",
+            "text": "Deterministic merge ordering produces identical results regardless of lane completion order (AL006 resolution)"
+          }
+        ],
+        "exit_criteria": [
+          "AT15 passes: smallest-passing-repair selection uses deterministic tie-breakers (fewest ops → fewest bytes → first-generated)",
+          "AT10 passes: all evidence pointers across integration artifacts use RFC 6901 format and resolve correctly",
+          "AT16 passes: semantic deviations require ChangeRequest with decision record and escalation",
+          "Deterministic merge ordering verified: identical integration output produced when lane completion order is permuted",
+          "Integration conflict escalation thresholds enforced: conflicts beyond limits trigger reroute/HITL"
+        ],
+        "depends_on": [
+          "M2"
+        ]
+      },
+      {
+        "id": "M4",
+        "name": "Phase 4: Judge, Freeze & Full Closure",
+        "deliverables": [
+          {
+            "id": "M4-D1",
+            "text": "Judge Pod (C23) evaluating integrated outputs, producing trace_report.json and freeze/no-freeze recommendation with risk closure assessment against K# entries"
+          },
+          {
+            "id": "M4-D2",
+            "text": "Freeze Assembler (C24) collecting all CNS10-required artifacts, running final integrity/reproducibility/workspace-integrity checks, emitting decision_record.json and release_bundle.json"
+          },
+          {
+            "id": "M4-D3",
+            "text": "Complete Implementation Freeze Bundle with all required artifacts and directories"
+          },
+          {
+            "id": "M4-D4",
+            "text": "Full AT suite validation across all 23 acceptance tests"
+          },
+          {
+            "id": "M4-D5",
+            "text": "End-to-end trace_report.json with AT#→test evidence pointers for all acceptance tests"
+          }
+        ],
+        "exit_criteria": [
+          "AT5 passes: all stage_handoffs present across full workflow",
+          "AT6 passes: every stage_handoff contains required resumable-state fields with valid evidence pointers",
+          "AT7 passes: freeze bundle contains all minimum required artifacts",
+          "AT17 passes: workspace canonical/non-canonical partition enforced, context packs deterministic",
+          "AT18 passes: all workspace items indexed, no out-of-bounds context packs",
+          "AT21 passes: freeze denied when any gate fails, permitted only when all pass",
+          "AT23 passes: flaky failures handled with deterministic retry/quarantine/escalation",
+          "Full AT suite (AT1–AT23) passes at final Freeze"
+        ],
+        "depends_on": [
+          "M3"
+        ]
+      }
+    ],
+    "decision_log": [
+      {
+        "id": "DEC1",
+        "question": "Which architecture option should be selected for this candidate?",
+        "choice": "O2 — Task-parallel fan-out/fan-in with deterministic integration",
+        "rationale": "O2 provides faster wall-clock execution for repos with independent modules while preserving all MUST requirements. The hybrid milestone strategy de-risks by proving the sequential path first (Phase 1) before adding parallelism. K12 (merge conflicts) is the primary elevated risk but is directly mitigated by the deterministic merge-ordering algorithm in Phase 3. O1 was rejected for this branch due to wall-clock limitations; O3's partial-freeze model adds downstream consumer complexity without the parallelism benefit; O4's monolithic boundary risks weakening role separation and auditability.",
+        "alternatives_considered": [
+          "O1: Sequential pipeline — simpler but slowest wall-clock time, single-lane bottleneck",
+          "O3: Checkpoint-driven micro-cycle — good for long-horizon but no parallelism benefit",
+          "O4: Monolithic council — low modularity, harder to enforce role separation internally"
+        ],
+        "what_would_change_this_decision": [
+          "Target repository has very high inter-module coupling making lane partitioning infeasible",
+          "Merge conflict rates in practice exceed deterministic resolution thresholds consistently",
+          "Orchestration complexity of parallel lanes proves unmanageable within available engineering budget"
+        ],
+        "evidence_pointers": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "architecture_canonical",
+            "json_pointer": "/options/1",
+            "note": "O2 architecture definition with parallel lanes and integration sub-flow",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "branch_set_v1",
+            "artifact_id": "branch_set",
+            "json_pointer": "/branches/1",
+            "note": "Branch B2 selects O2 with hybrid milestone strategy",
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "DEC2",
+        "question": "What milestone strategy should be used to deliver O2?",
+        "choice": "Hybrid 4-phase: Phase 1 big-bang foundation with single-lane proof, Phase 2 thin-slice parallel lanes, Phase 3 thin-slice integration, Phase 4 judge/freeze/full closure",
+        "rationale": "The hybrid approach de-risks parallel execution by first proving the sequential foundation works (Phase 1), then incrementally adding parallelism (Phase 2) and integration (Phase 3). This ensures that audit spine, workspace governance, and input contracts are validated before the complexity of parallel lanes is introduced. Phase 3 specifically targets the highest-risk area (deterministic merge ordering, AL006) as a focused deliverable.",
+        "alternatives_considered": [
+          "Pure big-bang: deliver all O2 components at once — too risky given parallel complexity",
+          "Pure thin-slice: deliver one feature at a time — too slow and doesn't leverage the natural phase boundaries",
+          "Two-phase (foundation + everything else): insufficient isolation of integration risk"
+        ],
+        "what_would_change_this_decision": [
+          "Team has extensive prior experience with parallel orchestration reducing Phase 2/3 risk",
+          "Integration merge ordering algorithm is already proven in another system",
+          "Time pressure requires collapsing phases"
+        ],
+        "evidence_pointers": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "branch_set_v1",
+            "artifact_id": "branch_set",
+            "json_pointer": "/branches/1/milestone_strategy",
+            "note": "Hybrid milestone strategy defined for branch B2",
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "DEC3",
+        "question": "How should acceptance tests be distributed across milestones?",
+        "choice": "Phase 1 gates on input-contract and audit-spine tests (AT1-AT3, AT4 subset, AT5, AT8, AT9, AT19, AT20); Phase 2 gates on patchset/role-separation tests (AT12-AT14, AT22); Phase 3 gates on integration/repair/change-control tests (AT10, AT15, AT16); Phase 4 gates on remaining tests and full suite",
+        "rationale": "Each phase gates on the acceptance tests most relevant to its deliverables. Phase 1 validates the foundation (input contracts, audit spine, secrets, tool permissions). Phase 2 validates parallel execution mechanics (patchsets, role separation). Phase 3 validates integration-specific concerns (evidence pointers across integration, smallest-passing-repair, change control). Phase 4 validates end-to-end closure including judge, freeze, workspace integrity, and flaky-failure handling.",
+        "alternatives_considered": [
+          "Run full AT suite at every phase — excessive for early phases that lack later components",
+          "Defer all AT validation to Phase 4 — loses early feedback on foundation correctness"
+        ],
+        "what_would_change_this_decision": [
+          "Acceptance test dependencies change such that earlier tests require later components",
+          "Regulatory requirements mandate full suite validation at each phase boundary"
+        ],
+        "evidence_pointers": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "branch_set_v1",
+            "artifact_id": "branch_set",
+            "json_pointer": "/branches/1/acceptance_strategy",
+            "note": "Acceptance test phasing defined for branch B2",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "acceptance_canonical_v1",
+            "artifact_id": "acceptance_canonical",
+            "json_pointer": "/acceptance_tests",
+            "note": "Full acceptance test definitions",
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "DEC4",
+        "question": "How should K12 (merge conflicts from parallel lanes) be mitigated?",
+        "choice": "Deterministic merge ordering algorithm in C18 (Phase 3) that produces identical results regardless of lane completion order, with strict conflict escalation thresholds triggering reroute/HITL",
+        "rationale": "K12 is the primary elevated risk for O2. The deterministic merge ordering algorithm ensures reproducibility by making integration results independent of wall-clock timing. Strict escalation thresholds prevent automated conflict resolution from producing unsafe merges. This directly resolves alignment warning AL006.",
+        "alternatives_considered": [
+          "Optimistic merge with manual conflict resolution only — not deterministic, violates reproducibility requirements",
+          "Lane priority ordering based on dependency graph — insufficient when lanes have overlapping file sets",
+          "Rebase-based integration — more complex and still requires deterministic ordering rules"
+        ],
+        "what_would_change_this_decision": [
+          "Conflict rates are consistently zero in practice, making the algorithm unnecessary",
+          "A proven deterministic rebase strategy becomes available that handles all edge cases",
+          "Target repos have strict module boundaries that eliminate overlap entirely"
+        ],
+        "evidence_pointers": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "risk_gov_canonical_v1",
+            "artifact_id": "risk_gov_canonical",
+            "json_pointer": "/risk_register/11",
+            "note": "K12 risk definition: integration/merge conflicts from parallel pods",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "architecture_canonical",
+            "json_pointer": "/options/1/components/7",
+            "note": "C18 Integration Merge Engine responsibilities",
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "DEC5",
+        "question": "What HITL strictness level should be applied?",
+        "choice": "High HITL strictness retained across all phases",
+        "rationale": "Parallel execution introduces additional complexity vectors (lane isolation, merge conflicts, distributed role separation) that warrant high human oversight. Open questions Q7 (diff format), Q8 (smallest-passing-repair selection), and Q9 (conflict resolution strategy) remain blocking and their resolution may require HITL judgment. The risk posture notes explicitly recommend high HITL strictness due to parallel complexity.",
+        "alternatives_considered": [
+          "Medium HITL: reduce oversight after Phase 1 proves foundation — premature given unresolved Q7-Q9",
+          "Low HITL: trust automated policies — inappropriate for a novel parallel architecture with elevated K12 risk"
+        ],
+        "what_would_change_this_decision": [
+          "Q7, Q8, and Q9 are resolved with well-tested deterministic policies",
+          "Phase 1 and Phase 2 demonstrate consistently low conflict and escalation rates",
+          "Operational experience builds confidence in automated merge ordering"
+        ],
+        "evidence_pointers": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "branch_set_v1",
+            "artifact_id": "branch_set",
+            "json_pointer": "/branches/1/governance_posture",
+            "note": "High HITL strictness specified for branch B2",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "branch_set_v1",
+            "artifact_id": "branch_set",
+            "json_pointer": "/branches/1/risk_posture",
+            "note": "Risk posture notes recommend high HITL due to parallel complexity and Q7-Q9",
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "DEC6",
+        "question": "How should workspace partitioning work for parallel lanes?",
+        "choice": "Per-lane namespaced workspace partitions managed by C22 with a shared canonical integration partition used only during the integration sub-flow",
+        "rationale": "Per-lane partitions enforce isolation during parallel execution, preventing cross-lane contamination (K8 mitigation). The shared integration partition is activated only when C18 begins deterministic merge, ensuring a single governed merge point. workspace_index.json spans all partitions with provenance metadata for full auditability.",
+        "alternatives_considered": [
+          "Single shared workspace with file-level locking — higher contention risk and harder to enforce isolation",
+          "Fully separate workspaces per lane with no shared partition — complicates integration and workspace_index unification",
+          "Copy-on-write workspace with lane overlays — more complex storage semantics with unclear auditability"
+        ],
+        "what_would_change_this_decision": [
+          "Workspace backend cannot support namespacing (depends on Q2 resolution)",
+          "Lane count grows beyond what namespaced partitions can efficiently manage",
+          "Storage constraints require a more compact workspace model"
+        ],
+        "evidence_pointers": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "architecture_canonical",
+            "json_pointer": "/options/1/components/11",
+            "note": "C22 Workspace Manager with namespaced partitions",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "risk_gov_canonical_v1",
+            "artifact_id": "risk_gov_canonical",
+            "json_pointer": "/risk_register/7",
+            "note": "K8 workspace integrity risk and mitigation",
+            "quote": null
+          }
+        ]
+      }
+    ],
+    "supplemental_evaluations": [
+      {
+        "title": "Risk Posture Assessment for O2 Parallel Architecture",
+        "notes": "K12 (merge conflicts) is the primary elevated risk for O2 and is directly addressed in Phase 3 with the deterministic merge ordering algorithm. K8 (workspace integrity) risk is higher due to namespaced partitions but mitigated by C22 partition enforcement and workspace integrity validators in Phase 1. K10 (role separation) risk increases with parallel pods but is mitigated by per-lane orchestrator-enforced output-type allowlists validated in Phase 2. K9 (context pack overflow) risk is actually lower per-lane due to smaller scoped packs. K6 (flaky tests) risk is distributed across lanes but integration revalidation in Phase 3 can amplify it; deterministic retry budgets and quarantine policies apply. Overall risk profile is manageable with the hybrid phased approach, but depends on resolution of blocking open questions Q7-Q9.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "risk_gov_canonical_v1",
+            "artifact_id": "risk_gov_canonical",
+            "json_pointer": "/risk_register/11",
+            "note": "K12 merge conflict risk",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "risk_gov_canonical_v1",
+            "artifact_id": "risk_gov_canonical",
+            "json_pointer": "/risk_register/7",
+            "note": "K8 workspace integrity risk",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "risk_gov_canonical_v1",
+            "artifact_id": "risk_gov_canonical",
+            "json_pointer": "/risk_register/9",
+            "note": "K10 role separation risk",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "risk_gov_canonical_v1",
+            "artifact_id": "risk_gov_canonical",
+            "json_pointer": "/risk_register/8",
+            "note": "K9 context pack overflow risk",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "risk_gov_canonical_v1",
+            "artifact_id": "risk_gov_canonical",
+            "json_pointer": "/risk_register/5",
+            "note": "K6 flaky test risk",
+            "quote": null
+          }
+        ]
+      },
+      {
+        "title": "Alignment Warning Coverage",
+        "notes": "AL006 (merge ordering determinism) is directly resolved in Phase 3 via the deterministic merge ordering algorithm in C18. AL004 (context pack rules) is addressed in Phase 1 via C22 workspace manager and context pack compilation in C11, with per-lane scoping reducing overflow risk. AL001/AL002/AL003/AL007 are resolved in Phase 1 alongside O1-equivalent foundation components (input validation, audit spine, workspace governance). The phased approach ensures each alignment warning is addressed in the earliest applicable milestone.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "alignment_warnings_v1",
+            "artifact_id": "alignment_warnings",
+            "json_pointer": "/",
+            "note": "Alignment warnings referenced for coverage analysis",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "architecture_canonical",
+            "json_pointer": "/options/1/components/7",
+            "note": "C18 Integration Merge Engine addresses AL006",
+            "quote": null
+          }
+        ]
+      },
+      {
+        "title": "Blocking Open Questions Impact on B2B",
+        "notes": "Q7 (diff format), Q8 (smallest-passing-repair selection), and Q9 (conflict resolution for parallel patchsets) are all blocking and directly impact the O2 parallel architecture. Q9 is especially critical for Phase 3 integration. Q7 affects all phases but is most impactful for Phase 2 when parallel patchset generation begins. Q8 affects Phase 3 when multiple integration repair candidates may be available. High HITL strictness is retained as a compensating control until these questions are resolved. Q1 (target ecosystems) and Q2 (workspace backend) are blocking for Phase 1. Q3 (artifact_ref format) is blocking for evidence pointer validation in all phases.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "capsule_canonical_v1",
+            "artifact_id": "capsule_canonical",
+            "json_pointer": "/open_questions",
+            "note": "Open questions Q1-Q17 with blocking status",
+            "quote": null
+          }
+        ]
+      }
+    ],
+    "synthesis_warnings": [
+      {
+        "id": "W1",
+        "severity": "high",
+        "summary": "Blocking open questions Q7 (diff format), Q8 (smallest-passing-repair selection), and Q9 (conflict resolution for parallel patchsets) must be resolved before Phase 2/3 implementation can proceed. These are especially critical for O2's parallel architecture. High HITL strictness is a compensating control but not a substitute for resolution.",
+        "routing_target": "clarification",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "capsule_canonical_v1",
+            "artifact_id": "capsule_canonical",
+            "json_pointer": "/open_questions/6",
+            "note": "Q7: diff format blocking",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "capsule_canonical_v1",
+            "artifact_id": "capsule_canonical",
+            "json_pointer": "/open_questions/7",
+            "note": "Q8: smallest-passing-repair blocking",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "capsule_canonical_v1",
+            "artifact_id": "capsule_canonical",
+            "json_pointer": "/open_questions/8",
+            "note": "Q9: conflict resolution blocking",
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "W2",
+        "severity": "high",
+        "summary": "Blocking open questions Q1 (target ecosystems) and Q2 (workspace backend) must be resolved before Phase 1 can begin. C22 workspace partitioning design depends on Q2; validator entrypoint configuration depends on Q1.",
+        "routing_target": "clarification",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "capsule_canonical_v1",
+            "artifact_id": "capsule_canonical",
+            "json_pointer": "/open_questions/0",
+            "note": "Q1: target ecosystems blocking",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "capsule_canonical_v1",
+            "artifact_id": "capsule_canonical",
+            "json_pointer": "/open_questions/1",
+            "note": "Q2: workspace backend blocking",
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "W3",
+        "severity": "medium",
+        "summary": "Assumption A10 (deterministic diff application across merge conflicts) has low confidence and is critical for Phase 3 integration. If this assumption proves false, the deterministic merge ordering algorithm in C18 may need fundamental redesign.",
+        "routing_target": "clarification",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "capsule_canonical_v1",
+            "artifact_id": "capsule_canonical",
+            "json_pointer": "/assumptions/9",
+            "note": "A10: low confidence on deterministic diff application across merge conflicts",
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "W4",
+        "severity": "medium",
+        "summary": "Assumption A6 (workspace backend supports namespacing and access control) has low confidence and is foundational for C22's per-lane partition design. If the backend cannot support namespacing, the workspace partitioning strategy must be redesigned.",
+        "routing_target": "clarification",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "capsule_canonical_v1",
+            "artifact_id": "capsule_canonical",
+            "json_pointer": "/assumptions/5",
+            "note": "A6: low confidence on workspace namespace support",
+            "quote": null
+          }
+        ]
+      }
+    ]
+  }
+}

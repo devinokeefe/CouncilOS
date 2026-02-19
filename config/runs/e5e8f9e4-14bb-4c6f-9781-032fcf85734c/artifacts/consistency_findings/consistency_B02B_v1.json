@@ -1,0 +1,431 @@
+{
+  "artifact_type": "consistency_findings",
+  "artifact_id": "consistency_B02B_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T19:01:23.833275Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B02B_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B02B_v1",
+    "findings": [
+      {
+        "id": "CS1",
+        "severity": "high",
+        "summary": "Workflow stage model is inconsistent: R4/AT4 specify a minimum linear stage sequence (Intake→Generate→Validate→Review→Judge→Freeze), but chosen architecture O2 adds Parallel Lanes, Integration, and Patch/merge sub-stages that are not represented in the stated minimum stage sequence and are only partially reflected in acceptance coverage.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_package/requirements/3",
+            "note": "R4 defines minimum stages as linear sequence",
+            "quote": "...at minimum the stages: Intake \u001a Generate \u001a Validate \u001a Review \u001a Judge \u001a Freeze..."
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_package/acceptance_tests/3",
+            "note": "AT4 validates only the minimum linear stage sequence",
+            "quote": "Stage sequence includes at minimum Intake \u001a Generate \u001a Validate \u001a Review \u001a Judge \u001a Freeze"
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_package/architecture/chosen/high_level_dataflow",
+            "note": "Chosen O2 flow explicitly includes Parallel Lanes and Integration before Judge/Freeze",
+            "quote": "Intake \u001a Parallel Lanes \u001a Integration \u001a Judge \u001a Freeze"
+          }
+        ],
+        "routing_target": "architecture"
+      },
+      {
+        "id": "CS2",
+        "severity": "critical",
+        "summary": "Tool policy for the Review stage forbids any artifact writes, but the architecture/requirements require reviewers to produce review_findings artifacts (findings-only) as part of the canonical outputs.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/6/restrictions/0",
+            "note": "Review stage restrictions deny artifact_write/workspace_write",
+            "quote": "...\"artifact_write\": \"deny\", \"workspace_write\": \"deny\"..."
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_package/architecture/options/1/components/5/responsibilities/1",
+            "note": "Per-lane reviewer is required to produce review_findings.json",
+            "quote": "Produce per-lane review_findings.json with RFC 6901 evidence pointers..."
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_package/requirements/6",
+            "note": "Freeze bundle requires review_findings.json",
+            "quote": "...trace_report.json, review_findings.json, release_bundle.json..."
+          }
+        ],
+        "routing_target": "governance"
+      },
+      {
+        "id": "CS3",
+        "severity": "high",
+        "summary": "Tool policy for Intake only allows non-canonical artifact writes, but Intake/M1 requires initializing canonical audit-spine artifacts (implementation_run_manifest.json and implementation_event_log.jsonl).",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/0/restrictions/0",
+            "note": "Intake stage restricts artifact_write to non-canonical only",
+            "quote": "...\"artifact_write\": \"allow_noncanonical_only\"..."
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_package/milestones/0/deliverables/1",
+            "note": "M1 requires initializing immutable run manifest and append-only event log",
+            "quote": "Initialized implementation_run_manifest.json (immutable) and implementation_event_log.jsonl (append-only)."
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_package/architecture/options/1/components/1/responsibilities/0",
+            "note": "O2 Intake component initializes run manifest/event log/workspace index",
+            "quote": "Validate ... and initialize run_manifest/event_log/workspace_index."
+          }
+        ],
+        "routing_target": "governance"
+      },
+      {
+        "id": "CS4",
+        "severity": "high",
+        "summary": "Evidence pointer standard is internally inconsistent: the plan mandates a specific RFC6901 evidence pointer object structure {artifact_ref, entity_id|null, json_pointer, note}, but the plan’s own evidence_pointers use a different shape (include candidate_id/artifact_id/quote and omit entity_id), which would violate its own validators if applied uniformly.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_package/requirements/9",
+            "note": "R10 defines required evidence pointer structure",
+            "quote": "...RFC 6901 JSON Pointer objects with the structure {artifact_ref, entity_id|null, json_pointer, note}..."
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_package/decision_log/0/evidence_pointers/0",
+            "note": "Example evidence pointer instance does not include entity_id and includes extra fields",
+            "quote": "{\"candidate_id\":\"B02B\",\"artifact_ref\":\"architecture_canonical_v1\",\"artifact_id\":\"architecture_canonical_v1\",\"json_pointer\":\"/options/1\"...}"
+          }
+        ],
+        "routing_target": "requirements"
+      },
+      {
+        "id": "CS5",
+        "severity": "medium",
+        "summary": "Patch stage naming/definition is inconsistent across the plan: architecture/milestones describe lane cycles including a \"Patch\" stage (Generate→Validate→Review→Patch) and global Integration patching, while governance tool policy defines \"PatchApply\" and \"IntegrateAndValidate\" stages instead. This can create ambiguity for required stage_handoff emission and validator gating by stage name.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_package/architecture/chosen/high_level_dataflow",
+            "note": "O2 lane loop uses Generate→Validate→Review→Patch wording",
+            "quote": "...each lane executing: C14 (Writer) \u001a C15 (Per-Lane Validator) \u001a C16 (Per-Lane Reviewer) \u001a C17 (Per-Lane Patcher)..."
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_package/milestones/1/name",
+            "note": "Milestone explicitly names per-lane Generate→Validate→Review→Patch",
+            "quote": "Parallel Lane Execution (Per-Lane Generate\u001aValidate\u001aReview\u001aPatch)"
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/3/stage",
+            "note": "Tool policy uses PatchApply stage name instead of Patch",
+            "quote": "PatchApply"
+          }
+        ],
+        "routing_target": "governance"
+      },
+      {
+        "id": "CS6",
+        "severity": "medium",
+        "summary": "Freeze bundle requirements call for a single review_findings.json, but O2 execution produces per-lane review_findings.json plus integration review_findings.json; the plan does not clearly define whether/how these are aggregated into the single required artifact name, risking bundle nonconformance or naming collisions.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_package/requirements/6",
+            "note": "R7 requires review_findings.json in the freeze bundle",
+            "quote": "...trace_report.json, review_findings.json, release_bundle.json..."
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_package/milestones/1/deliverables/2",
+            "note": "M2 deliverable is per-lane review_findings.json",
+            "quote": "Per-lane review_findings.json (findings-only, RFC 6901 evidence pointers)."
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_package/milestones/2/deliverables/3",
+            "note": "M3 deliverable is integration review_findings.json",
+            "quote": "Integration review_findings.json (findings-only, cross-module focus, RFC 6901 evidence pointers)."
+          }
+        ],
+        "routing_target": "architecture"
+      },
+      {
+        "id": "CS001",
+        "severity": "high",
+        "summary": "Milestone M2 exit criteria references AT14 and AT15 for per-lane validation, but these acceptance tests are defined for system-level enforcement, not per-lane enforcement. AT14 tests forbidden/protected path enforcement and operation caps globally, and AT15 tests smallest-passing-repair selection globally. The per-lane exit criteria cannot be verified by these tests without per-lane variants or clarification.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_package/milestones/1/exit_criteria/3",
+            "note": "M2 exit criteria references AT14 for per-lane forbidden/protected path enforcement",
+            "quote": "Forbidden/protected path enforcement verified per lane (AT14)."
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_package/milestones/1/exit_criteria/4",
+            "note": "M2 exit criteria references AT15 for per-lane smallest-passing-repair selection",
+            "quote": "Secrets scan passes for all lane artifacts (AT20)."
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_package/acceptance_tests/13",
+            "note": "AT14 is defined for system-level patchset enforcement, not per-lane",
+            "quote": "Create a patchset that attempts to modify a forbidden/protected path from repo_context.json and exceeds operation caps; apply patchset under orchestrator enforcement."
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_package/acceptance_tests/14",
+            "note": "AT15 is defined for system-level smallest-passing-repair selection, not per-lane",
+            "quote": "Provide multiple candidate repair patchsets that all pass validation and differ in operation count and bytes changed; record orchestrator selection."
+          }
+        ],
+        "routing_target": "acceptance_review"
+      },
+      {
+        "id": "CS002",
+        "severity": "high",
+        "summary": "Milestone M2 deliverable D2.3 requires 'per-lane patchset validator with forbidden path enforcement,' but component C17 (Per-Lane Patcher) does not list forbidden path enforcement as a responsibility. C17 only lists 'Apply patchsets to lane-specific workspace partitions' and 'Emit lane-specific patchset artifacts.' Forbidden path enforcement is assigned to C11 (Global Orchestrator), creating a gap between the milestone deliverable and the architecture.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_package/milestones/1/deliverables/2",
+            "note": "M2 deliverable D2.3 requires per-lane patchset validator with forbidden path enforcement",
+            "quote": "Per-lane patchset validator with forbidden path enforcement (C17)."
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_package/architecture/options/1/components/16",
+            "note": "C17 responsibilities do not include forbidden path enforcement",
+            "quote": null
+          }
+        ],
+        "routing_target": "architecture_review"
+      },
+      {
+        "id": "CS003",
+        "severity": "medium",
+        "summary": "Milestone M3 deliverable D3.2 requires 'integration workspace manager with canonical partition isolation (C22),' but component C22 (Workspace Manager) is described as maintaining 'per-lane workspace partitions plus a shared canonical integration partition,' not 'canonical partition isolation.' The terminology mismatch ('isolation' vs 'shared canonical integration partition') creates ambiguity about whether the integration partition is isolated or shared.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_package/milestones/2/deliverables/1",
+            "note": "M3 deliverable D3.2 requires canonical partition isolation",
+            "quote": "Integration workspace manager with canonical partition isolation (C22)."
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_package/architecture/options/1/components/21/responsibilities/0",
+            "note": "C22 maintains shared canonical integration partition, not isolated partition",
+            "quote": "Maintain per-lane workspace partitions plus a shared canonical integration partition (CNS8)."
+          }
+        ],
+        "routing_target": "architecture_review"
+      },
+      {
+        "id": "CS004",
+        "severity": "medium",
+        "summary": "Milestone M4 deliverable D4.1 requires 'global orchestrator with checkpoint/resume and budget enforcement (C11),' but component C11 (Global Orchestrator) does not list checkpoint/resume as a responsibility. C11 lists 'Enforce token budgets, iteration limits, and termination policies' but does not mention checkpoint/resume, creating a gap between the milestone deliverable and the architecture.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_package/milestones/3/deliverables/0",
+            "note": "M4 deliverable D4.1 requires checkpoint/resume in C11",
+            "quote": "Global orchestrator with checkpoint/resume and budget enforcement (C11)."
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_package/architecture/options/1/components/10",
+            "note": "C11 responsibilities do not explicitly include checkpoint/resume",
+            "quote": null
+          }
+        ],
+        "routing_target": "architecture_review"
+      },
+      {
+        "id": "CS005",
+        "severity": "medium",
+        "summary": "Constraint CNS8 requires 'per-lane workspace partitions SHALL be isolated from the canonical integration partition,' but component C22 (Workspace Manager) is described as maintaining 'per-lane workspace partitions plus a shared canonical integration partition.' The term 'shared' contradicts 'isolated,' creating a semantic conflict between the constraint and the architecture.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_package/constraints/7",
+            "note": "CNS8 requires isolation between per-lane and canonical partitions",
+            "quote": "Per-lane workspace partitions SHALL be isolated from the canonical integration partition; no lane may read or write canonical artifacts directly."
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_package/architecture/options/1/components/21/responsibilities/0",
+            "note": "C22 maintains shared canonical integration partition, contradicting isolation requirement",
+            "quote": "Maintain per-lane workspace partitions plus a shared canonical integration partition (CNS8)."
+          }
+        ],
+        "routing_target": "architecture_review"
+      },
+      {
+        "id": "CS006",
+        "severity": "low",
+        "summary": "Open question OQ3 asks 'How should the system handle checkpoint/resume state serialization (full snapshots vs incremental deltas vs checkpoints only)?' but the plan does not reference this open question in any milestone, deliverable, or acceptance test. The open question is unaddressed in the plan, creating a gap between the open questions and the plan execution.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_package/open_questions/2",
+            "note": "OQ3 asks about checkpoint/resume state serialization strategy",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_package/milestones",
+            "note": "No milestone addresses OQ3",
+            "quote": null
+          }
+        ],
+        "routing_target": "planning_review"
+      },
+      {
+        "id": "CS007",
+        "severity": "low",
+        "summary": "Open question OQ4 asks 'Should the orchestrator support parallel lane execution, or must lanes execute sequentially?' but the plan does not reference this open question in any milestone, deliverable, or acceptance test. The open question is unaddressed in the plan, creating a gap between the open questions and the plan execution.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_package/open_questions/3",
+            "note": "OQ4 asks about parallel vs sequential lane execution",
+            "quote": "Should the orchestrator support parallel lane execution, or must lanes execute sequentially?"
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_package/milestones",
+            "note": "No milestone addresses OQ4",
+            "quote": null
+          }
+        ],
+        "routing_target": "planning_review"
+      },
+      {
+        "id": "CS008",
+        "severity": "medium",
+        "summary": "Milestone M3 exit criteria references AT18 for 'integration workspace items indexed; context packs within bounds,' but AT18 is defined to test 'all workspace items' against workspace_index.json and context pack bounds globally, not specifically for the integration partition. The exit criteria implies integration-specific validation, but AT18 does not distinguish between per-lane and integration workspace items.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_package/milestones/2/exit_criteria/5",
+            "note": "M3 exit criteria references AT18 for integration workspace items and context packs",
+            "quote": "Integration workspace items indexed; context packs within bounds (AT18)."
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_package/acceptance_tests/17",
+            "note": "AT18 tests global workspace_index.json and context pack bounds, not integration-specific",
+            "quote": "Enumerate all workspace items and compare against workspace_index.json entries; verify context pack sizes against configured bounds."
+          }
+        ],
+        "routing_target": "acceptance_review"
+      },
+      {
+        "id": "CS009",
+        "severity": "medium",
+        "summary": "Component C22 (Workspace Manager) is described as maintaining 'per-lane workspace partitions plus a shared canonical integration partition,' but workspace_context.json schema requirements in R3 do not explicitly require partition declarations or per-lane namespace rules. This creates a gap between the architecture's workspace partitioning model and the required input schema.",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_package/architecture/options/1/components/21/responsibilities/0",
+            "note": "C22 maintains per-lane partitions plus shared integration partition",
+            "quote": "Maintain per-lane workspace partitions plus a shared canonical integration partition (CNS8)."
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_package/requirements/2",
+            "note": "R3 workspace_context.json schema does not explicitly require per-lane partition declarations",
+            "quote": null
+          }
+        ],
+        "routing_target": "requirements_review"
+      }
+    ]
+  }
+}

@@ -1,0 +1,104 @@
+{
+  "$defs": {
+    "EvidenceIndexEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "expectation_id": {
+          "title": "Expectation Id",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "pass",
+            "fail",
+            "waived",
+            "missing",
+            "unknown"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "evidence_pointers": {
+          "items": {
+            "$ref": "#/$defs/EvidencePointer"
+          },
+          "title": "Evidence Pointers",
+          "type": "array"
+        },
+        "waiver_approvals": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Waiver Approvals",
+          "type": "array"
+        }
+      },
+      "required": [
+        "expectation_id",
+        "status"
+      ],
+      "title": "EvidenceIndexEntry",
+      "type": "object"
+    },
+    "EvidencePointer": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_ref": {
+          "title": "Artifact Ref",
+          "type": "string"
+        },
+        "entity_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Entity Id"
+        },
+        "json_pointer": {
+          "title": "Json Pointer",
+          "type": "string"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        }
+      },
+      "required": [
+        "artifact_ref",
+        "json_pointer"
+      ],
+      "title": "EvidencePointer",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "default": "2.0.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "evidence": {
+      "items": {
+        "$ref": "#/$defs/EvidenceIndexEntry"
+      },
+      "title": "Evidence",
+      "type": "array"
+    }
+  },
+  "title": "EvidenceIndexPayload",
+  "type": "object"
+}

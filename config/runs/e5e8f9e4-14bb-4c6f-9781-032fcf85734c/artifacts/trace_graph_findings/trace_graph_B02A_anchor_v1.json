@@ -1,0 +1,111 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B02A_anchor_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T19:00:45.767510Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B02A_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B02A_v1",
+    "findings": [
+      {
+        "id": "TG1",
+        "severity": "high",
+        "summary": "R3 requires workspace_context.json to be present/schema-valid before any workspace-writing stage begins, but the Intake tool policy explicitly allows workspace_write (non-canonical) while also listing “Missing ... workspace_context.json” as a HITL trigger rather than a hard pre-write gate. This creates an enforcement ambiguity: the system could write to workspace during Intake before workspace_context is validated, contradicting R3’s stated ordering constraint.",
+        "evidence": [
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "R3",
+            "json_pointer": "/plan_candidate/plan_package/requirements/2/text",
+            "note": "R3 ordering constraint (workspace_context required before any workspace-writing stage begins).",
+            "quote": "workspace_context.json SHALL be required before any workspace-writing stage begins"
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "tool_policy:Intake",
+            "json_pointer": "/plan_candidate/plan_package/governance/tool_policy/stage_policies/0/restrictions/0/workspace_write",
+            "note": "Intake restriction allows workspace writes (non-canonical).",
+            "quote": "allow_noncanonical_only"
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "tool_policy:Intake:hitl_triggers",
+            "json_pointer": "/plan_candidate/plan_package/governance/tool_policy/stage_policies/0/hitl_triggers/0",
+            "note": "Missing workspace_context.json handled as HITL trigger (interrupt), not explicitly as a pre-write block.",
+            "quote": "Missing required inputs (plan_package_final.json, repo_context.json, workspace_context.json)"
+          }
+        ],
+        "routing_target": "governance"
+      },
+      {
+        "id": "TG2",
+        "severity": "medium",
+        "summary": "R2 requires repo_context.json to be required before any code-generation stage begins, but the stage-level policies do not explicitly restate/encode this as a deterministic precondition for entering Generate (where patchsets are drafted). The plan relies on Intake validation implicitly, which is a traceability/enforcement gap in the stage policy-as-data.",
+        "evidence": [
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "R2",
+            "json_pointer": "/plan_candidate/plan_package/requirements/1/text",
+            "note": "R2 ordering constraint (repo_context required before any code-generation stage begins).",
+            "quote": "repo_context.json SHALL be required before any code-generation stage begins"
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "tool_policy:Generate",
+            "json_pointer": "/plan_candidate/plan_package/governance/tool_policy/stage_policies/2/restrictions/0/notes",
+            "note": "Generate stage policy describes drafting patchsets but does not specify a precondition check for repo_context beyond assumed Intake.",
+            "quote": "Draft patchsets and required mappings as artifacts; no direct repo mutation."
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "AT2",
+            "json_pointer": "/plan_candidate/plan_package/acceptance_tests/1/pass_criteria",
+            "note": "AT2 asserts rejection happens before any code-generation stage, but the Generate stage policy itself doesn’t encode the dependency.",
+            "quote": "rejected before any code-generation stage; run with schema-valid repo_context.json is accepted"
+          }
+        ],
+        "routing_target": "requirements_canonical"
+      },
+      {
+        "id": "TG3",
+        "severity": "medium",
+        "summary": "R1 says the system shall accept exactly one frozen plan_package_final.json (plus structured handoff bundle) and reject chat logs/non-canonical artifacts. While R1 and AT1 state this, the Intake tool policy text does not explicitly encode the “exactly one” constraint or the specific rejection condition for chat logs/non-canonical artifacts as authoritative sources; enforcement is implied rather than explicitly represented in the policy-as-data section.",
+        "evidence": [
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "R1",
+            "json_pointer": "/plan_candidate/plan_package/requirements/0/text",
+            "note": "R1 uniqueness + rejection requirement.",
+            "quote": "accept exactly one frozen plan_package_final.json ... and SHALL reject chat logs"
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "AT1",
+            "json_pointer": "/plan_candidate/plan_package/acceptance_tests/0/procedure",
+            "note": "AT1 tests chat log/non-canonical rejection.",
+            "quote": "Attempt to initiate ... (b) a chat log reference as the only planning input"
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "tool_policy:Intake",
+            "json_pointer": "/plan_candidate/plan_package/governance/tool_policy/stage_policies/0/restrictions/0/notes",
+            "note": "Intake policy notes validation of plan_package_final.json but does not explicitly mention chat log/non-canonical rejection or “exactly one” input constraint.",
+            "quote": "Ingest and validate plan_package_final.json and required context artifacts; no code changes; do not persist secrets."
+          }
+        ],
+        "routing_target": "governance"
+      }
+    ]
+  }
+}

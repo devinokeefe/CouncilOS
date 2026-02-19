@@ -1,0 +1,113 @@
+{
+  "$defs": {
+    "EvidencePointer": {
+      "additionalProperties": false,
+      "properties": {
+        "candidate_id": {
+          "title": "Candidate Id",
+          "type": "string"
+        },
+        "artifact_ref": {
+          "title": "Artifact Ref",
+          "type": "string"
+        },
+        "artifact_id": {
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "json_pointer": {
+          "title": "Json Pointer",
+          "type": "string"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        },
+        "quote": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Quote"
+        }
+      },
+      "required": [
+        "candidate_id",
+        "artifact_ref",
+        "artifact_id",
+        "json_pointer"
+      ],
+      "title": "EvidencePointer",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "comparison": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Comparison",
+      "type": "object"
+    },
+    "judge_id": {
+      "title": "Judge Id",
+      "type": "string"
+    },
+    "judge_model": {
+      "title": "Judge Model",
+      "type": "string"
+    },
+    "winner": {
+      "enum": [
+        "a",
+        "b"
+      ],
+      "title": "Winner",
+      "type": "string"
+    },
+    "scores": {
+      "additionalProperties": {
+        "type": "integer"
+      },
+      "title": "Scores",
+      "type": "object"
+    },
+    "evidence": {
+      "items": {
+        "$ref": "#/$defs/EvidencePointer"
+      },
+      "title": "Evidence",
+      "type": "array"
+    },
+    "notes": {
+      "title": "Notes",
+      "type": "string"
+    }
+  },
+  "required": [
+    "comparison",
+    "judge_id",
+    "judge_model",
+    "winner",
+    "scores",
+    "evidence",
+    "notes"
+  ],
+  "title": "JudgePairwisePayload",
+  "type": "object"
+}

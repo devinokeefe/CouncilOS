@@ -1,0 +1,47 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B02B_primary_v3",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T21:20:44.954878Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B02B_v3"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B02B_v3",
+    "findings": [
+      {
+        "id": "TG-001",
+        "severity": "medium",
+        "summary": "Sample checks correlate Intake-phase Requirements (R1, R2, R3) and Acceptance Tests (AT1, AT2, AT3) with Execution Milestone (M2), but M2 Exit Criteria do not cite or execute these tests. AT1-AT3 focus on run initiation constraints validated at Intake (M1).",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "capsule_canonical_v1",
+            "artifact_id": "capsule_canonical",
+            "json_pointer": "/milestones/1/exit_criteria",
+            "note": "M2 exit criteria cite execution/patching tests (AT13, AT14, AT20, etc.), not Intake tests.",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "capsule_canonical_v1",
+            "artifact_id": "capsule_canonical",
+            "json_pointer": "/acceptance_tests/0/procedure",
+            "note": "AT1 definition: 'Attempt to initiate...'. Cannot be performed at M2 (Execution Complete).",
+            "quote": "Attempt to initiate an Implementation Council run with inputs..."
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "capsule_canonical_v1",
+            "artifact_id": "capsule_canonical",
+            "json_pointer": "/milestones/0/exit_criteria/0",
+            "note": "M1 exit criteria correctly cite AT1, AT2, AT3.",
+            "quote": "All three input artifacts pass schema validation (AT2, AT3, AT1)."
+          }
+        ],
+        "routing_target": "milestones"
+      }
+    ]
+  }
+}

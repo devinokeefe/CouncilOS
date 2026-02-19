@@ -1,0 +1,84 @@
+{
+  "artifact_type": "judge_pairwise_result",
+  "artifact_id": "judge_pair_B02A_B02B_2_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T22:51:13.373348Z",
+  "source_run_id": "e7c2c917-9d2c-4c38-b133-533916af57c3",
+  "parents": [
+    "plan_candidate_B02A_v3",
+    "plan_candidate_B02B_v3"
+  ],
+  "payload": {
+    "comparison": {
+      "a": "Candidate A has strong milestones but less explicit linkage to lane completion vs integration phases; synthesis warnings present but fewer targeted evaluative notes; decision log lacks evidence pointers.",
+      "b": "Candidate B provides clearer parallel-lane milestone breakdown with lane/integration deliverables and exit criteria; adds supplemental evaluations and synthesis warnings surfacing O2 risks; decision log includes evidence pointers to canonical artifacts."
+    },
+    "judge_id": "pairwise_judge",
+    "judge_model": "gpt-5.2",
+    "winner": "b",
+    "scores": {
+      "feasibility": 8,
+      "testability": 8,
+      "governance": 8,
+      "architecture": 8,
+      "clarity": 7
+    },
+    "evidence": [
+      {
+        "artifact_ref": "plan_candidate_B02B_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/milestones/1",
+        "note": "Parallel lane execution milestone with lane-specific deliverables and exit criteria",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B02A_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/milestones/2",
+        "note": "Lane execution milestone present but less explicitly tied to lane completion vs integration handoff structure",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B02B_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/supplemental_evaluations",
+        "note": "Supplemental evaluations highlight integration risk, workspace partitioning feasibility, and compute trade-offs",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B02A_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/synthesis_warnings",
+        "note": "Synthesis warnings present but fewer targeted evaluative notes than B’s supplemental evaluations",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B02B_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/decision_log/0/evidence_pointers",
+        "note": "Decision log includes evidence pointers supporting architectural choice",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B02A_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/decision_log/0",
+        "note": "Decision log lacks evidence pointers for architectural choice",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      }
+    ],
+    "notes": "Candidate B edges out on milestone clarity for parallelism and added risk-focused evaluations that improve closure readiness."
+  }
+}

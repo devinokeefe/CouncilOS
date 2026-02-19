@@ -1,0 +1,1 @@
+﻿Review the plan package, identify defects, and propose JSON Patch operations that repair them. Use label blocker/fix/note and include evidence pointers (JSON Pointer) referencing plan_package.

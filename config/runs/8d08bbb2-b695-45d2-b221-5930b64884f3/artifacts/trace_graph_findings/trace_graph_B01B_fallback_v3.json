@@ -1,0 +1,103 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B01B_fallback_v3",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T21:21:41.290084Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B01B_v3"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B01B_v3",
+    "findings": [
+      {
+        "id": "TG-001",
+        "severity": "medium",
+        "summary": "R1 milestone mapping includes M2 (Work Plan Compilation) but requirement text does not explicitly mandate work plan stage validation of plan_package_final.json acceptance; M2 should validate no semantic drift but R1 is about input acceptance which is purely M1 scope.",
+        "evidence": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "requirements_canonical",
+            "json_pointer": "/requirements/0",
+            "note": "R1 text focuses on input acceptance and rejection of non-canonical sources",
+            "quote": null
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v3",
+            "artifact_id": "plan_candidate_B01B_v3",
+            "json_pointer": "/plan_package/milestones/0/exit_criteria",
+            "note": "M1 exit criteria cover input validation and acceptance",
+            "quote": null
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v3",
+            "artifact_id": "plan_candidate_B01B_v3",
+            "json_pointer": "/plan_package/milestones/1/exit_criteria/1",
+            "note": "M2 validates no semantic deviation but this is scope control not input acceptance",
+            "quote": "No semantic deviation from frozen plan entities; validator confirms no new R#/AT#/O#/K# introduced (K1 mitigation)."
+          }
+        ],
+        "routing_target": "requirements_canonical"
+      },
+      {
+        "id": "TG-002",
+        "severity": "low",
+        "summary": "R2 and R3 both map to M1 and M2 milestones, but the requirement text states these schemas are required 'before any code-generation stage begins' (R2) and 'before any workspace-writing stage begins' (R3). M2 (Work Plan Compilation) does not perform code generation or workspace writing per its deliverables, so M2 mapping appears conservative but not strictly required by the requirement text.",
+        "evidence": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "requirements_canonical",
+            "json_pointer": "/requirements/1",
+            "note": "R2 requires repo_context.json before code-generation stage",
+            "quote": "SHALL be required before any code-generation stage begins"
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "requirements_canonical",
+            "json_pointer": "/requirements/2",
+            "note": "R3 requires workspace_context.json before workspace-writing stage",
+            "quote": "SHALL be required before any workspace-writing stage begins"
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v3",
+            "artifact_id": "plan_candidate_B01B_v3",
+            "json_pointer": "/plan_package/milestones/1/deliverables",
+            "note": "M2 produces work_plan.json but does not generate code or write workspace canonical artifacts per stage restrictions",
+            "quote": null
+          }
+        ],
+        "routing_target": "requirements_canonical"
+      },
+      {
+        "id": "TG-003",
+        "severity": "low",
+        "summary": "AT1 maps to R1 and tests input acceptance/rejection, which is correctly covered by M1 exit criteria. However, the sample check does not verify that M1 exit criteria explicitly test rejection of chat logs and non-canonical artifacts as specified in AT1 procedure, only that plan_package_final.json is accepted.",
+        "evidence": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "acceptance_canonical_v1",
+            "artifact_id": "acceptance_canonical",
+            "json_pointer": "/acceptance_tests/0/procedure",
+            "note": "AT1 procedure requires testing rejection of chat log and non-canonical artifact inputs",
+            "quote": "Attempt to initiate an Implementation Council run with inputs: (a) valid plan_package_final.json; (b) chat log reference; (c) unapproved non-canonical artifact as planning input."
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v3",
+            "artifact_id": "plan_candidate_B01B_v3",
+            "json_pointer": "/plan_package/milestones/0/exit_criteria/0",
+            "note": "M1 exit criteria confirm plan_package_final.json acceptance but do not explicitly enumerate rejection test cases",
+            "quote": "All three input artifacts pass schema validation (AT1, AT2, AT3)."
+          }
+        ],
+        "routing_target": "acceptance_canonical"
+      }
+    ]
+  }
+}

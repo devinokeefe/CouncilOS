@@ -1,0 +1,108 @@
+{
+  "$defs": {
+    "ValidatorCheck": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "hard_gate": {
+          "title": "Hard Gate",
+          "type": "boolean"
+        },
+        "pass": {
+          "title": "Pass",
+          "type": "boolean"
+        },
+        "violations": {
+          "items": {
+            "$ref": "#/$defs/Violation"
+          },
+          "title": "Violations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "hard_gate",
+        "pass",
+        "violations"
+      ],
+      "title": "ValidatorCheck",
+      "type": "object"
+    },
+    "Violation": {
+      "additionalProperties": false,
+      "properties": {
+        "severity": {
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "json_pointer": {
+          "title": "Json Pointer",
+          "type": "string"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        },
+        "repair_hint": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Repair Hint"
+        }
+      },
+      "required": [
+        "severity",
+        "json_pointer",
+        "message"
+      ],
+      "title": "Violation",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "candidate_ref": {
+      "title": "Candidate Ref",
+      "type": "string"
+    },
+    "overall_status": {
+      "enum": [
+        "PASS",
+        "FAIL_REPAIRABLE",
+        "FAIL_STRUCTURAL"
+      ],
+      "title": "Overall Status",
+      "type": "string"
+    },
+    "checks": {
+      "items": {
+        "$ref": "#/$defs/ValidatorCheck"
+      },
+      "title": "Checks",
+      "type": "array"
+    }
+  },
+  "required": [
+    "candidate_ref",
+    "overall_status",
+    "checks"
+  ],
+  "title": "ValidatorReportPayload",
+  "type": "object"
+}

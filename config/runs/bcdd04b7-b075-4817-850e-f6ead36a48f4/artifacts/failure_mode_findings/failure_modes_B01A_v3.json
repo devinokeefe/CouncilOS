@@ -1,0 +1,129 @@
+{
+  "artifact_type": "failure_mode_findings",
+  "artifact_id": "failure_modes_B01A_v3",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T21:25:12.444193Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B01A_v3"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B01A_v3",
+    "taxonomy": "CouncilOS / Implementation Council failure-mode taxonomy (trusted-user environment)",
+    "critical_findings": [
+      {
+        "id": "FM1",
+        "category": "Evidence & traceability compliance (RFC6901 pointers)",
+        "severity": "critical",
+        "finding": "Evidence pointer objects in decision_log appear non-compliant with the stated single standard (RFC 6901 evidence pointer object structure). The plan requires evidence pointers to be exactly {artifact_ref, entity_id|null, json_pointer, note}, but decision_log evidence pointers include extra/nonstandard fields (e.g., candidate_id, artifact_id, quote). This can cause strict validators to fail or, worse, inconsistent downstream parsing/trace validation.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/requirements/9; /inputs/plan_candidate/plan_package/governance/decision_log/0/evidence_pointers/0",
+          "closure_target": "Before candidate is promoted to canonical; must pass an evidence-pointer linter gate",
+          "earliest_prevention_stage": "WorkPlanning",
+          "required_fix": "Normalize all evidence pointer occurrences to the exact required object shape; move any extra fields (quotes, local IDs) into allowed fields (e.g., note) or adjacent non-evidence metadata fields explicitly permitted by schema; add validator that rejects unknown keys inside evidence pointer objects."
+        }
+      },
+      {
+        "id": "FM2",
+        "category": "Tool permissioning & sandbox escape/misuse",
+        "severity": "critical",
+        "finding": "Reviewer role cannot produce required findings artifacts under current tool_policy: Review stage restrictions set artifact_write=deny and workspace_write=deny, but architecture/requirements require reviewers to emit review_findings.json (findings-only). This creates a dead-end stage or forces policy bypass (writing via noncanonical channels), undermining governance and auditability.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/architecture/options/0/components/6/responsibilities/1; /inputs/plan_candidate/plan_package/requirements/6; /inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies/6/restrictions/0",
+          "closure_target": "Prior to implementing stage tool permissions; must be consistent before acceptance tests are finalized",
+          "earliest_prevention_stage": "Intake",
+          "required_fix": "Amend Review stage policy to allow artifact_write for a tightly-scoped allowlist of findings-only artifact types (e.g., review_findings.json) while still prohibiting patch/code writes; add orchestrator enforcement that reviewers can only write those artifact types and cannot write patchsets or modify canonical planning artifacts."
+        }
+      },
+      {
+        "id": "FM3",
+        "category": "Checkpoint/resume correctness (stage handoffs)",
+        "severity": "critical",
+        "finding": "Stage-model inconsistency across requirements/acceptance tests vs chosen O1 architecture/tool_policy risks invalid stage sequencing, missing stage_handoffs, and broken checkpoint/resume invariants. Requirements/ATs specify minimum stages Intake → Generate → Validate → Review → Judge → Freeze, but architecture and tool_policy introduce WorkPlanning and PatchApply (and also IntegrateAndValidate). Without a canonical stage taxonomy and mapping, validators may reject legitimate runs or allow ungoverned transitions.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/requirements/3; /inputs/plan_candidate/plan_package/acceptance_tests/3/pass_criteria; /inputs/plan_candidate/plan_package/architecture/chosen/high_level_dataflow; /inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies",
+          "closure_target": "Before schema/validator implementation of the state machine and before publishing acceptance tests",
+          "earliest_prevention_stage": "WorkPlanning",
+          "required_fix": "Define a single canonical stage enumeration and explicitly update: (1) R4 and AT4 pass criteria to match O1 stage list, or (2) provide a deterministic mapping showing that WorkPlanning/PatchApply are sub-stages captured within Generate/Validate (and ensure stage_handoff expectations match). Remove unused stages from tool_policy for O1 or mark them as non-applicable to O1 with validator logic."
+        }
+      },
+      {
+        "id": "FM4",
+        "category": "Plan semantics & scope control",
+        "severity": "high",
+        "finding": "Key governance-critical primitives are left as blocking open questions (artifact_ref format, diff format/normalization, deterministic patch selection), but multiple MUST requirements and validators depend on them. If left unresolved, implementations will improvise, causing nondeterminism and breaking audit spine/evidence pointer resolution and patch determinism guarantees.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/open_questions/2; /inputs/plan_candidate/plan_package/open_questions/6; /inputs/plan_candidate/plan_package/open_questions/7; /inputs/plan_candidate/plan_package/requirements/9; /inputs/plan_candidate/plan_package/requirements/12",
+          "closure_target": "Before freezing the plan package as canonical; block downstream implementation until resolved",
+          "earliest_prevention_stage": "Intake",
+          "required_fix": "Convert Q3/Q7/Q8 into explicit normative specs in the plan package (artifact_ref naming/versioning + resolution rules; patchset diff format + normalization; deterministic 'smallest passing repair' computation including byte counting definition); add schema fields and validators that enforce these definitions."
+        }
+      },
+      {
+        "id": "FM5",
+        "category": "Repo protection (forbidden/protected paths)",
+        "severity": "high",
+        "finding": "Forbidden/protected path enforcement is specified as mandatory, but the concrete patterns/semantics are undefined (repo_context schema content and enforcement rules remain open). Tool policy also uses placeholders ('policy_defined', 'from_repo_context'), creating a failure mode where protection is effectively non-enforceable or inconsistently enforced across repos, enabling high-blast-radius changes (CI/release/auth configs) despite intended safeguards.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/requirements/1; /inputs/plan_candidate/plan_package/open_questions/3; /inputs/plan_candidate/plan_package/open_questions/13; /inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies/3/restrictions/0/patchset_limits",
+          "closure_target": "Before any patch application tooling is approved; required for safe operation",
+          "earliest_prevention_stage": "Intake",
+          "required_fix": "Define repo_context.json protected/forbidden path schema precisely (glob syntax, normalization, precedence, directories vs files, symlink handling), and require repo-specific policy profiles; implement dual enforcement (patch_apply-time + sandbox FS policy) and add an explicit validator that fails if protections are empty/overbroad/ill-formed."
+        }
+      },
+      {
+        "id": "FM6",
+        "category": "Supply-chain/network dependency control",
+        "severity": "high",
+        "finding": "Network is denied across stages by default, but the plan lacks a fully specified deterministic offline dependency strategy (mirrors, allowlists, lockfile rules) and acknowledges open questions on network/dependencies. For many real repos, Validate will fail (cannot fetch deps), triggering repeated retries/escalations and potentially incentivizing ad-hoc permission expansions that reduce reproducibility and security.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies/4/restrictions/0/network; /inputs/plan_candidate/plan_package/open_questions/10; /inputs/plan_candidate/plan_package/risk_register/14",
+          "closure_target": "Before defining default validator gates (R21) for any repo ecosystem; required to avoid systematic dead-on-arrival runs",
+          "earliest_prevention_stage": "WorkPlanning",
+          "required_fix": "Specify a deterministic dependency policy: mandatory lockfiles, optional offline mirrors/caches, and (if network allowed) strict domain allowlists and recorded provenance; encode policy in repo_context/workspace_context and add validators enforcing pinned dependency resolution and reproducible installs."
+        }
+      },
+      {
+        "id": "FM7",
+        "category": "Secrets handling & sensitive data retention",
+        "severity": "high",
+        "finding": "Secrets prevention requires scanning/redaction/blocking 'before any artifact is persisted', but the design also requires append-only event logs and extensive artifact emission at each checkpoint. Without an explicit pre-commit scanning pipeline for ALL writes (including event log lines, stage_handoffs, patchsets, snapshots, context packs), secrets can be irreversibly persisted into immutable/append-only stores, creating an unrecoverable compliance incident.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/requirements/19; /inputs/plan_candidate/plan_package/requirements/7; /inputs/plan_candidate/plan_package/governance/tool_policy/stage_policies/0/restrictions/0; /inputs/plan_candidate/plan_package/risk_register/6",
+          "closure_target": "Before enabling real artifact persistence (especially append-only logs) in any environment that could see secrets",
+          "earliest_prevention_stage": "Intake",
+          "required_fix": "Make the Workspace Gateway/Artifact Store interface enforce a mandatory 'scan-before-store' transaction for every write/append; define how blocked writes are represented without persisting secret material (e.g., store only a classifier label + hash of redacted content); add validator that ensures no write path bypasses scanning."
+        }
+      },
+      {
+        "id": "FM8",
+        "category": "Patchset safety & deterministic application",
+        "severity": "medium",
+        "finding": "Deterministic 'smallest passing repair' selection is based only on operations count, bytes changed, and first-generated tie-breaker. This can repeatedly select a patch that passes tests but is higher long-term risk (e.g., weak security posture, maintainability regressions) when multiple candidates pass. The failure mode is subtle technical-debt/security degradation under deterministic but overly narrow optimization criteria.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "/inputs/plan_candidate/plan_package/requirements/14; /inputs/plan_candidate/plan_package/risk_register/20; /inputs/plan_candidate/plan_package/risk_register/3",
+          "closure_target": "Before finalizing judge/selection logic as part of orchestrator policy; ideally before first production use",
+          "earliest_prevention_stage": "Judge",
+          "required_fix": "Add deterministic secondary scoring validators (security/static analysis results, complexity delta, lint/format deltas, forbidden API usage) that can be incorporated into a deterministic selection order; alternatively require HITL when multiple passing candidates differ materially on risk signals."
+        }
+      }
+    ],
+    "closure_pass": false
+  }
+}

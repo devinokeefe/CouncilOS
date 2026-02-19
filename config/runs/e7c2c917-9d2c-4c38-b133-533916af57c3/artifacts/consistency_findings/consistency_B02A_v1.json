@@ -1,0 +1,415 @@
+{
+  "artifact_type": "consistency_findings",
+  "artifact_id": "consistency_B02A_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T19:00:24.707925Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B02A_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B02A_v1",
+    "findings": [
+      {
+        "id": "CS1",
+        "severity": "critical",
+        "summary": "Tool policy for the Review stage forbids artifact/workspace writes, but the architecture and requirements require reviewers to emit findings artifacts (e.g., review_findings.json). This makes the Review stage unable to produce its mandated outputs under the stated tool restrictions.",
+        "evidence": [
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "tool_policy.Review",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/6/restrictions/0",
+            "note": "Review stage restrictions include artifact_write/workspace_write deny.",
+            "quote": "\"artifact_write\": \"deny\", \"workspace_write\": \"deny\""
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "O2.C16",
+            "json_pointer": "/plan_package/architecture/options/1/components/5/responsibilities/1",
+            "note": "Reviewer responsibilities explicitly include producing review_findings.json.",
+            "quote": "\"Produce per-lane review_findings.json with RFC 6901 evidence pointers; flag cross-lane dependency issues.\""
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "R7",
+            "json_pointer": "/plan_package/requirements/6/text",
+            "note": "Freeze bundle requires review_findings.json to exist.",
+            "quote": "\"... trace_report.json, review_findings.json, release_bundle.json, decision_record.json ...\""
+          }
+        ],
+        "routing_target": "governance.tool_policy"
+      },
+      {
+        "id": "CS2",
+        "severity": "critical",
+        "summary": "Intake tool policy only allows non-canonical writes, but the plan’s milestones/requirements state Intake must create canonical audit-spine artifacts (implementation_run_manifest.json, implementation_event_log.jsonl) and initialize workspace_index.json. Intake cannot satisfy these deliverables under the stated restrictions.",
+        "evidence": [
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "tool_policy.Intake",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/0/restrictions/0",
+            "note": "Intake restricts writes to non-canonical only.",
+            "quote": "\"workspace_write\": \"allow_noncanonical_only\", \"artifact_write\": \"allow_noncanonical_only\""
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "M1.D2",
+            "json_pointer": "/plan_package/milestones/0/deliverables/1/text",
+            "note": "Intake milestone requires creating run manifest and event log.",
+            "quote": "\"implementation_run_manifest.json created and made immutable; implementation_event_log.jsonl started as append-only...\""
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "M1.D3",
+            "json_pointer": "/plan_package/milestones/0/deliverables/2/text",
+            "note": "Intake milestone requires initializing workspace_index.json.",
+            "quote": "\"workspace_index.json initialized with canonical vs non-canonical partitioning rules...\""
+          }
+        ],
+        "routing_target": "governance.tool_policy"
+      },
+      {
+        "id": "CS3",
+        "severity": "critical",
+        "summary": "The plan mandates a single evidence-pointer object schema {artifact_ref, entity_id|null, json_pointer, note}, but the plan itself uses a different evidence-pointer shape that includes extra fields (candidate_id, artifact_id, quote). If validators enforce the stated standard, the plan’s own decision_log evidence_pointers would be non-compliant.",
+        "evidence": [
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "R10",
+            "json_pointer": "/plan_package/requirements/9/text",
+            "note": "Evidence pointer object structure is mandated here.",
+            "quote": "\"RFC 6901 JSON Pointer objects with the structure {artifact_ref, entity_id|null, json_pointer, note}\""
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "Glossary.EvidencePointer",
+            "json_pointer": "/plan_package/project_capsule/glossary/3/definition",
+            "note": "Glossary repeats the same evidence pointer shape.",
+            "quote": "\"{artifact_ref, entity_id|null, json_pointer, note}\""
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "DEC1.evidence_pointers[0]",
+            "json_pointer": "/plan_package/decision_log/0/evidence_pointers/0",
+            "note": "Decision log uses an expanded evidence pointer structure (extra keys beyond the mandated shape).",
+            "quote": "{\"candidate_id\":\"B02A\",\"artifact_ref\":\"architecture_canonical_v1\",\"artifact_id\":\"O2\",\"json_pointer\":\"/options/1\",...}"
+          }
+        ],
+        "routing_target": "requirements.evidence_standard"
+      },
+      {
+        "id": "CS4",
+        "severity": "high",
+        "summary": "The workflow description repeatedly includes a distinct Patch step (Generate→Validate→Review→Patch), but the tool policy does not define a corresponding Patch stage (it defines PatchApply, which applies patchsets, not authors repairs). This creates ambiguity about when/under what permissions patcher roles generate RFC6902 patches or replacement patchsets, and how stage_handoff requirements apply to Patch transitions.",
+        "evidence": [
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "executive_summary",
+            "json_pointer": "/plan_package/executive_summary",
+            "note": "Executive summary asserts per-lane Generate→Validate→Review→Patch flows.",
+            "quote": "\"... per-lane Generate→Validate→Review→Patch flows ...\""
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "O2.high_level_dataflow",
+            "json_pointer": "/plan_package/architecture/chosen/high_level_dataflow",
+            "note": "Chosen architecture explicitly describes a Patcher step producing repairs.",
+            "quote": "\"... Reviewer emits findings-only ... → Patcher emits bounded repair candidates ...\""
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "tool_policy.stage_policies",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies",
+            "note": "Tool policy stages include PatchApply but no Patch stage for authoring repairs.",
+            "quote": "[{\"stage\":\"Intake\"...},{\"stage\":\"WorkPlanning\"...},{\"stage\":\"Generate\"...},{\"stage\":\"PatchApply\"...}...]"
+          }
+        ],
+        "routing_target": "governance.workflow_definition"
+      },
+      {
+        "id": "CS5",
+        "severity": "high",
+        "summary": "Requirement R9 states the orchestrator must reject any canonical artifact ‘containing prose/markdown/unstructured text’, but the plan’s own canonical artifacts (requirements/rationales, risk descriptions, decision rationales, notes) are composed largely of prose in string fields. If interpreted literally, R9 would invalidate many required artifacts; if interpreted narrowly (e.g., reject non-JSON wrapper prose), the current wording is internally inconsistent/ambiguous.",
+        "evidence": [
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "R9",
+            "json_pointer": "/plan_package/requirements/8/text",
+            "note": "R9 appears to forbid prose/markdown/unstructured text within artifacts.",
+            "quote": "\"reject any artifact containing prose/markdown/unstructured text\""
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "decision_log.DEC1.rationale",
+            "json_pointer": "/plan_package/decision_log/0/rationale",
+            "note": "Example of required prose content in decision_log fields.",
+            "quote": "\"The branch explicitly prioritizes wall-clock speed...\""
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "risk_register.K12.description",
+            "json_pointer": "/plan_package/risk_register/11/description",
+            "note": "Example of prose content in risk register entries.",
+            "quote": "\"Integration/merge conflicts: multiple patchsets...\""
+          }
+        ],
+        "routing_target": "requirements.validation_rules"
+      },
+      {
+        "id": "CS001",
+        "severity": "high",
+        "summary": "Milestone M3 exit criteria references R21 for lane-level gates, but R21 specifies freeze-level closure gates (build/test/lint/typecheck/integrity/workspace/risk/reproducibility/trace), not lane-scoped gates. Lane gates should reference a subset or clarify which R21 gates apply per-lane vs integration-only.",
+        "evidence": [
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "M3",
+            "json_pointer": "/milestones/2/exit_criteria/0",
+            "note": "M3 exit criteria cites R21 for lane gates.",
+            "quote": "All lane artifacts are JSON-only and schema-valid; noncompliant outputs rejected (R9; AT9)."
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "R21",
+            "json_pointer": "/requirements/20",
+            "note": "R21 defines freeze-level closure gates, not lane-scoped gates.",
+            "quote": "Freeze SHALL be permitted only when all deterministic, code-owned closure gates pass, including: build/test/lint/typecheck (as applicable per repo_context), artifact integrity, workspace integrity..."
+          }
+        ],
+        "routing_target": "requirements_canonical_v1"
+      },
+      {
+        "id": "CS002",
+        "severity": "medium",
+        "summary": "Component C13 (Task Lane Orchestrator) responsibilities include 'emit per-lane stage_handoffs and completion signals' but interface IF11 from C11 to C13 only mentions 'receive per-lane stage_handoffs and completion signals with lane artifact_refs', not the emission direction. The interface should clarify C13 emits to C11.",
+        "evidence": [
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "C13",
+            "json_pointer": "/options/1/components/2/responsibilities/1",
+            "note": "C13 responsibilities include emitting stage_handoffs.",
+            "quote": "Emit per-lane stage_handoffs and completion signals."
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "IF11",
+            "json_pointer": "/options/1/interfaces/10",
+            "note": "IF11 describes C11 receiving from C13, not C13 emitting to C11.",
+            "quote": null
+          }
+        ],
+        "routing_target": "architecture_canonical_v1"
+      },
+      {
+        "id": "CS003",
+        "severity": "medium",
+        "summary": "Milestone M4 deliverable D3 requires 'Merge ordering and conflict resolution rules declared' but no requirement or acceptance test explicitly mandates merge ordering semantics. R14 mentions merge but does not specify ordering rules.",
+        "evidence": [
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "M4",
+            "json_pointer": "/milestones/3/deliverables/2",
+            "note": "M4.D3 requires merge ordering and conflict resolution rules.",
+            "quote": "Define a merge ordering and conflict resolution policy for multi-lane outputs (deterministic, recorded at emission)."
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "R14",
+            "json_pointer": "/requirements/13",
+            "note": "R14 mentions merge but does not specify ordering rules.",
+            "quote": null
+          }
+        ],
+        "routing_target": "requirements_canonical_v1"
+      },
+      {
+        "id": "CS004",
+        "severity": "medium",
+        "summary": "Risk K10 mitigation requires 'writer/reviewer/judge role separation enforced by orchestrator' but tool_policy stage definitions allow overlapping permissions (e.g., Review stage allows artifact_read and findings_write, but does not explicitly forbid artifact_write for the same agent within the same stage).",
+        "evidence": [
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "risk_gov_canonical_v1",
+            "artifact_id": "K10",
+            "json_pointer": "/risk_register/9/mitigation/text",
+            "note": "K10 mitigation requires role separation enforced by orchestrator.",
+            "quote": "Writer/reviewer/judge role separation enforced by orchestrator (no agent may write and review/judge the same artifact within the same stage)."
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "risk_gov_canonical_v1",
+            "artifact_id": "Review",
+            "json_pointer": "/governance/tool_policy/stage_policies/6",
+            "note": "Review stage policy does not explicitly forbid artifact_write for the same agent.",
+            "quote": null
+          }
+        ],
+        "routing_target": "risk_gov_canonical_v1"
+      },
+      {
+        "id": "CS005",
+        "severity": "low",
+        "summary": "Acceptance test AT14 references R14 for merge semantics but does not specify which merge ordering or conflict resolution rules are being validated. The test should reference the merge policy artifact or clarify the validation scope.",
+        "evidence": [
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "acceptance_canonical_v1",
+            "artifact_id": "AT14",
+            "json_pointer": "/acceptance_tests/13",
+            "note": "AT14 references R14 but does not specify merge ordering validation scope.",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "R14",
+            "json_pointer": "/requirements/13",
+            "note": "R14 mentions merge but does not specify ordering rules.",
+            "quote": null
+          }
+        ],
+        "routing_target": "acceptance_canonical_v1"
+      },
+      {
+        "id": "CS006",
+        "severity": "low",
+        "summary": "Risk K8 mitigation requires 'explicit decomposition triggers' but no requirement or acceptance test explicitly defines what constitutes a decomposition trigger or how it is enforced.",
+        "evidence": [
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "risk_gov_canonical_v1",
+            "artifact_id": "K8",
+            "json_pointer": "/risk_register/7/mitigation/text",
+            "note": "K8 mitigation requires explicit decomposition triggers.",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "R1",
+            "json_pointer": "/requirements/0",
+            "note": "R1 mentions decomposition but does not define triggers.",
+            "quote": null
+          }
+        ],
+        "routing_target": "requirements_canonical_v1"
+      },
+      {
+        "id": "CS007",
+        "severity": "medium",
+        "summary": "Component C14 (Validator Executor) responsibilities include 'enforce closure gates' but no interface explicitly connects C14 to C11 (Freeze Orchestrator) to signal gate pass/fail status. IF12 connects C11 to C13 for lane completion, but not C14 to C11 for gate enforcement.",
+        "evidence": [
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "C14",
+            "json_pointer": "/options/1/components/3/responsibilities/0",
+            "note": "C14 enforces closure gates but no interface to C11 is defined.",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "IF12",
+            "json_pointer": "/options/1/interfaces/11",
+            "note": "IF12 connects C11 to C13 for lane completion, not C14 to C11.",
+            "quote": null
+          }
+        ],
+        "routing_target": "architecture_canonical_v1"
+      },
+      {
+        "id": "CS008",
+        "severity": "high",
+        "summary": "Risk K7 mitigation requires 'Large code refactors SHALL be rejected or require decomposition' but no requirement, acceptance test, or component responsibility explicitly defines the threshold for 'large' or the enforcement mechanism for rejection/decomposition.",
+        "evidence": [
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "risk_gov_canonical_v1",
+            "artifact_id": "K7",
+            "json_pointer": "/risk_register/6/mitigation/text",
+            "note": "K7 mitigation requires rejection or decomposition of large refactors but does not define threshold or enforcement.",
+            "quote": "Large code refactors SHALL be rejected or require decomposition."
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "R1",
+            "json_pointer": "/requirements/0",
+            "note": "R1 mentions decomposition but does not define large refactor threshold.",
+            "quote": null
+          }
+        ],
+        "routing_target": "requirements_canonical_v1"
+      },
+      {
+        "id": "CS009",
+        "severity": "medium",
+        "summary": "Milestone M2 deliverable D2 requires 'Deterministic lane context-pack selection rules declared' but open question Q15 asks 'How should context packs be bounded and selected when workspace state grows beyond context window limits'. M2.D2 cannot be completed deterministically until Q15 is resolved.",
+        "evidence": [
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "capsule_canonical_v1",
+            "artifact_id": "Q15",
+            "json_pointer": "/project_capsule/open_questions/14",
+            "note": "Q15 is blocking for context pack bounds and selection.",
+            "quote": "How should context packs be bounded and selected when workspace state grows beyond context window limits (selection rules, prioritization, summarization artifacts, and validation of bounds)?"
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "M2",
+            "json_pointer": "/milestones/1/deliverables/1",
+            "note": "M2.D2 requires context-pack selection rules to be declared.",
+            "quote": "Deterministic lane context-pack selection rules declared (inputs, required artifacts, bounds) and recorded as canonical policy-as-data for this run."
+          }
+        ],
+        "routing_target": "clarification_plan_v1"
+      },
+      {
+        "id": "CS010",
+        "severity": "high",
+        "summary": "Risk K10 mitigation requires 'orchestrator-enforced output-type allowlists by role' but tool_policy stage definitions use 'restrictions' fields without explicit output-type allowlists. The enforcement mechanism for findings-only reviewers and decision-only judges is not specified in tool_policy or components.",
+        "evidence": [
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "risk_gov_canonical_v1",
+            "artifact_id": "K10",
+            "json_pointer": "/risk_register/9/mitigation/text",
+            "note": "K10 mitigation requires output-type allowlists by role.",
+            "quote": "Orchestrator-enforced output-type allowlists by role (reviewers findings-only; judges decisions-only; writers/patchers write/patch only) plus multi-vendor routing constraints..."
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "risk_gov_canonical_v1",
+            "artifact_id": "Review",
+            "json_pointer": "/governance/tool_policy/stage_policies/6/restrictions/0",
+            "note": "Review stage restrictions deny artifact_write but do not specify output-type schema enforcement.",
+            "quote": null
+          }
+        ],
+        "routing_target": "risk_gov_canonical_v1"
+      }
+    ]
+  }
+}

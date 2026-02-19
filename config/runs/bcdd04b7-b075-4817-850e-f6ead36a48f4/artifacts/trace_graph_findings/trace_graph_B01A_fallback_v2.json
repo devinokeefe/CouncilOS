@@ -1,0 +1,111 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B01A_fallback_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T20:57:22.703837Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B01A_v2"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B01A_v2",
+    "findings": [
+      {
+        "id": "TG001",
+        "severity": "medium",
+        "summary": "R1 requirement text does not explicitly mandate rejection of chat logs in the requirement statement itself; the rejection behavior is implied by 'sole canonical planning input' but not stated as a SHALL reject clause.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "R1",
+            "json_pointer": "/requirements/0/text",
+            "note": "R1 text states 'SHALL accept exactly one frozen plan_package_final.json' and 'SHALL reject chat logs' but the SHALL reject is embedded in a compound sentence rather than a separate SHALL clause.",
+            "quote": "SHALL accept exactly one frozen plan_package_final.json... and SHALL reject chat logs or any non-canonical/unapproved upstream artifacts"
+          }
+        ],
+        "routing_target": "requirements.clarification"
+      },
+      {
+        "id": "TG002",
+        "severity": "low",
+        "summary": "AT1 acceptance test references 'structured errors' for rejection but does not specify whether these errors must conform to a typed schema or can be freeform text, creating potential ambiguity in validator implementation.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "acceptance_canonical_v1",
+            "artifact_id": "AT1",
+            "json_pointer": "/acceptance_tests/0/pass_criteria",
+            "note": "Pass criteria mentions 'structured errors' without defining structure requirements.",
+            "quote": "runs (b) and (c) are rejected with structured errors indicating non-canonical planning inputs are not authoritative"
+          }
+        ],
+        "routing_target": "acceptance.clarification"
+      },
+      {
+        "id": "TG003",
+        "severity": "medium",
+        "summary": "R2 and R3 both use 'SHALL be required before any code-generation stage begins' and 'SHALL be required before any workspace-writing stage begins' respectively, but the architecture does not explicitly define which stages are 'code-generation' vs 'workspace-writing' stages, creating potential enforcement ambiguity.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "R2",
+            "json_pointer": "/requirements/1/text",
+            "note": "R2 requires repo_context.json before 'any code-generation stage' but does not define which stages qualify.",
+            "quote": "SHALL be required before any code-generation stage begins"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "R3",
+            "json_pointer": "/requirements/2/text",
+            "note": "R3 requires workspace_context.json before 'any workspace-writing stage' but does not define which stages qualify.",
+            "quote": "SHALL be required before any workspace-writing stage begins"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "O1",
+            "json_pointer": "/architecture/chosen/high_level_dataflow",
+            "note": "Dataflow describes stages but does not explicitly tag which are code-generation vs workspace-writing.",
+            "quote": "1) Intake Gate validates... 2) Work Plan Compiler... 3) Generate: Writer Pod produces diff-only patchset artifacts"
+          }
+        ],
+        "routing_target": "architecture.clarification"
+      },
+      {
+        "id": "TG004",
+        "severity": "low",
+        "summary": "AT2 and AT3 acceptance tests specify 'schema-valid repo_context.json' and 'schema-valid workspace_context.json' but the schemas themselves are listed as deliverables (M1.D2) rather than being present in the current artifact set, making the tests unverifiable until schemas are delivered.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "acceptance_canonical_v1",
+            "artifact_id": "AT2",
+            "json_pointer": "/acceptance_tests/1/pass_criteria",
+            "note": "AT2 requires schema-valid repo_context.json but schema is not yet present.",
+            "quote": "run with schema-valid repo_context.json containing required fields... is accepted"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "acceptance_canonical_v1",
+            "artifact_id": "AT3",
+            "json_pointer": "/acceptance_tests/2/pass_criteria",
+            "note": "AT3 requires schema-valid workspace_context.json but schema is not yet present.",
+            "quote": "run with schema-valid workspace_context.json containing required fields... is accepted"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "acceptance_canonical_v1",
+            "artifact_id": "M1",
+            "json_pointer": "/milestones/0/deliverables/1",
+            "note": "Schemas are listed as future deliverables, not current artifacts.",
+            "quote": "Typed/versioned JSON schemas and contracts: repo_context.json, workspace_context.json..."
+          }
+        ],
+        "routing_target": "milestone.dependency"
+      }
+    ]
+  }
+}

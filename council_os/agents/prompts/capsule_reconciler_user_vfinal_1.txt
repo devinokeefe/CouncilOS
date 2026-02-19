@@ -1,0 +1,12 @@
+{
+  "run_context": {{RUN_CONTEXT_JSON}},
+  "artifact_refs": {{ARTIFACT_REFS_JSON}},
+  "allowed_id_prefixes": ["G","NG","CNS","A","Q","SM"],
+  "inputs": {
+    "brief": {{BRIEF_JSON_STRING}},
+    "capsule_draft_a": {{CAPSULE_DRAFT_A_JSON}},
+    "capsule_draft_b": {{CAPSULE_DRAFT_B_JSON}}
+  },
+  "task": "Reconcile into a single Project Capsule.",
+  "output_schema": {{CAPSULE_SCHEMA_JSON}}
+}

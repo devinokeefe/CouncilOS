@@ -1,0 +1,205 @@
+{
+  "$defs": {
+    "EvidencePointer": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_ref": {
+          "title": "Artifact Ref",
+          "type": "string"
+        },
+        "entity_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Entity Id"
+        },
+        "json_pointer": {
+          "title": "Json Pointer",
+          "type": "string"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        },
+        "candidate_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Candidate Id"
+        },
+        "artifact_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Artifact Id"
+        },
+        "quote": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Quote"
+        }
+      },
+      "required": [
+        "artifact_ref",
+        "json_pointer"
+      ],
+      "title": "EvidencePointer",
+      "type": "object"
+    },
+    "TriageDefect": {
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "enum": [
+            "blocker",
+            "fix",
+            "note"
+          ],
+          "title": "Label",
+          "type": "string"
+        },
+        "severity": {
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "summary": {
+          "title": "Summary",
+          "type": "string"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/EvidencePointer"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "violated_gate": {
+          "title": "Violated Gate",
+          "type": "string"
+        },
+        "patch": {
+          "items": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "title": "Patch",
+          "type": "array"
+        }
+      },
+      "required": [
+        "label",
+        "severity",
+        "summary",
+        "evidence",
+        "violated_gate",
+        "patch"
+      ],
+      "title": "TriageDefect",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "candidate_ref": {
+      "title": "Candidate Ref",
+      "type": "string"
+    },
+    "critic_id": {
+      "enum": [
+        "A",
+        "B",
+        "MERGED"
+      ],
+      "title": "Critic Id",
+      "type": "string"
+    },
+    "verdict": {
+      "enum": [
+        "approve",
+        "approve_with_fixes",
+        "reject"
+      ],
+      "title": "Verdict",
+      "type": "string"
+    },
+    "defects": {
+      "items": {
+        "$ref": "#/$defs/TriageDefect"
+      },
+      "title": "Defects",
+      "type": "array"
+    },
+    "reroute_target": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Reroute Target"
+    },
+    "reroute_reason": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Reroute Reason"
+    }
+  },
+  "required": [
+    "candidate_ref",
+    "critic_id",
+    "verdict",
+    "defects"
+  ],
+  "title": "TriageFindingsPayload",
+  "type": "object"
+}

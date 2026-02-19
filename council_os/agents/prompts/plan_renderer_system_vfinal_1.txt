@@ -1,0 +1,10 @@
+{{GLOBAL_CONTRACT_HEADER_V4}}
+
+ROLE: Plan Renderer
+
+MISSION
+Render final plan JSON into Markdown WITHOUT adding new information.
+
+RULES
+- No new claims.
+- Preserve IDs (R#, AT#, K#, O#, M#, DEC#).

@@ -1,0 +1,87 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B2A_anchor_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T19:00:45.550729Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B2A_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2A_v1",
+    "findings": [
+      {
+        "id": "TG1",
+        "severity": "medium",
+        "summary": "Sample check for R1 lists milestone M2, but milestone M2 exit_criteria does not reference R1/AT1 (R1 is only explicitly gated in M1 exit_criteria). This makes the R1→M2 trace in the sample check appear unsupported by the candidate plan content provided.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "plan_candidate_B2A_v1",
+            "json_pointer": "/inputs/deterministic_sample_checks/0/milestones",
+            "note": "R1 sample check milestones include M2.",
+            "quote": "[\"M1\",\"M2\"]"
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "plan_candidate_B2A_v1",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/1/exit_criteria",
+            "note": "M2 exit_criteria does not mention R1 or AT1.",
+            "quote": "[\"Diff-only patchset artifacts accepted; non-diff mechanisms rejected (R13/AT13).\",\"RFC 6902-only mutation pathway for canonical JSON artifacts enforced (R12/AT12).\",\"Role separation and reviewers...\""
+          }
+        ],
+        "routing_target": "orchestrator.trace_graph"
+      },
+      {
+        "id": "TG2",
+        "severity": "low",
+        "summary": "Sample check for R2 lists milestone M2, but milestone M2 exit_criteria does not explicitly include the repo_context.json schema gate (R2/AT2). If M2 is intended to trace R2, the plan text in M2 exit_criteria does not currently support that linkage.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "plan_candidate_B2A_v1",
+            "json_pointer": "/inputs/deterministic_sample_checks/1/milestones",
+            "note": "R2 sample check milestones include M2.",
+            "quote": "[\"M1\",\"M2\"]"
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "plan_candidate_B2A_v1",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/1/exit_criteria",
+            "note": "M2 exit_criteria does not mention repo_context.json gating (R2/AT2).",
+            "quote": "[\"Diff-only patchset artifacts accepted; non-diff mechanisms rejected (R13/AT13).\",\"RFC 6902-only mutation pathway...\",\"Role separation...\",\"Per-lane validation emits structured results...\"]"
+          }
+        ],
+        "routing_target": "orchestrator.trace_graph"
+      },
+      {
+        "id": "TG3",
+        "severity": "low",
+        "summary": "Sample check for R3 lists milestone M2, but milestone M2 exit_criteria does not explicitly include the workspace_context.json schema gate (R3/AT3). If M2 is intended to trace R3, the candidate plan text in M2 exit_criteria does not currently support that linkage.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "plan_candidate_B2A_v1",
+            "json_pointer": "/inputs/deterministic_sample_checks/2/milestones",
+            "note": "R3 sample check milestones include M2.",
+            "quote": "[\"M1\",\"M2\"]"
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "plan_candidate_B2A_v1",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/1/exit_criteria",
+            "note": "M2 exit_criteria does not mention workspace_context.json gating (R3/AT3).",
+            "quote": "[\"Diff-only patchset artifacts accepted; non-diff mechanisms rejected (R13/AT13).\",\"RFC 6902-only mutation pathway...\",\"Role separation...\",\"Per-lane validation emits structured results...\"]"
+          }
+        ],
+        "routing_target": "orchestrator.trace_graph"
+      }
+    ]
+  }
+}

@@ -1,0 +1,343 @@
+{
+  "artifact_type": "triage_report",
+  "artifact_id": "triage_B2B_v3",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T21:24:07.047237Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B2B_v3",
+    "validator_B2B_v3"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2B_v3",
+    "critic_id": "MERGED",
+    "verdict": "reject",
+    "defects": [
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Cannot safely repair the provided payload because the \"Invalid JSON to repair\" content is truncated (contains \"...TRUNCATED...\") and is not a complete JSON value. The only reported schema issues are two overlong evidence.quote fields, but their exact locations/indices cannot be edited without the full, untruncated payload.",
+        "evidence": [],
+        "violated_gate": "input_integrity",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Review stage tool policy forbids artifact_write but reviewers must emit review_findings.json per R7 freeze bundle requirements and component responsibilities.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "artifact_id": "plan_package",
+            "json_pointer": "/governance/tool_policy/stage_policies/6/restrictions/0/artifact_write",
+            "note": "Review stage artifact_write set to deny",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "artifact_id": "plan_package",
+            "json_pointer": "/requirements/6/text",
+            "note": "R7 requires review_findings.json in freeze bundle",
+            "quote": null
+          }
+        ],
+        "violated_gate": "tool_policy_parse",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Intake stage tool policy allows only non-canonical writes but must initialize canonical audit spine artifacts (run_manifest, event_log, workspace_index) per R8 and component C12 responsibilities.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "artifact_id": "plan_package",
+            "json_pointer": "/governance/tool_policy/stage_policies/0/restrictions/0/artifact_write",
+            "note": "Intake artifact_write restricted to allow_noncanonical_only",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "artifact_id": "plan_package",
+            "json_pointer": "/requirements/7/text",
+            "note": "R8 requires immutable run_manifest and append-only event_log",
+            "quote": null
+          }
+        ],
+        "violated_gate": "tool_policy_parse",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "M1 exit criteria claims AT4 passes with single-lane subset ending at Review, but AT4 pass criteria explicitly requires full stage sequence through Freeze.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "artifact_id": "plan_package",
+            "json_pointer": "/milestones/0/exit_criteria/3",
+            "note": "M1 claims AT4 passes with single-lane subset",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "acceptance_canonical_v1",
+            "artifact_id": "acceptance_canonical",
+            "json_pointer": "/acceptance_tests/3/pass_criteria",
+            "note": "AT4 requires stages through Freeze",
+            "quote": "Stage sequence includes at minimum Intake → Generate → Validate → Review → Judge → Freeze"
+          }
+        ],
+        "violated_gate": "milestone_exit_criteria",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "M1 exit criteria claims AT5 passes but M1 deliverables do not include Judge Pod (C23) or Freeze Assembler (C24), so stage_handoff artifacts for Judge and Freeze transitions cannot exist.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "artifact_id": "plan_package",
+            "json_pointer": "/milestones/0/exit_criteria/4",
+            "note": "M1 claims AT5 passes",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "artifact_id": "plan_package",
+            "json_pointer": "/milestones/0/deliverables",
+            "note": "M1 deliverables do not include C23 or C24",
+            "quote": null
+          }
+        ],
+        "violated_gate": "milestone_exit_criteria",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "Evidence pointer objects in decision_log and supplemental_evaluations use non-standard fields (candidate_id, artifact_id, quote) and omit entity_id, violating R10 and AT10 evidence pointer standard.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "artifact_id": "plan_package",
+            "json_pointer": "/requirements/9/text",
+            "note": "R10 specifies evidence pointer shape",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "artifact_id": "plan_package",
+            "json_pointer": "/decision_log/0/evidence_pointers/0",
+            "note": "Example evidence pointer with non-standard fields",
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency_heuristic",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "M3 deliverables introduce ChangeRequest schema (M3-D7) but ChangeRequest is referenced in M1/M2 HITL triggers, creating dependency inversion.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "artifact_id": "plan_package",
+            "json_pointer": "/milestones/2/deliverables/6",
+            "note": "ChangeRequest schema first delivered in M3",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "artifact_id": "plan_package",
+            "json_pointer": "/governance/tool_policy/stage_policies/1/hitl_triggers/0",
+            "note": "M1 WorkPlanning HITL trigger references ChangeRequest",
+            "quote": null
+          }
+        ],
+        "violated_gate": "milestone_exit_criteria",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "C18 responsibilities require structured conflict_report artifact but M3 deliverables do not include conflict_report schema or validator, and M3 exit criteria do not validate conflict detection.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "architecture_canonical",
+            "json_pointer": "/options/1/components/7/responsibilities/1",
+            "note": "C18 must emit structured conflict reports",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "artifact_id": "plan_package",
+            "json_pointer": "/milestones/2/deliverables",
+            "note": "M3 deliverables do not include conflict_report artifact",
+            "quote": null
+          }
+        ],
+        "violated_gate": "coverage",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "27 deliverable IDs use non-standard format (M#-D# instead of DL#) violating id_integrity gate.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "artifact_id": "plan_package",
+            "json_pointer": "/milestones/0/deliverables",
+            "note": "M1 deliverables use M1-D# format",
+            "quote": null
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Architecture options O1-O4 reference 14 risk descriptions as prose strings instead of K# IDs, violating id_integrity gate.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "artifact_id": "plan_package",
+            "json_pointer": "/architecture/options/0/risks",
+            "note": "O1 risks array contains prose strings",
+            "quote": null
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "8 key_design_decisions lack decision_log references, violating id_integrity gate.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "artifact_id": "plan_package",
+            "json_pointer": "/architecture/chosen/key_design_decisions",
+            "note": "Design decisions missing DEC# references",
+            "quote": null
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Decision_log evidence pointers reference 13 missing artifact IDs (architecture_canonical, branch_set, risk_gov_canonical, alignment_warnings, acceptance_canonical).",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "artifact_id": "plan_package",
+            "json_pointer": "/decision_log/0/evidence_pointers",
+            "note": "Evidence pointers reference missing artifact IDs",
+            "quote": null
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "note",
+        "severity": "medium",
+        "summary": "Synthesis warning W1 identifies Q7-Q9 as blocking for Phase 3 but M3 exit criteria do not require resolution of these open questions before proceeding to M4.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "artifact_id": "plan_package",
+            "json_pointer": "/synthesis_warnings/0",
+            "note": "W1 identifies Q7-Q9 as blocking",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "artifact_id": "plan_package",
+            "json_pointer": "/milestones/2/exit_criteria",
+            "note": "M3 exit criteria do not address Q7-Q9 resolution",
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency_heuristic",
+        "patch": []
+      },
+      {
+        "label": "note",
+        "severity": "low",
+        "summary": "M2 exit criteria requires two parallel lanes to complete independently but M2 deliverables do not include Integration Merge Engine (C18), creating ambiguity about merged output at M2 completion.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "artifact_id": "plan_package",
+            "json_pointer": "/milestones/1/exit_criteria/4",
+            "note": "M2 requires independent lane completion",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "artifact_id": "plan_package",
+            "json_pointer": "/milestones/1/deliverables",
+            "note": "M2 does not include C18",
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency_heuristic",
+        "patch": []
+      }
+    ],
+    "reroute_target": "reroute:request_full_payload",
+    "reroute_reason": "Please resend the full, untruncated JSON payload. Once provided, the repair is to shorten defects[3].evidence[1].quote and defects[6].evidence[0].quote to <=200 characters (e.g., by truncation) while preserving all other content/ordering."
+  }
+}

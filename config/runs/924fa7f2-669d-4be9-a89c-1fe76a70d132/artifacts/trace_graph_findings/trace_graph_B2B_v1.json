@@ -1,0 +1,104 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B2B_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T19:01:52.469276Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "trace_graph_B2B_primary_v1",
+    "trace_graph_B2B_anchor_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2B_v1",
+    "findings": [
+      {
+        "id": "TG1",
+        "severity": "medium",
+        "summary": "Sample check for R1 relies on AT1, but AT1 does not explicitly test the 'exactly one' constraint (e.g., providing multiple plan_package_final.json inputs) nor the case where plan_package_final.json is provided without its required structured handoff bundle; this leaves a traceability gap for the full requirement semantics.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "artifact_id": "plan_candidate_B2B_v1",
+            "json_pointer": "/inputs/plan_candidate/plan_package/requirements/0/text",
+            "note": "R1 includes 'accept exactly one frozen plan_package_final.json (plus its associated structured handoff bundle)'.",
+            "quote": "The Implementation Council subsystem SHALL accept exactly one frozen plan_package_final.json (plus its associated structured handoff bundle) as its sole canonical planning input..."
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "artifact_id": "plan_candidate_B2B_v1",
+            "json_pointer": "/inputs/plan_candidate/plan_package/acceptance_tests/0/procedure",
+            "note": "AT1 tests chat log and unapproved non-canonical artifacts, but not multiple plan inputs or missing handoff bundle.",
+            "quote": "Attempt to initiate an Implementation Council run with inputs: (a) a valid plan_package_final.json plus its structured handoff bundle; (b) a chat log reference as the only planning input; (c) an unapp"
+          }
+        ],
+        "routing_target": "acceptance_tests"
+      },
+      {
+        "id": "TG2",
+        "severity": "low",
+        "summary": "Sample check metadata maps R2 to milestones [M1, M2], but M2 exit criteria does not include AT2 (the mapped acceptance test) or any other explicit R2 gating; this appears to be a trace-graph/milestone-mapping inconsistency for the provided sample check.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "artifact_id": "plan_candidate_B2B_v1",
+            "json_pointer": "/inputs/deterministic_sample_checks/1",
+            "note": "R2 sample check claims coverage in milestones M1 and M2 via AT2.",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "artifact_id": "plan_candidate_B2B_v1",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/1/exit_criteria",
+            "note": "M2 exit criteria list omits AT2.",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "artifact_id": "plan_candidate_B2B_v1",
+            "json_pointer": "/inputs/plan_candidate/plan_package/acceptance_tests/1/id",
+            "note": "AT2 is the acceptance test mapped to R2 in the sample check.",
+            "quote": "AT2"
+          }
+        ],
+        "routing_target": "trace_graph"
+      },
+      {
+        "id": "TG3",
+        "severity": "low",
+        "summary": "Sample check metadata maps R3 to milestones [M1, M2], but M2 exit criteria does not include AT3 (the mapped acceptance test) or any other explicit R3 gating; this appears to be a trace-graph/milestone-mapping inconsistency for the provided sample check.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "artifact_id": "plan_candidate_B2B_v1",
+            "json_pointer": "/inputs/deterministic_sample_checks/2",
+            "note": "R3 sample check claims coverage in milestones M1 and M2 via AT3.",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "artifact_id": "plan_candidate_B2B_v1",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/1/exit_criteria",
+            "note": "M2 exit criteria list omits AT3.",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "artifact_id": "plan_candidate_B2B_v1",
+            "json_pointer": "/inputs/plan_candidate/plan_package/acceptance_tests/2/id",
+            "note": "AT3 is the acceptance test mapped to R3 in the sample check.",
+            "quote": "AT3"
+          }
+        ],
+        "routing_target": "trace_graph"
+      }
+    ]
+  }
+}

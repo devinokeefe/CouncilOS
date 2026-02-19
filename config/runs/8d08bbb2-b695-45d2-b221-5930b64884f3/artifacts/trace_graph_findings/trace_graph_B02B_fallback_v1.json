@@ -1,0 +1,87 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B02B_fallback_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T19:02:31.376049Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B02B_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B02B_v1",
+    "findings": [
+      {
+        "id": "TG001",
+        "severity": "medium",
+        "summary": "R1 milestone mapping includes M2 (Parallel Lane Execution) but R1 is an intake-level requirement that should be fully satisfied at M1 only",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/inputs/deterministic_sample_checks/0",
+            "note": "R1 maps to both M1 and M2, but R1 text specifies acceptance of plan_package_final.json as sole input, which is an Intake concern completed at M1",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_package/requirements/0",
+            "note": "R1 requirement text focuses on input acceptance and rejection of non-canonical sources",
+            "quote": "SHALL accept exactly one frozen plan_package_final.json (plus its associated structured handoff bundle) as its sole canonical planning input"
+          }
+        ],
+        "routing_target": "trace_review"
+      },
+      {
+        "id": "TG002",
+        "severity": "medium",
+        "summary": "R2 milestone mapping includes M2 (Parallel Lane Execution) but R2 is an intake-level prerequisite requirement that should be fully satisfied at M1 only",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/inputs/deterministic_sample_checks/1",
+            "note": "R2 maps to both M1 and M2, but R2 explicitly states repo_context.json SHALL be required before any code-generation stage begins, making it an M1 exit criterion only",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_package/requirements/1",
+            "note": "R2 requirement text specifies repo_context.json must be present before code-generation",
+            "quote": "SHALL be required before any code-generation stage begins"
+          }
+        ],
+        "routing_target": "trace_review"
+      },
+      {
+        "id": "TG003",
+        "severity": "medium",
+        "summary": "R3 milestone mapping includes M2 (Parallel Lane Execution) but R3 is an intake-level prerequisite requirement that should be fully satisfied at M1 only",
+        "evidence": [
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/inputs/deterministic_sample_checks/2",
+            "note": "R3 maps to both M1 and M2, but R3 explicitly states workspace_context.json SHALL be required before any workspace-writing stage begins, making it an M1 exit criterion only",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02B",
+            "artifact_ref": "plan_candidate_B02B_v1",
+            "artifact_id": "plan_candidate_B02B_v1",
+            "json_pointer": "/plan_package/requirements/2",
+            "note": "R3 requirement text specifies workspace_context.json must be present before workspace-writing",
+            "quote": "SHALL be required before any workspace-writing stage begins"
+          }
+        ],
+        "routing_target": "trace_review"
+      }
+    ]
+  }
+}

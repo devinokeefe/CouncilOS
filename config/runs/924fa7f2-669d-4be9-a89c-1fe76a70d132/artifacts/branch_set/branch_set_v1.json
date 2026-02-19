@@ -1,0 +1,71 @@
+{
+  "artifact_type": "branch_set",
+  "artifact_id": "branch_set_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T18:57:44.335136Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "alignment_warnings_v1"
+  ],
+  "payload": {
+    "branches": [
+      {
+        "branch_id": "B2",
+        "selected_arch_option_id": "O2",
+        "milestone_strategy": {
+          "style": "hybrid",
+          "notes": "Phase 1 (big-bang foundation): deliver Global Orchestrator (C11), Intake & DAG Work Planner (C12), Workspace Manager with namespaced partitions (C22), and single-lane execution path (effectively O1-like) to validate intake, workspace governance, and audit spine. Phase 2 (thin-slice parallel lanes): add Task Lane Orchestrator (C13), Writer/Validator/Reviewer/Patcher per-lane pods (C14-C17) with two parallel lanes on a test repo. Phase 3 (thin-slice integration): add Integration Merge Engine (C18), Integration Validator/Reviewer/Patcher (C19-C21), and deterministic merge ordering algorithm (resolving AL006). Phase 4: Judge Pod (C23) + Freeze Assembler (C24) + full closure gates."
+        },
+        "acceptance_strategy": {
+          "notes": "Phase 1 gates on AT1-AT3, AT4 (single-lane subset), AT5, AT8, AT9, AT19, AT20. Phase 2 gates on AT12, AT13, AT14, AT22 (per-lane role separation). Phase 3 gates on AT15 (smallest-passing-repair across lanes), AT10 (evidence pointers across integration), AT16 (ChangeRequest for conflicts). Phase 4 gates on AT5-AT7, AT17, AT18, AT21, AT23. Full AT suite at final Freeze. Integration-specific acceptance criteria added: deterministic merge ordering produces identical results regardless of lane completion order."
+        },
+        "governance_posture": {
+          "tooling_level": "sandboxed",
+          "hitl_strictness": "high"
+        },
+        "risk_posture": {
+          "notes": "Parallel lanes introduce K12 (merge conflicts) as the primary elevated risk; mitigated by Phase 3 focus on deterministic merge ordering and explicit conflict escalation thresholds. K8 (workspace integrity) risk is higher due to namespaced partitions; mitigated by C22 partition enforcement and workspace integrity validators. K10 (role separation) risk increases with parallel pods; mitigated by per-lane orchestrator-enforced output-type allowlists. K9 (context pack overflow) risk is lower per-lane due to smaller scoped packs. K6 (flaky tests) risk is distributed across lanes but integration revalidation can amplify it. High HITL strictness retained due to parallel complexity and open questions Q7-Q9."
+        },
+        "rationale": "O2 addresses the key weakness of O1 (wall-clock time) while preserving all MUST requirements. The hybrid milestone strategy de-risks by first proving the single-lane path works (Phase 1), then incrementally adding parallelism (Phase 2) and integration (Phase 3). This branch is appropriate when the target repository has many independent modules and implementation tasks can be cleanly partitioned. Alignment warnings AL006 (merge ordering) and AL004 (context pack rules) are directly addressed in Phase 3 with explicit algorithm definitions. AL001/AL002/AL003/AL007 are resolved in Phase 1 alongside O1-equivalent components. Pruning hint: recommended when wall-clock throughput is a priority and the repo has low inter-module coupling."
+      },
+      {
+        "branch_id": "B01",
+        "selected_arch_option_id": "O1",
+        "milestone_strategy": {
+          "style": "big_bang",
+          "notes": "The entire implementation plan is executed as a single, sequential pipeline, culminating in one final freeze event. This ensures holistic review before any part of the system is considered 'done'."
+        },
+        "acceptance_strategy": {
+          "notes": "Acceptance is based on a single, comprehensive freeze bundle passing all gates at the end of the linear pipeline. All requirements and acceptance tests must be satisfied in one go."
+        },
+        "governance_posture": {
+          "tooling_level": "sandboxed",
+          "hitl_strictness": "high"
+        },
+        "risk_posture": {
+          "notes": "Extremely risk-averse. Prioritizes auditability and predictability over speed. High HITL involvement is used to mitigate risks of scope expansion (K1), audit spine breakage (K2), and policy bypass (K5) through manual scrutiny."
+        },
+        "rationale": "This branch represents the most conservative and risk-averse approach. It uses the simple, sequential architecture (O1) to maximize determinism and auditability, directly addressing core constraints on traceability and governance (CNS1, CNS3, CNS6). The 'big_bang' milestone strategy coupled with high HITL strictness ensures that the entire plan is reviewed holistically, preventing incremental drift."
+      },
+      {
+        "branch_id": "B02",
+        "selected_arch_option_id": "O2",
+        "milestone_strategy": {
+          "style": "hybrid",
+          "notes": "Independent implementation lanes complete their work as intermediate milestones. The final milestone is the successful completion of the integration stage, where all parallel work is merged and validated together for a single freeze."
+        },
+        "acceptance_strategy": {
+          "notes": "Acceptance requires two levels of validation: first, each parallel lane must pass its scoped gates. Second, the final integrated state must pass a full suite of system-level validators and an integration review before the freeze is accepted."
+        },
+        "governance_posture": {
+          "tooling_level": "sandboxed",
+          "hitl_strictness": "medium"
+        },
+        "risk_posture": {
+          "notes": "Accepts increased integration complexity and risk in exchange for faster wall-clock time. Focus is on mitigating merge conflicts (K12) and integration regressions with a dedicated, deterministic integration and validation stage. Relies more on automated lane-level validation."
+        },
+        "rationale": "This branch prioritizes speed for projects with divisible work by executing tasks in parallel using architecture O2. The trade-off is increased risk at the integration fan-in point, which is managed by a medium HITL strictness focused on integration-level findings. This approach is best for projects where time-to-delivery is critical and tasks are largely independent, minimizing the risk of merge conflicts (K12)."
+      }
+    ]
+  }
+}

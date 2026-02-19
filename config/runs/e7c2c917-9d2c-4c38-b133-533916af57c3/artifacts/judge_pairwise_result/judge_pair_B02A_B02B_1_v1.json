@@ -1,0 +1,84 @@
+{
+  "artifact_type": "judge_pairwise_result",
+  "artifact_id": "judge_pair_B02A_B02B_1_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T22:51:13.366786Z",
+  "source_run_id": "e7c2c917-9d2c-4c38-b133-533916af57c3",
+  "parents": [
+    "plan_candidate_B02A_v3",
+    "plan_candidate_B02B_v3"
+  ],
+  "payload": {
+    "comparison": {
+      "a": "Candidate A's plan is well-reasoned but lacks the depth of its counterpart. It does not include a supplemental architectural evaluation, its decision log lacks direct traceability via evidence pointers, and its warnings are more general.",
+      "b": "Candidate B's plan is superior due to its depth. It includes a `supplemental_evaluations` section analyzing risk and feasibility, uses `evidence_pointers` for clear traceability in its decision log, and identifies specific, critical gaps in the plan, such as missing acceptance tests."
+    },
+    "judge_id": "council-os-pair-judge",
+    "judge_model": "gpt-4-turbo-2024-04-09",
+    "winner": "b",
+    "scores": {
+      "feasibility": 9,
+      "testability": 10,
+      "governance": 10,
+      "architecture": 10,
+      "clarity": 10
+    },
+    "evidence": [
+      {
+        "artifact_ref": "candidate_b_ref",
+        "entity_id": null,
+        "json_pointer": "/plan_package/supplemental_evaluations",
+        "note": "Candidate B includes a section for supplemental evaluations, demonstrating deeper analysis of the chosen architecture's implications regarding risk, feasibility, and cost.",
+        "candidate_id": "B02B",
+        "artifact_id": "candidate_b",
+        "quote": "[{\"title\": \"Integration Risk Assessment for O2\", \"notes\": \"The primary risk differentiator for this candidate is K12 (merge conflicts). O2's Integration Merge Engine (C18) and dedicated integration..."
+      },
+      {
+        "artifact_ref": "candidate_a_ref",
+        "entity_id": null,
+        "json_pointer": "/plan_package/decision_log",
+        "note": "Candidate A's decision log is well-reasoned but lacks the direct evidence pointers for traceability that Candidate B provides.",
+        "candidate_id": "B02A",
+        "artifact_id": "candidate_a",
+        "quote": "[{\"id\": \"D1\", \"timestamp\": \"2023-08-15T10:00:00Z\", \"decision\": \"Adopt O2 (Orchestrated Operators) architecture over O1 (Federated Monolith) based on TCO and feasibility analysis provided in the ar..."
+      },
+      {
+        "artifact_ref": "candidate_b_ref",
+        "entity_id": null,
+        "json_pointer": "/plan_package/decision_log/0/evidence_pointers",
+        "note": "Candidate B includes evidence pointers in its decision log, directly linking decisions to source artifacts for improved auditability.",
+        "candidate_id": "B02B",
+        "artifact_id": "candidate_b",
+        "quote": "[{\"artifact_ref\": \"architecture_draft_2\", \"json_pointer\": \"/analysis/recommendation\"}]"
+      },
+      {
+        "artifact_ref": "candidate_a_ref",
+        "entity_id": null,
+        "json_pointer": "/plan_package/supplemental_evaluations",
+        "note": "Candidate A lacks a supplemental evaluations section, which is present in Candidate B's plan, indicating a lesser depth of architectural analysis.",
+        "candidate_id": "B02A",
+        "artifact_id": "candidate_a",
+        "quote": "[]"
+      },
+      {
+        "artifact_ref": "candidate_b_ref",
+        "entity_id": null,
+        "json_pointer": "/plan_package/synthesis_warnings/2/summary",
+        "note": "Candidate B specifically identifies that 'No acceptance test specifically validates partitioning correctness,' a key gap for the O2 architecture.",
+        "candidate_id": "B02B",
+        "artifact_id": "candidate_b",
+        "quote": "The work_plan lane partitioning quality is a single point of failure for O2. If the DAG Work Planner (C12) incorrectly identifies task independence, late integration failures and rework will negate th"
+      },
+      {
+        "artifact_ref": "candidate_a_ref",
+        "entity_id": null,
+        "json_pointer": "/plan_package/synthesis_warnings",
+        "note": "Candidate A's warnings are more general, focusing on dependencies on unresolved open questions rather than identifying specific missing components like a new acceptance test.",
+        "candidate_id": "B02A",
+        "artifact_id": "candidate_a",
+        "quote": "[{\"id\": \"W1\", \"severity\": \"high\", \"summary\": \"O2 relies on deterministically specified lane partitioning rules, deterministic merge/apply ordering, and explicit conflict-resolution thresholds; these m"
+      }
+    ],
+    "notes": "Both candidates produced excellent and highly detailed plans based on the correct architecture (O2) for Branch B02. They are closely matched. However, Candidate B wins due to a superior depth of analysis and adherence to best practices. Candidate B's inclusion of a 'supplemental_evaluations' section provides critical foresight into the specific risks and feasibility challenges of the O2 model. Furthermore, Candidate B's use of evidence pointers within its decision log demonstrates stronger traceability and governance. Finally, its synthesis warnings were more specific and actionable, identifying a concrete gap in test coverage. These factors indicate a more mature and robust plan."
+  }
+}

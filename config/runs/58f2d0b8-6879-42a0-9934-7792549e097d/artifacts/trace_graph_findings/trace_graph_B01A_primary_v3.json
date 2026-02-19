@@ -1,0 +1,47 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B01A_primary_v3",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T21:19:41.833459Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B01A_v3"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B01A_v3",
+    "findings": [
+      {
+        "id": "TG-001",
+        "severity": "low",
+        "summary": "Architectural interface IF1 and Component C3 do not explicitly list the 'structured handoff bundle' as a required input, creating a traceability gap with Requirement R1 which mandates it.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v3",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/requirements/0/text",
+            "note": "R1 explicit requirement for handoff bundle input.",
+            "quote": "accept exactly one frozen plan_package_final.json (plus its associated structured handoff bundle)"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v3",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/architecture/options/0/interfaces/0/contract",
+            "note": "IF1 contract lists only plan package and contexts, omitting the handoff bundle.",
+            "quote": "Provide plan_package_final.json + repo_context.json + workspace_context.json"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v3",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/architecture/options/0/components/2/responsibilities/0",
+            "note": "C3 Intake Gate responsibilities do not mention validating an upstream handoff bundle.",
+            "quote": "Validate plan_package_final.json, repo_context.json, workspace_context.json against schemas."
+          }
+        ],
+        "routing_target": "architecture_canonical"
+      }
+    ]
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B01A_primary_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T20:56:04.932716Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B01A_v2"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B01A_v2",
+    "findings": [
+      {
+        "id": "TG-001",
+        "severity": "medium",
+        "summary": "Milestone M1.D2 enumerates required schema deliverables for the subsystem contracts yet omits the explicit definition of the 'plan_package_final.json' input schema, which is required by R1 and Capsule Goal 2.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v2",
+            "artifact_id": "R1",
+            "json_pointer": "/plan_package/requirements/0/text",
+            "note": "R1 requires the subsystem to accept a structured plan_package_final.json input.",
+            "quote": "accept exactly one frozen plan_package_final.json (plus its associated structured handoff bundle)"
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v2",
+            "artifact_id": "M1.D2",
+            "json_pointer": "/plan_package/milestones/0/deliverables/1/text",
+            "note": "M1.D2 lists specific contract schemas (repo_context, workspace_context, etc.) but fails to list the plan_package_final schema definition.",
+            "quote": "Typed/versioned JSON schemas and contracts: repo_context.json, workspace_context.json, stage_handoff.json..."
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v2",
+            "artifact_id": "Goals",
+            "json_pointer": "/plan_package/project_capsule/goals/1",
+            "note": "Capsule Goal 2 explicitly requires definition of the canonical input contract.",
+            "quote": "Define the canonical input contract: accept plan_package_final.json only..."
+          }
+        ],
+        "routing_target": "clarification.planning.milestones"
+      },
+      {
+        "id": "TG-002",
+        "severity": "medium",
+        "summary": "Milestone M1 defines 'specification' deliverables (workflow specs, schemas, governance rules) but lacks execution milestones for implementing the subsystem described in functional requirements R1-R3, creating a traceability gap between functional requirements and plan realization.",
+        "evidence": [
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v2",
+            "artifact_id": "R1",
+            "json_pointer": "/plan_package/requirements/0/text",
+            "note": "R1 describes a runtime functional behavior of the target subsystem.",
+            "quote": "The Implementation Council subsystem SHALL accept exactly one frozen plan_package_final.json..."
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v2",
+            "artifact_id": "M1.D1",
+            "json_pointer": "/plan_package/milestones/0/deliverables/0/text",
+            "note": "M1 deliverables are specifications for the design, not the implementation of the system functions.",
+            "quote": "Deterministic linear workflow specification (state machine)..."
+          },
+          {
+            "candidate_id": "B01A",
+            "artifact_ref": "plan_candidate_B01A_v2",
+            "artifact_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/exit_criteria/1",
+            "note": "Exit criteria confirms the milestone standard is specification-complete, not implementation-complete.",
+            "quote": "Architecture option O1 is fully specified... preserving separation of powers..."
+          }
+        ],
+        "routing_target": "clarification.scope.execution_vs_definition"
+      }
+    ]
+  }
+}

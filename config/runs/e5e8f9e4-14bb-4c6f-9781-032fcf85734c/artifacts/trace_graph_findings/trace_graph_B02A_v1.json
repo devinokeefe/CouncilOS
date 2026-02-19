@@ -1,0 +1,257 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B02A_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T19:01:06.701200Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "trace_graph_B02A_primary_v1",
+    "trace_graph_B02A_anchor_v1",
+    "trace_graph_B02A_fallback_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B02A_v1",
+    "findings": [
+      {
+        "id": "TG-001",
+        "severity": "medium",
+        "summary": "Requirement R2 (Repo Context) cannot be fully verified or implemented in Milestone M1 because the schema for 'protected paths/forbidden paths' is undefined, as noted in blocking Open Question Q14.",
+        "evidence": [
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "R2",
+            "json_pointer": "/requirements/1",
+            "note": "Requirement mandates a typed schema including protected/forbidden path patterns.",
+            "quote": "SHALL define and require a typed, versioned repo_context.json schema... and SHALL declare at minimum... protected/forbidden path patterns"
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "Q14",
+            "json_pointer": "/open_questions/13",
+            "note": "Open question admits the schema for these paths is undefined.",
+            "quote": "What is the required schema for repo_context.json protected paths/forbidden paths...?"
+          }
+        ],
+        "routing_target": "clarification_plan"
+      },
+      {
+        "id": "TG-002",
+        "severity": "medium",
+        "summary": "Requirement R3 (Workspace Context) cannot be fully verified or implemented in Milestone M1 because the backend constraints necessary to define the 'workspace_context.json' schema are undefined, as noted in blocking Open Question Q2.",
+        "evidence": [
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "R3",
+            "json_pointer": "/requirements/2",
+            "note": "Requirement mandates a typed schema including retention/compaction policies and access-control.",
+            "quote": "SHALL define and require a typed, versioned workspace_context.json schema... and SHALL declare... namespace/layout rules... retention/compaction policies"
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "Q2",
+            "json_pointer": "/open_questions/1",
+            "note": "Blocking open question regarding backend constraints that determine schema validity.",
+            "quote": "What concrete workspace backend(s) are permitted... and what are the hard constraints (size limits, latency, retention, encryption, tenancy)?"
+          }
+        ],
+        "routing_target": "clarification_plan"
+      },
+      {
+        "id": "TG1",
+        "severity": "high",
+        "summary": "R3 requires workspace_context.json to be present/schema-valid before any workspace-writing stage begins, but the Intake tool policy explicitly allows workspace_write (non-canonical) while also listing “Missing ... workspace_context.json” as a HITL trigger rather than a hard pre-write gate. This creates an enforcement ambiguity: the system could write to workspace during Intake before workspace_context is validated, contradicting R3’s stated ordering constraint.",
+        "evidence": [
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "R3",
+            "json_pointer": "/plan_candidate/plan_package/requirements/2/text",
+            "note": "R3 ordering constraint (workspace_context required before any workspace-writing stage begins).",
+            "quote": "workspace_context.json SHALL be required before any workspace-writing stage begins"
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "tool_policy:Intake",
+            "json_pointer": "/plan_candidate/plan_package/governance/tool_policy/stage_policies/0/restrictions/0/workspace_write",
+            "note": "Intake restriction allows workspace writes (non-canonical).",
+            "quote": "allow_noncanonical_only"
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "tool_policy:Intake:hitl_triggers",
+            "json_pointer": "/plan_candidate/plan_package/governance/tool_policy/stage_policies/0/hitl_triggers/0",
+            "note": "Missing workspace_context.json handled as HITL trigger (interrupt), not explicitly as a pre-write block.",
+            "quote": "Missing required inputs (plan_package_final.json, repo_context.json, workspace_context.json)"
+          }
+        ],
+        "routing_target": "governance"
+      },
+      {
+        "id": "TG2",
+        "severity": "medium",
+        "summary": "R2 requires repo_context.json to be required before any code-generation stage begins, but the stage-level policies do not explicitly restate/encode this as a deterministic precondition for entering Generate (where patchsets are drafted). The plan relies on Intake validation implicitly, which is a traceability/enforcement gap in the stage policy-as-data.",
+        "evidence": [
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "R2",
+            "json_pointer": "/plan_candidate/plan_package/requirements/1/text",
+            "note": "R2 ordering constraint (repo_context required before any code-generation stage begins).",
+            "quote": "repo_context.json SHALL be required before any code-generation stage begins"
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "tool_policy:Generate",
+            "json_pointer": "/plan_candidate/plan_package/governance/tool_policy/stage_policies/2/restrictions/0/notes",
+            "note": "Generate stage policy describes drafting patchsets but does not specify a precondition check for repo_context beyond assumed Intake.",
+            "quote": "Draft patchsets and required mappings as artifacts; no direct repo mutation."
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "AT2",
+            "json_pointer": "/plan_candidate/plan_package/acceptance_tests/1/pass_criteria",
+            "note": "AT2 asserts rejection happens before any code-generation stage, but the Generate stage policy itself doesn’t encode the dependency.",
+            "quote": "rejected before any code-generation stage; run with schema-valid repo_context.json is accepted"
+          }
+        ],
+        "routing_target": "requirements_canonical"
+      },
+      {
+        "id": "TG3",
+        "severity": "medium",
+        "summary": "R1 says the system shall accept exactly one frozen plan_package_final.json (plus structured handoff bundle) and reject chat logs/non-canonical artifacts. While R1 and AT1 state this, the Intake tool policy text does not explicitly encode the “exactly one” constraint or the specific rejection condition for chat logs/non-canonical artifacts as authoritative sources; enforcement is implied rather than explicitly represented in the policy-as-data section.",
+        "evidence": [
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "R1",
+            "json_pointer": "/plan_candidate/plan_package/requirements/0/text",
+            "note": "R1 uniqueness + rejection requirement.",
+            "quote": "accept exactly one frozen plan_package_final.json ... and SHALL reject chat logs"
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "AT1",
+            "json_pointer": "/plan_candidate/plan_package/acceptance_tests/0/procedure",
+            "note": "AT1 tests chat log/non-canonical rejection.",
+            "quote": "Attempt to initiate ... (b) a chat log reference as the only planning input"
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "tool_policy:Intake",
+            "json_pointer": "/plan_candidate/plan_package/governance/tool_policy/stage_policies/0/restrictions/0/notes",
+            "note": "Intake policy notes validation of plan_package_final.json but does not explicitly mention chat log/non-canonical rejection or “exactly one” input constraint.",
+            "quote": "Ingest and validate plan_package_final.json and required context artifacts; no code changes; do not persist secrets."
+          }
+        ],
+        "routing_target": "governance"
+      },
+      {
+        "id": "TG001",
+        "severity": "high",
+        "summary": "R1 milestone mapping incomplete: M2 (DAG work plan) does not directly validate plan_package_final.json acceptance or rejection of non-canonical inputs as required by R1.",
+        "evidence": [
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "R1",
+            "json_pointer": "/requirements/0",
+            "note": "R1 requires accepting frozen plan_package_final.json and rejecting chat logs/non-canonical inputs.",
+            "quote": "SHALL accept exactly one frozen plan_package_final.json... and SHALL reject chat logs or any non-canonical/unapproved upstream artifacts"
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "M2",
+            "json_pointer": "/plan_package/milestones/1",
+            "note": "M2 focuses on work_plan compilation and does not include exit criteria validating R1 input acceptance/rejection.",
+            "quote": null
+          }
+        ],
+        "routing_target": "milestone_review"
+      },
+      {
+        "id": "TG002",
+        "severity": "medium",
+        "summary": "R2 milestone mapping includes M2 but M2 exit criteria do not explicitly verify repo_context.json schema validation or presence before code-generation stages as required by R2.",
+        "evidence": [
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "R2",
+            "json_pointer": "/requirements/1",
+            "note": "R2 requires repo_context.json schema validation and presence before code-generation stages.",
+            "quote": "orchestrator validators SHALL fail the run if repo_context.json is missing or schema-invalid, and repo_context.json SHALL be required before any code-generation stage begins"
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/exit_criteria",
+            "note": "M2 exit criteria focus on work_plan validity and semantic deviations, not repo_context.json validation.",
+            "quote": null
+          }
+        ],
+        "routing_target": "milestone_review"
+      },
+      {
+        "id": "TG003",
+        "severity": "medium",
+        "summary": "R3 milestone mapping includes M2 but M2 exit criteria do not explicitly verify workspace_context.json schema validation or presence before workspace-writing stages as required by R3.",
+        "evidence": [
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "R3",
+            "json_pointer": "/requirements/2",
+            "note": "R3 requires workspace_context.json schema validation and presence before workspace-writing stages.",
+            "quote": "orchestrator validators SHALL fail the run if workspace_context.json is missing or schema-invalid, and workspace_context.json SHALL be required before any workspace-writing stage begins"
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/exit_criteria",
+            "note": "M2 exit criteria do not mention workspace_context.json validation.",
+            "quote": null
+          }
+        ],
+        "routing_target": "milestone_review"
+      },
+      {
+        "id": "TG004",
+        "severity": "low",
+        "summary": "AT1 procedure does not specify structured error format or schema for rejection messages, reducing testability of R1 rejection behavior.",
+        "evidence": [
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "R1",
+            "json_pointer": "/requirements/0",
+            "note": "R1 requires rejection of non-canonical inputs.",
+            "quote": null
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "AT1",
+            "json_pointer": "/plan_package/acceptance_tests/0/pass_criteria",
+            "note": "AT1 pass criteria mention 'structured errors' but do not define schema or format.",
+            "quote": "runs (b) and (c) are rejected with structured errors indicating non-canonical planning inputs are not authoritative"
+          }
+        ],
+        "routing_target": "acceptance_test_refinement"
+      }
+    ]
+  }
+}

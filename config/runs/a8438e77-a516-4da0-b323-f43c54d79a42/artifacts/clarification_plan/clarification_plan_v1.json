@@ -1,0 +1,435 @@
+{
+  "artifact_type": "clarification_plan",
+  "artifact_id": "clarification_plan_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T18:43:09.152766Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "capsule_canonical_v1"
+  ],
+  "payload": {
+    "questions": [
+      {
+        "id": "QX1",
+        "text": "Which repository ecosystems must be supported first (languages + build/test tooling), and which validator gates are mandatory vs optional by default (build, unit/integration, lint/format, typecheck, security, license, SBOM, secrets scan)?",
+        "impact": "high",
+        "blocking": true,
+        "rationale": "This determines the default repo_context.json schema fields/entrypoints and which freeze gates are required to pass before producing an Implementation Freeze Bundle.",
+        "evidence": [
+          {
+            "candidate_id": "QX1",
+            "artifact_ref": "capsule_canonical_v1",
+            "artifact_id": "capsule_canonical_v1",
+            "json_pointer": "/inputs/project_capsule/open_questions/0",
+            "note": "Directly referenced as a blocking open question in the capsule.",
+            "quote": "What are the target repository ecosystems to support first (languages, build systems, CI runners), and which validations are mandatory vs optional by default?"
+          },
+          {
+            "candidate_id": "QX1",
+            "artifact_ref": "capsule_canonical_v1",
+            "artifact_id": "capsule_canonical_v1",
+            "json_pointer": "/inputs/project_capsule/goals/7",
+            "note": "Freeze validators must be specified and enforced deterministically.",
+            "quote": "Define deterministic, code-owned validators (closure gates) required to freeze (build/test/lint/typecheck, integrity, workspace integrity, risk closure, reproducibility, trace completeness)."
+          }
+        ]
+      },
+      {
+        "id": "QX2",
+        "text": "What workspace backend(s) are permitted for the shared workspace, and what hard limits apply (size, retention, latency), plus required controls (encryption, tenancy isolation, ACL model)?",
+        "impact": "high",
+        "blocking": true,
+        "rationale": "The workspace_index/context_packs/stage_handoffs contracts and audit/compaction rules depend on backend capabilities and limits.",
+        "evidence": [
+          {
+            "candidate_id": "QX2",
+            "artifact_ref": "capsule_canonical_v1",
+            "artifact_id": "capsule_canonical_v1",
+            "json_pointer": "/inputs/project_capsule/open_questions/1",
+            "note": "Directly referenced as a blocking open question in the capsule.",
+            "quote": "What concrete workspace backend(s) are permitted (e.g., filesystem path, object store, database), and what are the hard constraints (size limits, latency, retention, encryption, tenancy)?"
+          },
+          {
+            "candidate_id": "QX2",
+            "artifact_ref": "capsule_canonical_v1",
+            "artifact_id": "capsule_canonical_v1",
+            "json_pointer": "/inputs/project_capsule/constraints/7",
+            "note": "Workspace governance requirements.",
+            "quote": "Shared workspace must be tool-accessible, versioned, auditable, checkpointed; must separate canonical vs non-canonical content; must support deterministic orchestrator-built bounded context packs; and"
+          }
+        ]
+      },
+      {
+        "id": "QX3",
+        "text": "What is the canonical artifact_ref addressing scheme (naming/versioning/content addressing rules), and how should it map across artifact store vs workspace_index entries?",
+        "impact": "high",
+        "blocking": true,
+        "rationale": "Evidence pointers and traceability require stable artifact addressing to reference versioned JSON artifacts via RFC 6901 JSON Pointers.",
+        "evidence": [
+          {
+            "candidate_id": "QX3",
+            "artifact_ref": "capsule_canonical_v1",
+            "artifact_id": "capsule_canonical_v1",
+            "json_pointer": "/inputs/project_capsule/open_questions/2",
+            "note": "Directly referenced as a blocking open question in the capsule.",
+            "quote": "What is the canonical definition/format of artifact_ref (naming scheme, versioning scheme, addressing) used by evidence pointers and workspace_index entries?"
+          },
+          {
+            "candidate_id": "QX3",
+            "artifact_ref": "capsule_canonical_v1",
+            "artifact_id": "capsule_canonical_v1",
+            "json_pointer": "/inputs/project_capsule/constraints/5",
+            "note": "Defines required evidence pointer object structure.",
+            "quote": "Evidence pointers must use a single standard: RFC 6901 JSON Pointer objects referencing versioned JSON artifacts {artifact_ref, entity_id|null, json_pointer, note};"
+          }
+        ]
+      },
+      {
+        "id": "QX4",
+        "text": "What diff/patch format must patchsets use (unified diff vs structured file-ops), and what normalization rules are required for deterministic application (line endings, file mode, rename handling, ordering)?",
+        "impact": "high",
+        "blocking": true,
+        "rationale": "Patchset format and normalization are required to guarantee deterministic application and validator repeatability across runs.",
+        "evidence": [
+          {
+            "candidate_id": "QX4",
+            "artifact_ref": "capsule_canonical_v1",
+            "artifact_id": "capsule_canonical_v1",
+            "json_pointer": "/inputs/project_capsule/open_questions/6",
+            "note": "Directly referenced as a blocking open question in the capsule.",
+            "quote": "What specific diff format should be used for code change artifacts in patchsets (e.g., unified diff vs structured file-op diffs), and what normalization rules are required for deterministic applica"
+          },
+          {
+            "candidate_id": "QX4",
+            "artifact_ref": "capsule_canonical_v1",
+            "artifact_id": "capsule_canonical_v1",
+            "json_pointer": "/inputs/project_capsule/constraints/6",
+            "note": "Repair model constraints mention diff-only patchsets and deterministic application.",
+            "quote": "Repair model constraints: JSON artifacts repaired via RFC 6902 JSON Patch arrays only; code changes via diff-only patchset artifacts with deterministic application and revalidation;"
+          }
+        ]
+      },
+      {
+        "id": "QX5",
+        "text": "How should the orchestrator deterministically select the “smallest passing repair” among multiple candidate artifact patches/patchsets (ordering, scoring, tie-breakers, operation caps, forbidden paths)?",
+        "impact": "high",
+        "blocking": true,
+        "rationale": "Selection rules must be deterministic and enforceable, otherwise the workflow cannot guarantee reproducibility or bounded iteration.",
+        "evidence": [
+          {
+            "candidate_id": "QX5",
+            "artifact_ref": "capsule_canonical_v1",
+            "artifact_id": "capsule_canonical_v1",
+            "json_pointer": "/inputs/project_capsule/open_questions/7",
+            "note": "Directly referenced as a blocking open question in the capsule.",
+            "quote": "How should the orchestrator deterministically select the “smallest passing repair” when multiple candidate patch artifacts are available (ordering, tie-breakers, scoring, op caps)?"
+          },
+          {
+            "candidate_id": "QX5",
+            "artifact_ref": "capsule_canonical_v1",
+            "artifact_id": "capsule_canonical_v1",
+            "json_pointer": "/inputs/project_capsule/constraints/0",
+            "note": "Orchestrator owns selection logic and iteration limits.",
+            "quote": "Separation of powers is non-negotiable: orchestrator (code) is sole authority over routing, budgets, iteration limits, termination, checkpoint/resume, tool permissions, selection logic, and validator"
+          }
+        ]
+      },
+      {
+        "id": "QX6",
+        "text": "What deterministic retry policy is required for flaky tests and nondeterministic tool failures (retry budgets, backoff, quarantine rules), and how must retries be recorded in the audit spine?",
+        "impact": "high",
+        "blocking": true,
+        "rationale": "Freeze gating and reproducibility depend on deterministic handling of flakiness; audit artifacts must reflect retries and outcomes.",
+        "evidence": [
+          {
+            "candidate_id": "QX6",
+            "artifact_ref": "capsule_canonical_v1",
+            "artifact_id": "capsule_canonical_v1",
+            "json_pointer": "/inputs/project_capsule/open_questions/9",
+            "note": "Directly referenced as a blocking open question in the capsule.",
+            "quote": "What are the retry budget and backoff strategy requirements for flaky tests and nondeterministic tool failures, and how are retries recorded in the audit spine?"
+          },
+          {
+            "candidate_id": "QX6",
+            "artifact_ref": "capsule_canonical_v1",
+            "artifact_id": "capsule_canonical_v1",
+            "json_pointer": "/inputs/project_capsule/goals/9",
+            "note": "Requires defining a nondeterminism failure policy with deterministic retries/escalation.",
+            "quote": "Define flaky/nondeterministic failure policy: deterministic retry rules/budgets, quarantine/stabilization, and escalation paths (patch vs reroute vs HITL vs ChangeRequest)."
+          }
+        ]
+      },
+      {
+        "id": "QX7",
+        "text": "How must network access and dependency installation be handled under tool policies (offline mirrors/allowlists, lockfile rules, reproducible builds constraints, credential handling)?",
+        "impact": "high",
+        "blocking": true,
+        "rationale": "Dependency operations are a major source of nondeterminism and secret leakage; policy must be explicit to design repo_context.json and tool permission matrices.",
+        "evidence": [
+          {
+            "candidate_id": "QX7",
+            "artifact_ref": "capsule_canonical_v1",
+            "artifact_id": "capsule_canonical_v1",
+            "json_pointer": "/inputs/project_capsule/open_questions/10",
+            "note": "Directly referenced as a blocking open question in the capsule.",
+            "quote": "How should dependencies requiring network access and package-manager operations be handled under tool/network policies (offline mirrors, allowlists, lockfile rules, reproducibility constraints)?"
+          },
+          {
+            "candidate_id": "QX7",
+            "artifact_ref": "capsule_canonical_v1",
+            "artifact_id": "capsule_canonical_v1",
+            "json_pointer": "/inputs/project_capsule/constraints/8",
+            "note": "Secrets policy constraints apply to dependency operations and logging.",
+            "quote": "Secrets policy: never store secrets in logs or workspace; require detection, redaction, and blocking guardrails; enforce by orchestrator policy and validators."
+          }
+        ]
+      },
+      {
+        "id": "QX8",
+        "text": "When full implementation cannot complete within budgets, what is the required behavior: checkpoints-only (no freeze), partial freeze bundles, or incremental freezes per work_plan tranche—and what are the acceptance criteria for each?",
+        "impact": "high",
+        "blocking": true,
+        "rationale": "Determines whether the system supports partial freezes versus only resumable stage handoffs; impacts output contracts and validator gates.",
+        "evidence": [
+          {
+            "candidate_id": "QX8",
+            "artifact_ref": "capsule_canonical_v1",
+            "artifact_id": "capsule_canonical_v1",
+            "json_pointer": "/inputs/project_capsule/open_questions/12",
+            "note": "Directly referenced as a blocking open question in the capsule.",
+            "quote": "How should the system handle incremental implementation when the full work plan cannot be completed within token/time budgets while preserving determinism and traceability (partial freezes vs checkpoi"
+          },
+          {
+            "candidate_id": "QX8",
+            "artifact_ref": "capsule_canonical_v1",
+            "artifact_id": "capsule_canonical_v1",
+            "json_pointer": "/inputs/project_capsule/constraints/7",
+            "note": "Requires explicit stage_handoff artifacts at each checkpoint boundary.",
+            "quote": "Shared workspace must be tool-accessible, versioned, auditable, checkpointed; must separate canonical vs non-canonical content; must support deterministic orchestrator-built bounded context packs; and"
+          }
+        ]
+      },
+      {
+        "id": "QX01",
+        "text": "To design the core technical contracts, we need to define the initial target environment. Could you specify: 1) The primary language/build system (e.g., Python/Poetry, TS/NPM), 2) The allowed workspace backend (e.g., local filesystem, S3 bucket), 3) The required diff format for code patches (e.g., unified diff), and 4) The package management policy for handling dependencies (e.g., offline mirrors only, URL allowlist)?",
+        "impact": "high",
+        "blocking": true,
+        "rationale": "The design of core artifacts (patchsets), tool permissions, security sandboxing, and validator logic is impossible without knowing the target technical environment and its constraints.",
+        "evidence": [
+          {
+            "candidate_id": "capsule_canonical_v1",
+            "artifact_ref": "capsule",
+            "artifact_id": "capsule_canonical_v1",
+            "json_pointer": "/open_questions/0",
+            "note": "This open question about target ecosystems is a blocker for designing tool and validator contracts.",
+            "quote": "What are the target repository ecosystems to support first (languages, build systems, CI runners), and which validations are mandatory vs optional by default?"
+          },
+          {
+            "candidate_id": "capsule_canonical_v1",
+            "artifact_ref": "capsule",
+            "artifact_id": "capsule_canonical_v1",
+            "json_pointer": "/open_questions/1",
+            "note": "The choice of workspace backend has fundamental implications for the system's architecture, performance, and security model.",
+            "quote": "What concrete workspace backend(s) are permitted (e.g., filesystem path, object store, database), and what are the hard constraints (size limits, latency, retention, encryption, tenancy)?"
+          },
+          {
+            "candidate_id": "capsule_canonical_v1",
+            "artifact_ref": "capsule",
+            "artifact_id": "capsule_canonical_v1",
+            "json_pointer": "/open_questions/2",
+            "note": "The patch format is critical for guaranteeing deterministic application of changes.",
+            "quote": "What specific diff format and merge/patch strategy is required for Patchsets to guarantee deterministic application?"
+          }
+        ]
+      },
+      {
+        "id": "QX02",
+        "text": "What are the specific requirements for the 'immutable audit spine' including event schema, data retention, and immutability guarantees?",
+        "impact": "high",
+        "blocking": true,
+        "rationale": "The definition of the audit spine is a core requirement that influences the design of all state-changing operations and artifact structures within the system.",
+        "evidence": [
+          {
+            "candidate_id": "capsule_canonical_v1",
+            "artifact_ref": "capsule",
+            "artifact_id": "capsule_canonical_v1",
+            "json_pointer": "/open_questions/4",
+            "note": null,
+            "quote": "What are the specific requirements for the 'immutable audit spine'? What events must be logged, what is the required data schema, and what are the retention/immutability guarantees?"
+          }
+        ]
+      },
+      {
+        "id": "QX03",
+        "text": "What are the key organizational policies and constraints the system must adhere to regarding secret management and handling of long-running, budget-exceeding work?",
+        "impact": "high",
+        "blocking": false,
+        "rationale": "These policies are critical for security and for defining the system's long-term execution and checkpoint/resume strategy. We can proceed with assumptions, but they need confirmation.",
+        "evidence": [
+          {
+            "candidate_id": "capsule_canonical_v1",
+            "artifact_ref": "capsule",
+            "artifact_id": "capsule_canonical_v1",
+            "json_pointer": "/open_questions/3",
+            "note": "Secret management policies directly impact tool integration, sandboxing, and orchestrator design.",
+            "quote": "What are the organizational policies and constraints for secret management (e.g. key rotation, KMS backend, credential changes)?"
+          },
+          {
+            "candidate_id": "capsule_canonical_v1",
+            "artifact_ref": "capsule",
+            "artifact_id": "capsule_canonical_v1",
+            "json_pointer": "/open_questions/5",
+            "note": "A strategy for long-running work is needed to handle large work plans that exceed single-run budgets.",
+            "quote": "How should the system handle incremental implementation for work exceeding budgets while preserving determinism and traceability (e.g. partial freezes vs checkpoints)?"
+          }
+        ]
+      }
+    ],
+    "assumptions": [
+      {
+        "id": "AX1",
+        "text": "Initial support target: Git repositories with a primary focus on Python (pytest), TypeScript/Node (npm/pnpm + jest), and Go (go test); default mandatory validators: build/compile (if applicable), unit tests, lint/format, typecheck (if applicable), secrets scan; optional by default: SAST/license/SBOM unless repo_context.json requires them.",
+        "impact": "high",
+        "confidence": "low",
+        "needs_confirmation": true
+      },
+      {
+        "id": "AX2",
+        "text": "Shared workspace backend: a POSIX-like filesystem path controlled by the orchestrator, with deterministic naming and atomic writes; size cap and retention/compaction will be specified later but assumed feasible for typical monorepo-sized runs.",
+        "impact": "high",
+        "confidence": "low",
+        "needs_confirmation": true
+      },
+      {
+        "id": "AX3",
+        "text": "artifact_ref scheme: human-readable stable name plus monotonically increasing version suffix (e.g., <artifact_name>_vN) assigned by the orchestrator at write time; evidence pointers reference artifact_ref + RFC6901 json_pointer only (no implicit latest).",
+        "impact": "high",
+        "confidence": "low",
+        "needs_confirmation": true
+      },
+      {
+        "id": "AX4",
+        "text": "Patchsets embed unified diffs (text) with normalization: UTF-8, LF line endings, deterministic file ordering, explicit file mode where applicable; patch apply is required to be deterministic and to fail closed on conflicts beyond a small, fixed threshold.",
+        "impact": "high",
+        "confidence": "low",
+        "needs_confirmation": true
+      },
+      {
+        "id": "AX5",
+        "text": "“Smallest passing repair” selection: deterministic sort by (1) fewest JSON Patch operations / smallest diff byte size, then (2) fewest files touched, then (3) lexicographic candidate_id; orchestrator rejects candidates exceeding fixed op caps or touching forbidden paths.",
+        "impact": "high",
+        "confidence": "low",
+        "needs_confirmation": true
+      },
+      {
+        "id": "AX6",
+        "text": "Retry policy default: at most 2 retries for a failing validator step classified as flaky/nondeterministic, with fixed backoff schedule and explicit event_log entries for each attempt; persistent failures escalate to quarantine/stabilization or ChangeRequest per policy.",
+        "impact": "high",
+        "confidence": "low",
+        "needs_confirmation": true
+      },
+      {
+        "id": "AX7",
+        "text": "Network/dependencies default: network off unless explicitly allowlisted in repo_context.json; dependency installation must use lockfiles and prefer offline caches/mirrors; any credentialed access is prohibited from being persisted to artifacts/workspace.",
+        "impact": "high",
+        "confidence": "medium",
+        "needs_confirmation": true
+      },
+      {
+        "id": "AX8",
+        "text": "Incremental work default: checkpoints-only until all required gates pass; no partial “freeze bundle” is considered canonical unless explicitly introduced as a separate bundle type with its own validators and decision policy.",
+        "impact": "high",
+        "confidence": "low",
+        "needs_confirmation": true
+      },
+      {
+        "id": "AX1",
+        "text": "The Implementation Council architecture is language-agnostic. It relies on `repo_context.json` to define specific build/test commands, container images, and allowed dependencies, rather than hardcoding support for specific ecosystems (resolves Q1, Q11, Q17).",
+        "impact": "high",
+        "confidence": "high",
+        "needs_confirmation": false
+      },
+      {
+        "id": "AX2",
+        "text": "Storage infrastructure details (backend type, encryption, concrete limits) are abstracted away. The design assumes a standard Orchestrator-provided I/O interface for the 'Shared Workspace' focusing only on directory structure and artifact schemas (resolves Q2, Q16).",
+        "impact": "medium",
+        "confidence": "high",
+        "needs_confirmation": false
+      },
+      {
+        "id": "AX3",
+        "text": "The capsule is authorized to define the canonical standards for `artifact_ref` (based on RFC 6901) and `patchset` (JSON-encapsulated Unified Diff) as part of the output contracts, as these do not yet exist (resolves Q3, Q7).",
+        "impact": "high",
+        "confidence": "high",
+        "needs_confirmation": false
+      },
+      {
+        "id": "AX4",
+        "text": "Forbidden paths, protected branches, and high-risk operation definitions are configuration data injected via `repo_context.json` (e.g., using glob patterns), not hardcoded architecture rules (resolves Q4, Q14).",
+        "impact": "high",
+        "confidence": "high",
+        "needs_confirmation": false
+      },
+      {
+        "id": "AX5",
+        "text": "Any modification to upstream Plan Entities (R#, AT#, O#) is strictly classified as a Plan Semantic Change requiring a ChangeRequest and upstream reroute. The Implementation Council is authorized to resolve local implementation conflicts autonomously provided plan semantics remain frozen (resolves Q6, Q12).",
+        "impact": "high",
+        "confidence": "high",
+        "needs_confirmation": false
+      },
+      {
+        "id": "AX6",
+        "text": "Deterministic defaults are assumed for operational policies: 'smallest diff' metric for repair selection, 3-try retry budgets for flaky tests, and 'fail-fast' on merge conflicts requiring manual intervention or rebase (resolves Q8, Q9, Q10).",
+        "impact": "medium",
+        "confidence": "high",
+        "needs_confirmation": false
+      },
+      {
+        "id": "AX7",
+        "text": "Routing policies for specific models (Writer vs Judge) are runtime configurations in the Orchestrator policy, not fixed architectural constraints (resolves Q5).",
+        "impact": "medium",
+        "confidence": "high",
+        "needs_confirmation": false
+      },
+      {
+        "id": "AX01",
+        "text": "The system will be designed for a multi-vendor model portfolio, but the initial plan will propose a default configuration (e.g., using a specific flagship model for writing/judging and a faster/cheaper model for reviewing/patching) with deterministic parameters (e.g., temperature=0). The final selection will be a configurable policy.",
+        "impact": "medium",
+        "confidence": "medium",
+        "needs_confirmation": true
+      },
+      {
+        "id": "AX02",
+        "text": "The plan will define a default `ChangeRequest` approval workflow where the orchestrator manages routing based on policy, with escalation to a 'Planning Council' role as the default upstream target. Specific HITL triggers will be proposed as part of the policy definition.",
+        "impact": "medium",
+        "confidence": "high",
+        "needs_confirmation": true
+      },
+      {
+        "id": "AX03",
+        "text": "The design will propose a default retention and compaction policy for the workspace (e.g., 'retain non-canonical artifacts for 90 days, then summarize and archive'). This policy will be designed to preserve auditability while managing storage costs.",
+        "impact": "medium",
+        "confidence": "high",
+        "needs_confirmation": true
+      },
+      {
+        "id": "AX04",
+        "text": "The plan will specify a standard, representative suite of security and compliance checks for `quality_reports.json` (e.g., SAST, dependency scanning via Trivy/Snyk, license checks) as a baseline requirement. The specific toolset will be configurable.",
+        "impact": "medium",
+        "confidence": "high",
+        "needs_confirmation": true
+      }
+    ],
+    "notes": [
+      "Assumption-to-capsule evidence mapping (schema limitation: Assumption objects have no evidence field): AX1 relates to /inputs/project_capsule/open_questions/0 and /inputs/project_capsule/goals/7.",
+      "Assumption-to-capsule evidence mapping: AX2 relates to /inputs/project_capsule/open_questions/1 and /inputs/project_capsule/constraints/7.",
+      "Assumption-to-capsule evidence mapping: AX3 relates to /inputs/project_capsule/open_questions/2 and /inputs/project_capsule/constraints/5.",
+      "Assumption-to-capsule evidence mapping: AX4 relates to /inputs/project_capsule/open_questions/6 and /inputs/project_capsule/constraints/6.",
+      "Assumption-to-capsule evidence mapping: AX5 relates to /inputs/project_capsule/open_questions/7 and /inputs/project_capsule/constraints/0.",
+      "Assumption-to-capsule evidence mapping: AX6 relates to /inputs/project_capsule/open_questions/9 and /inputs/project_capsule/goals/9.",
+      "Assumption-to-capsule evidence mapping: AX7 relates to /inputs/project_capsule/open_questions/10 and /inputs/project_capsule/constraints/8.",
+      "Assumption-to-capsule evidence mapping: AX8 relates to /inputs/project_capsule/open_questions/12 and /inputs/project_capsule/constraints/7.",
+      "Converted all input open_questions into assumptions to enable immediate design work. The agent is empowered to define the necessary schemas and generic interfaces (repo_context, workspace) rather than waiting for specific upstream constraints."
+    ]
+  }
+}

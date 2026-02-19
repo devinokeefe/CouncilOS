@@ -1,0 +1,63 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B02A_primary_v3",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T21:20:26.426781Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B02A_v3"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B02A_v3",
+    "findings": [
+      {
+        "id": "TG-1",
+        "severity": "medium",
+        "summary": "Milestone 1 deliverables (M1-D1) for schemas required by R2 (repo_context) and R3 (workspace_context) are functionally blocked by unresolved Open Questions Q1, Q2, and Q14, creating a dependency risk for Milestone verification.",
+        "evidence": [
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v3",
+            "artifact_id": "plan_package",
+            "json_pointer": "/requirements/1",
+            "note": "Requirement R2 mandates repo_context.json schema definition.",
+            "quote": "The Implementation Council subsystem SHALL define and require a typed, versioned repo_context.json schema..."
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v3",
+            "artifact_id": "plan_package",
+            "json_pointer": "/open_questions/13",
+            "note": "Q14 (blocking) indicates the schema for protected paths in repo_context.json is undefined.",
+            "quote": "What is the required schema for repo_context.json protected paths/forbidden paths... impact: high, blocking: true"
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v3",
+            "artifact_id": "plan_package",
+            "json_pointer": "/requirements/2",
+            "note": "Requirement R3 mandates workspace_context.json schema definition.",
+            "quote": "The Implementation Council subsystem SHALL define and require a typed, versioned workspace_context.json schema..."
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v3",
+            "artifact_id": "plan_package",
+            "json_pointer": "/open_questions/1",
+            "note": "Q2 (blocking) indicates workspace backend constraints for R3 are undefined.",
+            "quote": "What concrete workspace backend(s) are permitted... impact: high, blocking: true"
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v3",
+            "artifact_id": "plan_package",
+            "json_pointer": "/milestones/0/deliverables/0",
+            "note": "M1-D1 assigns delivery of these schemas to Milestone 1, which is blocked by the open questions.",
+            "quote": "Typed/versioned schemas (or schema specs) for repo_context.json and workspace_context.json..."
+          }
+        ],
+        "routing_target": "clarification.intake"
+      }
+    ]
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "artifact_type": "judge_pairwise_result",
+  "artifact_id": "judge_pair_B2A_B2B_3_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T23:17:59.396721Z",
+  "source_run_id": "a8438e77-a516-4da0-b323-f43c54d79a42",
+  "parents": [
+    "plan_candidate_B2A_v3",
+    "plan_candidate_B2B_v3"
+  ],
+  "payload": {
+    "comparison": {
+      "a": "Strong O2 parallel-lanes plan with phased rollout and detailed tool/HITL policies. However, some embedded evidence pointer objects appear to include non-standard extra fields, which could conflict with strict RFC6901-only validators.",
+      "b": "Matches the same O2 architecture and phased delivery, while explicitly tying Phase 3 integration to resolving AL006 and keeping evidence pointers cleaner. Also surfaces additional low-confidence assumptions as synthesis warnings, improving governance readiness."
+    },
+    "judge_id": "pairwise_judge_01",
+    "judge_model": "assistant",
+    "winner": "b",
+    "scores": {
+      "feasibility": 8,
+      "testability": 8,
+      "governance": 9,
+      "architecture": 8,
+      "clarity": 8
+    },
+    "evidence": [
+      {
+        "artifact_ref": "plan_candidate_B2A_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/architecture/chosen",
+        "note": "Candidate A selects O2 and provides rationale for phased rollout.",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B2A_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/decision_log/0/evidence_pointers/0",
+        "note": "Candidate A evidence pointer example includes extra fields beyond {artifact_ref, entity_id, json_pointer, note}, risking validator incompatibility.",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B2B_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/decision_log/2",
+        "note": "Candidate B defines deterministic merge ordering and explicitly cites AL006 as the alignment issue being resolved.",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B2B_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/synthesis_warnings/1",
+        "note": "Candidate B flags low-confidence assumptions (workspace backend/tool sandbox) that are critical for O2, strengthening risk/governance posture.",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      }
+    ],
+    "notes": "Both candidates are close and largely converged on the same architecture; B2B is marginally more closure-ready due to clearer alignment-warning coverage and cleaner compliance signaling. B2A’s evidence-pointer structure may require repair under strict schema/validator enforcement."
+  }
+}

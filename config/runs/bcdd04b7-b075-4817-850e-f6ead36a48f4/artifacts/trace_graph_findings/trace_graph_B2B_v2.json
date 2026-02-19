@@ -1,0 +1,329 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B2B_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T20:57:09.453986Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "trace_graph_B2B_primary_v2",
+    "trace_graph_B2B_anchor_v2",
+    "trace_graph_B2B_fallback_v2"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2B_v2",
+    "findings": [
+      {
+        "id": "TG-001",
+        "severity": "high",
+        "summary": "Implementation of Requirement R2 (repo_context.json validation) in Milestone M1 is effectively blocked by Open Question Q1 (target ecosystems/validators), as acknowledged in Synthesis Warning W2. The foundation deliverables cannot be fully specified until this question is resolved.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/requirements/1",
+            "note": "Requirement R2",
+            "quote": "The Implementation Council subsystem SHALL define and require a typed, versioned repo_context.json schema"
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/milestones/0/deliverables/1",
+            "note": "M1-D2 Deliverable (Intake & Validation)",
+            "quote": "Intake & DAG Work Planner (C12) with input validation (plan_package_final.json, repo_context.json, workspace_context.json)..."
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/open_questions/0",
+            "note": "Blocking Open Question Q1",
+            "quote": "What are the target repository ecosystems to support first... and which validations are mandatory vs optional by default?"
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/synthesis_warnings/1",
+            "note": "Warning W2 confirms blocker",
+            "quote": "Blocking open questions Q1 (target ecosystems) and Q2 (workspace backend) must be resolved before Phase 1 can begin"
+          }
+        ],
+        "routing_target": "clarification"
+      },
+      {
+        "id": "TG-002",
+        "severity": "high",
+        "summary": "Implementation of Requirement R3 (workspace_context.json validation) in Milestone M1 is effectively blocked by Open Question Q2 (workspace backend), as acknowledged in Synthesis Warning W2. The workspace design in C22 and C12 cannot be solidified until this question is resolved.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/requirements/2",
+            "note": "Requirement R3",
+            "quote": "The Implementation Council subsystem SHALL define and require a typed, versioned workspace_context.json schema"
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/milestones/0/deliverables/2",
+            "note": "M1-D3 Deliverable (Workspace Manager)",
+            "quote": "Workspace Manager (C22) with namespaced partitions... and checkpoint/restore support"
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/open_questions/1",
+            "note": "Blocking Open Question Q2",
+            "quote": "What concrete workspace backend(s) are permitted... and what are the hard constraints...?"
+          }
+        ],
+        "routing_target": "clarification"
+      },
+      {
+        "id": "TG-003",
+        "severity": "low",
+        "summary": "Milestone M1 Deliverable D2 lists specific inputs for validation but omits explicit mention of the 'structured handoff bundle' required by Requirement R1, potentially creating a traceability gap.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/requirements/0",
+            "note": "Requirement R1 text includes handoff bundle",
+            "quote": "plus its associated structured handoff bundle"
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_package",
+            "json_pointer": "/plan_package/milestones/0/deliverables/1",
+            "note": "M1-D2 text lists inputs but omits handoff bundle",
+            "quote": "with input validation (plan_package_final.json, repo_context.json, workspace_context.json)"
+          }
+        ],
+        "routing_target": "planning"
+      },
+      {
+        "id": "TG001",
+        "severity": "medium",
+        "summary": "Sample checks claim requirements R1–R3 are covered in milestones M1 and M2, but milestone M2 exit_criteria do not explicitly include the linked acceptance tests (AT1–AT3) or any equivalent verification, weakening trace coverage for M2.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/inputs/deterministic_sample_checks/0/milestones",
+            "note": "R1 sample check lists milestones [M1, M2]",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/inputs/deterministic_sample_checks/1/milestones",
+            "note": "R2 sample check lists milestones [M1, M2]",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/inputs/deterministic_sample_checks/2/milestones",
+            "note": "R3 sample check lists milestones [M1, M2]",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/1/exit_criteria",
+            "note": "M2 exit criteria list does not include AT1/AT2/AT3 (or equivalent checks)",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/0/exit_criteria",
+            "note": "M1 exit criteria explicitly include AT1/AT2/AT3 coverage",
+            "quote": null
+          }
+        ],
+        "routing_target": "trace_graph.reconcile_milestones"
+      },
+      {
+        "id": "TG002",
+        "severity": "medium",
+        "summary": "R1 states the system must accept exactly one frozen plan_package_final.json as the sole canonical planning input, but AT1 does not test the \"exactly one\" aspect (e.g., multiple plan_package_final.json inputs), creating a semantic gap between requirement and acceptance coverage.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/inputs/plan_candidate/plan_package/requirements/0/text",
+            "note": "R1 includes \"accept exactly one frozen plan_package_final.json\"",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/inputs/plan_candidate/plan_package/acceptance_tests/0/procedure",
+            "note": "AT1 tests chat logs/unapproved artifacts but not multiple plan_package_final.json inputs",
+            "quote": null
+          }
+        ],
+        "routing_target": "acceptance.test_coverage"
+      },
+      {
+        "id": "TG003",
+        "severity": "low",
+        "summary": "R2 and R3 require typed, versioned schemas for repo_context.json and workspace_context.json, but AT2/AT3 procedures do not explicitly verify schema versioning fields/semantics (only general schema-valid vs invalid), which may under-test the \"versioned\" requirement detail depending on schema design.",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/inputs/plan_candidate/plan_package/requirements/1/text",
+            "note": "R2 includes \"typed, versioned repo_context.json schema\"",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/inputs/plan_candidate/plan_package/acceptance_tests/1/procedure",
+            "note": "AT2 describes missing/invalid/valid but does not mention version field checks",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/inputs/plan_candidate/plan_package/requirements/2/text",
+            "note": "R3 includes \"typed, versioned workspace_context.json schema\"",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/inputs/plan_candidate/plan_package/acceptance_tests/2/procedure",
+            "note": "AT3 describes missing/invalid/valid but does not mention version field checks",
+            "quote": null
+          }
+        ],
+        "routing_target": "acceptance.test_coverage"
+      },
+      {
+        "id": "TG001",
+        "severity": "high",
+        "summary": "R1 requirement trace to M1/M2 milestones is incomplete: M1 deliverables do not explicitly include input rejection logic for chat logs or non-canonical artifacts",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/requirements/0",
+            "note": "R1 requires rejection of chat logs and non-canonical inputs as authoritative sources",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/milestones/0/deliverables",
+            "note": "M1 deliverables list does not explicitly mention chat log rejection or non-canonical input blocking logic",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/milestones/0/exit_criteria/0",
+            "note": "AT1 exit criterion mentions rejection but M1 deliverables do not trace to the rejection mechanism",
+            "quote": null
+          }
+        ],
+        "routing_target": "requirements_writer"
+      },
+      {
+        "id": "TG002",
+        "severity": "medium",
+        "summary": "R2 requirement declares repo_context.json schema must be 'defined and required' but M1 deliverables do not explicitly include schema definition as a deliverable artifact",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/requirements/1",
+            "note": "R2 requires typed, versioned repo_context.json schema to be defined",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/milestones/0/deliverables",
+            "note": "M1 deliverables mention validation but do not list repo_context.json schema definition as a deliverable",
+            "quote": null
+          }
+        ],
+        "routing_target": "requirements_writer"
+      },
+      {
+        "id": "TG003",
+        "severity": "medium",
+        "summary": "R3 requirement declares workspace_context.json schema must be 'defined and required' but M1 deliverables do not explicitly include schema definition as a deliverable artifact",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/requirements/2",
+            "note": "R3 requires typed, versioned workspace_context.json schema to be defined",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/milestones/0/deliverables",
+            "note": "M1 deliverables mention validation but do not list workspace_context.json schema definition as a deliverable",
+            "quote": null
+          }
+        ],
+        "routing_target": "requirements_writer"
+      },
+      {
+        "id": "TG004",
+        "severity": "low",
+        "summary": "AT1 acceptance test maps to both M1 and M2 milestones but the test procedure does not indicate which aspects are validated in M1 vs M2",
+        "evidence": [
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/acceptance_tests/0",
+            "note": "AT1 procedure does not distinguish M1 vs M2 validation scope",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2B",
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/inputs/deterministic_sample_checks/0/milestones",
+            "note": "AT1 maps to both M1 and M2",
+            "quote": null
+          }
+        ],
+        "routing_target": "qa_writer"
+      }
+    ]
+  }
+}

@@ -1,0 +1,10 @@
+﻿Task:
+{task}
+
+Context:
+{context}
+
+Output JSON Schema:
+{schema_json}
+
+Return only one JSON object that satisfies this schema.

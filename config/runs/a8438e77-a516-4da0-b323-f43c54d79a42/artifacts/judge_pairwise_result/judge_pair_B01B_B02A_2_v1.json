@@ -1,0 +1,66 @@
+{
+  "artifact_type": "judge_pairwise_result",
+  "artifact_id": "judge_pair_B01B_B02A_2_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T23:18:54.088937Z",
+  "source_run_id": "a8438e77-a516-4da0-b323-f43c54d79a42",
+  "parents": [
+    "plan_candidate_B01B_v3",
+    "plan_candidate_B02A_v3"
+  ],
+  "payload": {
+    "comparison": {
+      "a": "Provides a conservative sequential architecture with explicit governance, making enforcement and auditing straightforward.",
+      "b": "Uses parallel lanes with a deterministic integration stage to improve speed but increases orchestration complexity and integration risk."
+    },
+    "judge_id": "pairwise_judge_01",
+    "judge_model": "gpt-5",
+    "winner": "a",
+    "scores": {
+      "feasibility": 8,
+      "testability": 8,
+      "governance": 9,
+      "architecture": 8,
+      "clarity": 8
+    },
+    "evidence": [
+      {
+        "artifact_ref": "plan_candidate_B01B_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/architecture/chosen/option_id",
+        "note": "Selects O1 sequential pipeline",
+        "candidate_id": "B01B",
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B01B_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/governance/tool_policy/stage_policies",
+        "note": "Detailed stage tool policy and HITL triggers",
+        "candidate_id": "B01B",
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B02A_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/architecture/chosen/option_id",
+        "note": "Selects O2 parallel fan-out/fan-in",
+        "candidate_id": "B02A",
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B02A_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/architecture/chosen/high_level_dataflow",
+        "note": "Integration-heavy flow adds complexity",
+        "candidate_id": "B02A",
+        "artifact_id": null,
+        "quote": null
+      }
+    ],
+    "notes": "A is simpler to implement and validate under strict governance. B’s parallelism is attractive but raises integration and determinism risks."
+  }
+}

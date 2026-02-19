@@ -1,0 +1,71 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B01B_anchor_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T19:01:30.792866Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B01B_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B01B_v1",
+    "findings": [
+      {
+        "id": "TG001",
+        "severity": "medium",
+        "summary": "Sample check R1: The plan requires accepting plan_package_final.json plus an associated structured handoff bundle, and AT1 tests for it, but the plan does not specify what artifacts constitute the “structured handoff bundle” nor provide a schema/deliverable for it (traceability gap for enforcing R1 deterministically).",
+        "evidence": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/requirements/0/text",
+            "note": "R1 includes 'structured handoff bundle' as part of the canonical planning input.",
+            "quote": "The Implementation Council subsystem SHALL accept exactly one frozen plan_package_final.json (plus its associated structured handoff bundle)..."
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/acceptance_tests/0/procedure",
+            "note": "AT1 procedure depends on a 'structured handoff bundle' input.",
+            "quote": "Attempt to initiate... with inputs: (a) a valid plan_package_final.json plus its structured handoff bundle; ..."
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/milestones/0/deliverables",
+            "note": "M1 deliverables list does not include a schema/spec for the structured handoff bundle.",
+            "quote": null
+          }
+        ],
+        "routing_target": "milestone_spec_update"
+      },
+      {
+        "id": "TG002",
+        "severity": "low",
+        "summary": "Sample check R1: R1 states plan_package_final.json is the sole canonical planning input, but the architecture/intake interfaces treat repo_context.json and workspace_context.json as co-equal required inputs. This is likely intended (operational context vs planning semantics) but should be explicitly disambiguated to ensure repo/workspace context cannot introduce or override plan semantics.",
+        "evidence": [
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/requirements/0/text",
+            "note": "R1 'sole canonical planning input' clause.",
+            "quote": "...as its sole canonical planning input..."
+          },
+          {
+            "candidate_id": "B01B",
+            "artifact_ref": "plan_candidate_B01B_v1",
+            "artifact_id": "plan_candidate_B01B_v1",
+            "json_pointer": "/plan_package/architecture/chosen/high_level_dataflow",
+            "note": "High-level dataflow lists additional required inputs alongside plan_package_final.json.",
+            "quote": "plan_package_final.json + repo_context.json + workspace_context.json \u00003 [C3 Intake Gate: schema validation..."
+          }
+        ],
+        "routing_target": "requirements_clarification"
+      }
+    ]
+  }
+}

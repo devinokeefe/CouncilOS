@@ -1,0 +1,75 @@
+{
+  "artifact_type": "judge_pairwise_result",
+  "artifact_id": "judge_pair_B2A_B2B_1_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T23:17:59.384706Z",
+  "source_run_id": "a8438e77-a516-4da0-b323-f43c54d79a42",
+  "parents": [
+    "plan_candidate_B2A_v3",
+    "plan_candidate_B2B_v3"
+  ],
+  "payload": {
+    "comparison": {
+      "a": "Candidate A presents a high-quality plan based on the O2 architecture with a logical, de-risked 4-phase milestone strategy. The plan is clear, comprehensive, and directly addresses the core requirements with strong governance controls.",
+      "b": "Candidate B also selects the O2 architecture with a nearly identical 4-phase rollout. However, it demonstrates superior depth by providing more comprehensive synthesis warnings that include low-confidence assumptions and richer supplemental evaluations analyzing the chosen architecture's specific risks."
+    },
+    "judge_id": "council-os-prod",
+    "judge_model": "gpt-4-turbo",
+    "winner": "b",
+    "scores": {
+      "feasibility": 9,
+      "testability": 10,
+      "governance": 10,
+      "architecture": 10,
+      "clarity": 10
+    },
+    "evidence": [
+      {
+        "artifact_ref": "candidate_a_ref",
+        "entity_id": null,
+        "json_pointer": "/plan_package/milestones",
+        "note": "Candidate A provides a clear, 4-phase milestone plan to de-risk the implementation of the O2 architecture.",
+        "candidate_id": "B2A",
+        "artifact_id": null,
+        "quote": "Phase 1 — Single-lane foundation (O1-like spine on O2 components)"
+      },
+      {
+        "artifact_ref": "candidate_a_ref",
+        "entity_id": null,
+        "json_pointer": "/plan_package/synthesis_warnings/0/summary",
+        "note": "Candidate A correctly identifies key blocking questions but does not mention the risks from low-confidence assumptions.",
+        "candidate_id": "B2A",
+        "artifact_id": null,
+        "quote": "O2 Phase 3 depends on unresolved blocking open questions about patchset diff format (Q7), deterministic smallest-passing repair selection details beyond tie-breakers (Q8), and cross-lane conflict reso"
+      },
+      {
+        "artifact_ref": "candidate_b_ref",
+        "entity_id": null,
+        "json_pointer": "/plan_package/synthesis_warnings/1/summary",
+        "note": "Candidate B shows deeper analysis by including warnings about critical low-confidence assumptions, in addition to the blocking questions.",
+        "candidate_id": "B2B",
+        "artifact_id": null,
+        "quote": "Assumptions A6 (workspace backend namespacing/access control) and A8 (tool sandbox granularity) have low confidence and are critical for O2's per-lane workspace partitions and tool permission enforcem"
+      },
+      {
+        "artifact_ref": "candidate_b_ref",
+        "entity_id": null,
+        "json_pointer": "/plan_package/supplemental_evaluations/0/notes",
+        "note": "Candidate B includes a dedicated risk posture assessment for the chosen O2 architecture, demonstrating a more thorough analysis of its implications.",
+        "candidate_id": "B2B",
+        "artifact_id": null,
+        "quote": "K12 (merge conflicts) is elevated to primary risk due to parallel lanes. Mitigation is addressed in Phase 3 with deterministic merge ordering and explicit conflict escalation. K8 (workspace integrity)"
+      },
+      {
+        "artifact_ref": "candidate_b_ref",
+        "entity_id": null,
+        "json_pointer": "/plan_package/decision_log/2/evidence_pointers/2",
+        "note": "The decision log explicitly ties its reasoning back to specific alignment warnings, showing a tighter integration of all project inputs.",
+        "candidate_id": "B2B",
+        "artifact_id": "alignment_warnings",
+        "quote": "AL006 alignment warning on merge ordering determinism"
+      }
+    ],
+    "notes": "Both candidates are exceptionally strong and chose the same architecture (O2) with a similar de-risking strategy. Candidate B wins by a narrow margin due to its superior depth of analysis, demonstrated by more comprehensive synthesis warnings and supplemental evaluations that explicitly assess the risks of the chosen parallel architecture."
+  }
+}

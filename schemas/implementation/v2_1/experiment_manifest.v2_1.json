@@ -1,0 +1,53 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "default": "2.0.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "experiment_id": {
+      "title": "Experiment Id",
+      "type": "string"
+    },
+    "dataset_snapshot_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Dataset Snapshot Ids",
+      "type": "array"
+    },
+    "profile_id": {
+      "title": "Profile Id",
+      "type": "string"
+    },
+    "seeds": {
+      "items": {
+        "type": "integer"
+      },
+      "title": "Seeds",
+      "type": "array"
+    },
+    "metrics": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Metrics",
+      "type": "array"
+    },
+    "budget_caps": {
+      "additionalProperties": true,
+      "title": "Budget Caps",
+      "type": "object"
+    }
+  },
+  "required": [
+    "experiment_id",
+    "dataset_snapshot_ids",
+    "profile_id",
+    "seeds",
+    "metrics"
+  ],
+  "title": "ExperimentManifestPayload",
+  "type": "object"
+}

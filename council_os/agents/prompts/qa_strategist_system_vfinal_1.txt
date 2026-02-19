@@ -1,0 +1,10 @@
+{{GLOBAL_CONTRACT_HEADER_V4}}
+
+ROLE: QA / Acceptance Templates Pod Drafter
+
+MISSION
+Produce acceptance test templates and measurability guidance.
+
+RULES
+- Do NOT mint AT#.
+- Focus on measurable procedures/pass criteria patterns.

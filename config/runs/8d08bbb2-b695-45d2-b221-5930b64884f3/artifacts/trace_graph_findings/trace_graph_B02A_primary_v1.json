@@ -1,0 +1,63 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B02A_primary_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T19:00:05.059226Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B02A_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B02A_v1",
+    "findings": [
+      {
+        "id": "TG-001",
+        "severity": "medium",
+        "summary": "Requirement R2 (Repo Context) cannot be fully verified or implemented in Milestone M1 because the schema for 'protected paths/forbidden paths' is undefined, as noted in blocking Open Question Q14.",
+        "evidence": [
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "R2",
+            "json_pointer": "/requirements/1",
+            "note": "Requirement mandates a typed schema including protected/forbidden path patterns.",
+            "quote": "SHALL define and require a typed, versioned repo_context.json schema... and SHALL declare at minimum... protected/forbidden path patterns"
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "Q14",
+            "json_pointer": "/open_questions/13",
+            "note": "Open question admits the schema for these paths is undefined.",
+            "quote": "What is the required schema for repo_context.json protected paths/forbidden paths...?"
+          }
+        ],
+        "routing_target": "clarification_plan"
+      },
+      {
+        "id": "TG-002",
+        "severity": "medium",
+        "summary": "Requirement R3 (Workspace Context) cannot be fully verified or implemented in Milestone M1 because the backend constraints necessary to define the 'workspace_context.json' schema are undefined, as noted in blocking Open Question Q2.",
+        "evidence": [
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "R3",
+            "json_pointer": "/requirements/2",
+            "note": "Requirement mandates a typed schema including retention/compaction policies and access-control.",
+            "quote": "SHALL define and require a typed, versioned workspace_context.json schema... and SHALL declare... namespace/layout rules... retention/compaction policies"
+          },
+          {
+            "candidate_id": "B02A",
+            "artifact_ref": "plan_candidate_B02A_v1",
+            "artifact_id": "Q2",
+            "json_pointer": "/open_questions/1",
+            "note": "Blocking open question regarding backend constraints that determine schema validity.",
+            "quote": "What concrete workspace backend(s) are permitted... and what are the hard constraints (size limits, latency, retention, encryption, tenancy)?"
+          }
+        ],
+        "routing_target": "clarification_plan"
+      }
+    ]
+  }
+}

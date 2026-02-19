@@ -1,0 +1,201 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B2A_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T20:55:27.702893Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "trace_graph_B2A_primary_v2",
+    "trace_graph_B2A_anchor_v2",
+    "trace_graph_B2A_fallback_v2"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2A_v2",
+    "findings": [
+      {
+        "id": "TG-001",
+        "severity": "low",
+        "summary": "Traceability Mismatch: Sample checks map Requirements R1, R2, and R3 to Milestone M2, but the Candidate Plan explicitly assigns the corresponding Acceptance Tests (AT1, AT2, AT3) solely to Milestone M1's exit criteria. M2 depends on M1 but does not explicit re-verify these intake constraints.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/milestones/0/exit_criteria",
+            "note": "Milestone M1 exit criteria explicitly verify AT1, AT2, and AT3.",
+            "quote": "AT1–AT3 pass (canonical input enforcement; repo_context/workspace_context schema gates)."
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/milestones/1/exit_criteria",
+            "note": "Milestone M2 exit criteria do not list AT1, AT2, or AT3, listing only lane-specific tests (AT12–AT14, AT22).",
+            "quote": "AT12–AT14 pass for JSON Patch-only canonical repairs... AT22 passes for enforced writer/reviewer/judge separation..."
+          }
+        ],
+        "routing_target": "clarification_plan"
+      },
+      {
+        "id": "TG1",
+        "severity": "high",
+        "summary": "Sample check for R1 is only partially covered by AT1: it tests rejecting chat logs/non-canonical artifacts when used as the only planning input, but does not test the requirement’s “accept exactly one frozen plan_package_final.json” constraint (e.g., multiple plan_package_final.json inputs) nor the case where plan_package_final.json is provided alongside additional non-canonical/unapproved artifacts that could be treated as authoritative.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/inputs/plan_candidate/plan_package/requirements/0",
+            "note": "R1 text includes “accept exactly one” and rejects non-canonical artifacts as authoritative.",
+            "quote": "The Implementation Council subsystem SHALL accept exactly one frozen plan_package_final.json ... and SHALL reject chat logs or any non-canonical/unapproved upstream artifacts as authoritative sources"
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/inputs/plan_candidate/plan_package/acceptance_tests/0",
+            "note": "AT1 covers chat log only / non-canonical only inputs, but not multiple plan_package inputs or mixed authoritative inputs.",
+            "quote": "Attempt to initiate ... with inputs: (a) a valid plan_package_final.json ...; (b) a chat log reference as the only planning input; (c) an unapproved non-canonical artifact as planning input."
+          }
+        ],
+        "routing_target": "acceptance_canonical"
+      },
+      {
+        "id": "TG2",
+        "severity": "medium",
+        "summary": "Sample check for R2 is only partially covered by AT2: AT2 validates presence and basic schema validity plus a list of required fields, but does not explicitly test “typed, versioned repo_context.json schema” (e.g., presence/enforcement of schema version/type identifiers) beyond general schema validity.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/inputs/plan_candidate/plan_package/requirements/1",
+            "note": "R2 explicitly requires typed, versioned schema for repo_context.json.",
+            "quote": "SHALL define and require a typed, versioned repo_context.json schema; orchestrator validators SHALL fail ... if repo_context.json is missing or schema-invalid"
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/inputs/plan_candidate/plan_package/acceptance_tests/1",
+            "note": "AT2 tests missing/invalid/valid schema and required field presence, but does not mention type/version fields or version enforcement behavior.",
+            "quote": "Start a run without repo_context.json; ... with repo_context.json that violates schema; ... with schema-valid repo_context.json containing required fields"
+          }
+        ],
+        "routing_target": "acceptance_canonical"
+      },
+      {
+        "id": "TG3",
+        "severity": "medium",
+        "summary": "Sample check for R3 is only partially covered by AT3: AT3 validates missing/invalid/valid workspace_context.json and lists required fields, but does not explicitly test enforcement/semantics of access-control declarations and retention/compaction policies (beyond being present in a schema-valid file), despite those being called out as minimum declarations in R3.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/inputs/plan_candidate/plan_package/requirements/2",
+            "note": "R3 requires workspace_context.json to declare retention/compaction and access-control declarations.",
+            "quote": "workspace_context.json ... SHALL declare at minimum: workspace root, namespace/layout rules, canonical vs non-canonical partition rules, retention/compaction policies, and access-control declarations."
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/inputs/plan_candidate/plan_package/acceptance_tests/2",
+            "note": "AT3 checks presence and schema validity plus field inclusion, but does not describe validation of enforcement behavior for access-control and retention/compaction policies.",
+            "quote": "Start a run without workspace_context.json; ... schema-invalid ...; ... schema-valid workspace_context.json containing required fields"
+          }
+        ],
+        "routing_target": "acceptance_canonical"
+      },
+      {
+        "id": "TG001",
+        "severity": "high",
+        "summary": "R1 requirement text does not match acceptance test AT1 scope: requirement mandates rejection of chat logs and non-canonical artifacts as authoritative sources, but AT1 only tests rejection at run initiation, not enforcement throughout the subsystem lifecycle.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "requirements_canonical",
+            "json_pointer": "/requirements/0",
+            "note": "R1 states SHALL reject chat logs or non-canonical artifacts as authoritative sources of plan semantics (ongoing enforcement implied).",
+            "quote": "SHALL reject chat logs or any non-canonical/unapproved upstream artifacts as authoritative sources of plan semantics"
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "acceptance_canonical_v1",
+            "artifact_id": "acceptance_canonical",
+            "json_pointer": "/acceptance_tests/0",
+            "note": "AT1 only tests orchestrator accept/reject at run initiation, not continuous enforcement during execution.",
+            "quote": "Attempt to initiate an Implementation Council run with inputs"
+          }
+        ],
+        "routing_target": "requirements_review"
+      },
+      {
+        "id": "TG002",
+        "severity": "medium",
+        "summary": "R2 milestone mapping includes M2 but M2 deliverables focus on parallel lanes and do not explicitly call out repo_context.json schema validation as a Phase 2 gate or deliverable.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "requirements_canonical",
+            "json_pointer": "/requirements/1",
+            "note": "R2 maps to milestones M1 and M2.",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "architecture_canonical",
+            "json_pointer": "/milestones/1",
+            "note": "M2 deliverables focus on Task Lane Orchestrator and per-lane role pods; no explicit mention of repo_context.json validation as a Phase 2 gate.",
+            "quote": "Task Lane Orchestrator (C13) capable of spawning/managing lane state machines"
+          }
+        ],
+        "routing_target": "architecture_review"
+      },
+      {
+        "id": "TG003",
+        "severity": "medium",
+        "summary": "R3 milestone mapping includes M2 but M2 exit criteria do not explicitly require workspace_context.json schema validation to pass before parallel lanes are enabled, creating potential gap in governance enforcement sequencing.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "requirements_canonical_v1",
+            "artifact_id": "requirements_canonical",
+            "json_pointer": "/requirements/2",
+            "note": "R3 maps to milestones M1 and M2.",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "architecture_canonical_v1",
+            "artifact_id": "architecture_canonical",
+            "json_pointer": "/milestones/1/exit_criteria",
+            "note": "M2 exit criteria reference AT12-AT14 and AT22 but do not explicitly call out AT3 (workspace_context.json validation) as a Phase 2 gate.",
+            "quote": "AT12–AT14 pass for JSON Patch-only canonical repairs, diff-only patchsets, and forbidden/protected-path + op-cap enforcement"
+          }
+        ],
+        "routing_target": "architecture_review"
+      },
+      {
+        "id": "TG004",
+        "severity": "low",
+        "summary": "AT2 pass criteria states runs missing or schema-invalid repo_context.json are rejected before any code-generation stage, but does not specify whether rejection occurs at Intake or at the first code-generation stage boundary, creating minor ambiguity in enforcement timing.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "acceptance_canonical_v1",
+            "artifact_id": "acceptance_canonical",
+            "json_pointer": "/acceptance_tests/1/pass_criteria",
+            "note": "Pass criteria states rejection before any code-generation stage but does not specify Intake vs later boundary.",
+            "quote": "Runs missing or schema-invalid repo_context.json are rejected before any code-generation stage"
+          }
+        ],
+        "routing_target": "acceptance_review"
+      }
+    ]
+  }
+}

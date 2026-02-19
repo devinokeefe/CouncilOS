@@ -1,0 +1,39 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B2A_primary_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T20:54:32.660775Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B2A_v2"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2A_v2",
+    "findings": [
+      {
+        "id": "TG-001",
+        "severity": "low",
+        "summary": "Traceability Mismatch: Sample checks map Requirements R1, R2, and R3 to Milestone M2, but the Candidate Plan explicitly assigns the corresponding Acceptance Tests (AT1, AT2, AT3) solely to Milestone M1's exit criteria. M2 depends on M1 but does not explicit re-verify these intake constraints.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/milestones/0/exit_criteria",
+            "note": "Milestone M1 exit criteria explicitly verify AT1, AT2, and AT3.",
+            "quote": "AT1–AT3 pass (canonical input enforcement; repo_context/workspace_context schema gates)."
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/milestones/1/exit_criteria",
+            "note": "Milestone M2 exit criteria do not list AT1, AT2, or AT3, listing only lane-specific tests (AT12–AT14, AT22).",
+            "quote": "AT12–AT14 pass for JSON Patch-only canonical repairs... AT22 passes for enforced writer/reviewer/judge separation..."
+          }
+        ],
+        "routing_target": "clarification_plan"
+      }
+    ]
+  }
+}

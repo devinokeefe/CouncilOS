@@ -1,0 +1,13 @@
+{
+  "run_context": {{RUN_CONTEXT_JSON}},
+  "artifact_refs": {{ARTIFACT_REFS_JSON}},
+  "allowed_id_prefixes": ["T"],
+  "inputs": {
+    "candidate_ref": "{{CANDIDATE_REF}}",
+    "plan_candidate": {{PLAN_CANDIDATE_JSON}},
+    "validator_report": {{VALIDATOR_REPORT_JSON}},
+    "consistency_findings": {{CONSISTENCY_FINDINGS_JSON_OR_EMPTY}}
+  },
+  "task": "Produce triage defects + patch intent and reroute suggestions.",
+  "output_schema": {{TRIAGE_SCHEMA_JSON}}
+}

@@ -1,0 +1,411 @@
+{
+  "artifact_type": "project_capsule",
+  "artifact_id": "capsule_draft_b_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T18:38:50.295534Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [],
+  "payload": {
+    "brief": "Produce a frozen Plan Package (plus decision record + handoff bundle) to build a new CouncilOS subsystem: an Implementation Council that consumes a frozen Planning Council output and produces a working implementation (repo changes + tests + build/release artifacts).",
+    "problem_statement": "CouncilOS currently lacks a deterministic, auditable, multi-agent subsystem for transforming frozen planning artifacts into working software implementations. The system must enforce separation of powers, maintain immutable audit trails, support long-horizon work across context-window limits via shared workspace, prevent silent scope expansion, use JSON-only artifacts with RFC 6901/6902 standards, and produce a complete freeze bundle suitable for handoff or checkpoint/resume.",
+    "goals": [
+      "G1: Design end-to-end Implementation Council architecture conforming to all CouncilOS invariants (orchestrator authority, stochastic JSON-only workers, durable audit spine, single source of truth, no silent scope expansion)",
+      "G2: Define canonical input contract (plan_package_final.json, repo_context.json, workspace_context.json schemas)",
+      "G3: Define complete Implementation Freeze Bundle output contract with typed/versioned JSON artifacts (run_manifest, event_log, work_plan, patchsets, repo_snapshot, test_results, quality_reports, trace_report, review_findings, release_bundle, decision_record, workspace_index, context_packs, stage_handoffs)",
+      "G4: Design shared workspace system as versioned artifact extension supporting long-running work, canonical vs non-canonical separation, deterministic context packs, workspace governance, and resumable state handoff artifacts at every stage boundary",
+      "G5: Establish evidence+traceability standard using RFC 6901 JSON Pointer exclusively for all artifacts including repo state, code changes, and workspace state",
+      "G6: Define repair model using RFC 6902 JSON Patch for JSON artifacts and diff-only artifacts for code changes with deterministic orchestrator application",
+      "G7: Specify council structure with role separation (leader, implementer, integrator, reviewer, patcher, QA/release/devops, security/compliance, scribe/summarizer) ensuring writer/reviewer/judge separation and multi-vendor diversity",
+      "G8: Design staged workflow state machine (intake, work breakdown, parallel implementation pods, deterministic integration, tool-run validation loops, review+patch cycles, regression revalidation, stage handoff emission, freeze bundle production)",
+      "G9: Define tool permission matrix per stage, secrets policy with redaction/blocking, HITL triggers for high-risk operations, and deterministic enforcement rules",
+      "G10: Specify code-owned validators gating freeze (build/compile, lint/format/typecheck, tests+AT# execution, integrity, workspace integrity, risk closure, reproducibility/trace completeness)",
+      "G11: Design flaky/nondeterministic failure policy with retry budgets, quarantine/stabilization requirements, and escalation paths",
+      "G12: Define ChangeRequest artifact schema with deterministic rules for proposal, approval, and reroute to Planning Council when plan semantics must change",
+      "G13: Specify multi-vendor model portfolio with default routing for writers vs reviewers vs judges vs patchers"
+    ],
+    "non_goals": [
+      "NG1: Implementing the Implementation Council system itself (this project produces the plan only)",
+      "NG2: Modifying existing CouncilOS orchestrator code or Planning Council subsystems",
+      "NG3: Defining general-purpose CI/CD pipelines unrelated to CouncilOS multi-agent workflows",
+      "NG4: Supporting interactive development workflows or human-in-the-loop coding sessions",
+      "NG5: Creating new evidence pointer standards beyond RFC 6901 JSON Pointer",
+      "NG6: Designing workspace backends or storage infrastructure (only interface contracts and governance rules)",
+      "NG7: Implementing actual code generation, testing, or build tooling (only workflow/artifact design)"
+    ],
+    "constraints": [
+      {
+        "id": "CNS1",
+        "type": "policy",
+        "text": "Orchestrator has sole authority over routing, budgets, iteration limits, termination, checkpoint/resume, tool permissions, selection logic, validator enforcement"
+      },
+      {
+        "id": "CNS2",
+        "type": "policy",
+        "text": "LLM roles must output JSON-only artifacts matching per-stage schemas with no prose"
+      },
+      {
+        "id": "CNS3",
+        "type": "policy",
+        "text": "Immutable run_manifest, append-only event_log, versioned artifact store required; checkpoint at every stage boundary"
+      },
+      {
+        "id": "CNS4",
+        "type": "policy",
+        "text": "Downstream consumers use ONLY canonical artifacts, not chat logs"
+      },
+      {
+        "id": "CNS5",
+        "type": "policy",
+        "text": "Implementation Council may not change semantics of R#/AT#/O#/K# from input plan without explicit ChangeRequest artifact + decision record + policy-triggered escalation"
+      },
+      {
+        "id": "CNS6",
+        "type": "tech",
+        "text": "Evidence pointers MUST use RFC 6901 JSON Pointer objects referencing versioned JSON artifacts"
+      },
+      {
+        "id": "CNS7",
+        "type": "tech",
+        "text": "JSON artifact repairs MUST use RFC 6902 JSON Patch arrays only"
+      },
+      {
+        "id": "CNS8",
+        "type": "tech",
+        "text": "Code changes MUST use diff-only artifacts with deterministic orchestrator application + revalidation"
+      },
+      {
+        "id": "CNS9",
+        "type": "policy",
+        "text": "Shared workspace must be versioned, auditable, checkpointed extension of artifact system, not informal scratchpad"
+      },
+      {
+        "id": "CNS10",
+        "type": "policy",
+        "text": "Canonical vs non-canonical workspace content must be explicitly separated and marked"
+      },
+      {
+        "id": "CNS11",
+        "type": "policy",
+        "text": "Secrets must never be stored in logs or workspace; detection + blocking required"
+      },
+      {
+        "id": "CNS12",
+        "type": "policy",
+        "text": "Writer/reviewer/judge separation and multi-vendor diversity required in council structure"
+      },
+      {
+        "id": "CNS13",
+        "type": "policy",
+        "text": "No silent scope expansion; large refactors must be decomposed into bounded patchsets + staged validation"
+      }
+    ],
+    "assumptions": [
+      {
+        "id": "A1",
+        "text": "Planning Council output (plan_package_final.json) is well-formed, frozen, and contains complete R#/AT#/O#/K# specifications",
+        "impact": "high",
+        "confidence": "medium",
+        "needs_confirmation": true
+      },
+      {
+        "id": "A2",
+        "text": "Target repositories have deterministic build/test entrypoints and toolchain configurations that can be captured in repo_context.json",
+        "impact": "high",
+        "confidence": "medium",
+        "needs_confirmation": true
+      },
+      {
+        "id": "A3",
+        "text": "Workspace backend provides versioned file storage with atomic operations and sufficient capacity for long-running implementation work",
+        "impact": "high",
+        "confidence": "low",
+        "needs_confirmation": true
+      },
+      {
+        "id": "A4",
+        "text": "Orchestrator can enforce forbidden-path rules and operation caps deterministically during patch application",
+        "impact": "high",
+        "confidence": "medium",
+        "needs_confirmation": true
+      },
+      {
+        "id": "A5",
+        "text": "Multi-vendor LLM APIs provide sufficient reliability and consistency for writer/reviewer/judge separation",
+        "impact": "medium",
+        "confidence": "medium",
+        "needs_confirmation": true
+      },
+      {
+        "id": "A6",
+        "text": "Tool execution environment can be sandboxed with granular permission controls per stage",
+        "impact": "high",
+        "confidence": "low",
+        "needs_confirmation": true
+      },
+      {
+        "id": "A7",
+        "text": "Test execution results can be deterministically mapped back to AT# acceptance test IDs from planning artifacts",
+        "impact": "high",
+        "confidence": "medium",
+        "needs_confirmation": true
+      },
+      {
+        "id": "A8",
+        "text": "Diff-based code change artifacts can be applied deterministically across potential merge conflicts and rebase scenarios",
+        "impact": "high",
+        "confidence": "low",
+        "needs_confirmation": true
+      },
+      {
+        "id": "A9",
+        "text": "Context pack size bounds can be determined that balance completeness with LLM context window limits",
+        "impact": "medium",
+        "confidence": "low",
+        "needs_confirmation": true
+      },
+      {
+        "id": "A10",
+        "text": "Flaky test detection and quarantine can be automated with acceptable false positive/negative rates",
+        "impact": "medium",
+        "confidence": "low",
+        "needs_confirmation": true
+      }
+    ],
+    "open_questions": [
+      {
+        "id": "Q1",
+        "text": "What is the maximum workspace size (GB) and retention period for non-canonical artifacts before compaction/summarization is required?",
+        "impact": "medium",
+        "blocking": false
+      },
+      {
+        "id": "Q2",
+        "text": "What specific diff format should be used for code change artifacts (unified diff, structured file-op diff, or other)?",
+        "impact": "high",
+        "blocking": true
+      },
+      {
+        "id": "Q3",
+        "text": "How should the orchestrator deterministically select the smallest passing repair when multiple patch options are available?",
+        "impact": "high",
+        "blocking": true
+      },
+      {
+        "id": "Q4",
+        "text": "What are the specific HITL trigger conditions and approval workflows for high-risk operations?",
+        "impact": "high",
+        "blocking": true
+      },
+      {
+        "id": "Q5",
+        "text": "How should conflict resolution work when parallel implementation pods produce overlapping patchsets?",
+        "impact": "high",
+        "blocking": true
+      },
+      {
+        "id": "Q6",
+        "text": "What is the retry budget and backoff strategy for flaky tests and nondeterministic tool failures?",
+        "impact": "medium",
+        "blocking": true
+      },
+      {
+        "id": "Q7",
+        "text": "How should the system handle dependencies that require network access or package manager operations during implementation?",
+        "impact": "high",
+        "blocking": true
+      },
+      {
+        "id": "Q8",
+        "text": "What are the specific criteria for when a ChangeRequest must be escalated vs handled within Implementation Council?",
+        "impact": "high",
+        "blocking": true
+      },
+      {
+        "id": "Q9",
+        "text": "How should the system handle incremental implementation when the full work plan cannot be completed within token/time budgets?",
+        "impact": "high",
+        "blocking": true
+      },
+      {
+        "id": "Q10",
+        "text": "What is the schema for repo_context.json protected paths and how are they enforced during patch application?",
+        "impact": "high",
+        "blocking": true
+      },
+      {
+        "id": "Q11",
+        "text": "How should context packs be bounded and selected when workspace state grows beyond context window limits?",
+        "impact": "high",
+        "blocking": true
+      },
+      {
+        "id": "Q12",
+        "text": "What specific security/compliance checks are required in quality_reports.json and how are they executed?",
+        "impact": "medium",
+        "blocking": false
+      }
+    ],
+    "success_metrics": [
+      "SM1: Complete Implementation Freeze Bundle schema definitions with all required artifacts specified (run_manifest, event_log, work_plan, patchsets, repo_snapshot, test_results, quality_reports, trace_report, review_findings, release_bundle, decision_record, workspace_index, context_packs, stage_handoffs) - target: 100% coverage",
+      "SM2: All CouncilOS invariants explicitly addressed in architecture (separation of powers, JSON-only outputs, durable audit spine, single source of truth, no silent scope expansion) - target: 5/5 invariants enforced",
+      "SM3: Shared workspace design includes all required elements (versioning, auditability, checkpointing, canonical/non-canonical separation, context packs, governance, state handoff artifacts) - target: 7/7 elements specified",
+      "SM4: Evidence+traceability uses RFC 6901 JSON Pointer exclusively with no alternative pointer standards - target: 100% compliance",
+      "SM5: Repair model uses RFC 6902 JSON Patch for JSON and diff-only for code with deterministic application rules - target: 100% compliance",
+      "SM6: Council structure specifies all required roles with writer/reviewer/judge separation - target: minimum 7 roles with clear separation",
+      "SM7: Workflow state machine covers all required stages from intake through freeze bundle production - target: minimum 9 stages with checkpoint boundaries",
+      "SM8: Tool permission matrix defined per stage with secrets policy and HITL triggers - target: complete matrix for all stages",
+      "SM9: Code-owned validators specified for all freeze gates (build, lint, tests, integrity, workspace integrity, risk closure, trace completeness) - target: minimum 7 validators",
+      "SM10: Flaky failure policy includes retry budgets, quarantine requirements, and escalation paths - target: all 3 elements specified",
+      "SM11: ChangeRequest artifact schema with deterministic proposal/approval/reroute rules - target: complete schema + rules",
+      "SM12: Multi-vendor model portfolio with routing for writers/reviewers/judges/patchers - target: minimum 4 role types with vendor diversity"
+    ],
+    "stakeholders": [
+      "CouncilOS orchestrator development team",
+      "Planning Council subsystem owners",
+      "Implementation Council agent role developers",
+      "Artifact schema and validation framework maintainers",
+      "Workspace backend infrastructure team",
+      "Security and compliance policy owners",
+      "Multi-vendor LLM integration team",
+      "End users requiring deterministic software implementation workflows"
+    ],
+    "glossary": [
+      {
+        "term": "Project Capsule",
+        "definition": "Normalized intake artifact capturing problem statement, goals, constraints, assumptions, open questions, success metrics, and stakeholders for a CouncilOS project"
+      },
+      {
+        "term": "Implementation Council",
+        "definition": "CouncilOS subsystem that consumes frozen Planning Council output and produces working implementation with repo changes, tests, and build/release artifacts"
+      },
+      {
+        "term": "Planning Council",
+        "definition": "Upstream CouncilOS subsystem that produces frozen plan_package_final.json with requirements (R#), acceptance tests (AT#), objectives (O#), and key results (K#)"
+      },
+      {
+        "term": "Orchestrator",
+        "definition": "Deterministic code component with sole authority over routing, budgets, iteration limits, termination, checkpoint/resume, tool permissions, selection logic, and validator enforcement"
+      },
+      {
+        "term": "Separation of Powers",
+        "definition": "CouncilOS invariant ensuring orchestrator controls workflow while LLM roles are stochastic workers producing only JSON artifacts"
+      },
+      {
+        "term": "Durable Audit Spine",
+        "definition": "Immutable run_manifest, append-only event_log, and versioned artifact store with checkpoints at every stage boundary"
+      },
+      {
+        "term": "Single Source of Truth",
+        "definition": "CouncilOS invariant requiring downstream consumers use only canonical artifacts, not chat logs or ephemeral state"
+      },
+      {
+        "term": "Silent Scope Expansion",
+        "definition": "Forbidden practice where agents change semantics of requirements/tests/objectives without explicit ChangeRequest artifact and approval"
+      },
+      {
+        "term": "Shared Workspace",
+        "definition": "Versioned, auditable, tool-accessible storage system for persisting progress across context-window limits and coordinating multi-agent work"
+      },
+      {
+        "term": "Canonical Artifact",
+        "definition": "Typed, versioned JSON artifact used by validators and downstream councils as authoritative source"
+      },
+      {
+        "term": "Non-Canonical Artifact",
+        "definition": "Optional working notes or summaries that are stored and versioned but explicitly marked as non-authoritative"
+      },
+      {
+        "term": "Context Pack",
+        "definition": "Bounded, deterministically-compiled subset of workspace artifacts provided to agents at each stage, with explicit selection rules"
+      },
+      {
+        "term": "Evidence Pointer",
+        "definition": "RFC 6901 JSON Pointer object referencing versioned JSON artifact: {artifact_ref, entity_id|null, json_pointer, note}"
+      },
+      {
+        "term": "RFC 6901 JSON Pointer",
+        "definition": "Standard for identifying specific values within JSON documents using path strings starting with /"
+      },
+      {
+        "term": "RFC 6902 JSON Patch",
+        "definition": "Standard for expressing modifications to JSON documents as arrays of operations (add, remove, replace, move, copy, test)"
+      },
+      {
+        "term": "Patchset",
+        "definition": "JSON artifact embedding code diffs with deterministic apply order for repo modifications"
+      },
+      {
+        "term": "Stage Handoff Artifact",
+        "definition": "JSON artifact capturing resumable state at checkpoint boundary: current objectives, completed tasks, pending blockers, next actions, and pointers into work artifacts"
+      },
+      {
+        "term": "Implementation Freeze Bundle",
+        "definition": "Complete set of canonical output artifacts from Implementation Council including run_manifest, event_log, work_plan, patchsets, test_results, quality_reports, trace_report, review_findings, release_bundle, decision_record, workspace_index, context_packs, and stage_handoffs"
+      },
+      {
+        "term": "Validator",
+        "definition": "Code-owned deterministic function that gates stage transitions or freeze by checking artifact integrity, completeness, and quality criteria"
+      },
+      {
+        "term": "ChangeRequest",
+        "definition": "Explicit artifact proposing deviation from frozen plan semantics, requiring approval and potentially triggering reroute to Planning Council"
+      },
+      {
+        "term": "Writer/Reviewer/Judge Separation",
+        "definition": "CouncilOS pattern ensuring agents that produce artifacts are distinct from those that review them and those that make approval decisions"
+      },
+      {
+        "term": "Multi-Vendor Diversity",
+        "definition": "Practice of using different LLM providers for writers vs reviewers vs judges to reduce correlated failures and bias"
+      },
+      {
+        "term": "Forbidden Path",
+        "definition": "Repository path or workspace namespace that agents are not permitted to modify, enforced by orchestrator during patch application"
+      },
+      {
+        "term": "Flaky Test",
+        "definition": "Test that exhibits nondeterministic pass/fail behavior requiring retry budgets, quarantine, or stabilization"
+      },
+      {
+        "term": "HITL",
+        "definition": "Human-In-The-Loop: policy-triggered escalation requiring human approval for high-risk operations"
+      },
+      {
+        "term": "Deterministic Retry Rules",
+        "definition": "Code-enforced logic for bounded retries with backoff, distinct from agent-controlled iteration"
+      },
+      {
+        "term": "Trace Report",
+        "definition": "Dense artifact mapping requirements (R#) to tasks to patchsets/commits to files/modules to tests to acceptance test (AT#) results"
+      },
+      {
+        "term": "Repo Context",
+        "definition": "JSON artifact describing existing codebase: locator/path, base commit SHA, build/test entrypoints, toolchain constraints, dependency/network policy, protected paths, secrets handling"
+      },
+      {
+        "term": "Workspace Context",
+        "definition": "JSON artifact describing shared workspace backend: file store location, size limits, allowed formats, retention policy, namespaces, access control"
+      },
+      {
+        "term": "Workspace Index",
+        "definition": "Canonical JSON artifact indexing all workspace items with types, versions, provenance, and pointers"
+      },
+      {
+        "term": "Quality Report",
+        "definition": "Structured artifact capturing lint, typecheck, security scan, dependency check, and license compliance results"
+      },
+      {
+        "term": "Release Bundle",
+        "definition": "Artifact manifest listing build outputs, package metadata, container digests, and other deployment artifacts"
+      },
+      {
+        "term": "Decision Record",
+        "definition": "Artifact documenting why key implementation decisions were made and what conditions would change them"
+      },
+      {
+        "term": "Scribe/Summarizer Role",
+        "definition": "Optional agent role producing non-canonical summaries and context packs without authority to modify canonical artifacts"
+      }
+    ]
+  }
+}

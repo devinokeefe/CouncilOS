@@ -1,0 +1,37 @@
+{
+  "artifact_type": "triage_report",
+  "artifact_id": "triage_B2A_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T20:15:12.996262Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B2A_v1",
+    "validator_B2A_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2A_v1",
+    "critic_id": "MERGED",
+    "verdict": "reject",
+    "defects": [
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Review stage tool policy forbids artifact_write but reviewers must emit review_findings.json per architecture and requirements",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "artifact_id": "plan_candidate_B2A_v1",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/6/restrictions/0/artifact_write",
+            "note": "Review stage denies artifact writes",
+            "quote": "\"artifact_write\":\"deny\""
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": []
+      }
+    ],
+    "reroute_target": "risk_gov_canonical_v1",
+    "reroute_reason": "Critical blocker CS1 requires tool_policy correction to allow reviewers to emit findings artifacts. CS2 (Intake canonical artifact writes) also requires tool_policy fix. Both are governance/tool_policy defects requiring reroute to risk_gov_canonical_v1 for repair. Additionally, validator_report shows 12 deliverable ID violations and multiple missing risk/decision references that require ID minting outside triage authority, plus evidence pointer schema mismatches (CS3) requiring requirements clarification. The combination of critical tool_policy blockers plus structural ID/schema issues exceeds safe patch scope."
+  }
+}

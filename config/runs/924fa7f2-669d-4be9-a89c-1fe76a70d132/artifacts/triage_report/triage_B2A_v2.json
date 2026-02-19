@@ -1,0 +1,687 @@
+{
+  "artifact_type": "triage_report",
+  "artifact_id": "triage_B2A_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-15T21:03:25.165743Z",
+  "source_run_id": "e5e8f9e4-14bb-4c6f-9781-032fcf85734c",
+  "parents": [
+    "plan_candidate_B2A_v2",
+    "validator_B2A_v2"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2A_v2",
+    "critic_id": "MERGED",
+    "verdict": "reject",
+    "defects": [
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Review stage tool policy forbids artifact/workspace writes, but reviewers are required to emit findings artifacts (e.g., review_findings.json), making the Review stage non-executable.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/6/allowlisted_tools",
+            "note": "Review stage allowlisted_tools excludes artifact_write.",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/6/restrictions/0/artifact_write",
+            "note": "Review stage restriction denies artifact writes.",
+            "quote": "deny"
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/requirements/21/text",
+            "note": "R22 requires reviewers to produce findings-only artifacts.",
+            "quote": "reviewers produce findings-only artifacts (no writing or patches)"
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {
+            "op": "add",
+            "path": "/plan_package/governance/tool_policy/stage_policies/6/allowlisted_tools/-",
+            "value": "artifact_write"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/governance/tool_policy/stage_policies/6/restrictions/0/artifact_write",
+            "value": "canonical_allowed_only_for_review_findings"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/governance/tool_policy/stage_policies/6/restrictions/0/notes",
+            "value": "Reviewers are findings-only; they MAY emit review_findings.json (and only findings artifacts) to the artifact store; they MUST NOT emit patches/code or modify repo/workspace."
+          }
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "ID integrity hard-gate failure: milestone deliverable IDs violate the expected deliverable ID pattern (validator expects DL#), but fixing requires renaming existing IDs outside allowed ID ownership.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/milestones/0/deliverables/0/id",
+            "note": "Example deliverable id currently uses D# form.",
+            "quote": "M1.D1"
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/milestones/3/deliverables/1/id",
+            "note": "Additional deliverable ids follow the same D# form.",
+            "quote": "M4.D2"
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "ID integrity hard-gate failure: architecture option 'risks' entries are treated as references but do not resolve to canonical risks (likely expected to reference risk_register K#), requiring structural refactoring and/or new IDs outside allowed ID ownership.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/architecture/options/1/risks/0",
+            "note": "Option O2 includes free-text risk entry rather than a resolvable reference.",
+            "quote": "Merge conflicts between lanes may be frequent in tightly-coupled repos, driving escalation rates."
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/risk_register",
+            "note": "Risk register uses K# ids with different descriptions/structure; option risks are not keyed to K#.",
+            "quote": null
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "ID integrity hard-gate failure: decision_log evidence_pointers include artifact_id values (e.g., architecture_canonical, branch_set, risk_gov_canonical) that are not defined as valid IDs within the plan package, requiring an artifact registry or reference-model change (structural fix).",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/decision_log/0/evidence_pointers/0/artifact_id",
+            "note": "Evidence pointer uses artifact_id that is not defined elsewhere in this plan package.",
+            "quote": "architecture_canonical"
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/decision_log/0/evidence_pointers/1/artifact_id",
+            "note": "Second evidence pointer uses another undefined artifact_id.",
+            "quote": "branch_set"
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": []
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "Stage taxonomy is inconsistent across requirements/architecture/tool_policy: R4 minimum stages omit WorkPlanning and Patch/PatchApply, but other sections require them. This creates ambiguity for implementation and for AT4 validation.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/requirements/3/text",
+            "note": "R4 minimum stage list omits WorkPlanning and Patch/PatchApply.",
+            "quote": "Intake → Generate → Validate → Review → Judge → Freeze"
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies",
+            "note": "Tool policy defines WorkPlanning and PatchApply stages.",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/architecture/options/0/components/0/responsibilities/0",
+            "note": "Architecture O1 explicitly includes Plan and Patch stages.",
+            "quote": "Intake → Plan → Generate → Validate → Review → Patch → Judge → Freeze"
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/requirements/3/text",
+            "value": "The Implementation Council workflow SHALL be defined as a deterministic staged state machine with, at minimum, the stages: Intake → Generate → Validate → Review → Judge → Freeze. The orchestrator MAY implement additional explicit sub-stages (e.g., WorkPlanning and PatchApply/Patch) provided every transition is checkpointed and emits a stage_handoff artifact."
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/acceptance_tests/3/pass_criteria",
+            "value": "Stage sequence includes at minimum Intake → Generate → Validate → Review → Judge → Freeze (additional explicit sub-stages such as WorkPlanning and PatchApply/Patch are permitted). A checkpoint boundary is recorded at every stage transition."
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "Evidence pointer rule contradiction: AT10 requires json_pointer strings to start with '/', but RFC 6901 allows the empty string for the document root and the plan itself uses \"\" in decision_log evidence_pointers.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/acceptance_tests/9/pass_criteria",
+            "note": "AT10 imposes leading '/' constraint.",
+            "quote": "json_pointer starting with '/' and resolving to a valid path"
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/decision_log/0/evidence_pointers/1/json_pointer",
+            "note": "Decision log uses empty-string JSON Pointer (document root).",
+            "quote": ""
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/acceptance_tests/9/pass_criteria",
+            "value": "All evidence pointers use {artifact_ref, entity_id|null, json_pointer, note} with json_pointer either \"\" (document root) or starting with '/' and resolving to a valid path; any non-compliant evidence format causes validation failure."
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Milestone M1 exit criteria relaxes AT4 to a \"single-lane subset\" while AT4 requires the full minimum sequence; this creates phase-gating ambiguity.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/milestones/0/exit_criteria/1",
+            "note": "M1 relaxes AT4.",
+            "quote": "AT4 passes for required stage sequence with checkpoint boundaries (single-lane subset acceptable for Phase 1)."
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/acceptance_tests/3/pass_criteria",
+            "note": "AT4 requires the full minimum stage sequence.",
+            "quote": "Stage sequence includes at minimum Intake → Generate → Validate → Review → Judge → Freeze"
+          }
+        ],
+        "violated_gate": "milestone_exit_criteria (semantic ambiguity)",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/milestones/0/exit_criteria/1",
+            "value": "Phase 1 must demonstrate a single-lane end-to-end execution that still includes the minimum required stages (Intake → Generate → Validate → Review → Judge → Freeze) with checkpoint boundaries at every transition (additional sub-stages permitted as per R4/AT4)."
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "Secrets-scanning is required at each checkpoint (K7 mitigation), but secrets_scan is not allowlisted in stages that can write artifacts/workspace (e.g., WorkPlanning, Generate). This undermines enforceability of the secrets policy.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/risk_register/6/mitigation/text",
+            "note": "K7 mitigation requires secrets scanning at each checkpoint.",
+            "quote": "Mandatory secrets scanning at each checkpoint and before freeze"
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/1/allowlisted_tools",
+            "note": "WorkPlanning allows artifact_write but does not allowlist secrets_scan.",
+            "quote": null
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/2/allowlisted_tools",
+            "note": "Generate allows writes but does not allowlist secrets_scan.",
+            "quote": null
+          }
+        ],
+        "violated_gate": "governance consistency",
+        "patch": [
+          {
+            "op": "add",
+            "path": "/plan_package/governance/tool_policy/stage_policies/1/allowlisted_tools/-",
+            "value": "secrets_scan"
+          },
+          {
+            "op": "add",
+            "path": "/plan_package/governance/tool_policy/stage_policies/2/allowlisted_tools/-",
+            "value": "secrets_scan"
+          },
+          {
+            "op": "add",
+            "path": "/plan_package/governance/tool_policy/stage_policies/3/allowlisted_tools/-",
+            "value": "secrets_scan"
+          }
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "R22 requires orchestrator-enforced multi-vendor routing separation, but the plan does not specify how vendor/model selection is enforced and recorded per stage/role (unimplementable as written).",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/requirements/21/text",
+            "note": "R22 mandates multi-vendor routing enforcement.",
+            "quote": "orchestrator routing SHALL enforce default multi-vendor separation across writer/reviewer/judge roles"
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/architecture/options/1/components/0/responsibilities",
+            "note": "C11 responsibilities mention multi-vendor separation but do not define enforcement/recording mechanism.",
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency (requirement implementability)",
+        "patch": [
+          {
+            "op": "add",
+            "path": "/plan_package/architecture/options/1/components/0/responsibilities/-",
+            "value": "Enforce and record model vendor/family separation: for each stage invocation, select writer/reviewer/judge models from distinct vendor/family buckets per policy; record {role, vendor, model_id, parameters} in implementation_run_manifest; validate (hard-gate) that reviewer/judge vendors differ from writer for the same scope."
+          },
+          {
+            "op": "add",
+            "path": "/plan_package/governance/tool_policy/stage_policies/7/hitl_triggers/-",
+            "value": "Any attempt to run writer/reviewer/judge with the same vendor/model family for the same scope (role-separation violation)"
+          }
+        ]
+      },
+      {
+        "label": "note",
+        "severity": "medium",
+        "summary": "\"No prose in canonical outputs\" (CNS2/R9 phrasing) is misleading given many canonical artifacts necessarily contain natural-language fields inside JSON; clarify that the prohibition is on non-JSON wrappers/markdown/unstructured formats, not on string fields within schema.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/project_capsule/constraints/1/text",
+            "note": "CNS2 says 'no prose in canonical outputs'.",
+            "quote": "JSON-only artifacts matching per-stage schemas; no prose in canonical outputs."
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/executive_summary",
+            "note": "Plan package itself contains prose within JSON fields.",
+            "quote": "Candidate B2A selects architecture option O2 (task-parallel fan-out/fan-in) with a hybrid rollout plan"
+          }
+        ],
+        "violated_gate": "none (clarity)",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/project_capsule/constraints/1/text",
+            "value": "LLM roles are stochastic workers that must output JSON-only artifacts matching per-stage schemas; canonical outputs MUST NOT include markdown/prose wrappers or unstructured formats outside the JSON schema (natural-language string fields permitted where the schema defines them)."
+          }
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Review stage tool policy forbids artifact_write and workspace_write, making it impossible for reviewers to emit required review_findings.json artifacts per R22 and architecture components C7/C16/C20/C30.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/6/restrictions/0/artifact_write",
+            "note": "Review stage denies artifact writes",
+            "quote": "deny"
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/requirements/21/text",
+            "note": "R22 requires reviewers produce findings-only artifacts",
+            "quote": "reviewers produce findings-only artifacts"
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "R22 mandates multi-vendor routing separation for writer/reviewer/judge roles, but no component, interface, or governance policy specifies how vendor/model selection is enforced or recorded, leaving the requirement unimplementable.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/requirements/21/text",
+            "note": "R22 requires orchestrator routing to enforce multi-vendor separation",
+            "quote": "orchestrator routing SHALL enforce default multi-vendor separation across writer/reviewer/judge roles"
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "Stage taxonomy is inconsistent: R4 defines minimum stages as Intake→Generate→Validate→Review→Judge→Freeze, but architecture O1/O2 and tool_policy introduce WorkPlanning/Plan and Patch/PatchApply stages not present in R4, creating ambiguity for AT4 validation.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/requirements/3/text",
+            "note": "R4 stage list omits WorkPlanning and Patch stages",
+            "quote": "Intake → Generate → Validate → Review → Judge → Freeze"
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/architecture/options/0/components/0/responsibilities/0",
+            "note": "O1 includes Plan and Patch stages",
+            "quote": "Intake → Plan → Generate → Validate → Review → Patch → Judge → Freeze"
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "AT6 requires evidence pointers into patchsets, but patchsets are diff-embedded JSON artifacts, not structured JSON with addressable fields for code content per CNS6/R11 requirement that citeable state be JSON artifacts addressable via RFC 6901.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/acceptance_tests/5/pass_criteria",
+            "note": "AT6 requires evidence pointers into patchsets",
+            "quote": "evidence pointers into work_plan, patchsets, and validation outputs"
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/requirements/10/text",
+            "note": "R11 requires code state be JSON artifacts addressable via RFC 6901",
+            "quote": "Repository, code, and workspace state that must be cited for traceability SHALL be represented as versioned JSON artifacts"
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "Component C18 Integration Merge Engine specifies deterministic ordering independent of wall-clock timing, but neither C18 responsibilities, DEC3, nor K12 mitigation define the actual ordering algorithm or its inputs, leaving determinism unverifiable.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/architecture/options/1/components/7/responsibilities/0",
+            "note": "C18 states deterministic order without defining algorithm",
+            "quote": "Collect completed lane patchsets and apply in deterministic order to base repo state."
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/governance/decision_log/2/choice",
+            "note": "DEC3 defers algorithm to stable inputs without concrete rules",
+            "quote": "ordering derived from stable inputs (e.g., lane IDs and work_plan ordering metadata)"
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "K7 mitigation requires mandatory secrets scanning at each checkpoint, but tool_policy does not include secrets_scan in allowlisted_tools for WorkPlanning and Generate stages that have artifact_write/workspace_write permissions.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/risk_register/6/mitigation/text",
+            "note": "K7 mitigation requires secrets scanning at each checkpoint",
+            "quote": "Mandatory secrets scanning at each checkpoint and before freeze"
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/governance/tool_policy/stage_policies/1/allowlisted_tools",
+            "note": "WorkPlanning stage does not list secrets_scan",
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "Synthesis warning W1 flags Q7-Q9 as blocking for O2 Phase 3 specification, but milestone M3 exit criteria do not require Q7-Q9 resolution before M3 completion, creating a dependency inversion.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/synthesis_warnings/0/summary",
+            "note": "W1 states Q7-Q9 are blocking for Phase 3",
+            "quote": "without these, O2 Phase 3 cannot be fully specified/tested"
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/milestones/2/exit_criteria",
+            "note": "M3 exit criteria do not gate on Q7-Q9 resolution",
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "AT10 requires json_pointer to start with '/', but the plan's own decision_log evidence_pointers use empty string json_pointer for document root, which is valid RFC 6901 but would fail AT10 as written.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/acceptance_tests/9/pass_criteria",
+            "note": "AT10 requires json_pointer starting with '/'",
+            "quote": "json_pointer starting with '/' and resolving to a valid path"
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/decision_log/0/evidence_pointers/1/json_pointer",
+            "note": "Decision log uses empty string for document root",
+            "quote": ""
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "R3 mandates workspace_context.json with retention/compaction policies, but no component (including C22) specifies how retention/compaction is triggered, validated, or audited, leaving R3 partially unimplementable.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/requirements/2/text",
+            "note": "R3 requires retention/compaction policies in workspace_context.json",
+            "quote": "retention/compaction policies"
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "M1 exit criteria claims AT4 can pass with a single-lane subset, but AT4 pass criteria requires the full minimum stage sequence, creating acceptance gating ambiguity for Phase 1.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/milestones/0/exit_criteria/1",
+            "note": "M1 relaxes AT4 expectations",
+            "quote": "AT4 passes for required stage sequence with checkpoint boundaries (single-lane subset acceptable for Phase 1)."
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/acceptance_tests/3/pass_criteria",
+            "note": "AT4 requires full minimum stage sequence",
+            "quote": "Stage sequence includes at minimum Intake → Generate → Validate → Review → Judge → Freeze"
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "note",
+        "severity": "medium",
+        "summary": "CNS2/R9 state canonical outputs must contain 'no prose', yet many canonical artifacts in this plan package contain freeform natural-language fields (executive_summary, rationales, descriptions). Clarify whether 'no prose' means no non-JSON wrappers or no natural language.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/project_capsule/constraints/1/text",
+            "note": "CNS2 forbids prose in canonical outputs",
+            "quote": "no prose in canonical outputs"
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/executive_summary",
+            "note": "Plan package contains substantial prose content",
+            "quote": "Candidate B2A selects architecture option O2"
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": []
+      },
+      {
+        "label": "note",
+        "severity": "medium",
+        "summary": "AT23 validates retry/quarantine/escalation policy but does not explicitly verify that retries are recorded in implementation_event_log as required by R23, creating incomplete test coverage.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/requirements/22/text",
+            "note": "R23 requires retries recorded in event log",
+            "quote": "all retries and outcomes SHALL be recorded in the implementation_event_log"
+          },
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/plan_package/acceptance_tests/22/pass_criteria",
+            "note": "AT23 does not explicitly verify event log recording",
+            "quote": "Retries follow deterministic policy with bounded budgets and are recorded"
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": []
+      },
+      {
+        "label": "note",
+        "severity": "low",
+        "summary": "Validator report shows 12 deliverable IDs do not match DL# pattern and 27 missing risk/decision/evidence references. These are ID integrity violations that require minting new IDs, which is outside triage critic scope.",
+        "evidence": [
+          {
+            "candidate_id": "B2A",
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "artifact_id": "plan_candidate",
+            "json_pointer": "/validator_report/checks/1/violations",
+            "note": "ID integrity check shows 39 high-severity violations requiring new ID minting",
+            "quote": null
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": []
+      }
+    ],
+    "reroute_target": "reroute_to_plan_repair_owner",
+    "reroute_reason": "Hard-gate id_integrity failures require renaming non-owned IDs and/or introducing/normalizing cross-entity references (deliverable IDs, architecture option risk references, and decision_log evidence pointer artifact_id resolution). These changes likely require coordinated schema/reference-model updates and/or new canonical ID allocations beyond allowed_id_prefixes."
+  }
+}

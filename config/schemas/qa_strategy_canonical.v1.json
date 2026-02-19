@@ -1,0 +1,73 @@
+{
+  "$defs": {
+    "QaTemplate": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "applies_to": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Applies To",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description"
+      ],
+      "title": "QaTemplate",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "templates": {
+      "items": {
+        "$ref": "#/$defs/QaTemplate"
+      },
+      "title": "Templates",
+      "type": "array"
+    },
+    "coverage_guidance": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Coverage Guidance",
+      "type": "array"
+    },
+    "definition_of_done": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Definition Of Done",
+      "type": "array"
+    },
+    "merge_log": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Merge Log",
+      "type": "array"
+    }
+  },
+  "required": [
+    "templates",
+    "coverage_guidance",
+    "definition_of_done"
+  ],
+  "title": "QaStrategyCanonicalPayload",
+  "type": "object"
+}
