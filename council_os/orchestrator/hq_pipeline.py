@@ -1366,13 +1366,13 @@ class HQPipeline:
         risk_merge = load_ref("risk_gov_merge")
         if risk_merge is None:
             with self._stage_timer("merge.risk_gov_merge"):
-            risk_merge = self._stage_risk_merge(
-                capsule_context,
-                drafts,
-                req_canon.payload,
-                arch_canon.payload,
-                artifact_refs,
-            )
+                risk_merge = self._stage_risk_merge(
+                    capsule_context,
+                    drafts,
+                    req_canon.payload,
+                    arch_canon.payload,
+                    artifact_refs,
+                )
             artifact_refs["risk_gov_merge"] = risk_merge.artifact_id
             self._checkpoint("merge.risk_gov_merge", artifact_refs)
 
