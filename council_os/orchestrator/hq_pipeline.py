@@ -1397,20 +1397,20 @@ class HQPipeline:
         qa_strategy = load_ref("qa_strategy_canonical")
         if qa_strategy is None:
             with self._stage_timer("merge.qa_strategy"):
-            qa_strategy = self._stage_qa_strategy(capsule_context, drafts, artifact_refs)
+                qa_strategy = self._stage_qa_strategy(capsule_context, drafts, artifact_refs)
             artifact_refs["qa_strategy_canonical"] = qa_strategy.artifact_id
             self._checkpoint("merge.qa_strategy", artifact_refs)
 
         acceptance_draft = load_ref("acceptance_draft")
         if acceptance_draft is None:
             with self._stage_timer("acceptance.generate"):
-            acceptance_draft = self._stage_acceptance_generate(
-                capsule_context,
-                req_canon.payload,
-                arch_canon.payload,
-                qa_strategy.payload,
-                artifact_refs,
-            )
+                acceptance_draft = self._stage_acceptance_generate(
+                    capsule_context,
+                    req_canon.payload,
+                    arch_canon.payload,
+                    qa_strategy.payload,
+                    artifact_refs,
+                )
             artifact_refs["acceptance_draft"] = acceptance_draft.artifact_id
             self._checkpoint("acceptance.generate", artifact_refs)
 
@@ -1428,29 +1428,29 @@ class HQPipeline:
         alignment = load_ref("alignment_warnings")
         if alignment is None:
             with self._stage_timer("audit.alignment"):
-            alignment = self._stage_alignment(
-                capsule_context,
-                req_canon.payload,
-                acceptance_canon.payload,
-                arch_canon.payload,
-                risk_canon.payload,
-                artifact_refs,
-            )
+                alignment = self._stage_alignment(
+                    capsule_context,
+                    req_canon.payload,
+                    acceptance_canon.payload,
+                    arch_canon.payload,
+                    risk_canon.payload,
+                    artifact_refs,
+                )
             artifact_refs["alignment_warnings"] = alignment.artifact_id
             self._checkpoint("audit.alignment", artifact_refs)
 
         branch_set = load_ref("branch_set")
         if branch_set is None:
             with self._stage_timer("branch.build"):
-            branch_set = self._stage_branch_build(
-                capsule_context,
-                req_canon.payload,
-                acceptance_canon.payload,
-                arch_canon.payload,
-                risk_canon.payload,
-                alignment.payload,
-                artifact_refs,
-            )
+                branch_set = self._stage_branch_build(
+                    capsule_context,
+                    req_canon.payload,
+                    acceptance_canon.payload,
+                    arch_canon.payload,
+                    risk_canon.payload,
+                    alignment.payload,
+                    artifact_refs,
+                )
             artifact_refs["branch_set"] = branch_set.artifact_id
             self._checkpoint("branch.build", artifact_refs)
 

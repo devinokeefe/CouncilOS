@@ -1,0 +1,23 @@
+{
+  "artifact_type": "acceptance_draft",
+  "artifact_id": "acceptance_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-19T23:04:45.266842Z",
+  "source_run_id": "60aa9cf0-2c8d-45e3-b9ea-86d3f92545f8",
+  "parents": [
+    "capsule_v1"
+  ],
+  "payload": {
+    "acceptance_tests": [
+      {
+        "id": "AT1",
+        "maps_to_requirements": [
+          "R1"
+        ],
+        "type": "system",
+        "procedure": "Run council pipeline to freeze.",
+        "pass_criteria": "plan_frozen exists"
+      }
+    ]
+  }
+}

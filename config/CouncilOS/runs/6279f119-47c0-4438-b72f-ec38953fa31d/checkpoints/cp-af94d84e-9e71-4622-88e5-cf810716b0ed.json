@@ -1,0 +1,54 @@
+{
+  "checkpoint_id": "cp-af94d84e-9e71-4622-88e5-cf810716b0ed",
+  "run_id": "6279f119-47c0-4438-b72f-ec38953fa31d",
+  "created_at": "2026-02-19T23:03:57.973008Z",
+  "stage_name": "judge",
+  "stage_index": 8,
+  "event_cursor": "ef7cd472-b2ec-4f71-a7f8-501deb977d01",
+  "artifact_refs": {
+    "capsule": "capsule_v1",
+    "requirements": "requirements_v1",
+    "acceptance": "acceptance_v1",
+    "architecture": "architecture_v1",
+    "qa": "qa_v1",
+    "governance": "governance_v1",
+    "branch": "branch_B1_v1",
+    "candidate": "candidate_B1-SA_v1",
+    "judge": "judge_1_v1"
+  },
+  "routing_state": {
+    "stage": "judge",
+    "index": 8,
+    "candidate_count": 4,
+    "branch_count": 2,
+    "active_branches": [
+      "B1",
+      "B2"
+    ],
+    "branch_artifacts": {
+      "B1": "branch_B1_v1",
+      "B2": "branch_B2_v1"
+    },
+    "active_candidates": [
+      "B1-SA",
+      "B1-SB",
+      "B2-SA",
+      "B2-SB"
+    ],
+    "candidate_artifacts": {
+      "B1-SA": "candidate_B1-SA_v1",
+      "B1-SB": "candidate_B1-SB_v1",
+      "B2-SA": "candidate_B2-SA_v1",
+      "B2-SB": "candidate_B2-SB_v1"
+    },
+    "loop_counters": {
+      "repairs_applied": 0
+    },
+    "budget_counters": {
+      "validator_pass_count": 4,
+      "validator_fail_count": 0,
+      "full_cycles_without_pass": 0
+    }
+  },
+  "tool_side_effect_ledger_ref": null
+}

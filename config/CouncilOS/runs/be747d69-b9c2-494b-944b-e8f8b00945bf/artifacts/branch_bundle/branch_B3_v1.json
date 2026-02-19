@@ -1,0 +1,35 @@
+{
+  "artifact_type": "branch_bundle",
+  "artifact_id": "branch_B3_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-19T23:06:15.944458Z",
+  "source_run_id": "be747d69-b9c2-494b-944b-e8f8b00945bf",
+  "parents": [
+    "architecture_v1"
+  ],
+  "payload": {
+    "branch_id": "B3",
+    "selected_arch_option": "O1",
+    "milestone_strategy": {
+      "style": "thin_slice",
+      "notes": "Branch B3 staged rollout"
+    },
+    "acceptance_strategy": {
+      "notes": "Cover MUST requirements first"
+    },
+    "governance_posture": {
+      "tooling_level": "none",
+      "hitl_strictness": "high"
+    },
+    "risk_posture": {
+      "notes": "Prefer explicit closure"
+    },
+    "pre_synthesis_scores": {
+      "feasibility": 0.8,
+      "complexity_risk": 0.19999999999999996,
+      "clarity": 0.8,
+      "overall": 0.8
+    },
+    "rationale": "Deterministic branch generation for B3."
+  }
+}

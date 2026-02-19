@@ -240,6 +240,7 @@ def run_plan_review_loop(
         render = render_plan_review_markdown(plan)
         store.write_text(f"plan_review_render_v{round_idx}.md", render)
 
+        current_hash = plan_hash(plan)
         feedback_resp = gate.request_response(
             gate_type="plan_review",
             request_artifact=f"plan_review_packet_v{round_idx}.json",
@@ -247,19 +248,13 @@ def run_plan_review_loop(
             response_model=PlanReviewFeedback,
             round=round_idx,
             instructions={"how_to_resume": f"rerun with --resume-run {run_id} --response-file <path>"},
+            validator=lambda resp: (
+                (False, "Plan hash mismatch; please respond to the latest review packet.")
+                if resp.plan_hash != current_hash
+                else (True, None)
+            ),
         )
         feedback = PlanReviewFeedback.model_validate(feedback_resp.payload)
-
-        current_hash = plan_hash(plan)
-        if feedback.plan_hash != current_hash:
-            _pause_for_user(
-                gate,
-                gate_type="plan_review",
-                request_artifact=f"plan_review_packet_v{round_idx}.json",
-                response_artifact=f"plan_review_feedback_v{round_idx}.json",
-                round=round_idx,
-                message="Plan hash mismatch; please respond to the latest review packet.",
-            )
 
         if feedback.action == "approve" or (
             feedback.action == "feedback"

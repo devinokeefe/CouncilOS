@@ -1,0 +1,35 @@
+{
+  "checkpoint_id": "cp-7687672a-e9e9-4741-b694-e1f06cec98b5",
+  "run_id": "6279f119-47c0-4438-b72f-ec38953fa31d",
+  "created_at": "2026-02-19T23:03:57.800628Z",
+  "stage_name": "draft_pods",
+  "stage_index": 2,
+  "event_cursor": "7803db0f-aa3e-4447-98fc-3a72bd87d2c2",
+  "artifact_refs": {
+    "capsule": "capsule_v1",
+    "requirements": "requirements_v1",
+    "acceptance": "acceptance_v1",
+    "architecture": "architecture_v1",
+    "qa": "qa_v1",
+    "governance": "governance_v1"
+  },
+  "routing_state": {
+    "stage": "draft_pods",
+    "index": 2,
+    "candidate_count": 0,
+    "branch_count": 0,
+    "active_branches": [],
+    "branch_artifacts": {},
+    "active_candidates": [],
+    "candidate_artifacts": {},
+    "loop_counters": {
+      "repairs_applied": 0
+    },
+    "budget_counters": {
+      "validator_pass_count": 0,
+      "validator_fail_count": 0,
+      "full_cycles_without_pass": 0
+    }
+  },
+  "tool_side_effect_ledger_ref": null
+}

@@ -1,0 +1,30 @@
+{
+  "checkpoint_id": "cp-ef309536-8fdf-44ec-9fb6-804be3f44f6f",
+  "run_id": "60aa9cf0-2c8d-45e3-b9ea-86d3f92545f8",
+  "created_at": "2026-02-19T23:04:45.242035Z",
+  "stage_name": "intake",
+  "stage_index": 0,
+  "event_cursor": "a8e15272-aaca-41c5-b074-2fbd78c912d0",
+  "artifact_refs": {
+    "capsule": "capsule_v1"
+  },
+  "routing_state": {
+    "stage": "intake",
+    "index": 0,
+    "candidate_count": 0,
+    "branch_count": 0,
+    "active_branches": [],
+    "branch_artifacts": {},
+    "active_candidates": [],
+    "candidate_artifacts": {},
+    "loop_counters": {
+      "repairs_applied": 0
+    },
+    "budget_counters": {
+      "validator_pass_count": 0,
+      "validator_fail_count": 0,
+      "full_cycles_without_pass": 0
+    }
+  },
+  "tool_side_effect_ledger_ref": null
+}

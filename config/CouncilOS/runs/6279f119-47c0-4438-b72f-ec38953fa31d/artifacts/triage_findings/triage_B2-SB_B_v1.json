@@ -1,0 +1,18 @@
+{
+  "artifact_type": "triage_findings",
+  "artifact_id": "triage_B2-SB_B_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-19T23:03:57.817069Z",
+  "source_run_id": "6279f119-47c0-4438-b72f-ec38953fa31d",
+  "parents": [
+    "candidate_B2-SB_v1"
+  ],
+  "payload": {
+    "candidate_ref": "candidate_B2-SB_v1",
+    "critic_id": "B",
+    "verdict": "approve",
+    "defects": [],
+    "reroute_target": null,
+    "reroute_reason": null
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "artifact_type": "validator_report",
+  "artifact_id": "validator_B1-SA_triage_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-19T23:06:15.951486Z",
+  "source_run_id": "be747d69-b9c2-494b-944b-e8f8b00945bf",
+  "parents": [
+    "candidate_B1-SA_v1"
+  ],
+  "payload": {
+    "candidate_ref": "candidate_B1-SA_v1",
+    "overall_status": "PASS",
+    "checks": [
+      {
+        "name": "schema",
+        "hard_gate": true,
+        "pass": true,
+        "violations": []
+      },
+      {
+        "name": "id_integrity",
+        "hard_gate": true,
+        "pass": true,
+        "violations": []
+      },
+      {
+        "name": "coverage",
+        "hard_gate": true,
+        "pass": true,
+        "violations": []
+      },
+      {
+        "name": "milestone_exit_criteria",
+        "hard_gate": true,
+        "pass": true,
+        "violations": []
+      },
+      {
+        "name": "risk_closure",
+        "hard_gate": true,
+        "pass": true,
+        "violations": []
+      },
+      {
+        "name": "tool_policy_parse",
+        "hard_gate": true,
+        "pass": true,
+        "violations": []
+      },
+      {
+        "name": "measurability_heuristic",
+        "hard_gate": false,
+        "pass": true,
+        "violations": []
+      },
+      {
+        "name": "contradiction_heuristic",
+        "hard_gate": false,
+        "pass": true,
+        "violations": []
+      },
+      {
+        "name": "completeness_heuristic",
+        "hard_gate": false,
+        "pass": true,
+        "violations": []
+      }
+    ]
+  }
+}

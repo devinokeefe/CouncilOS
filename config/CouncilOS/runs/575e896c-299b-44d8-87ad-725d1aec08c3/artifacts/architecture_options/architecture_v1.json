@@ -1,0 +1,54 @@
+{
+  "artifact_type": "architecture_options",
+  "artifact_id": "architecture_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-19T23:04:33.370989Z",
+  "source_run_id": "575e896c-299b-44d8-87ad-725d1aec08c3",
+  "parents": [
+    "capsule_v1"
+  ],
+  "payload": {
+    "options": [
+      {
+        "id": "O1",
+        "summary": "Deterministic orchestrator with immutable artifacts",
+        "components": [
+          {
+            "id": "C1",
+            "name": "Orchestrator",
+            "responsibilities": [
+              "Stage transitions",
+              "Routing"
+            ]
+          },
+          {
+            "id": "C2",
+            "name": "ArtifactStore",
+            "responsibilities": [
+              "Immutable writes"
+            ]
+          }
+        ],
+        "interfaces": [
+          {
+            "id": "IF1",
+            "from": "C1",
+            "to": "C2",
+            "contract": "write_artifact/read_artifact"
+          }
+        ],
+        "tradeoffs": {
+          "pros": [
+            "Auditability"
+          ],
+          "cons": [
+            "Higher implementation complexity"
+          ]
+        },
+        "risks": [
+          "K1"
+        ]
+      }
+    ]
+  }
+}

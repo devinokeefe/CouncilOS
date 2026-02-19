@@ -1,0 +1,51 @@
+{
+  "artifact_type": "governance_draft",
+  "artifact_id": "governance_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-19T23:03:57.796121Z",
+  "source_run_id": "6279f119-47c0-4438-b72f-ec38953fa31d",
+  "parents": [
+    "capsule_v1"
+  ],
+  "payload": {
+    "risk_register": [
+      {
+        "id": "K1",
+        "severity": "high",
+        "description": "Candidate may miss requirement coverage",
+        "mitigation": {
+          "text": "Run hard validators",
+          "owner": "orchestrator",
+          "status": "planned"
+        },
+        "acceptance": null
+      }
+    ],
+    "tool_policy": {
+      "stage_policies": [
+        {
+          "stage": "PLANNING",
+          "allowlisted_tools": [],
+          "restrictions": [],
+          "hitl_triggers": [
+            "network_access",
+            "write_outside_workspace",
+            "shell_exec",
+            "secrets_access"
+          ]
+        }
+      ]
+    },
+    "hitl_policy": {
+      "when_to_interrupt": [
+        "blocking_unknowns",
+        "high_severity_decision",
+        "tool_approval_required"
+      ],
+      "approval_roles": [
+        "user",
+        "human_reviewer"
+      ]
+    }
+  }
+}

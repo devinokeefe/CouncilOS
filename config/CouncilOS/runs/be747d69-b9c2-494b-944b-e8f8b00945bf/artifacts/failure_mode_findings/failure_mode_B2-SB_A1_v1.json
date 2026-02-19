@@ -1,0 +1,29 @@
+{
+  "artifact_type": "failure_mode_findings",
+  "artifact_id": "failure_mode_B2-SB_A1_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-19T23:06:15.952486Z",
+  "source_run_id": "be747d69-b9c2-494b-944b-e8f8b00945bf",
+  "parents": [
+    "candidate_B2-SB_v1"
+  ],
+  "payload": {
+    "candidate_ref": "candidate_B2-SB_v1",
+    "taxonomy": "CUSTOM_V1",
+    "critical_findings": [
+      {
+        "id": "FM1",
+        "category": "coverage",
+        "severity": "high",
+        "finding": "MUST requirements may be untested",
+        "required_closure": "mitigate",
+        "status": "mitigated",
+        "closure": {
+          "rationale": "Coverage validator enforces mapping",
+          "signoff": "system"
+        }
+      }
+    ],
+    "closure_pass": true
+  }
+}

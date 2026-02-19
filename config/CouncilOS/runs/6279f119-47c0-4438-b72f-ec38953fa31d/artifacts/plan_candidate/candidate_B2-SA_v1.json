@@ -1,0 +1,255 @@
+{
+  "artifact_type": "plan_candidate",
+  "artifact_id": "candidate_B2-SA_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-19T23:03:57.816069Z",
+  "source_run_id": "6279f119-47c0-4438-b72f-ec38953fa31d",
+  "parents": [
+    "branch_B2_v1"
+  ],
+  "payload": {
+    "candidate_id": "B2-SA",
+    "branch_id": "B2",
+    "synthesizer_id": "SA",
+    "inputs": {
+      "capsule_ref": "capsule_v1",
+      "draft_refs": [
+        "requirements_v1",
+        "acceptance_v1",
+        "architecture_v1",
+        "qa_v1",
+        "governance_v1"
+      ],
+      "branch_ref": "branch_B2_v1"
+    },
+    "plan_package": {
+      "meta": {
+        "plan_id": "9e85e2c6-be1f-4002-a399-726f54dd9b57",
+        "version": "v1",
+        "created_at": "2026-02-19T23:03:57.816069Z",
+        "source_run_id": "6279f119-47c0-4438-b72f-ec38953fa31d",
+        "schema_version": "1.0.0",
+        "candidate_id": "B2-SA",
+        "branch_id": "B2",
+        "plan_status": "CANDIDATE"
+      },
+      "project_capsule": {
+        "brief": "# Brief 01\nBuild a high-confidence planning workflow for project variant 01.\n",
+        "problem_statement": "Build a planning system that turns vague briefs into frozen plans.",
+        "goals": [
+          "Produce deterministic frozen plans",
+          "Preserve strong auditability"
+        ],
+        "non_goals": [
+          "Autonomous code execution in v1"
+        ],
+        "constraints": [
+          {
+            "id": "CNS1",
+            "type": "tech",
+            "text": "Python 3.12"
+          }
+        ],
+        "assumptions": [
+          {
+            "id": "A1",
+            "text": "Users provide trusted prompts",
+            "impact": "medium",
+            "confidence": "high",
+            "needs_confirmation": false
+          }
+        ],
+        "open_questions": [
+          {
+            "id": "Q1",
+            "text": "Need tools layer in v2?",
+            "impact": "medium",
+            "blocking": false
+          }
+        ],
+        "success_metrics": [
+          "At least one candidate frozen",
+          "Checkpoint resume works"
+        ],
+        "stakeholders": [],
+        "glossary": []
+      },
+      "executive_summary": null,
+      "requirements": [
+        {
+          "id": "R1",
+          "priority": "MUST",
+          "text": "Freeze plan",
+          "rationale": "Primary outcome"
+        },
+        {
+          "id": "R2",
+          "priority": "SHOULD",
+          "text": "Support resume",
+          "rationale": "Operational resilience"
+        }
+      ],
+      "acceptance_tests": [
+        {
+          "id": "AT1",
+          "maps_to_requirements": [
+            "R1"
+          ],
+          "type": "system",
+          "procedure": "Run council pipeline",
+          "pass_criteria": "plan_frozen exists"
+        }
+      ],
+      "architecture": {
+        "options": [
+          {
+            "id": "O1",
+            "summary": "Deterministic orchestrator with immutable artifacts",
+            "components": [
+              {
+                "id": "C1",
+                "name": "Orchestrator",
+                "responsibilities": [
+                  "Stage machine"
+                ]
+              },
+              {
+                "id": "C2",
+                "name": "ArtifactStore",
+                "responsibilities": [
+                  "Immutable writes"
+                ]
+              }
+            ],
+            "interfaces": [
+              {
+                "id": "IF1",
+                "from": "C1",
+                "to": "C2",
+                "contract": "write/read artifacts"
+              }
+            ],
+            "tradeoffs": {
+              "pros": [
+                "Determinism"
+              ],
+              "cons": [
+                "Extra boilerplate"
+              ]
+            },
+            "risks": [
+              "K1"
+            ]
+          }
+        ],
+        "chosen": {
+          "option_id": "O1",
+          "rationale": "Balances determinism and practical implementation",
+          "high_level_dataflow": "brief -> drafts -> candidate -> validate -> freeze",
+          "key_design_decisions": [
+            "DEC1"
+          ]
+        }
+      },
+      "milestones": [
+        {
+          "id": "M1",
+          "name": "Phase 1",
+          "deliverables": [
+            {
+              "id": "DL1",
+              "text": "End-to-end frozen plan pipeline"
+            }
+          ],
+          "exit_criteria": [
+            "CLI run command produces frozen plan"
+          ],
+          "depends_on": []
+        }
+      ],
+      "risk_register": [
+        {
+          "id": "K1",
+          "severity": "high",
+          "description": "Coverage regressions",
+          "mitigation": {
+            "text": "Hard validator checks",
+            "owner": "orchestrator",
+            "status": "planned"
+          },
+          "acceptance": null
+        }
+      ],
+      "governance": {
+        "failure_modes": [
+          {
+            "id": "FM1",
+            "taxonomy": "CUSTOM_V1",
+            "category": "coverage",
+            "finding": "MUST requirements may be untested",
+            "severity": "high",
+            "closure": {
+              "status": "mitigated",
+              "rationale": "Coverage validator enforces mapping",
+              "signoff": "system"
+            }
+          }
+        ],
+        "tool_policy": {
+          "stage_policies": [
+            {
+              "stage": "PLANNING",
+              "allowlisted_tools": [],
+              "restrictions": [],
+              "hitl_triggers": [
+                "network_access",
+                "write_outside_workspace",
+                "shell_exec",
+                "secrets_access"
+              ]
+            }
+          ]
+        },
+        "hitl_policy": {
+          "when_to_interrupt": [
+            "blocking_unknowns",
+            "high_severity_decision",
+            "tool_approval_required"
+          ],
+          "approval_roles": [
+            "user",
+            "human_reviewer"
+          ]
+        }
+      },
+      "decision_log": [
+        {
+          "id": "DEC1",
+          "question": "Which architecture should v1 use?",
+          "choice": "Deterministic orchestrator + immutable store",
+          "rationale": "Improves auditability and replay",
+          "alternatives_considered": [
+            "Chat-log driven planner"
+          ],
+          "what_would_change_this_decision": [
+            "Need lower implementation overhead"
+          ],
+          "evidence_pointers": [
+            {
+              "artifact_ref": "branch_B2_v1",
+              "entity_id": null,
+              "json_pointer": "/plan_package/architecture/chosen",
+              "note": "Selected architecture rationale",
+              "candidate_id": "B2-SA",
+              "artifact_id": "DEC1",
+              "quote": null
+            }
+          ]
+        }
+      ],
+      "supplemental_evaluations": [],
+      "synthesis_warnings": [],
+      "appendix": null
+    }
+  }
+}

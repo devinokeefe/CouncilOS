@@ -1,0 +1,25 @@
+{
+  "artifact_type": "qa_strategy",
+  "artifact_id": "qa_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-19T23:06:15.931411Z",
+  "source_run_id": "be747d69-b9c2-494b-944b-e8f8b00945bf",
+  "parents": [
+    "capsule_v1"
+  ],
+  "payload": {
+    "test_strategy": "Unit and deterministic integration tests",
+    "quality_gates": [
+      "ruff",
+      "mypy",
+      "pytest"
+    ],
+    "observability_plan": [
+      "Event log per stage"
+    ],
+    "nonfunctional_test_areas": [
+      "Determinism",
+      "Immutability"
+    ]
+  }
+}

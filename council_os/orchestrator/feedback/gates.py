@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Type
+from typing import Any, Callable, Type
 
 from council_os.orchestrator.feedback import event_log
 from council_os.orchestrator.feedback.human_input import HumanInputProvider
@@ -45,6 +45,7 @@ class HumanFeedbackGate:
         response_model: Type[Any],
         round: int,
         instructions: dict[str, str],
+        validator: Callable[[Any], tuple[bool, str | None]] | None = None,
     ) -> FeedbackResponse:
         request_path = self.store.path(request_artifact)
         event_log.append_event(
@@ -89,6 +90,30 @@ class HumanFeedbackGate:
             raise NeedsUserInput(self.run_id, pending_path)
 
         response_obj = response_model.model_validate(payload)
+        if validator is not None:
+            ok, message = validator(response_obj)
+            if not ok:
+                pending = PendingAction(
+                    run_id=self.run_id,
+                    gate_type=gate_type,  # type: ignore[arg-type]
+                    request_artifact=request_artifact,
+                    expected_response_artifact=response_artifact,
+                    round=round,
+                    instructions=instructions,
+                )
+                pending_path = self.store.write_json("pending_action.json", pending.model_dump())
+                event_log.append_event(
+                    self.run_root,
+                    event_log.new_event(
+                        run_id=self.run_id,
+                        stage="planning",
+                        event_type="WAIT_FOR_USER",
+                        gate_type=gate_type,
+                        artifact_refs=[request_artifact, "pending_action.json"],
+                        message=message or "Waiting for user input",
+                    ),
+                )
+                raise NeedsUserInput(self.run_id, pending_path)
         response_path = self.store.write_json(response_artifact, response_obj.model_dump())
         event_log.append_event(
             self.run_root,

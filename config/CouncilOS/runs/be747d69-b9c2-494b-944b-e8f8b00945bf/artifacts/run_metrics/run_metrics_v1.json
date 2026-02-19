@@ -1,0 +1,22 @@
+{
+  "artifact_type": "run_metrics",
+  "artifact_id": "run_metrics_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-19T23:06:37.126932Z",
+  "source_run_id": "be747d69-b9c2-494b-944b-e8f8b00945bf",
+  "parents": [
+    "frozen_B1-SA_vFinal"
+  ],
+  "payload": {
+    "run_id": "be747d69-b9c2-494b-944b-e8f8b00945bf",
+    "stage_durations_sec": {
+      "freeze": 0.024974
+    },
+    "candidate_count": 4,
+    "repaired_candidate_count": 0,
+    "validator_pass_count": 4,
+    "validator_fail_count": 0,
+    "frozen_count": 1,
+    "total_duration_sec": 0.161782
+  }
+}

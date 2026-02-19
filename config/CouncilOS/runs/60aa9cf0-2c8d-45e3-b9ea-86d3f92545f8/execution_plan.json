@@ -1,0 +1,77 @@
+{
+  "run_id": "60aa9cf0-2c8d-45e3-b9ea-86d3f92545f8",
+  "created_at": "2026-02-19T23:04:45.233943+00:00",
+  "run_config_version": "1.0.0",
+  "schemas_version": "1.0.0",
+  "stage_machine_version": "1.0.0",
+  "selection_protocol_version": "1.0.0",
+  "validator_suite_version": "1.0.0",
+  "branching_policy": {
+    "branch_count": 3,
+    "keep_count": 2,
+    "contrarian_rule": true
+  },
+  "ensemble_policy": {
+    "synthesizers_per_branch": 2,
+    "triage_critics": 2,
+    "failure_mode_analysts": 2,
+    "judge_panel_size": 3
+  },
+  "iteration_caps": {
+    "max_candidate_repairs": 3,
+    "max_pod_reruns": 2,
+    "max_branch_rebuilds": 1,
+    "max_full_cycles_without_pass": 2
+  },
+  "stages": [
+    "intake",
+    "clarify",
+    "draft_pods",
+    "branch",
+    "synthesize",
+    "validate",
+    "triage",
+    "failure_mode",
+    "judge",
+    "freeze"
+  ],
+  "roles": {
+    "requirements_pod": {
+      "provider": "mock",
+      "model": "mock-v1",
+      "temperature": 0.0,
+      "max_tokens": 2000,
+      "prompt_version_hash": "requirements_v1",
+      "tools_allowed": [],
+      "output_schema": "dynamic"
+    },
+    "synthesizer_a": {
+      "provider": "mock_a",
+      "model": "mock-a-v1",
+      "temperature": 0.0,
+      "max_tokens": 2000,
+      "prompt_version_hash": "synth_a_v1",
+      "tools_allowed": [],
+      "output_schema": "PlanPackage"
+    },
+    "synthesizer_b": {
+      "provider": "mock_b",
+      "model": "mock-b-v1",
+      "temperature": 0.0,
+      "max_tokens": 2000,
+      "prompt_version_hash": "synth_b_v1",
+      "tools_allowed": [],
+      "output_schema": "PlanPackage"
+    },
+    "judge_1": {
+      "provider": "mock_j",
+      "model": "mock-j-v1",
+      "temperature": 0.0,
+      "max_tokens": 1200,
+      "prompt_version_hash": "judge_v1",
+      "tools_allowed": [],
+      "output_schema": "JudgePairwisePayload"
+    }
+  },
+  "prompt_pack_hash": "c0ceb6f34b3b4fdbece7d009938e343e26a8b4c3870cd10b5ac44c34b51b45cd"
+}

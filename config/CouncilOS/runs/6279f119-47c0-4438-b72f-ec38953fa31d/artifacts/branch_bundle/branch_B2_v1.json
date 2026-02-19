@@ -1,0 +1,35 @@
+{
+  "artifact_type": "branch_bundle",
+  "artifact_id": "branch_B2_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-19T23:03:57.808009Z",
+  "source_run_id": "6279f119-47c0-4438-b72f-ec38953fa31d",
+  "parents": [
+    "architecture_v1"
+  ],
+  "payload": {
+    "branch_id": "B2",
+    "selected_arch_option": "O1",
+    "milestone_strategy": {
+      "style": "big_bang",
+      "notes": "Branch B2 staged rollout"
+    },
+    "acceptance_strategy": {
+      "notes": "Cover MUST requirements first"
+    },
+    "governance_posture": {
+      "tooling_level": "none",
+      "hitl_strictness": "medium"
+    },
+    "risk_posture": {
+      "notes": "Prefer explicit closure"
+    },
+    "pre_synthesis_scores": {
+      "feasibility": 0.85,
+      "complexity_risk": 0.15000000000000002,
+      "clarity": 0.85,
+      "overall": 0.85
+    },
+    "rationale": "Deterministic branch generation for B2."
+  }
+}

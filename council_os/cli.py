@@ -555,7 +555,9 @@ def lint(config: Path = typer.Option(..., "--config")) -> None:
         raise typer.Exit(code=1)
 
 
-if __name__ == "__main__":
-    app()
 def _redirect_engine_output():
     return redirect_stdout(sys.stderr)
+
+
+if __name__ == "__main__":
+    app()

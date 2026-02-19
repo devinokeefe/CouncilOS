@@ -1,0 +1,30 @@
+{
+  "checkpoint_id": "cp-d5573949-d66e-449f-b3a6-31091e49cf27",
+  "run_id": "60aa9cf0-2c8d-45e3-b9ea-86d3f92545f8",
+  "created_at": "2026-02-19T23:04:45.255755Z",
+  "stage_name": "clarify",
+  "stage_index": 1,
+  "event_cursor": "2c2a1d8b-5d03-41e7-b8d3-18f5ad55edd3",
+  "artifact_refs": {
+    "capsule": "capsule_v1"
+  },
+  "routing_state": {
+    "stage": "clarify",
+    "index": 1,
+    "candidate_count": 0,
+    "branch_count": 0,
+    "active_branches": [],
+    "branch_artifacts": {},
+    "active_candidates": [],
+    "candidate_artifacts": {},
+    "loop_counters": {
+      "repairs_applied": 0
+    },
+    "budget_counters": {
+      "validator_pass_count": 0,
+      "validator_fail_count": 0,
+      "full_cycles_without_pass": 0
+    }
+  },
+  "tool_side_effect_ledger_ref": null
+}

@@ -1,0 +1,38 @@
+{
+  "artifact_type": "judge_pairwise_result",
+  "artifact_id": "judge_6_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-19T23:06:15.951486Z",
+  "source_run_id": "be747d69-b9c2-494b-944b-e8f8b00945bf",
+  "parents": [
+    "candidate_B1-SA_v1"
+  ],
+  "payload": {
+    "comparison": {
+      "a": "B1-SB",
+      "b": "B2-SA"
+    },
+    "judge_id": "J3",
+    "judge_model": "mock/mock-v1",
+    "winner": "b",
+    "scores": {
+      "feasibility": 8,
+      "testability": 8,
+      "governance": 8,
+      "architecture": 8,
+      "clarity": 8
+    },
+    "evidence": [
+      {
+        "artifact_ref": "candidate",
+        "entity_id": null,
+        "json_pointer": "/plan_package/decision_log/0",
+        "note": null,
+        "candidate_id": "B1-SB",
+        "artifact_id": "DEC1",
+        "quote": null
+      }
+    ],
+    "notes": "Deterministic mock judge result"
+  }
+}
