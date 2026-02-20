@@ -40,6 +40,8 @@ EventType = Literal[
     "tool_call",
     "tool_result",
     "error",
+    "handoff_accept",
+    "handoff_reject",
 ]
 
 

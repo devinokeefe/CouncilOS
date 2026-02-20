@@ -7,6 +7,7 @@ from uuid import UUID, uuid4
 
 import pytest
 import yaml
+from pydantic import BaseModel
 
 from council_os.agents.schemas import (
     SCHEMA_VERSION,
@@ -28,6 +29,19 @@ class DummyHQPipeline(HQPipeline):
         super().__init__(*args, **kwargs)
         self.fail_arch_merge = fail_arch_merge
         self.calls: Counter[str] = Counter()
+
+    def _feedback_invoke_json(
+        self,
+        messages: list[dict[str, str]],
+        output_model: type[BaseModel],
+        stage: str,
+        prompt_metadata: dict[str, object],
+    ) -> BaseModel:
+        # Avoid live LLM calls in resume tests.
+        try:
+            return output_model()  # type: ignore[call-arg]
+        except Exception:
+            return output_model.model_construct()
 
     def _schema_dir(self) -> Path:
         return self.run_root / "schemas"
@@ -247,8 +261,14 @@ class DummyHQPipeline(HQPipeline):
         validator_ref = f"validator_{candidate_id}_v1"
         triage_ref = f"triage_{candidate_id}_v1"
         failure_ref = f"failure_modes_{candidate_id}_v1"
+        plan_payload = _build_plan_payload(self.run_id, candidate_id)
         self._env("synthesis.candidate_delta", "candidate_delta", delta_ref)
-        self._env("assemble.plan_candidate", "plan_candidate", plan_ref)
+        self._env(
+            "assemble.plan_candidate",
+            "plan_candidate",
+            plan_ref,
+            plan_payload.model_dump(by_alias=True),
+        )
         self._env(
             "validate.plan_candidate",
             "validator_report",
@@ -275,7 +295,7 @@ class DummyHQPipeline(HQPipeline):
             author_family="mock",
             delta_ref=delta_ref,
             plan_ref=plan_ref,
-            payload=None,  # type: ignore[arg-type]
+            payload=plan_payload,
             validator_ref=validator_ref,
             triage_ref=triage_ref,
             failure_mode_ref=failure_ref,
@@ -334,24 +354,7 @@ class DummyHQPipeline(HQPipeline):
 
 
 def _write_candidate_artifacts(store: ArtifactStore, run_id: UUID, candidate_id: str) -> dict[str, object]:
-    capsule_env = project_capsule(run_id, "brief")
-    capsule_payload = ProjectCapsulePayload.model_validate(capsule_env.payload)
-    base_env = plan_candidate(
-        run_id,
-        capsule_payload,
-        branch_ref="branch_set_v1",
-        branch_id="B1",
-        synthesizer_id="S1",
-        draft_refs=[],
-    )
-    base_payload = PlanCandidatePayload.model_validate(base_env.payload)
-    plan_payload = PlanCandidatePayload(
-        candidate_id=candidate_id,
-        branch_id="B1",
-        synthesizer_id="S1",
-        inputs=base_payload.inputs,
-        plan_package=base_payload.plan_package,
-    )
+    plan_payload = _build_plan_payload(run_id, candidate_id)
     plan_ref = f"plan_candidate_{candidate_id}_v1"
     delta_ref = f"candidate_delta_{candidate_id}_v1"
     validator_ref = f"validator_{candidate_id}_v1"
@@ -433,6 +436,29 @@ def _write_candidate_artifacts(store: ArtifactStore, run_id: UUID, candidate_id:
         "triage_ref": triage_ref,
         "failure_mode_ref": failure_ref,
     }
+
+
+def _build_plan_payload(run_id: UUID, candidate_id: str) -> PlanCandidatePayload:
+    capsule_env = project_capsule(run_id, "brief")
+    capsule_payload = ProjectCapsulePayload.model_validate(capsule_env.payload)
+    base_env = plan_candidate(
+        run_id,
+        capsule_payload,
+        branch_ref="branch_set_v1",
+        branch_id="B1",
+        synthesizer_id="S1",
+        draft_refs=[],
+    )
+    base_payload = PlanCandidatePayload.model_validate(base_env.payload)
+    plan_meta = base_payload.plan_package.meta.model_copy(update={"candidate_id": candidate_id})
+    plan_package = base_payload.plan_package.model_copy(update={"meta": plan_meta})
+    return PlanCandidatePayload(
+        candidate_id=candidate_id,
+        branch_id="B1",
+        synthesizer_id="S1",
+        inputs=base_payload.inputs,
+        plan_package=plan_package,
+    )
 
 
 def test_hq_resume_from_checkpoint_skips_completed_stages(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -628,8 +654,14 @@ def test_hq_judge_fallback_after_max_cycles(tmp_path: Path, monkeypatch: pytest.
             triage_ref = f"triage_{candidate_id}_v{version}"
             failure_ref = f"failure_modes_{candidate_id}_v{version}"
 
+            plan_payload = _build_plan_payload(self.run_id, candidate_id)
             self._env("synthesis.candidate_delta", "candidate_delta", delta_ref)
-            self._env("assemble.plan_candidate", "plan_candidate", plan_ref)
+            self._env(
+                "assemble.plan_candidate",
+                "plan_candidate",
+                plan_ref,
+                plan_payload.model_dump(by_alias=True),
+            )
             self._env(
                 "validate.plan_candidate",
                 "validator_report",
@@ -662,7 +694,7 @@ def test_hq_judge_fallback_after_max_cycles(tmp_path: Path, monkeypatch: pytest.
                 author_family="mock",
                 delta_ref=delta_ref,
                 plan_ref=plan_ref,
-                payload=None,  # type: ignore[arg-type]
+                payload=plan_payload,
                 validator_ref=validator_ref,
                 triage_ref=triage_ref,
                 failure_mode_ref=failure_ref,

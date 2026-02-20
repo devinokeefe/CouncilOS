@@ -278,14 +278,47 @@ def run(
 @app.command()
 def implement(
     config: Path = typer.Option(...),
-    plan: Path = typer.Option(..., "--plan"),
-    handoff_bundle: Path = typer.Option(..., "--handoff-bundle"),
-    repo_context: Path = typer.Option(..., "--repo-context"),
-    workspace_context: Path = typer.Option(..., "--workspace-context"),
+    plan: Path | None = typer.Option(None, "--plan"),
+    handoff_bundle: Path | None = typer.Option(None, "--handoff-bundle"),
+    repo_context: Path | None = typer.Option(None, "--repo-context"),
+    workspace_context: Path | None = typer.Option(None, "--workspace-context"),
+    from_handoff: Path | None = typer.Option(
+        None,
+        "--from-handoff",
+        help="Planning handoff bundle path; derives plan and context inputs automatically.",
+    ),
+    allow_repo_override: bool = typer.Option(
+        False,
+        "--allow-repo-override/--no-allow-repo-override",
+        help="Allow repo snapshot mismatch during handoff acceptance (recorded).",
+    ),
 ) -> None:
     storage_root = _storage_root_from_config(config)
     engine = _impl_engine(storage_root)
-    result = engine.run(plan, repo_context, workspace_context, config, handoff_bundle)
+    if from_handoff is None:
+        if plan is None or handoff_bundle is None or repo_context is None or workspace_context is None:
+            raise typer.BadParameter(
+                "--plan, --handoff-bundle, --repo-context, and --workspace-context are required when --from-handoff is not set"
+            )
+        result = engine.run(
+            plan,
+            repo_context,
+            workspace_context,
+            config,
+            handoff_bundle,
+            allow_repo_override=allow_repo_override,
+        )
+    else:
+        dummy = Path(".")
+        result = engine.run(
+            plan or dummy,
+            repo_context or dummy,
+            workspace_context or dummy,
+            config,
+            handoff_bundle or from_handoff,
+            from_handoff=from_handoff,
+            allow_repo_override=allow_repo_override,
+        )
     payload = {"run_id": str(result.run_id), "run_root": str(result.run_root)}
     typer.echo(json.dumps(payload))
 

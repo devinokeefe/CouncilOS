@@ -115,6 +115,7 @@ from council_os.orchestrator.feedback.schemas import (
 from council_os.orchestrator.feedback.store import PlanningArtifactStore
 from council_os.orchestrator.feedback.triage import build_clarification_questions, run_preplan_triage
 from council_os.orchestrator.feedback.utils import plan_hash
+from council_os.orchestrator.handoff.finalize import build_config_snapshot, finalize_and_write_handoff
 from council_os.orchestrator.tools import (
     EchoTool,
     IdempotencyLedger,
@@ -3764,22 +3765,34 @@ class Engine:
                 artifact_refs["frozen"] = frozen.artifact_id
                 markdown = render_plan_markdown(winner_state.payload.plan_package)
                 (run_root / "frozen_plan.md").write_text(markdown, encoding="utf-8")
-                plan_final = winner_state.payload.plan_package.model_dump(by_alias=True, mode="json")
-                planning_store.write_json("plan_package_final.json", plan_final)
-                planning_files = sorted(
-                    path.name for path in planning_store.root.iterdir() if path.is_file()
-                )
-                planning_store.write_json(
-                    "planning_handoff_bundle.json",
-                    {
-                        "schema_version": "1.0",
-                        "run_id": str(run_id),
-                        "plan_package_final_ref": "plan_package_final.json",
-                        "event_log_ref": "event_log.jsonl"
-                        if planning_store.exists("event_log.jsonl")
-                        else None,
-                        "artifacts": planning_files,
-                    },
+                repo_context_path: Path | None = None
+                workspace_context_path: Path | None = None
+                handoff_cfg = config.get("handoff", {}) if isinstance(config, dict) else {}
+                if isinstance(handoff_cfg, dict):
+                    repo_cfg = handoff_cfg.get("repo_context_path")
+                    if isinstance(repo_cfg, str) and repo_cfg.strip():
+                        repo_context_path = Path(repo_cfg)
+                        if not repo_context_path.is_absolute():
+                            repo_context_path = (config_path.parent / repo_context_path).resolve()
+                    workspace_cfg = handoff_cfg.get("workspace_context_path")
+                    if isinstance(workspace_cfg, str) and workspace_cfg.strip():
+                        workspace_context_path = Path(workspace_cfg)
+                        if not workspace_context_path.is_absolute():
+                            workspace_context_path = (config_path.parent / workspace_context_path).resolve()
+                if repo_context_path is None and (run_root / "repo_context.json").exists():
+                    repo_context_path = run_root / "repo_context.json"
+                if workspace_context_path is None and (run_root / "workspace_context.json").exists():
+                    workspace_context_path = run_root / "workspace_context.json"
+                config_snapshot = build_config_snapshot(config, feedback_cfg)
+                finalize_and_write_handoff(
+                    run_id=str(run_id),
+                    run_root=run_root,
+                    plan=winner_state.payload.plan_package.model_dump(by_alias=True, mode="json"),
+                    feedback_cfg=feedback_cfg,
+                    config_snapshot=config_snapshot,
+                    repo_context_path=repo_context_path,
+                    workspace_context_path=workspace_context_path,
+                    force=False,
                 )
 
             stage_elapsed = time.perf_counter() - stage_start

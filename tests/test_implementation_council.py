@@ -33,6 +33,7 @@ from council_os.agents.schemas import (
     Tradeoffs,
 )
 from council_os.implementation.engine import ImplementationEngine
+from council_os.implementation.handoff.errors import HandoffRejected
 from council_os.implementation.event_log import append_event, new_event
 from council_os.implementation.manifest import ManifestInput, create_manifest
 from council_os.implementation.patches import (
@@ -63,6 +64,7 @@ from council_os.implementation.schemas import (
     RemoteOpBudget,
     RemoteOpSpec,
     RemoteOpsManifestPayload,
+    RepoSnapshotPayload,
     ToolProbeResult,
     ToolProbeResultsPayload,
     ToolRegistryPayload,
@@ -70,6 +72,17 @@ from council_os.implementation.schemas import (
     StageHandoffPayload,
     WorkspaceContextPayload,
 )
+from council_os.handoff.hashing import artifact_hash, plan_content_hash
+from council_os.handoff.schemas import (
+    ApprovalRef,
+    ClarificationsRef,
+    HandoffArtifactRef,
+    HumanFeedbackBundle,
+    PlanFreezeRecord,
+    PlanningHandoffBundle,
+    RepoSnapshot,
+)
+from council_os.orchestrator.handoff.bundle import compute_handoff_digest
 from council_os.implementation.content import MarkdownDetectedError
 from council_os.implementation.secrets import SecretDetectedError
 from council_os.implementation.store import (
@@ -191,13 +204,96 @@ def _write_plan(path: Path) -> PlanPackage:
     return plan
 
 
-def _write_handoff_bundle(path: Path) -> None:
-    payload = PlanningHandoffBundlePayload(
-        decision_record={"id": "DEC-PLAN-1"},
-        validator_reports=[],
-        failure_mode_findings=[],
+def _write_handoff_bundle(
+    path: Path,
+    *,
+    plan_path: Path,
+    repo_context_path: Path,
+    workspace_context_path: Path,
+) -> None:
+    planning_root = path.parent
+    plan_payload = json.loads(plan_path.read_text(encoding="utf-8"))
+    plan_hash = plan_content_hash(plan_payload)
+
+    config_snapshot = {"schema_version": "2.1.0", "source": "test"}
+    config_snapshot_path = planning_root / "config_snapshot.json"
+    config_snapshot_path.write_text(json.dumps(config_snapshot, sort_keys=True), encoding="utf-8")
+
+    human_feedback = HumanFeedbackBundle(
+        clarifications=[],
+        plan_review_rounds=[],
+        notes=["test"],
     )
-    path.write_text(payload.model_dump_json(indent=2), encoding="utf-8")
+    human_feedback_path = planning_root / "human_feedback_bundle.json"
+    human_feedback_path.write_text(human_feedback.model_dump_json(), encoding="utf-8")
+
+    plan_ref = HandoffArtifactRef(
+        path="planning/plan_package_final.json", sha256=artifact_hash(plan_payload)
+    )
+    config_ref = HandoffArtifactRef(
+        path="planning/config_snapshot.json", sha256=artifact_hash(config_snapshot)
+    )
+    human_feedback_ref = HandoffArtifactRef(
+        path="planning/human_feedback_bundle.json",
+        sha256=artifact_hash(human_feedback.model_dump()),
+    )
+    freeze_record = PlanFreezeRecord(
+        plan_id=str(plan_payload.get("meta", {}).get("plan_id", "")),
+        planning_run_id="test-run",
+        frozen_at=datetime.now(UTC).isoformat(),
+        plan_package_final_ref=plan_ref,
+        plan_content_hash=plan_hash,
+        interactive_flags={"clarify_intent_enabled": False, "plan_review_enabled": False},
+        clarification_resolutions_ref=None,
+        plan_approval_ref=None,
+        approved_plan_hash=None,
+        config_snapshot_ref=config_ref,
+        human_feedback_bundle_ref=human_feedback_ref,
+        notes="test",
+    )
+    freeze_path = planning_root / "plan_freeze_record.json"
+    freeze_path.write_text(freeze_record.model_dump_json(), encoding="utf-8")
+    freeze_ref = HandoffArtifactRef(
+        path="planning/plan_freeze_record.json",
+        sha256=artifact_hash(freeze_record.model_dump()),
+    )
+
+    repo_context_payload = json.loads(repo_context_path.read_text(encoding="utf-8"))
+    workspace_context_payload = json.loads(workspace_context_path.read_text(encoding="utf-8"))
+    repo_context_ref = HandoffArtifactRef(
+        path="repo_context.json", sha256=artifact_hash(repo_context_payload)
+    )
+    workspace_context_ref = HandoffArtifactRef(
+        path="workspace_context.json", sha256=artifact_hash(workspace_context_payload)
+    )
+
+    bundle = PlanningHandoffBundle(
+        handoff_bundle_id="HB-test",
+        planning_run_id="test-run",
+        implementation_run_id=None,
+        final_plan={
+            "path": plan_ref.path,
+            "sha256": plan_ref.sha256,
+            "plan_content_hash": plan_hash,
+        },
+        freeze_record=freeze_ref,
+        approval=ApprovalRef(required=False),
+        clarifications=ClarificationsRef(required=False),
+        human_feedback_bundle=human_feedback_ref,
+        config_snapshot=config_ref,
+        repo_snapshot=RepoSnapshot(commit_sha="unknown", branch="unknown", dirty=True),
+        required_artifacts=[
+            plan_ref,
+            freeze_ref,
+            config_ref,
+            repo_context_ref,
+            workspace_context_ref,
+        ],
+        optional_artifacts=[human_feedback_ref],
+        handoff_digest="",
+    )
+    bundle = bundle.model_copy(update={"handoff_digest": compute_handoff_digest(bundle)})
+    path.write_text(bundle.model_dump_json(indent=2), encoding="utf-8")
 
 
 def _write_repo_context(path: Path, repo_root: Path, outcomes: list[str] | None = None) -> None:
@@ -455,18 +551,25 @@ def _setup_run_inputs(
     repo_root = tmp_path / "repo"
     repo_root.mkdir()
     (repo_root / "README.md").write_text("hello", encoding="utf-8")
-    plan_path = tmp_path / "plan_package_final.json"
-    handoff_bundle_path = tmp_path / "planning_handoff_bundle.json"
+    planning_root = tmp_path / "planning"
+    planning_root.mkdir()
+    plan_path = planning_root / "plan_package_final.json"
+    handoff_bundle_path = planning_root / "planning_handoff_bundle.json"
     repo_context_path = tmp_path / "repo_context.json"
     workspace_context_path = tmp_path / "workspace_context.json"
     config_path = tmp_path / "config.yml"
     _write_plan(plan_path)
-    _write_handoff_bundle(handoff_bundle_path)
     if repo_context_v2:
         _write_repo_context_v2(repo_context_path, repo_root, outcomes=outcomes, profile_id=profile_id)
     else:
         _write_repo_context(repo_context_path, repo_root, outcomes=outcomes)
     _write_workspace_context(workspace_context_path, Path("workspace"))
+    _write_handoff_bundle(
+        handoff_bundle_path,
+        plan_path=plan_path,
+        repo_context_path=repo_context_path,
+        workspace_context_path=workspace_context_path,
+    )
     _write_config(
         config_path,
         storage_root,
@@ -497,19 +600,33 @@ def test_implementation_run_success(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
     repo_root.mkdir()
     (repo_root / "README.md").write_text("hello", encoding="utf-8")
-    plan_path = tmp_path / "plan_package_final.json"
-    handoff_bundle_path = tmp_path / "planning_handoff_bundle.json"
+    planning_root = tmp_path / "planning"
+    planning_root.mkdir()
+    plan_path = planning_root / "plan_package_final.json"
+    handoff_bundle_path = planning_root / "planning_handoff_bundle.json"
     repo_context_path = tmp_path / "repo_context.json"
     workspace_context_path = tmp_path / "workspace_context.json"
     config_path = tmp_path / "config.yml"
     _write_plan(plan_path)
-    _write_handoff_bundle(handoff_bundle_path)
     _write_repo_context(repo_context_path, repo_root)
     _write_workspace_context(workspace_context_path, Path("workspace"))
+    _write_handoff_bundle(
+        handoff_bundle_path,
+        plan_path=plan_path,
+        repo_context_path=repo_context_path,
+        workspace_context_path=workspace_context_path,
+    )
     _write_config(config_path, storage_root)
 
     engine = ImplementationEngine(storage_root=storage_root)
-    result = engine.run(plan_path, repo_context_path, workspace_context_path, config_path, handoff_bundle_path)
+    result = engine.run(
+        plan_path,
+        repo_context_path,
+        workspace_context_path,
+        config_path,
+        handoff_bundle_path,
+        allow_repo_override=True,
+    )
     run_root = result.run_root
     assert (run_root / "implementation_run_manifest.json").exists()
     assert (run_root / "implementation_event_log.jsonl").exists()
@@ -532,22 +649,33 @@ def test_missing_repo_context_rejected(tmp_path: Path) -> None:
     storage_root = tmp_path / "runs"
     repo_root = tmp_path / "repo"
     repo_root.mkdir()
-    plan_path = tmp_path / "plan_package_final.json"
-    handoff_bundle_path = tmp_path / "planning_handoff_bundle.json"
+    planning_root = tmp_path / "planning"
+    planning_root.mkdir()
+    plan_path = planning_root / "plan_package_final.json"
+    handoff_bundle_path = planning_root / "planning_handoff_bundle.json"
+    repo_context_path = tmp_path / "repo_context.json"
     workspace_context_path = tmp_path / "workspace_context.json"
     config_path = tmp_path / "config.yml"
     _write_plan(plan_path)
-    _write_handoff_bundle(handoff_bundle_path)
+    _write_repo_context(repo_context_path, repo_root)
     _write_workspace_context(workspace_context_path, Path("workspace"))
+    _write_handoff_bundle(
+        handoff_bundle_path,
+        plan_path=plan_path,
+        repo_context_path=repo_context_path,
+        workspace_context_path=workspace_context_path,
+    )
+    repo_context_path.unlink()
     _write_config(config_path, storage_root)
     engine = ImplementationEngine(storage_root=storage_root)
-    with pytest.raises(FileNotFoundError):
+    with pytest.raises(Exception):
         engine.run(
             plan_path,
             tmp_path / "missing_repo_context.json",
             workspace_context_path,
             config_path,
             handoff_bundle_path,
+            allow_repo_override=True,
         )
 
 
@@ -555,19 +683,34 @@ def test_invalid_workspace_context_rejected(tmp_path: Path) -> None:
     storage_root = tmp_path / "runs"
     repo_root = tmp_path / "repo"
     repo_root.mkdir()
-    plan_path = tmp_path / "plan_package_final.json"
-    handoff_bundle_path = tmp_path / "planning_handoff_bundle.json"
+    planning_root = tmp_path / "planning"
+    planning_root.mkdir()
+    plan_path = planning_root / "plan_package_final.json"
+    handoff_bundle_path = planning_root / "planning_handoff_bundle.json"
     repo_context_path = tmp_path / "repo_context.json"
     workspace_context_path = tmp_path / "workspace_context.json"
     config_path = tmp_path / "config.yml"
     _write_plan(plan_path)
-    _write_handoff_bundle(handoff_bundle_path)
     _write_repo_context(repo_context_path, repo_root)
+    _write_workspace_context(workspace_context_path, Path("workspace"))
+    _write_handoff_bundle(
+        handoff_bundle_path,
+        plan_path=plan_path,
+        repo_context_path=repo_context_path,
+        workspace_context_path=workspace_context_path,
+    )
     workspace_context_path.write_text("{}", encoding="utf-8")
     _write_config(config_path, storage_root)
     engine = ImplementationEngine(storage_root=storage_root)
     with pytest.raises(Exception):
-        engine.run(plan_path, repo_context_path, workspace_context_path, config_path, handoff_bundle_path)
+        engine.run(
+            plan_path,
+            repo_context_path,
+            workspace_context_path,
+            config_path,
+            handoff_bundle_path,
+            allow_repo_override=True,
+        )
 
 
 def test_json_only_artifact_enforced(tmp_path: Path) -> None:
@@ -705,26 +848,20 @@ def test_change_request_required_for_semantic_change() -> None:
 
 
 def test_tool_permission_block(tmp_path: Path) -> None:
-    storage_root = tmp_path / "runs"
-    repo_root = tmp_path / "repo"
-    repo_root.mkdir()
-    plan_path = tmp_path / "plan_package_final.json"
-    handoff_bundle_path = tmp_path / "planning_handoff_bundle.json"
-    repo_context_path = tmp_path / "repo_context.json"
-    workspace_context_path = tmp_path / "workspace_context.json"
-    config_path = tmp_path / "config.yml"
-    _write_plan(plan_path)
-    _write_handoff_bundle(handoff_bundle_path)
-    _write_repo_context(repo_context_path, repo_root)
-    _write_workspace_context(workspace_context_path, Path("workspace"))
-    _write_config(
-        config_path,
-        storage_root,
+    inputs = _setup_run_inputs(
+        tmp_path,
         tool_calls=[{"stage": "generate", "tool_name": "net", "capabilities": ["network"], "approved": False}],
     )
-    engine = ImplementationEngine(storage_root=storage_root)
+    engine = ImplementationEngine(storage_root=inputs["storage_root"])
     with pytest.raises(RuntimeError):
-        engine.run(plan_path, repo_context_path, workspace_context_path, config_path, handoff_bundle_path)
+        engine.run(
+            inputs["plan_path"],
+            inputs["repo_context_path"],
+            inputs["workspace_context_path"],
+            inputs["config_path"],
+            inputs["handoff_bundle_path"],
+            allow_repo_override=True,
+        )
 
 
 def test_secrets_blocked(tmp_path: Path) -> None:
@@ -744,21 +881,16 @@ def test_secrets_blocked(tmp_path: Path) -> None:
 
 
 def test_retry_policy_records(tmp_path: Path) -> None:
-    storage_root = tmp_path / "runs"
-    repo_root = tmp_path / "repo"
-    repo_root.mkdir()
-    plan_path = tmp_path / "plan_package_final.json"
-    handoff_bundle_path = tmp_path / "planning_handoff_bundle.json"
-    repo_context_path = tmp_path / "repo_context.json"
-    workspace_context_path = tmp_path / "workspace_context.json"
-    config_path = tmp_path / "config.yml"
-    _write_plan(plan_path)
-    _write_handoff_bundle(handoff_bundle_path)
-    _write_repo_context(repo_context_path, repo_root, outcomes=["fail", "pass"])
-    _write_workspace_context(workspace_context_path, Path("workspace"))
-    _write_config(config_path, storage_root)
-    engine = ImplementationEngine(storage_root=storage_root)
-    result = engine.run(plan_path, repo_context_path, workspace_context_path, config_path, handoff_bundle_path)
+    inputs = _setup_run_inputs(tmp_path, outcomes=["fail", "pass"])
+    engine = ImplementationEngine(storage_root=inputs["storage_root"])
+    result = engine.run(
+        inputs["plan_path"],
+        inputs["repo_context_path"],
+        inputs["workspace_context_path"],
+        inputs["config_path"],
+        inputs["handoff_bundle_path"],
+        allow_repo_override=True,
+    )
     events = (result.run_root / "implementation_event_log.jsonl").read_text(encoding="utf-8").splitlines()
     validator_events = [json.loads(line) for line in events if "\"validator_result\"" in line]
     assert len(validator_events) >= 2
@@ -773,28 +905,31 @@ def test_handoff_bundle_required_and_plan_rejected(tmp_path: Path) -> None:
         inputs["workspace_context_path"],
         inputs["config_path"],
         inputs["handoff_bundle_path"],
+        allow_repo_override=True,
     )
 
-    chat_path = tmp_path / "chat.log"
-    chat_path.write_text("chat log", encoding="utf-8")
     with pytest.raises(Exception):
+        inputs["plan_path"].write_text("chat log", encoding="utf-8")
         engine.run(
-            chat_path,
+            inputs["plan_path"],
             inputs["repo_context_path"],
             inputs["workspace_context_path"],
             inputs["config_path"],
             inputs["handoff_bundle_path"],
+            allow_repo_override=True,
         )
 
     bad_path = tmp_path / "bad.json"
     bad_path.write_text(json.dumps({"foo": "bar"}), encoding="utf-8")
     with pytest.raises(Exception):
+        inputs["plan_path"].write_text(bad_path.read_text(encoding="utf-8"), encoding="utf-8")
         engine.run(
-            bad_path,
+            inputs["plan_path"],
             inputs["repo_context_path"],
             inputs["workspace_context_path"],
             inputs["config_path"],
             inputs["handoff_bundle_path"],
+            allow_repo_override=True,
         )
 
     with pytest.raises(FileNotFoundError):
@@ -804,6 +939,7 @@ def test_handoff_bundle_required_and_plan_rejected(tmp_path: Path) -> None:
             inputs["workspace_context_path"],
             inputs["config_path"],
             tmp_path / "missing_handoff.json",
+            allow_repo_override=True,
         )
 
 
@@ -818,6 +954,7 @@ def test_invalid_repo_context_rejected(tmp_path: Path) -> None:
             inputs["workspace_context_path"],
             inputs["config_path"],
             inputs["handoff_bundle_path"],
+            allow_repo_override=True,
         )
 
 
@@ -825,13 +962,14 @@ def test_missing_workspace_context_rejected(tmp_path: Path) -> None:
     inputs = _setup_run_inputs(tmp_path)
     inputs["workspace_context_path"].unlink()
     engine = ImplementationEngine(storage_root=inputs["storage_root"])
-    with pytest.raises(FileNotFoundError):
+    with pytest.raises(HandoffRejected):
         engine.run(
             inputs["plan_path"],
             inputs["repo_context_path"],
             inputs["workspace_context_path"],
             inputs["config_path"],
             inputs["handoff_bundle_path"],
+            allow_repo_override=True,
         )
 
 
@@ -844,6 +982,7 @@ def test_stage_sequence_and_checkpoints(tmp_path: Path) -> None:
         inputs["workspace_context_path"],
         inputs["config_path"],
         inputs["handoff_bundle_path"],
+        allow_repo_override=True,
     )
     events = [
         json.loads(line)
@@ -865,6 +1004,7 @@ def test_stage_handoffs_and_evidence(tmp_path: Path) -> None:
         inputs["workspace_context_path"],
         inputs["config_path"],
         inputs["handoff_bundle_path"],
+        allow_repo_override=True,
     )
     handoff_paths = list((result.run_root / "workspace" / "stage_handoffs").glob("*.json"))
     assert handoff_paths
@@ -891,6 +1031,7 @@ def test_manifest_and_event_log_immutable(tmp_path: Path) -> None:
         inputs["workspace_context_path"],
         inputs["config_path"],
         inputs["handoff_bundle_path"],
+        allow_repo_override=True,
     )
     with pytest.raises(FileExistsError):
         create_manifest(
@@ -1024,6 +1165,7 @@ def test_change_request_decision_record_emitted(tmp_path: Path) -> None:
         inputs["workspace_context_path"],
         inputs["config_path"],
         inputs["handoff_bundle_path"],
+        allow_repo_override=True,
     )
     decision_path = result.run_root / "artifacts" / "decision_record" / "decision_record_CR1_v1.json"
     assert decision_path.exists()
@@ -1094,6 +1236,7 @@ def test_freeze_gate_blocks_on_failures(tmp_path: Path) -> None:
             inputs["workspace_context_path"],
             inputs["config_path"],
             inputs["handoff_bundle_path"],
+            allow_repo_override=True,
         )
 
 
@@ -1133,6 +1276,7 @@ def test_role_separation_enforced(tmp_path: Path) -> None:
             inputs["workspace_context_path"],
             inputs["config_path"],
             inputs["handoff_bundle_path"],
+            allow_repo_override=True,
         )
 
 
@@ -1163,6 +1307,7 @@ def test_v2_profile_compliance_forbidden_import(tmp_path: Path) -> None:
             inputs["workspace_context_path"],
             inputs["config_path"],
             inputs["handoff_bundle_path"],
+            allow_repo_override=True,
         )
 
 
@@ -1193,6 +1338,7 @@ def test_v2_expectations_required_for_remote_ops(tmp_path: Path) -> None:
             inputs["workspace_context_path"],
             inputs["config_path"],
             inputs["handoff_bundle_path"],
+            allow_repo_override=True,
         )
 
 
@@ -1222,6 +1368,7 @@ def test_v2_tool_registry_probe_required(tmp_path: Path) -> None:
             inputs["workspace_context_path"],
             inputs["config_path"],
             inputs["handoff_bundle_path"],
+            allow_repo_override=True,
         )
 
 
@@ -1251,6 +1398,7 @@ def test_v2_attestations_emitted(tmp_path: Path) -> None:
         inputs["workspace_context_path"],
         inputs["config_path"],
         inputs["handoff_bundle_path"],
+        allow_repo_override=True,
     )
     store = ImplementationArtifactStore(inputs["storage_root"], result.run_id)
     attestations = store.list_artifacts("attestation_bundle")
@@ -1286,6 +1434,7 @@ def test_v2_expectation_coverage_gate(tmp_path: Path) -> None:
             inputs["workspace_context_path"],
             inputs["config_path"],
             inputs["handoff_bundle_path"],
+            allow_repo_override=True,
         )
 
 
@@ -1344,6 +1493,7 @@ def test_v2_remote_ops_cache_hit(tmp_path: Path) -> None:
         inputs["workspace_context_path"],
         inputs["config_path"],
         inputs["handoff_bundle_path"],
+        allow_repo_override=True,
     )
     events_path = result.run_root / "artifacts" / "remote_op_events" / "remote_op_events_v2.json"
     events_payload = json.loads(events_path.read_text(encoding="utf-8"))
@@ -1388,4 +1538,5 @@ def test_v2_research_replication_gate(tmp_path: Path) -> None:
             inputs["workspace_context_path"],
             inputs["config_path"],
             inputs["handoff_bundle_path"],
+            allow_repo_override=True,
         )

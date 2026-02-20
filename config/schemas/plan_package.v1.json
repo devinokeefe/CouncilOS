@@ -365,17 +365,21 @@
     "EvidencePointer": {
       "additionalProperties": false,
       "properties": {
-        "candidate_id": {
-          "title": "Candidate Id",
-          "type": "string"
-        },
         "artifact_ref": {
           "title": "Artifact Ref",
           "type": "string"
         },
-        "artifact_id": {
-          "title": "Artifact Id",
-          "type": "string"
+        "entity_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Entity Id"
         },
         "json_pointer": {
           "title": "Json Pointer",
@@ -393,6 +397,30 @@
           "default": null,
           "title": "Note"
         },
+        "candidate_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Candidate Id"
+        },
+        "artifact_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Artifact Id"
+        },
         "quote": {
           "anyOf": [
             {
@@ -408,9 +436,7 @@
         }
       },
       "required": [
-        "candidate_id",
         "artifact_ref",
-        "artifact_id",
         "json_pointer"
       ],
       "title": "EvidencePointer",

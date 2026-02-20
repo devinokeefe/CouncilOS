@@ -111,6 +111,7 @@ from council_os.orchestrator.feedback.schemas import (
 from council_os.orchestrator.feedback.store import PlanningArtifactStore
 from council_os.orchestrator.feedback.triage import build_clarification_questions, run_preplan_triage
 from council_os.orchestrator.feedback.utils import plan_hash
+from council_os.orchestrator.handoff.finalize import build_config_snapshot, finalize_and_write_handoff
 from council_os.validation.validators import validate_candidate
 
 PROMPT_LABELS: dict[str, tuple[str, str]] = {
@@ -1712,18 +1713,34 @@ class HQPipeline:
             routing_state_freeze.update({"winner_id": winner_id, "judge_artifacts": judge_artifacts})
             self._checkpoint("freeze.freeze", artifact_refs, routing_state=routing_state_freeze)
 
-        plan_final = winner_state.payload.plan_package.model_dump(by_alias=True, mode="json")
-        planning_store.write_json("plan_package_final.json", plan_final)
-        planning_files = sorted(path.name for path in planning_store.root.iterdir() if path.is_file())
-        planning_store.write_json(
-            "planning_handoff_bundle.json",
-            {
-                "schema_version": "1.0",
-                "run_id": str(self.run_id),
-                "plan_package_final_ref": "plan_package_final.json",
-                "event_log_ref": "event_log.jsonl" if planning_store.exists("event_log.jsonl") else None,
-                "artifacts": planning_files,
-            },
+        repo_context_path: Path | None = None
+        workspace_context_path: Path | None = None
+        handoff_cfg = self.config.get("handoff", {}) if isinstance(self.config, dict) else {}
+        if isinstance(handoff_cfg, dict):
+            repo_cfg = handoff_cfg.get("repo_context_path")
+            if isinstance(repo_cfg, str) and repo_cfg.strip():
+                repo_context_path = Path(repo_cfg)
+                if not repo_context_path.is_absolute():
+                    repo_context_path = (self.config_path.parent / repo_context_path).resolve()
+            workspace_cfg = handoff_cfg.get("workspace_context_path")
+            if isinstance(workspace_cfg, str) and workspace_cfg.strip():
+                workspace_context_path = Path(workspace_cfg)
+                if not workspace_context_path.is_absolute():
+                    workspace_context_path = (self.config_path.parent / workspace_context_path).resolve()
+        if repo_context_path is None and (self.run_root / "repo_context.json").exists():
+            repo_context_path = self.run_root / "repo_context.json"
+        if workspace_context_path is None and (self.run_root / "workspace_context.json").exists():
+            workspace_context_path = self.run_root / "workspace_context.json"
+        config_snapshot = build_config_snapshot(self.config, feedback_cfg)
+        finalize_and_write_handoff(
+            run_id=str(self.run_id),
+            run_root=self.run_root,
+            plan=plan_dict,
+            feedback_cfg=feedback_cfg,
+            config_snapshot=config_snapshot,
+            repo_context_path=repo_context_path,
+            workspace_context_path=workspace_context_path,
+            force=False,
         )
 
         decision_record = load_ref("decision_record")

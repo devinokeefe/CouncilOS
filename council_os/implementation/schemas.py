@@ -8,6 +8,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from council_os.handoff.schemas import PlanningHandoffBundle as PlanningHandoffBundlePayload
+
 IMPL_SCHEMA_VERSION_V1 = "1.0.0"
 IMPL_SCHEMA_VERSION_V2 = "2.0.0"
 IMPL_SCHEMA_VERSION_V21 = "2.1.0"
@@ -268,12 +270,6 @@ class PatchsetLimits(StrictModel):
     max_operations: int
     max_bytes: int
     max_operations_total: int | None = None
-
-
-class PlanningHandoffBundlePayload(StrictModel):
-    decision_record: dict[str, Any]
-    validator_reports: list[dict[str, Any]]
-    failure_mode_findings: list[dict[str, Any]]
 
 
 class WorkPlanPayload(StrictModel):

@@ -15,6 +15,7 @@ import yaml
 from council_os.agents.roles import RoleConfig, load_role_configs
 from council_os.agents.schemas import PlanPackage
 from council_os.implementation.event_log import EventType, append_event, new_event
+from council_os.implementation.handoff.accept import accept_handoff
 from council_os.implementation.manifest import ManifestInput, create_manifest
 from council_os.implementation.patches import (
     PatchApplyError,
@@ -2625,6 +2626,8 @@ class ImplementationEngine:
         config_path: Path,
         handoff_bundle_path: Path,
         *,
+        run_id: UUID,
+        run_root: Path,
         config: dict[str, Any],
         config_raw: str,
         roles: dict[str, RoleConfig],
@@ -2634,10 +2637,6 @@ class ImplementationEngine:
         writer_role = role_assignments["writer"]
         reviewer_role = role_assignments["reviewer"]
         judge_role = role_assignments["judge"]
-
-        run_id = uuid4()
-        run_root = self.storage_root / str(run_id)
-        run_root.mkdir(parents=True, exist_ok=True)
 
         plan = self._load_plan_package(plan_path)
         handoff_bundle = PlanningHandoffBundlePayload.model_validate_json(
@@ -3615,6 +3614,9 @@ class ImplementationEngine:
         workspace_context_path: Path,
         config_path: Path,
         handoff_bundle_path: Path,
+        *,
+        from_handoff: Path | None = None,
+        allow_repo_override: bool = False,
     ) -> ImplementationRunResult:
         config_raw = config_path.read_text(encoding="utf-8")
         config = yaml.safe_load(config_raw)
@@ -3633,6 +3635,23 @@ class ImplementationEngine:
         self._features = features
         self._load_tool_permissions(config)
 
+        run_id = uuid4()
+        run_root = self.storage_root / str(run_id)
+        run_root.mkdir(parents=True, exist_ok=True)
+
+        bundle_path = from_handoff or handoff_bundle_path
+        accepted = accept_handoff(
+            bundle_path=bundle_path,
+            run_root=run_root,
+            implementation_run_id=str(run_id),
+            implementation_engine_version=str(config.get("version", schema_version)),
+            allow_repo_override=allow_repo_override,
+        )
+        plan_path = accepted.plan_path
+        repo_context_path = accepted.repo_context_path
+        workspace_context_path = accepted.workspace_context_path
+        handoff_bundle_path = accepted.bundle_path
+
         if features.get("v2_1"):
             return self._run_v21(
                 plan_path,
@@ -3640,6 +3659,8 @@ class ImplementationEngine:
                 workspace_context_path,
                 config_path,
                 handoff_bundle_path,
+                run_id=run_id,
+                run_root=run_root,
                 config=config,
                 config_raw=config_raw,
                 roles=roles,
@@ -3669,10 +3690,6 @@ class ImplementationEngine:
             ]
             compat_mode = bool(missing_inputs)
             capability_level = "v1_compat" if compat_mode else "v2"
-
-        run_id = uuid4()
-        run_root = self.storage_root / str(run_id)
-        run_root.mkdir(parents=True, exist_ok=True)
 
         plan = self._load_plan_package(plan_path)
         handoff_bundle = PlanningHandoffBundlePayload.model_validate_json(

@@ -4,15 +4,16 @@ import json
 import hashlib
 from typing import Any
 
+from council_os.handoff.hashing import canonical_json_dumps, plan_content_hash
+
 
 def canonical_json(value: dict[str, Any]) -> str:
-    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    return canonical_json_dumps(value)
 
 
 def plan_hash(plan_dict: dict[str, Any]) -> str:
-    payload = canonical_json(plan_dict).encode("utf-8")
-    return "sha256:" + hashlib.sha256(payload).hexdigest()
+    return plan_content_hash(plan_dict)
 
 
 def stable_json_dumps(value: Any) -> str:
-    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    return canonical_json_dumps(value)
