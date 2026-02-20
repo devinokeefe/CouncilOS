@@ -1,0 +1,22 @@
+{
+  "title": "HashSpec",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"type": "string"},
+    "hash_spec_version": {"type": "string"},
+    "hash_alg": {"type": "string"},
+    "canonical_json": {"type": "string"},
+    "excluded_fields_by_pointer": {
+      "type": "array",
+      "items": {"type": "string"}
+    }
+  },
+  "required": [
+    "schema_version",
+    "hash_spec_version",
+    "hash_alg",
+    "canonical_json",
+    "excluded_fields_by_pointer"
+  ]
+}

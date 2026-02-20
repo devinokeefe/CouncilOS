@@ -7,15 +7,20 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from council_os.handoff.hashing import artifact_hash, plan_content_hash
+from council_os.handoff.hashing import artifact_hash, default_hash_spec, plan_content_hash
 from council_os.handoff.schemas import (
     ApprovalRef,
     ClarificationsRef,
+    HandoffManifest,
     HandoffArtifactRef,
     HumanFeedbackBundle,
+    ManifestArtifactRef,
+    ManifestPointers,
     PlanFreezeRecord,
     PlanningHandoffBundle,
+    RepoAcquisitionSpec,
 )
+from council_os.handoff.manifest import with_manifest_digest
 from council_os.orchestrator.feedback.config import FeedbackConfig
 from council_os.orchestrator.feedback.event_log import append_event, new_event
 from council_os.orchestrator.feedback.schemas import (
@@ -25,11 +30,21 @@ from council_os.orchestrator.feedback.schemas import (
 from council_os.orchestrator.feedback.store import PlanningArtifactStore
 from council_os.orchestrator.feedback.utils import stable_json_dumps
 from council_os.orchestrator.handoff.bundle import compute_handoff_digest
-from council_os.orchestrator.handoff.repo_snapshot import capture_repo_snapshot
+from council_os.orchestrator.handoff.repo_snapshot import capture_repo_snapshot, resolve_repo_url
 
 
 def _planning_ref(name: str) -> str:
     return f"planning/{name}"
+
+
+def _artifact_ref(name: str) -> str:
+    return f"artifacts/{name}"
+
+
+def _artifacts_root(run_root: Path) -> Path:
+    path = run_root / "planning" / "artifacts"
+    path.mkdir(parents=True, exist_ok=True)
+    return path
 
 
 def build_config_snapshot(config: dict[str, Any], feedback_cfg: FeedbackConfig) -> dict[str, Any]:
@@ -60,6 +75,16 @@ def _write_json(path: Path, payload: dict[str, Any], *, force: bool) -> None:
     path.write_text(encoded, encoding="utf-8")
 
 
+def _write_hash_spec(*, run_root: Path, force: bool) -> tuple[HashSpec, HandoffArtifactRef]:
+    spec = default_hash_spec()
+    artifacts_root = _artifacts_root(run_root)
+    artifact_path = artifacts_root / "hash_spec.json"
+    _write_json(artifact_path, spec.model_dump(), force=force)
+    planning_path = run_root / "planning" / "hash_spec.json"
+    _write_json(planning_path, spec.model_dump(), force=force)
+    return spec, HandoffArtifactRef(path=_artifact_ref("hash_spec.json"), sha256=artifact_hash(spec.model_dump()))
+
+
 def _find_latest_draft(store: PlanningArtifactStore) -> tuple[dict[str, Any], int]:
     versions: list[int] = []
     for path in store.root.glob("plan_package_draft_v*.json"):
@@ -74,6 +99,24 @@ def _find_latest_draft(store: PlanningArtifactStore) -> tuple[dict[str, Any], in
     versions.sort()
     latest = versions[-1]
     return store.read_json(f"plan_package_draft_v{latest}.json"), latest
+
+
+def _load_selected_draft(
+    store: PlanningArtifactStore,
+    selected_draft_name: str | None,
+) -> tuple[dict[str, Any], int, str]:
+    if selected_draft_name:
+        name = Path(selected_draft_name).name
+        if not (name.startswith("plan_package_draft_v") and name.endswith(".json")):
+            raise ValueError(f"Invalid selected_draft_name: {selected_draft_name}")
+        suffix = name[len("plan_package_draft_v") : -len(".json")]
+        try:
+            version = int(suffix)
+        except ValueError as exc:
+            raise ValueError(f"Invalid draft version in {selected_draft_name}") from exc
+        return store.read_json(name), version, name
+    draft_plan, draft_version = _find_latest_draft(store)
+    return draft_plan, draft_version, f"plan_package_draft_v{draft_version}.json"
 
 
 def _ensure_context_snapshot(
@@ -175,9 +218,11 @@ def finalize_and_write_handoff(
     config_snapshot: dict[str, Any],
     repo_context_path: Path | None = None,
     workspace_context_path: Path | None = None,
+    selected_draft_name: str | None = None,
     force: bool = False,
 ) -> PlanningHandoffBundle:
     store = PlanningArtifactStore(run_root)
+    artifacts_root = _artifacts_root(run_root)
     append_event(
         run_root,
         new_event(
@@ -188,11 +233,19 @@ def finalize_and_write_handoff(
     )
 
     try:
-        draft_plan, draft_version = _find_latest_draft(store)
+        draft_plan, draft_version, draft_name = _load_selected_draft(store, selected_draft_name)
     except FileNotFoundError:
         draft_version = 1
         draft_plan = plan
-        _write_json(store.path(f"plan_package_draft_v{draft_version}.json"), draft_plan, force=force)
+        draft_name = f"plan_package_draft_v{draft_version}.json"
+        _write_json(store.path(draft_name), draft_plan, force=force)
+    except ValueError as exc:
+        raise RuntimeError(str(exc)) from exc
+    _write_json(artifacts_root / draft_name, draft_plan, force=force)
+
+    hash_spec, hash_spec_ref = _write_hash_spec(run_root=run_root, force=force)
+    selected_draft_ref = _artifact_ref(draft_name)
+    selected_draft_hash = plan_content_hash(draft_plan, hash_spec=hash_spec)
 
     approval: PlanApproval | None = None
     if feedback_cfg.plan_review:
@@ -203,8 +256,7 @@ def finalize_and_write_handoff(
         )
         if not approval.approved:
             raise RuntimeError("Plan review approval required before handoff")
-        draft_hash = plan_content_hash(draft_plan)
-        if approval.approved_plan_hash != draft_hash:
+        if approval.approved_plan_hash != selected_draft_hash:
             raise RuntimeError("Plan approval hash does not match latest draft plan")
 
     clarification_resolutions: ClarificationResolutions | None = None
@@ -220,18 +272,29 @@ def finalize_and_write_handoff(
     if isinstance(meta, dict):
         meta["plan_status"] = "FROZEN"
         plan_final["meta"] = meta
-    plan_hash = plan_content_hash(plan_final)
+    plan_hash = plan_content_hash(plan_final, hash_spec=hash_spec)
 
     _write_json(store.path("config_snapshot.json"), config_snapshot, force=force)
+    _write_json(artifacts_root / "config_snapshot.json", config_snapshot, force=force)
     config_ref = HandoffArtifactRef(
         path=_planning_ref("config_snapshot.json"),
+        sha256=artifact_hash(config_snapshot),
+    )
+    config_ref_artifact = HandoffArtifactRef(
+        path=_artifact_ref("config_snapshot.json"),
         sha256=artifact_hash(config_snapshot),
     )
 
     plan_final_path = store.path("plan_package_final.json")
     _write_json(plan_final_path, plan_final, force=force)
+    plan_final_artifact_name = f"plan_package_final_v{draft_version}.json"
+    _write_json(artifacts_root / plan_final_artifact_name, plan_final, force=force)
     plan_ref = HandoffArtifactRef(
         path=_planning_ref("plan_package_final.json"),
+        sha256=artifact_hash(plan_final),
+    )
+    plan_ref_artifact = HandoffArtifactRef(
+        path=_artifact_ref(plan_final_artifact_name),
         sha256=artifact_hash(plan_final),
     )
 
@@ -252,6 +315,11 @@ def finalize_and_write_handoff(
             path=_planning_ref("clarification_resolutions.json"),
             sha256=artifact_hash(clarification_resolutions.model_dump()),
         )
+        _write_json(
+            artifacts_root / "clarification_resolutions.json",
+            clarification_resolutions.model_dump(),
+            force=force,
+        )
 
     approval_ref = None
     if approval is not None:
@@ -259,6 +327,7 @@ def finalize_and_write_handoff(
             path=_planning_ref("plan_approval.json"),
             sha256=artifact_hash(approval.model_dump()),
         )
+        _write_json(artifacts_root / "plan_approval.json", approval.model_dump(), force=force)
 
     human_feedback_bundle = _build_human_feedback_bundle(
         store=store,
@@ -267,32 +336,14 @@ def finalize_and_write_handoff(
         clarification_resolutions=clarification_resolutions,
     )
     _write_json(store.path("human_feedback_bundle.json"), human_feedback_bundle.model_dump(), force=force)
+    _write_json(artifacts_root / "human_feedback_bundle.json", human_feedback_bundle.model_dump(), force=force)
     human_feedback_ref = HandoffArtifactRef(
         path=_planning_ref("human_feedback_bundle.json"),
         sha256=artifact_hash(human_feedback_bundle.model_dump()),
     )
-
-    plan_freeze = PlanFreezeRecord(
-        plan_id=str(plan_final.get("meta", {}).get("plan_id", "")),
-        planning_run_id=run_id,
-        frozen_at=datetime.now(UTC).isoformat(),
-        plan_package_final_ref=plan_ref,
-        plan_content_hash=plan_hash,
-        interactive_flags={
-            "clarify_intent_enabled": feedback_cfg.clarify,
-            "plan_review_enabled": feedback_cfg.plan_review,
-        },
-        clarification_resolutions_ref=clarification_ref,
-        plan_approval_ref=approval_ref,
-        approved_plan_hash=approval.approved_plan_hash if approval is not None else None,
-        config_snapshot_ref=config_ref,
-        human_feedback_bundle_ref=human_feedback_ref,
-        notes=f"Frozen after review round {draft_version}" if feedback_cfg.plan_review else "Frozen without review",
-    )
-    _write_json(store.path("plan_freeze_record.json"), plan_freeze.model_dump(), force=force)
-    freeze_ref = HandoffArtifactRef(
-        path=_planning_ref("plan_freeze_record.json"),
-        sha256=artifact_hash(plan_freeze.model_dump()),
+    human_feedback_ref_artifact = HandoffArtifactRef(
+        path=_artifact_ref("human_feedback_bundle.json"),
+        sha256=artifact_hash(human_feedback_bundle.model_dump()),
     )
 
     repo_context = _ensure_context_snapshot(
@@ -307,6 +358,8 @@ def finalize_and_write_handoff(
         source_path=workspace_context_path,
         force=force,
     )
+    shutil.copyfile(repo_context, artifacts_root / "repo_context.json")
+    shutil.copyfile(workspace_context, artifacts_root / "workspace_context.json")
 
     repo_context_payload = _load_json(repo_context)
     repo_context_ref = HandoffArtifactRef(
@@ -317,10 +370,57 @@ def finalize_and_write_handoff(
         path="workspace_context.json",
         sha256=artifact_hash(_load_json(workspace_context)),
     )
+    repo_context_ref_artifact = HandoffArtifactRef(
+        path=_artifact_ref("repo_context.json"),
+        sha256=artifact_hash(repo_context_payload),
+    )
+    workspace_context_ref_artifact = HandoffArtifactRef(
+        path=_artifact_ref("workspace_context.json"),
+        sha256=artifact_hash(_load_json(workspace_context)),
+    )
 
     repo_root_value = repo_context_payload.get("repo_root") if isinstance(repo_context_payload, dict) else None
     repo_root = Path(str(repo_root_value)).expanduser() if repo_root_value else run_root
     repo_snapshot = capture_repo_snapshot(repo_root)
+    repo_snapshot_path = artifacts_root / "repo_snapshot.json"
+    _write_json(repo_snapshot_path, repo_snapshot.model_dump(), force=force)
+    repo_snapshot_ref = HandoffArtifactRef(
+        path=_artifact_ref("repo_snapshot.json"),
+        sha256=artifact_hash(repo_snapshot.model_dump()),
+    )
+
+    plan_freeze = PlanFreezeRecord(
+        plan_id=str(plan_final.get("meta", {}).get("plan_id", "")),
+        planning_run_id=run_id,
+        frozen_at=datetime.now(UTC).isoformat(),
+        plan_package_final_ref=plan_ref,
+        plan_content_hash=plan_hash,
+        hash_spec_version=hash_spec.hash_spec_version,
+        selected_draft_ref=selected_draft_ref,
+        selected_draft_hash=selected_draft_hash,
+        interactive_flags={
+            "clarify_intent_enabled": feedback_cfg.clarify,
+            "plan_review_enabled": feedback_cfg.plan_review,
+        },
+        clarification_resolutions_ref=clarification_ref,
+        plan_approval_ref=approval_ref,
+        approved_plan_hash=approval.approved_plan_hash if approval is not None else None,
+        repo_snapshot_ref=repo_snapshot_ref,
+        hash_spec_ref=hash_spec_ref,
+        config_snapshot_ref=config_ref,
+        human_feedback_bundle_ref=human_feedback_ref,
+        notes=f"Frozen after review round {draft_version}" if feedback_cfg.plan_review else "Frozen without review",
+    )
+    _write_json(store.path("plan_freeze_record.json"), plan_freeze.model_dump(), force=force)
+    _write_json(artifacts_root / "plan_freeze_record.json", plan_freeze.model_dump(), force=force)
+    freeze_ref = HandoffArtifactRef(
+        path=_planning_ref("plan_freeze_record.json"),
+        sha256=artifact_hash(plan_freeze.model_dump()),
+    )
+    freeze_ref_artifact = HandoffArtifactRef(
+        path=_artifact_ref("plan_freeze_record.json"),
+        sha256=artifact_hash(plan_freeze.model_dump()),
+    )
 
     approval_payload = ApprovalRef(required=feedback_cfg.plan_review)
     if feedback_cfg.plan_review and approval_ref is not None:
@@ -338,6 +438,108 @@ def finalize_and_write_handoff(
             path=clarification_ref.path,
             sha256=clarification_ref.sha256,
         )
+
+    manifest_artifacts: list[ManifestArtifactRef] = [
+        ManifestArtifactRef(
+            ref=plan_ref_artifact.path,
+            digest=plan_ref_artifact.sha256,
+            schema_version="plan_package.v1",
+            role="REQUIRED",
+        ),
+        ManifestArtifactRef(
+            ref=freeze_ref_artifact.path,
+            digest=freeze_ref_artifact.sha256,
+            schema_version="plan_freeze_record.v1",
+            role="REQUIRED",
+        ),
+        ManifestArtifactRef(
+            ref=hash_spec_ref.path,
+            digest=hash_spec_ref.sha256,
+            schema_version="hash_spec.v1",
+            role="REQUIRED",
+        ),
+        ManifestArtifactRef(
+            ref=config_ref_artifact.path,
+            digest=config_ref_artifact.sha256,
+            schema_version="config_snapshot.v1",
+            role="REQUIRED",
+        ),
+        ManifestArtifactRef(
+            ref=repo_snapshot_ref.path,
+            digest=repo_snapshot_ref.sha256,
+            schema_version="repo_snapshot.v1",
+            role="REQUIRED",
+        ),
+        ManifestArtifactRef(
+            ref=repo_context_ref_artifact.path,
+            digest=repo_context_ref_artifact.sha256,
+            schema_version="repo_context.v1",
+            role="REQUIRED",
+        ),
+        ManifestArtifactRef(
+            ref=workspace_context_ref_artifact.path,
+            digest=workspace_context_ref_artifact.sha256,
+            schema_version="workspace_context.v1",
+            role="REQUIRED",
+        ),
+    ]
+    if human_feedback_ref_artifact:
+        manifest_artifacts.append(
+            ManifestArtifactRef(
+                ref=human_feedback_ref_artifact.path,
+                digest=human_feedback_ref_artifact.sha256,
+                schema_version="human_feedback_bundle.v1",
+                role="OPTIONAL",
+            )
+        )
+    if clarification_ref is not None:
+        manifest_artifacts.append(
+            ManifestArtifactRef(
+                ref=_artifact_ref("clarification_resolutions.json"),
+                digest=clarification_ref.sha256,
+                schema_version="clarification_resolutions.v1",
+                role="OPTIONAL",
+            )
+        )
+    if approval_ref is not None:
+        manifest_artifacts.append(
+            ManifestArtifactRef(
+                ref=_artifact_ref("plan_approval.json"),
+                digest=approval_ref.sha256,
+                schema_version="plan_approval.v1",
+                role="OPTIONAL",
+            )
+        )
+    manifest_artifacts.append(
+        ManifestArtifactRef(
+            ref=selected_draft_ref,
+            digest=artifact_hash(draft_plan),
+            schema_version="plan_package.v1",
+            role="OPTIONAL",
+        )
+    )
+
+    repo_url = resolve_repo_url(repo_root) or str(repo_root)
+    manifest = HandoffManifest(
+        hash_spec_version=hash_spec.hash_spec_version,
+        pointers=ManifestPointers(
+            plan_ref=plan_ref_artifact.path,
+            freeze_record_ref=freeze_ref_artifact.path,
+            hash_spec_ref=hash_spec_ref.path,
+        ),
+        repo_acquisition_spec=RepoAcquisitionSpec(
+            repo_url=repo_url,
+            git_commit=repo_snapshot.commit_sha,
+            git_tree_hash=repo_snapshot.tree_hash,
+            submodules="NONE",
+        ),
+        artifacts=manifest_artifacts,
+        env_requirements_ref=None,
+        handoff_digest="",
+    )
+    manifest = with_manifest_digest(manifest)
+    _write_json(artifacts_root / "handoff_manifest.json", manifest.model_dump(), force=force)
+    _write_json(store.path("handoff_manifest.json"), manifest.model_dump(), force=force)
 
     required_artifacts = [
         plan_ref,
@@ -377,7 +579,10 @@ def finalize_and_write_handoff(
             run_id=run_id,
             stage="planning",
             event_type="HANDOFF_BUNDLE_WRITTEN",
-            artifact_refs=[_planning_ref("planning_handoff_bundle.json")],
+            artifact_refs=[
+                _planning_ref("planning_handoff_bundle.json"),
+                _planning_ref("handoff_manifest.json"),
+            ],
             message=bundle.handoff_digest,
         ),
     )
@@ -387,7 +592,10 @@ def finalize_and_write_handoff(
             run_id=run_id,
             stage="planning",
             event_type="HANDOFF_READY",
-            artifact_refs=[_planning_ref("planning_handoff_bundle.json")],
+            artifact_refs=[
+                _planning_ref("planning_handoff_bundle.json"),
+                _planning_ref("handoff_manifest.json"),
+            ],
         ),
     )
 

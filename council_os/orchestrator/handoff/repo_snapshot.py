@@ -23,5 +23,14 @@ def capture_repo_snapshot(start: Path) -> RepoSnapshot:
     commit_sha = _run_git(["rev-parse", "HEAD"], cwd=repo_root)
     branch = _run_git(["rev-parse", "--abbrev-ref", "HEAD"], cwd=repo_root)
     status = _run_git(["status", "--porcelain"], cwd=repo_root)
+    tree_hash = _run_git(["rev-parse", "HEAD^{tree}"], cwd=repo_root)
     dirty = bool(status.strip())
-    return RepoSnapshot(commit_sha=commit_sha, branch=branch, dirty=dirty)
+    return RepoSnapshot(commit_sha=commit_sha, branch=branch, dirty=dirty, tree_hash=tree_hash)
+
+
+def resolve_repo_url(start: Path) -> str | None:
+    repo_root = resolve_repo_root(start)
+    try:
+        return _run_git(["remote", "get-url", "origin"], cwd=repo_root)
+    except Exception:
+        return None

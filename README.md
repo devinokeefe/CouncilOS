@@ -1,134 +1,110 @@
-# Council OS (Phase 1)
+# Council OS
 
-Phase 1 implementation of the Council OS planning pipeline.
+Council OS is a deterministic, artifact-first planning and implementation system. Phase 1 focuses on planning: it turns a brief into a frozen Plan Package with audit logs, checkpoints, and a handoff bundle. The implementation engine consumes the handoff and produces patchsets, validation evidence, and a frozen release bundle under explicit governance.
 
-## Quickstart
+**What This Repo Contains**
+- A planning pipeline in two modes: a roles-based Engine and a config-driven HQ pipeline.
+- An implementation pipeline with v1, v2, and v2.1 schemas, workspace governance, and freeze gates.
+- Artifact stores, audit event logs, checkpoints, and handoff tooling.
+- JSON schemas in `schemas/` and prompt packs in `council_os/agents/prompts/`.
 
+**Quickstart**
 ```bash
 uv sync --extra dev
-uv run council run --config CouncilOS/config/default.yml --brief CouncilOS/eval/golden_briefs/brief_01.md
 ```
 
-For real LLM generation (instead of mock artifacts), set `OPENROUTER_API_KEY` and run:
-
+Mock planning run:
 ```bash
-uv run council run --config CouncilOS/config/llm_openai_anthropic.yml --brief CouncilOS/eval/golden_briefs/brief_01.md
+uv run council run --config config/default.yml --brief eval/golden_briefs/brief_01.md
 ```
 
-For a larger multi-model council, set `OPENROUTER_API_KEY`:
-
+LLM planning run (OpenRouter):
 ```bash
-uv run council run --config CouncilOS/config/council_os_hq.yml --brief CouncilOS/eval/golden_briefs/brief_01.md
+OPENROUTER_API_KEY=... uv run council run --config config/llm_openai_anthropic.yml --brief eval/golden_briefs/brief_01.md
 ```
 
-Optional OpenRouter headers can be set via `OPENROUTER_HTTP_REFERER` and `OPENROUTER_APP_TITLE`.
+HQ planning run (stage graph + multi-model portfolio):
+```bash
+OPENROUTER_API_KEY=... uv run council run --config config/council_os_hq.yml --brief eval/golden_briefs/brief_01.md
+```
 
-For mocked CI record/replay, set `mock_record_replay_file` in config (for example `CouncilOS/runs/mock_cassette.json`).
+Implementation run from a planning handoff:
+```bash
+uv run council implement --config path/to/implementation.yml --from-handoff <run_root>/planning/handoff_manifest.json
+```
 
-## Commands
+Optional OpenRouter headers: `OPENROUTER_HTTP_REFERER`, `OPENROUTER_APP_TITLE`, `OPENROUTER_BASE_URL`, `OPENROUTER_TIMEOUT_SEC`.
 
+**Planning Pipeline**
+The Phase 1 planning pipeline generates structured plan artifacts and freezes a final plan. Stages are: intake, clarify, draft_pods, branch, synthesize, validate, triage, failure_mode, judge, freeze.
+
+Feedback gates are optional:
+- `--feedback-clarify` enables structured clarification questions and resolutions.
+- `--feedback-plan-review` enables a plan review loop and explicit approval gating.
+- `--feedback-provider {auto,cli,file}` selects the input provider.
+- `--response-file <path>` supplies a response artifact for offline resume.
+- `--max-plan-review-rounds <N>` caps the review loop.
+
+**Implementation Pipeline**
+The implementation engine consumes a planning handoff and executes a governed workflow. Stages are: intake, work_planning, generate, patch_apply, integrate_validate, remote_validate, validate, review, judge, freeze.
+
+It enforces:
+- Handoff acceptance with hash checks and a `handoff_ack.json` (or `handoff_rejection.json`).
+- Patchset-only repo changes, deterministic apply/selection, and forbidden-path checks.
+- Evidence pointer validation, trace completeness, and freeze gates.
+- Workspace governance with canonical/non-canonical partitions, context packs, and stage handoffs.
+
+Schema versions and features are controlled by `schemas_version` and `features` in the implementation config. v2/v2.1 add execution profiles, tool registry, expectation registry + evidence index, remote ops, and research artifacts.
+
+**Handoff Artifacts**
+Planning produces both a legacy bundle and a manifest for determinism:
+- `planning/planning_handoff_bundle.json`
+- `planning/handoff_manifest.json`
+- `planning/plan_freeze_record.json`
+- `planning/hash_spec.json`
+- `planning/plan_package_final.json`
+
+The manifest form (`handoff_manifest.json`) is the preferred input to `council implement`.
+
+**CLI**
 - `council run --config <path> --brief <path>`
 - `council resume --run-id <id> [--checkpoint-id <id>]`
 - `council fork --checkpoint-id <id> --new-config <path>`
+- `council status --run-id <id>`
+- `council checkpoints --run-id <id>`
 - `council show --run-id <id> --artifact <artifact_id> [--render]`
 - `council list --run-id <id> --artifacts`
 - `council diff --run-id <id> --a <artifact_id> --b <artifact_id>`
 - `council eval --config <path> --golden <path>`
+- `council lint --config <path>`
+- `council implement --config <path> --from-handoff <handoff_bundle_or_manifest>`
 
-## Feedback Gates
+Windows helper: `run.ps1` wraps `council run` and `council resume`.
 
-Optional planning checkpoints:
+**Run Output**
+Runs are stored under the storage root derived from the config (`storage_root` for role configs, or `runtime.artifacts.store_dir` for HQ configs). Typical planning run output:
+- `runs/<run_id>/manifest.json`
+- `runs/<run_id>/events.jsonl`
+- `runs/<run_id>/checkpoints/*.json`
+- `runs/<run_id>/artifacts/<artifact_type>/*.json`
+- `runs/<run_id>/planning/` (handoff and feedback artifacts)
+- `runs/<run_id>/frozen_plan.md`
 
-- `--feedback-clarify` enables the Clarify Intent Gate.
-- `--feedback-plan-review` enables the Plan Review Gate and approval gating.
-- `--feedback-provider {auto,cli,file}` selects the input provider.
-- `--response-file <path>` provides a response artifact for offline resume.
-- `--max-plan-review-rounds <N>` controls the review loop limit.
+Typical implementation run output:
+- `runs/<run_id>/implementation_run_manifest.json`
+- `runs/<run_id>/implementation_event_log.jsonl`
+- `runs/<run_id>/artifacts/<artifact_type>/*.json`
+- `runs/<run_id>/workspace_index.json`
+- `runs/<run_id>/context_packs/`
+- `runs/<run_id>/stage_handoffs/`
+- `runs/<run_id>/inputs/planning/` (imported handoff inputs)
 
-Offline flow:
+**Schemas**
+- Planning schemas live in `schemas/` and are referenced by the HQ config in `config/council_os_hq.yml`.
+- Implementation schemas live in `schemas/implementation/v2/` and `schemas/implementation/v2_1/`.
 
-- Run with feedback enabled; the process pauses and emits `planning/pending_action.json`.
-- Resume with `council resume --resume-run <run_id> --response-file <path>`.
-
-## Implementation v2
-
-### Execution Profiles
-
-Define a profile catalog and pass it via `v2_inputs.execution_profile_catalog` in the implementation config.
-
-Minimal example:
-
-```json
-{
-  "schema_version": "2.0.0",
-  "catalog_id": "profiles_default",
-  "profiles": [
-    {
-      "profile_id": "legacy_v1",
-      "profile_version": "1.0.0",
-      "runtime": { "lang": "python", "version": "3.12" },
-      "base_image": { "name": "org/runtime", "digest": "sha256:..." },
-      "deps": { "required": [], "allowed": [], "forbidden": [] },
-      "network": { "default": "deny", "allowlist_domains": [], "allowlist_ports": [443] },
-      "package_manager": { "pip_install": "deny", "conda_install": "deny" }
-    }
-  ]
-}
-```
-
-### Expectations + Evidence
-
-Provide `expectation_registry` and `evidence_index` (auto-generated if omitted). Expectations must exist before remote ops and are enforced at Freeze.
-
-Evidence index entries map expectation IDs to evidence pointers:
-
-```json
-{
-  "schema_version": "2.0.0",
-  "evidence": [
-    {
-      "expectation_id": "EXP-PLAN-R1",
-      "status": "pass",
-      "evidence_pointers": [
-        { "artifact_ref": "test_results_v1", "json_pointer": "/" }
-      ]
-    }
-  ]
-}
-```
-
-### Remote Ops Manifests
-
-Remote ops are driven by `remote_ops_manifest`. Each op references expectation IDs and includes an idempotency key.
-
-```json
-{
-  "schema_version": "2.0.0",
-  "ops": [
-    {
-      "op_id": "ROP-001",
-      "profile_id": "legacy_v1",
-      "tool_id": "tool1",
-      "idempotency_key": "run/task/rop",
-      "expected": ["EXP-PLAN-R1"]
-    }
-  ]
-}
-```
-
-### Diff Reports
-
-On expectation mismatch, a diff report is emitted as a canonical artifact and copied to
-`workspace/canonical/diff_reports/<expectation_id>/<run_id>.json`.
-
-### Migration Utility
-
-Use `CouncilOS/tools/migrate_v1_to_v2.py` to convert v1 `repo_context` and `work_plan` artifacts to v2 outputs.
-
-## Optional Service API
-
-`council_os.service:app` exposes:
-
+**Service API**
+`council_os.service:app` exposes a planning-only FastAPI service:
 - `POST /runs`
 - `POST /runs/{id}/resume`
 - `POST /runs/{id}/interrupt_response`
@@ -136,4 +112,9 @@ Use `CouncilOS/tools/migrate_v1_to_v2.py` to convert v1 `repo_context` and `work
 - `GET /runs/{id}/events`
 - `GET /runs/{id}/status`
 
-`GET /runs/{id}/events` accepts optional query param `since_event_id=<uuid>` for cursor reads.
+**Evaluation and Tests**
+- `council eval --config <path> --golden eval/golden_briefs`
+- `pytest`
+
+**Roadmap**
+See `IMPROVEMENTS.md` for the vNext design notes and backlog.

@@ -1715,6 +1715,7 @@ class HQPipeline:
 
         repo_context_path: Path | None = None
         workspace_context_path: Path | None = None
+        selected_draft_name: str | None = None
         handoff_cfg = self.config.get("handoff", {}) if isinstance(self.config, dict) else {}
         if isinstance(handoff_cfg, dict):
             repo_cfg = handoff_cfg.get("repo_context_path")
@@ -1727,6 +1728,9 @@ class HQPipeline:
                 workspace_context_path = Path(workspace_cfg)
                 if not workspace_context_path.is_absolute():
                     workspace_context_path = (self.config_path.parent / workspace_context_path).resolve()
+            selected_cfg = handoff_cfg.get("selected_draft_name") or handoff_cfg.get("selected_draft_ref")
+            if isinstance(selected_cfg, str) and selected_cfg.strip():
+                selected_draft_name = Path(selected_cfg).name
         if repo_context_path is None and (self.run_root / "repo_context.json").exists():
             repo_context_path = self.run_root / "repo_context.json"
         if workspace_context_path is None and (self.run_root / "workspace_context.json").exists():
@@ -1740,6 +1744,7 @@ class HQPipeline:
             config_snapshot=config_snapshot,
             repo_context_path=repo_context_path,
             workspace_context_path=workspace_context_path,
+            selected_draft_name=selected_draft_name,
             force=False,
         )
 

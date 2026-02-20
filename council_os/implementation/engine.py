@@ -15,7 +15,7 @@ import yaml
 from council_os.agents.roles import RoleConfig, load_role_configs
 from council_os.agents.schemas import PlanPackage
 from council_os.implementation.event_log import EventType, append_event, new_event
-from council_os.implementation.handoff.accept import accept_handoff
+from council_os.implementation.handoff.accept import accept_handoff, accept_handoff_manifest
 from council_os.implementation.manifest import ManifestInput, create_manifest
 from council_os.implementation.patches import (
     PatchApplyError,
@@ -3640,13 +3640,34 @@ class ImplementationEngine:
         run_root.mkdir(parents=True, exist_ok=True)
 
         bundle_path = from_handoff or handoff_bundle_path
-        accepted = accept_handoff(
-            bundle_path=bundle_path,
-            run_root=run_root,
-            implementation_run_id=str(run_id),
-            implementation_engine_version=str(config.get("version", schema_version)),
-            allow_repo_override=allow_repo_override,
-        )
+        is_manifest = False
+        if bundle_path.name == "handoff_manifest.json":
+            is_manifest = True
+        else:
+            try:
+                payload = json.loads(bundle_path.read_text(encoding="utf-8"))
+                handoff_schema = str(payload.get("schema_version", ""))
+                if handoff_schema.startswith("handoff_manifest"):
+                    is_manifest = True
+            except Exception:
+                is_manifest = False
+
+        if is_manifest:
+            accepted = accept_handoff_manifest(
+                manifest_path=bundle_path,
+                run_root=run_root,
+                implementation_run_id=str(run_id),
+                implementation_engine_version=str(config.get("version", schema_version)),
+                allow_repo_override=allow_repo_override,
+            )
+        else:
+            accepted = accept_handoff(
+                bundle_path=bundle_path,
+                run_root=run_root,
+                implementation_run_id=str(run_id),
+                implementation_engine_version=str(config.get("version", schema_version)),
+                allow_repo_override=allow_repo_override,
+            )
         plan_path = accepted.plan_path
         repo_context_path = accepted.repo_context_path
         workspace_context_path = accepted.workspace_context_path

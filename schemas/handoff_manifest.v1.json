@@ -1,0 +1,55 @@
+{
+  "title": "HandoffManifest",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"type": "string"},
+    "hash_spec_version": {"type": "string"},
+    "pointers": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "plan_ref": {"type": "string"},
+        "freeze_record_ref": {"type": "string"},
+        "hash_spec_ref": {"type": "string"}
+      },
+      "required": ["plan_ref", "freeze_record_ref", "hash_spec_ref"]
+    },
+    "repo_acquisition_spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "repo_url": {"type": "string"},
+        "git_commit": {"type": "string"},
+        "git_tree_hash": {"type": ["string", "null"]},
+        "submodules": {"type": ["string", "null"]},
+        "fetch_depth": {"type": ["integer", "null"]}
+      },
+      "required": ["repo_url", "git_commit"]
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "ref": {"type": "string"},
+          "digest": {"type": "string"},
+          "schema_version": {"type": "string"},
+          "role": {"type": "string"}
+        },
+        "required": ["ref", "digest", "schema_version", "role"]
+      }
+    },
+    "env_requirements_ref": {"type": ["string", "null"]},
+    "handoff_digest": {"type": "string"}
+  },
+  "required": [
+    "schema_version",
+    "hash_spec_version",
+    "pointers",
+    "repo_acquisition_spec",
+    "artifacts",
+    "handoff_digest"
+  ]
+}

@@ -14,12 +14,17 @@ from council_os.handoff.schemas import (
     ApprovalRef,
     ClarificationsRef,
     HandoffArtifactRef,
+    HandoffManifest,
     HumanFeedbackBundle,
+    ManifestArtifactRef,
+    ManifestPointers,
     PlanFreezeRecord,
     PlanningHandoffBundle,
+    RepoAcquisitionSpec,
     RepoSnapshot,
 )
-from council_os.implementation.handoff.accept import accept_handoff
+from council_os.handoff.manifest import compute_manifest_digest
+from council_os.implementation.handoff.accept import accept_handoff, accept_handoff_manifest
 from council_os.implementation.handoff.errors import HandoffRejected
 from council_os.orchestrator.feedback.config import FeedbackConfig
 from council_os.orchestrator.feedback.schemas import PlanApproval
@@ -237,6 +242,48 @@ def test_handoff_digest_recompute_changes_on_content() -> None:
     assert compute_handoff_digest(changed) != digest
 
 
+def test_manifest_digest_recompute_changes_on_content() -> None:
+    manifest = HandoffManifest(
+        hash_spec_version="1",
+        pointers=ManifestPointers(
+            plan_ref="artifacts/plan.json",
+            freeze_record_ref="artifacts/freeze.json",
+            hash_spec_ref="artifacts/hash_spec.json",
+        ),
+        repo_acquisition_spec=RepoAcquisitionSpec(
+            repo_url="file:///repo",
+            git_commit="abc123",
+            git_tree_hash="deadbeef",
+            submodules="NONE",
+        ),
+        artifacts=[
+            ManifestArtifactRef(
+                ref="artifacts/plan.json",
+                digest="sha256:aaa",
+                schema_version="plan_package.v1",
+                role="REQUIRED",
+            )
+        ],
+        env_requirements_ref=None,
+        handoff_digest="",
+    )
+    digest = compute_manifest_digest(manifest)
+    assert digest.startswith("sha256:")
+    manifest_with_digest = manifest.model_copy(update={"handoff_digest": digest})
+    assert compute_manifest_digest(manifest_with_digest) == digest
+    changed = manifest.model_copy(
+        update={
+            "repo_acquisition_spec": RepoAcquisitionSpec(
+                repo_url="file:///repo",
+                git_commit="def456",
+                git_tree_hash="deadbeef",
+                submodules="NONE",
+            )
+        }
+    )
+    assert compute_manifest_digest(changed) != digest
+
+
 def test_accept_handoff_rejects_approval_hash_mismatch(tmp_path: Path) -> None:
     bundle_path = _write_handoff_bundle(
         tmp_path,
@@ -383,17 +430,67 @@ def test_finalize_and_accept_handoff_roundtrip(tmp_path: Path) -> None:
         repo_context_path=repo_context_path,
         workspace_context_path=workspace_context_path,
     )
-    bundle_path = run_root / "planning" / "planning_handoff_bundle.json"
-    assert bundle_path.exists()
+    manifest_path = run_root / "planning" / "handoff_manifest.json"
+    assert manifest_path.exists()
 
     impl_root = tmp_path / "impl"
     impl_root.mkdir()
     impl_run_id = str(uuid4())
-    accepted = accept_handoff(
-        bundle_path=bundle_path,
+    accepted = accept_handoff_manifest(
+        manifest_path=manifest_path,
         run_root=impl_root,
         implementation_run_id=impl_run_id,
         implementation_engine_version="test",
     )
     assert (impl_root / "handoff_ack.json").exists()
-    assert accepted.handoff_digest == bundle.handoff_digest
+    manifest_payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    assert accepted.handoff_digest == manifest_payload["handoff_digest"]
+
+
+def test_finalize_uses_selected_draft_over_latest(tmp_path: Path) -> None:
+    run_root = tmp_path / "planning_run"
+    run_root.mkdir()
+    planning_root = run_root / "planning"
+    planning_root.mkdir(parents=True, exist_ok=True)
+
+    draft_v1 = _sample_plan("CANDIDATE")
+    draft_v1["requirements"] = [
+        {"id": "R1", "priority": "MUST", "text": "Draft V1", "rationale": "Because"}
+    ]
+    draft_v2 = _sample_plan("CANDIDATE")
+    draft_v2["requirements"] = [
+        {"id": "R1", "priority": "MUST", "text": "Draft V2", "rationale": "Because"}
+    ]
+
+    (planning_root / "plan_package_draft_v1.json").write_text(
+        json.dumps(draft_v1, sort_keys=True), encoding="utf-8"
+    )
+    (planning_root / "plan_package_draft_v2.json").write_text(
+        json.dumps(draft_v2, sort_keys=True), encoding="utf-8"
+    )
+
+    repo_root = tmp_path / "repo"
+    _init_git_repo(repo_root)
+    repo_context_path = tmp_path / "repo_context.json"
+    repo_context_path.write_text(json.dumps({"repo_root": str(repo_root)}, sort_keys=True), encoding="utf-8")
+    workspace_context_path = tmp_path / "workspace_context.json"
+    workspace_context_path.write_text(json.dumps({"workspace_root": "workspace"}, sort_keys=True), encoding="utf-8")
+
+    finalize_and_write_handoff(
+        run_id="run-1",
+        run_root=run_root,
+        plan=draft_v2,
+        feedback_cfg=FeedbackConfig(plan_review=False, clarify=False),
+        config_snapshot={"schema_version": "2.1.0", "source": "test"},
+        repo_context_path=repo_context_path,
+        workspace_context_path=workspace_context_path,
+        selected_draft_name="plan_package_draft_v1.json",
+    )
+
+    final_path = planning_root / "plan_package_final.json"
+    final_payload = json.loads(final_path.read_text(encoding="utf-8"))
+    assert final_payload["requirements"][0]["text"] == "Draft V1"
+
+    freeze_path = planning_root / "plan_freeze_record.json"
+    freeze_payload = json.loads(freeze_path.read_text(encoding="utf-8"))
+    assert freeze_payload["selected_draft_ref"].endswith("plan_package_draft_v1.json")

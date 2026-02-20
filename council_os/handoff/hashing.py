@@ -3,7 +3,10 @@ from __future__ import annotations
 import hashlib
 import json
 from copy import deepcopy
-from typing import Any
+from fnmatch import fnmatch
+from typing import Any, Iterable
+
+from council_os.handoff.schemas import HashSpec
 
 
 def canonical_json_dumps(value: Any) -> str:
@@ -14,40 +17,99 @@ def canonical_json_bytes(value: Any) -> bytes:
     return canonical_json_dumps(value).encode("utf-8")
 
 
-def artifact_hash(value: Any) -> str:
-    digest = hashlib.sha256(canonical_json_bytes(value)).hexdigest()
+def hash_bytes(payload: bytes) -> str:
+    digest = hashlib.sha256(payload).hexdigest()
     return f"sha256:{digest}"
 
 
-_VOLATILE_PLAN_PATHS: tuple[tuple[str, ...], ...] = (
-    ("meta", "created_at"),
-    ("meta", "source_run_id"),
-    ("meta", "plan_status"),
+def artifact_hash(value: Any) -> str:
+    return hash_bytes(canonical_json_bytes(value))
+
+
+def hash_json(value: Any, *, excluded_pointers: Iterable[str] | None = None) -> str:
+    if excluded_pointers:
+        value = _apply_excluded_pointers(value, excluded_pointers)
+    return artifact_hash(value)
+
+
+_DEFAULT_EXCLUDED_POINTERS: tuple[str, ...] = (
+    "/meta/plan_status",
+    "/meta/created_at",
+    "/meta/source_run_id",
+    "/meta/run_id",
+    "/meta/last_updated",
+    "/meta/*timestamp*",
+    "/meta/*nonce*",
 )
 
 
-def _remove_path(obj: Any, path: tuple[str, ...]) -> None:
-    cursor = obj
-    for key in path[:-1]:
-        if not isinstance(cursor, dict):
-            return
-        if key not in cursor:
-            return
-        cursor = cursor[key]
-    if isinstance(cursor, dict):
-        cursor.pop(path[-1], None)
+def _decode_pointer_segment(segment: str) -> str:
+    return segment.replace("~1", "/").replace("~0", "~")
 
 
-def normalize_plan_for_hash(plan_obj: Any) -> Any:
+def _pointer_segments(pointer: str) -> list[str]:
+    if not pointer or pointer == "/":
+        return []
+    if pointer.startswith("/"):
+        pointer = pointer[1:]
+    return [_decode_pointer_segment(seg) for seg in pointer.split("/") if seg]
+
+
+def _remove_pointer_pattern(obj: Any, segments: list[str]) -> None:
+    if not segments:
+        return
+    head, *tail = segments
+    wildcard = "*" in head or "?" in head or "[" in head
+    if isinstance(obj, dict):
+        if wildcard:
+            keys = list(obj.keys())
+            for key in keys:
+                if fnmatch(str(key), head):
+                    if tail:
+                        _remove_pointer_pattern(obj.get(key), tail)
+                    else:
+                        obj.pop(key, None)
+        else:
+            if head in obj:
+                if tail:
+                    _remove_pointer_pattern(obj.get(head), tail)
+                else:
+                    obj.pop(head, None)
+    elif isinstance(obj, list):
+        if wildcard:
+            return
+        try:
+            idx = int(head)
+        except ValueError:
+            return
+        if 0 <= idx < len(obj):
+            if tail:
+                _remove_pointer_pattern(obj[idx], tail)
+            else:
+                obj.pop(idx)
+
+
+def _apply_excluded_pointers(value: Any, pointers: Iterable[str]) -> Any:
+    if not isinstance(value, dict):
+        return value
+    cloned = deepcopy(value)
+    for pointer in pointers:
+        segments = _pointer_segments(pointer)
+        _remove_pointer_pattern(cloned, segments)
+    return cloned
+
+
+def default_hash_spec() -> HashSpec:
+    return HashSpec(excluded_fields_by_pointer=list(_DEFAULT_EXCLUDED_POINTERS))
+
+
+def normalize_plan_for_hash(plan_obj: Any, *, hash_spec: HashSpec | None = None) -> Any:
     if not isinstance(plan_obj, dict):
         return plan_obj
-    plan = deepcopy(plan_obj)
-    for path in _VOLATILE_PLAN_PATHS:
-        _remove_path(plan, path)
-    return plan
+    spec = hash_spec or default_hash_spec()
+    return _apply_excluded_pointers(plan_obj, spec.excluded_fields_by_pointer)
 
 
-def plan_content_hash(plan_obj: Any) -> str:
-    normalized = normalize_plan_for_hash(plan_obj)
-    digest = hashlib.sha256(canonical_json_bytes(normalized)).hexdigest()
-    return f"sha256:{digest}"
+def plan_content_hash(plan_obj: Any, *, hash_spec: HashSpec | None = None) -> str:
+    normalized = normalize_plan_for_hash(plan_obj, hash_spec=hash_spec)
+    return artifact_hash(normalized)

@@ -33,11 +33,15 @@ class PlanningEvent(StrictFeedbackModel):
         "HUMAN_FEEDBACK_RECEIVED",
         "HUMAN_FEEDBACK_SKIPPED",
         "PLAN_APPROVED",
+        "PLAN_DRAFTED",
+        "PLAN_REVIEWED",
         "PLAN_REVIEW_ROUND_LIMIT_REACHED",
         "PLAN_FINALIZATION_STARTED",
         "PLAN_FROZEN",
         "HANDOFF_BUNDLE_WRITTEN",
         "HANDOFF_READY",
+        "HANDOFF_ACCEPTED",
+        "HANDOFF_REJECTED",
     ]
     gate_type: Literal["clarify_intent", "plan_review"] | None = None
     artifact_refs: list[str] = Field(default_factory=list)

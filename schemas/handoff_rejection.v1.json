@@ -1,0 +1,18 @@
+{
+  "title": "HandoffRejection",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"type": "string"},
+    "rejected_at": {"type": "string"},
+    "reason": {"type": "string"},
+    "reason_code": {"type": ["string", "null"]},
+    "expected": {"type": "object", "additionalProperties": true},
+    "actual": {"type": "object", "additionalProperties": true},
+    "remediation_hints": {
+      "type": "array",
+      "items": {"type": "string"}
+    }
+  },
+  "required": ["schema_version", "rejected_at", "reason", "expected", "actual"]
+}

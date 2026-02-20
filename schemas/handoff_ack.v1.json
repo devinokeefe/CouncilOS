@@ -1,0 +1,43 @@
+{
+  "title": "HandoffAck",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"type": "string"},
+    "implementation_run_id": {"type": "string"},
+    "accepted_at": {"type": "string"},
+    "accepted_handoff_digest": {"type": "string"},
+    "accepted_plan_content_hash": {"type": "string"},
+    "accepted_repo_commit": {"type": "string"},
+    "accepted_repo_tree_hash": {"type": ["string", "null"]},
+    "accepted_config_sha256": {"type": "string"},
+    "implementation_engine_version": {"type": "string"},
+    "env_fingerprint": {"type": ["string", "null"]},
+    "imported_artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "ref": {"type": "string"},
+          "digest": {"type": "string"}
+        },
+        "required": ["ref", "digest"]
+      }
+    },
+    "acquired_repo": {
+      "type": ["object", "null"],
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "schema_version",
+    "implementation_run_id",
+    "accepted_at",
+    "accepted_handoff_digest",
+    "accepted_plan_content_hash",
+    "accepted_repo_commit",
+    "accepted_config_sha256",
+    "implementation_engine_version"
+  ]
+}

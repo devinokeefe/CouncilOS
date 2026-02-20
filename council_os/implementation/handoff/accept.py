@@ -7,12 +7,18 @@ from pathlib import Path
 from typing import Any
 from uuid import UUID
 
-from council_os.handoff.hashing import artifact_hash, plan_content_hash
+from council_os.handoff.hashing import artifact_hash, default_hash_spec, plan_content_hash
+from council_os.handoff.manifest import compute_manifest_digest
 from council_os.handoff.schemas import (
     HandoffAck,
+    HandoffManifest,
+    HandoffOverride,
     HandoffRejection,
     PlanFreezeRecord,
     PlanningHandoffBundle,
+    ImportedArtifactRef,
+    ManifestArtifactRef,
+    HashSpec,
 )
 from council_os.implementation.event_log import append_event, new_event
 from council_os.implementation.handoff.errors import HandoffRejected
@@ -48,28 +54,81 @@ def _resolve_path(bundle_path: Path, rel_path: str) -> Path:
     return (base_root / rel_path).resolve()
 
 
+def _artifact_ref(name: str) -> str:
+    return f"artifacts/{name}"
+
+
+def _manifest_base_root(manifest_path: Path) -> Path:
+    if manifest_path.parent.name == "artifacts":
+        return manifest_path.parent.parent
+    return manifest_path.parent
+
+
+def _resolve_manifest_ref(manifest_path: Path, ref: str) -> Path:
+    base_root = _manifest_base_root(manifest_path)
+    if ref.startswith("artifacts/"):
+        return (base_root / ref).resolve()
+    if ref.startswith("planning/"):
+        return (base_root.parent / ref).resolve()
+    return (manifest_path.parent / ref).resolve()
+
+
+def _load_hash_spec(path: Path | None) -> HashSpec:
+    if path is None or not path.exists():
+        return default_hash_spec()
+    return HashSpec.model_validate_json(path.read_text(encoding="utf-8"))
+
+
+def _find_manifest_artifact(
+    manifest: HandoffManifest, *, schema_version: str
+) -> ManifestArtifactRef | None:
+    for artifact in manifest.artifacts:
+        if artifact.schema_version == schema_version:
+            return artifact
+    return None
+
+
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(stable_json_dumps(payload), encoding="utf-8")
 
 
-def _write_rejection(run_root: Path, reason: str, expected: dict[str, Any], actual: dict[str, Any]) -> Path:
+def _write_rejection(
+    run_root: Path,
+    reason: str,
+    expected: dict[str, Any],
+    actual: dict[str, Any],
+    *,
+    reason_code: str | None = None,
+    remediation_hints: list[str] | None = None,
+) -> Path:
     rejection = HandoffRejection(
         rejected_at=datetime.now(UTC).isoformat(),
         reason=reason,
+        reason_code=reason_code,
         expected=expected,
         actual=actual,
+        remediation_hints=remediation_hints or [],
     )
     path = run_root / "handoff_rejection.json"
     _write_json(path, rejection.model_dump())
     return path
 
 
-def _write_override(run_root: Path, reason: str, expected: dict[str, Any], actual: dict[str, Any]) -> Path:
-    override = HandoffRejection(
-        rejected_at=datetime.now(UTC).isoformat(),
-        reason=reason,
+def _write_override(
+    run_root: Path,
+    override_type: str,
+    expected: dict[str, Any],
+    actual: dict[str, Any],
+    *,
+    rationale: str | None = None,
+    new_baseline_snapshot_ref: str | None = None,
+) -> Path:
+    override = HandoffOverride(
+        override_type=override_type,
         expected=expected,
         actual=actual,
+        rationale=rationale,
+        new_baseline_snapshot_ref=new_baseline_snapshot_ref,
     )
     path = run_root / "handoff_override.json"
     _write_json(path, override.model_dump())
@@ -114,8 +173,21 @@ def accept_handoff(
             "handoff_digest_mismatch",
             {"expected": bundle.handoff_digest},
             {"actual": computed_digest},
+            reason_code="HASH_MISMATCH",
         )
         raise HandoffRejected("Handoff digest mismatch", rejection_path)
+
+    base_root = _bundle_base_root(bundle_path)
+    hash_spec_path = None
+    for candidate in (
+        base_root / "planning" / "hash_spec.json",
+        base_root / "planning" / "artifacts" / "hash_spec.json",
+        base_root / "hash_spec.json",
+    ):
+        if candidate.exists():
+            hash_spec_path = candidate
+            break
+    hash_spec = _load_hash_spec(hash_spec_path)
 
     for item in bundle.required_artifacts:
         artifact_path = _resolve_path(bundle_path, item.path)
@@ -125,6 +197,7 @@ def accept_handoff(
                 "required_artifact_missing",
                 {"path": item.path},
                 {"actual": "missing"},
+                reason_code="MISSING_ARTIFACT",
             )
             raise HandoffRejected(f"Missing required artifact: {item.path}", rejection_path)
         actual_hash = artifact_hash(_load_json(artifact_path))
@@ -134,6 +207,7 @@ def accept_handoff(
                 "required_artifact_hash_mismatch",
                 {"path": item.path, "expected": item.sha256},
                 {"actual": actual_hash},
+                reason_code="HASH_MISMATCH",
             )
             raise HandoffRejected(f"Hash mismatch for required artifact: {item.path}", rejection_path)
 
@@ -149,13 +223,14 @@ def accept_handoff(
         )
         raise HandoffRejected("plan_package_final must be frozen", rejection_path)
 
-    plan_hash = plan_content_hash(plan_payload)
+    plan_hash = plan_content_hash(plan_payload, hash_spec=hash_spec)
     if plan_hash != bundle.final_plan.plan_content_hash:
         rejection_path = _write_rejection(
             run_root,
             "plan_hash_mismatch",
             {"expected": bundle.final_plan.plan_content_hash},
             {"actual": plan_hash},
+            reason_code="HASH_MISMATCH",
         )
         raise HandoffRejected("Plan content hash mismatch", rejection_path)
 
@@ -167,6 +242,7 @@ def accept_handoff(
             "freeze_record_hash_mismatch",
             {"expected": freeze_record.plan_content_hash},
             {"actual": plan_hash},
+            reason_code="HASH_MISMATCH",
         )
         raise HandoffRejected("Plan freeze record hash mismatch", rejection_path)
 
@@ -177,6 +253,7 @@ def accept_handoff(
                 "approval_missing",
                 {"expected": "plan_approval.json"},
                 {"actual": "missing"},
+                reason_code="MISSING_ARTIFACT",
             )
             raise HandoffRejected("Plan approval required but missing", rejection_path)
         approval_path = _resolve_path(bundle_path, bundle.approval.path)
@@ -187,6 +264,7 @@ def accept_handoff(
                 "approval_not_granted",
                 {"expected": True},
                 {"actual": approval.approved},
+                reason_code="HASH_MISMATCH",
             )
             raise HandoffRejected("Plan approval not granted", rejection_path)
         if approval.approved_plan_hash != plan_hash:
@@ -195,6 +273,7 @@ def accept_handoff(
                 "approval_hash_mismatch",
                 {"expected": plan_hash},
                 {"actual": approval.approved_plan_hash},
+                reason_code="HASH_MISMATCH",
             )
             raise HandoffRejected("Plan approval hash mismatch", rejection_path)
 
@@ -205,6 +284,7 @@ def accept_handoff(
                 "clarifications_missing",
                 {"expected": "clarification_resolutions.json"},
                 {"actual": "missing"},
+                reason_code="MISSING_ARTIFACT",
             )
             raise HandoffRejected("Clarification resolutions required but missing", rejection_path)
         clar_path = _resolve_path(bundle_path, bundle.clarifications.path)
@@ -220,6 +300,7 @@ def accept_handoff(
             "repo_root_missing",
             {"expected": str(repo_root)},
             {"actual": "missing"},
+            reason_code="REPO_ACQUIRE_FAILED",
         )
         raise HandoffRejected("Repo root missing", rejection_path)
 
@@ -233,11 +314,12 @@ def accept_handoff(
                 "repo_snapshot_unavailable",
                 {"expected": bundle.repo_snapshot.model_dump()},
                 {"actual": str(exc)},
+                reason_code="REPO_ACQUIRE_FAILED",
             )
             raise HandoffRejected("Repo snapshot unavailable", rejection_path)
         override_path = _write_override(
             run_root,
-            "repo_snapshot_override",
+            "REPO_SNAPSHOT_OVERRIDE",
             {"expected": bundle.repo_snapshot.model_dump()},
             {"actual": str(exc)},
         )
@@ -253,13 +335,31 @@ def accept_handoff(
                 "repo_snapshot_mismatch",
                 {"expected": bundle.repo_snapshot.model_dump()},
                 {"actual": actual_snapshot.model_dump()},
+                reason_code="TREE_HASH_MISMATCH",
             )
             raise HandoffRejected("Repo snapshot mismatch", rejection_path)
         override_path = _write_override(
             run_root,
-            "repo_snapshot_override",
+            "REPO_SNAPSHOT_OVERRIDE",
             {"expected": bundle.repo_snapshot.model_dump()},
             {"actual": actual_snapshot.model_dump()},
+        )
+
+    if bundle.repo_snapshot.tree_hash and actual_snapshot.tree_hash != bundle.repo_snapshot.tree_hash:
+        if not allow_repo_override:
+            rejection_path = _write_rejection(
+                run_root,
+                "repo_tree_hash_mismatch",
+                {"expected": bundle.repo_snapshot.tree_hash},
+                {"actual": actual_snapshot.tree_hash},
+                reason_code="TREE_HASH_MISMATCH",
+            )
+            raise HandoffRejected("Repo tree hash mismatch", rejection_path)
+        override_path = _write_override(
+            run_root,
+            "TREE_HASH_MATCHES_AFTER_PATCH",
+            {"expected": bundle.repo_snapshot.tree_hash},
+            {"actual": actual_snapshot.tree_hash},
         )
 
     inputs = {
@@ -278,14 +378,23 @@ def accept_handoff(
 
     copied = copy_with_provenance(inputs, run_root / "inputs" / "planning")
 
+    imported = [
+        ImportedArtifactRef(ref=item.path, digest=item.sha256) for item in bundle.required_artifacts
+    ]
     ack = HandoffAck(
         implementation_run_id=implementation_run_id,
         accepted_at=datetime.now(UTC).isoformat(),
         accepted_handoff_digest=bundle.handoff_digest,
         accepted_plan_content_hash=plan_hash,
         accepted_repo_commit=actual_snapshot.commit_sha,
+        accepted_repo_tree_hash=actual_snapshot.tree_hash,
         accepted_config_sha256=bundle.config_snapshot.sha256,
         implementation_engine_version=implementation_engine_version,
+        imported_artifacts=imported,
+        acquired_repo={
+            "git_commit": actual_snapshot.commit_sha,
+            "git_tree_hash": actual_snapshot.tree_hash,
+        },
     )
     _write_json(ack_path, ack.model_dump())
 
@@ -300,6 +409,7 @@ def accept_handoff(
                 "handoff_digest": bundle.handoff_digest,
                 "plan_content_hash": plan_hash,
                 "repo_commit": bundle.repo_snapshot.commit_sha,
+                "repo_tree_hash": bundle.repo_snapshot.tree_hash,
                 "override_path": str(override_path) if override_path else None,
             },
         ),
@@ -313,4 +423,304 @@ def accept_handoff(
         config_snapshot_path=copied["config_snapshot"],
         plan_content_hash=plan_hash,
         handoff_digest=bundle.handoff_digest,
+    )
+
+
+def accept_handoff_manifest(
+    *,
+    manifest_path: Path,
+    run_root: Path,
+    implementation_run_id: str,
+    implementation_engine_version: str,
+    allow_repo_override: bool = False,
+) -> AcceptedHandoff:
+    manifest = HandoffManifest.model_validate_json(manifest_path.read_text(encoding="utf-8"))
+
+    ack_path = run_root / "handoff_ack.json"
+    if ack_path.exists():
+        ack = HandoffAck.model_validate_json(ack_path.read_text(encoding="utf-8"))
+        if ack.accepted_handoff_digest != manifest.handoff_digest:
+            raise HandoffRejected("Existing handoff ack digest mismatch", ack_path)
+        plan_ref_path = _resolve_manifest_ref(manifest_path, manifest.pointers.plan_ref)
+        repo_context_artifact = _find_manifest_artifact(manifest, schema_version="repo_context.v1")
+        workspace_context_artifact = _find_manifest_artifact(manifest, schema_version="workspace_context.v1")
+        config_artifact = _find_manifest_artifact(manifest, schema_version="config_snapshot.v1")
+        return AcceptedHandoff(
+            bundle_path=manifest_path,
+            plan_path=plan_ref_path,
+            repo_context_path=_resolve_manifest_ref(manifest_path, repo_context_artifact.ref)
+            if repo_context_artifact
+            else _resolve_manifest_ref(manifest_path, _artifact_ref("repo_context.json")),
+            workspace_context_path=_resolve_manifest_ref(manifest_path, workspace_context_artifact.ref)
+            if workspace_context_artifact
+            else _resolve_manifest_ref(manifest_path, _artifact_ref("workspace_context.json")),
+            config_snapshot_path=_resolve_manifest_ref(manifest_path, config_artifact.ref)
+            if config_artifact
+            else _resolve_manifest_ref(manifest_path, _artifact_ref("config_snapshot.json")),
+            plan_content_hash=ack.accepted_plan_content_hash,
+            handoff_digest=ack.accepted_handoff_digest,
+        )
+
+    computed_digest = compute_manifest_digest(manifest)
+    if computed_digest != manifest.handoff_digest:
+        rejection_path = _write_rejection(
+            run_root,
+            "handoff_digest_mismatch",
+            {"expected": manifest.handoff_digest},
+            {"actual": computed_digest},
+            reason_code="HASH_MISMATCH",
+        )
+        raise HandoffRejected("Handoff manifest digest mismatch", rejection_path)
+
+    for artifact in manifest.artifacts:
+        if artifact.role.upper() != "REQUIRED":
+            continue
+        artifact_path = _resolve_manifest_ref(manifest_path, artifact.ref)
+        if not artifact_path.exists():
+            rejection_path = _write_rejection(
+                run_root,
+                "required_artifact_missing",
+                {"path": artifact.ref},
+                {"actual": "missing"},
+                reason_code="MISSING_ARTIFACT",
+            )
+            raise HandoffRejected(f"Missing required artifact: {artifact.ref}", rejection_path)
+        actual_hash = artifact_hash(_load_json(artifact_path))
+        if actual_hash != artifact.digest:
+            rejection_path = _write_rejection(
+                run_root,
+                "required_artifact_hash_mismatch",
+                {"path": artifact.ref, "expected": artifact.digest},
+                {"actual": actual_hash},
+                reason_code="HASH_MISMATCH",
+            )
+            raise HandoffRejected(f"Hash mismatch for required artifact: {artifact.ref}", rejection_path)
+
+    hash_spec_path = _resolve_manifest_ref(manifest_path, manifest.pointers.hash_spec_ref)
+    hash_spec = _load_hash_spec(hash_spec_path if hash_spec_path.exists() else None)
+    if hash_spec.hash_spec_version != manifest.hash_spec_version:
+        rejection_path = _write_rejection(
+            run_root,
+            "hash_spec_version_mismatch",
+            {"expected": manifest.hash_spec_version},
+            {"actual": hash_spec.hash_spec_version},
+            reason_code="SCHEMA_UNSUPPORTED",
+        )
+        raise HandoffRejected("Hash spec version mismatch", rejection_path)
+
+    plan_path = _resolve_manifest_ref(manifest_path, manifest.pointers.plan_ref)
+    plan_payload = _load_json(plan_path)
+    plan_meta = plan_payload.get("meta", {}) if isinstance(plan_payload, dict) else {}
+    if plan_meta.get("plan_status") != "FROZEN":
+        rejection_path = _write_rejection(
+            run_root,
+            "plan_not_frozen",
+            {"expected": "FROZEN"},
+            {"actual": plan_meta.get("plan_status")},
+            reason_code="HASH_MISMATCH",
+        )
+        raise HandoffRejected("plan_package_final must be frozen", rejection_path)
+
+    plan_hash = plan_content_hash(plan_payload, hash_spec=hash_spec)
+
+    freeze_path = _resolve_manifest_ref(manifest_path, manifest.pointers.freeze_record_ref)
+    freeze_record = PlanFreezeRecord.model_validate_json(freeze_path.read_text(encoding="utf-8"))
+    if freeze_record.plan_content_hash != plan_hash:
+        rejection_path = _write_rejection(
+            run_root,
+            "freeze_record_hash_mismatch",
+            {"expected": freeze_record.plan_content_hash},
+            {"actual": plan_hash},
+            reason_code="HASH_MISMATCH",
+        )
+        raise HandoffRejected("Plan freeze record hash mismatch", rejection_path)
+
+    if freeze_record.plan_approval_ref is not None:
+        approval_path = _resolve_manifest_ref(manifest_path, freeze_record.plan_approval_ref.path)
+        approval = PlanApproval.model_validate_json(approval_path.read_text(encoding="utf-8"))
+        if not approval.approved:
+            rejection_path = _write_rejection(
+                run_root,
+                "approval_not_granted",
+                {"expected": True},
+                {"actual": approval.approved},
+                reason_code="HASH_MISMATCH",
+            )
+            raise HandoffRejected("Plan approval not granted", rejection_path)
+        if approval.approved_plan_hash != plan_hash:
+            rejection_path = _write_rejection(
+                run_root,
+                "approval_hash_mismatch",
+                {"expected": plan_hash},
+                {"actual": approval.approved_plan_hash},
+                reason_code="HASH_MISMATCH",
+            )
+            raise HandoffRejected("Plan approval hash mismatch", rejection_path)
+
+    if freeze_record.clarification_resolutions_ref is not None:
+        clar_path = _resolve_manifest_ref(manifest_path, freeze_record.clarification_resolutions_ref.path)
+        ClarificationResolutions.model_validate_json(clar_path.read_text(encoding="utf-8"))
+
+    repo_context_artifact = _find_manifest_artifact(manifest, schema_version="repo_context.v1")
+    repo_context_path = (
+        _resolve_manifest_ref(manifest_path, repo_context_artifact.ref)
+        if repo_context_artifact
+        else _resolve_manifest_ref(manifest_path, _artifact_ref("repo_context.json"))
+    )
+    repo_context_payload = _load_json(repo_context_path)
+    repo_root = Path(str(repo_context_payload.get("repo_root", ""))).expanduser()
+    if not repo_root.exists():
+        rejection_path = _write_rejection(
+            run_root,
+            "repo_root_missing",
+            {"expected": str(repo_root)},
+            {"actual": "missing"},
+            reason_code="REPO_ACQUIRE_FAILED",
+        )
+        raise HandoffRejected("Repo root missing", rejection_path)
+
+    override_path = None
+    try:
+        actual_snapshot = capture_repo_snapshot(repo_root)
+    except Exception as exc:
+        if not allow_repo_override:
+            rejection_path = _write_rejection(
+                run_root,
+                "repo_snapshot_unavailable",
+                {"expected": manifest.repo_acquisition_spec.model_dump()},
+                {"actual": str(exc)},
+                reason_code="REPO_ACQUIRE_FAILED",
+            )
+            raise HandoffRejected("Repo snapshot unavailable", rejection_path)
+        override_path = _write_override(
+            run_root,
+            "REPO_ACQUIRE_FAILED",
+            {"expected": manifest.repo_acquisition_spec.model_dump()},
+            {"actual": str(exc)},
+            rationale="Repo snapshot unavailable; override allowed.",
+        )
+        actual_snapshot = capture_repo_snapshot(repo_root)
+
+    repo_spec = manifest.repo_acquisition_spec
+    if actual_snapshot.commit_sha != repo_spec.git_commit:
+        if not allow_repo_override:
+            rejection_path = _write_rejection(
+                run_root,
+                "repo_commit_mismatch",
+                {"expected": repo_spec.git_commit},
+                {"actual": actual_snapshot.commit_sha},
+                reason_code="TREE_HASH_MISMATCH",
+            )
+            raise HandoffRejected("Repo commit mismatch", rejection_path)
+        override_path = _write_override(
+            run_root,
+            "FAST_FORWARD_ALLOWED",
+            {"expected": repo_spec.git_commit},
+            {"actual": actual_snapshot.commit_sha},
+            rationale="Repo commit mismatch override allowed.",
+        )
+
+    if repo_spec.git_tree_hash and actual_snapshot.tree_hash != repo_spec.git_tree_hash:
+        if not allow_repo_override:
+            rejection_path = _write_rejection(
+                run_root,
+                "tree_hash_mismatch",
+                {"expected": repo_spec.git_tree_hash},
+                {"actual": actual_snapshot.tree_hash},
+                reason_code="TREE_HASH_MISMATCH",
+            )
+            raise HandoffRejected("Repo tree hash mismatch", rejection_path)
+        override_path = _write_override(
+            run_root,
+            "TREE_HASH_MATCHES_AFTER_PATCH",
+            {"expected": repo_spec.git_tree_hash},
+            {"actual": actual_snapshot.tree_hash},
+            rationale="Repo tree hash mismatch override allowed.",
+        )
+
+    workspace_context_artifact = _find_manifest_artifact(manifest, schema_version="workspace_context.v1")
+    workspace_context_path = (
+        _resolve_manifest_ref(manifest_path, workspace_context_artifact.ref)
+        if workspace_context_artifact
+        else _resolve_manifest_ref(manifest_path, _artifact_ref("workspace_context.json"))
+    )
+    config_artifact = _find_manifest_artifact(manifest, schema_version="config_snapshot.v1")
+    config_snapshot_path = (
+        _resolve_manifest_ref(manifest_path, config_artifact.ref)
+        if config_artifact
+        else _resolve_manifest_ref(manifest_path, _artifact_ref("config_snapshot.json"))
+    )
+    human_feedback_artifact = _find_manifest_artifact(manifest, schema_version="human_feedback_bundle.v1")
+
+    inputs = {
+        "plan_package_final": plan_path,
+        "plan_freeze_record": freeze_path,
+        "config_snapshot": config_snapshot_path,
+        "repo_context": repo_context_path,
+        "workspace_context": workspace_context_path,
+        "handoff_manifest": manifest_path,
+    }
+    if human_feedback_artifact is not None:
+        inputs["human_feedback_bundle"] = _resolve_manifest_ref(manifest_path, human_feedback_artifact.ref)
+    if freeze_record.clarification_resolutions_ref is not None:
+        inputs["clarification_resolutions"] = _resolve_manifest_ref(
+            manifest_path, freeze_record.clarification_resolutions_ref.path
+        )
+    if freeze_record.plan_approval_ref is not None:
+        inputs["plan_approval"] = _resolve_manifest_ref(manifest_path, freeze_record.plan_approval_ref.path)
+
+    copied = copy_with_provenance(inputs, run_root / "inputs" / "planning")
+
+    imported = [
+        ImportedArtifactRef(ref=item.ref, digest=item.digest)
+        for item in manifest.artifacts
+        if item.role.upper() == "REQUIRED"
+    ]
+    accepted_config_sha = (
+        config_artifact.digest
+        if config_artifact is not None
+        else artifact_hash(_load_json(config_snapshot_path))
+    )
+    ack = HandoffAck(
+        implementation_run_id=implementation_run_id,
+        accepted_at=datetime.now(UTC).isoformat(),
+        accepted_handoff_digest=manifest.handoff_digest,
+        accepted_plan_content_hash=plan_hash,
+        accepted_repo_commit=actual_snapshot.commit_sha,
+        accepted_repo_tree_hash=actual_snapshot.tree_hash,
+        accepted_config_sha256=accepted_config_sha,
+        implementation_engine_version=implementation_engine_version,
+        imported_artifacts=imported,
+        acquired_repo={
+            "git_commit": actual_snapshot.commit_sha,
+            "git_tree_hash": actual_snapshot.tree_hash,
+        },
+    )
+    _write_json(ack_path, ack.model_dump())
+
+    append_event(
+        run_root,
+        new_event(
+            UUID(implementation_run_id),
+            stage="intake",
+            actor={"kind": "orchestrator", "role": "implementation_engine"},
+            event_type="handoff_accept",
+            payload={
+                "handoff_digest": manifest.handoff_digest,
+                "plan_content_hash": plan_hash,
+                "repo_commit": actual_snapshot.commit_sha,
+                "repo_tree_hash": actual_snapshot.tree_hash,
+                "override_path": str(override_path) if override_path else None,
+            },
+        ),
+    )
+
+    return AcceptedHandoff(
+        bundle_path=copied.get("handoff_manifest", manifest_path),
+        plan_path=copied["plan_package_final"],
+        repo_context_path=copied["repo_context"],
+        workspace_context_path=copied["workspace_context"],
+        config_snapshot_path=copied["config_snapshot"],
+        plan_content_hash=plan_hash,
+        handoff_digest=manifest.handoff_digest,
     )

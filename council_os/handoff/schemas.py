@@ -35,6 +35,15 @@ class RepoSnapshot(HandoffModel):
     commit_sha: str
     branch: str
     dirty: bool
+    tree_hash: str | None = None
+
+
+class HashSpec(HandoffModel):
+    schema_version: str = "hash_spec.v1"
+    hash_spec_version: str = "1"
+    hash_alg: str = "sha256"
+    canonical_json: str = "JCS-like-v1"
+    excluded_fields_by_pointer: list[str] = Field(default_factory=list)
 
 
 class ClarificationSummary(HandoffModel):
@@ -66,10 +75,15 @@ class PlanFreezeRecord(HandoffModel):
     frozen_at: str
     plan_package_final_ref: HandoffArtifactRef
     plan_content_hash: str
+    hash_spec_version: str | None = None
+    selected_draft_ref: str | None = None
+    selected_draft_hash: str | None = None
     interactive_flags: dict[str, bool]
     clarification_resolutions_ref: HandoffArtifactRef | None = None
     plan_approval_ref: HandoffArtifactRef | None = None
     approved_plan_hash: str | None = None
+    repo_snapshot_ref: HandoffArtifactRef | None = None
+    hash_spec_ref: HandoffArtifactRef | None = None
     config_snapshot_ref: HandoffArtifactRef
     human_feedback_bundle_ref: HandoffArtifactRef
     notes: str | None = None
@@ -92,6 +106,42 @@ class PlanningHandoffBundle(HandoffModel):
     handoff_digest: str
 
 
+class ManifestArtifactRef(HandoffModel):
+    ref: str
+    digest: str
+    schema_version: str
+    role: str
+
+
+class ManifestPointers(HandoffModel):
+    plan_ref: str
+    freeze_record_ref: str
+    hash_spec_ref: str
+
+
+class RepoAcquisitionSpec(HandoffModel):
+    repo_url: str
+    git_commit: str
+    git_tree_hash: str | None = None
+    submodules: str | None = None
+    fetch_depth: int | None = None
+
+
+class HandoffManifest(HandoffModel):
+    schema_version: str = "handoff_manifest.v1"
+    hash_spec_version: str
+    pointers: ManifestPointers
+    repo_acquisition_spec: RepoAcquisitionSpec
+    artifacts: list[ManifestArtifactRef]
+    env_requirements_ref: str | None = None
+    handoff_digest: str
+
+
+class ImportedArtifactRef(HandoffModel):
+    ref: str
+    digest: str
+
+
 class HandoffAck(HandoffModel):
     schema_version: str = "2.1.0"
     implementation_run_id: str
@@ -99,13 +149,28 @@ class HandoffAck(HandoffModel):
     accepted_handoff_digest: str
     accepted_plan_content_hash: str
     accepted_repo_commit: str
+    accepted_repo_tree_hash: str | None = None
     accepted_config_sha256: str
     implementation_engine_version: str
+    env_fingerprint: str | None = None
+    imported_artifacts: list[ImportedArtifactRef] = Field(default_factory=list)
+    acquired_repo: dict[str, Any] | None = None
 
 
 class HandoffRejection(HandoffModel):
     schema_version: str = "2.1.0"
     rejected_at: str
     reason: str
+    reason_code: str | None = None
     expected: dict[str, Any] = Field(default_factory=dict)
     actual: dict[str, Any] = Field(default_factory=dict)
+    remediation_hints: list[str] = Field(default_factory=list)
+
+
+class HandoffOverride(HandoffModel):
+    schema_version: str = "handoff_override.v1"
+    override_type: str
+    expected: dict[str, Any] = Field(default_factory=dict)
+    actual: dict[str, Any] = Field(default_factory=dict)
+    rationale: str | None = None
+    new_baseline_snapshot_ref: str | None = None
