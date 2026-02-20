@@ -25,7 +25,7 @@ from council_os.orchestrator.feedback.schemas import (
     PlanReviewPacket,
 )
 from council_os.orchestrator.feedback.store import PlanningArtifactStore
-from council_os.orchestrator.feedback.utils import plan_hash
+from council_os.orchestrator.feedback.utils import plan_hash, write_planning_artifact
 from council_os.orchestrator.feedback import event_log
 
 
@@ -46,7 +46,12 @@ def _load_plan(store: PlanningArtifactStore, name: str) -> dict[str, Any]:
 
 
 def _write_plan(store: PlanningArtifactStore, name: str, plan: dict[str, Any]) -> Path:
-    return store.write_json(name, plan)
+    path = store.write_json(name, plan)
+    try:
+        write_planning_artifact(store.run_root, name, plan)
+    except Exception:
+        pass
+    return path
 
 
 def _build_review_packet(plan: dict[str, Any], plan_ref: str) -> PlanReviewPacket:
@@ -271,6 +276,7 @@ def run_plan_review_loop(
                 note=feedback.note or "Approved in plan review",
             )
             store.write_json("plan_approval.json", approval.model_dump())
+            write_planning_artifact(run_root, "plan_approval.json", approval.model_dump())
             event_log.append_event(
                 run_root,
                 event_log.new_event(
@@ -291,6 +297,11 @@ def run_plan_review_loop(
             llm_enabled=llm_enabled,
         )
         store.write_json(f"plan_feedback_items_v{round_idx}.json", feedback_items.model_dump())
+        write_planning_artifact(
+            run_root,
+            f"plan_feedback_items_v{round_idx}.json",
+            feedback_items.model_dump(),
+        )
 
         edits = _generate_plan_edits(
             invoke_json=invoke_json,
@@ -302,6 +313,11 @@ def run_plan_review_loop(
             llm_enabled=llm_enabled,
         )
         store.write_json(f"plan_edits_v{round_idx}.json", edits.model_dump())
+        write_planning_artifact(
+            run_root,
+            f"plan_edits_v{round_idx}.json",
+            edits.model_dump(),
+        )
 
         try:
             plan_next = apply_plan_edits(plan, edits)
@@ -314,6 +330,11 @@ def run_plan_review_loop(
 
         diff_summary = diff_plan(plan, plan_next)
         store.write_json(f"plan_diff_summary_v{round_idx}.json", diff_summary.model_dump())
+        write_planning_artifact(
+            run_root,
+            f"plan_diff_summary_v{round_idx}.json",
+            diff_summary.model_dump(),
+        )
 
         round_idx += 1
         plan = plan_next

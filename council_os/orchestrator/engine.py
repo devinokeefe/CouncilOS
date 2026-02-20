@@ -114,7 +114,7 @@ from council_os.orchestrator.feedback.schemas import (
 )
 from council_os.orchestrator.feedback.store import PlanningArtifactStore
 from council_os.orchestrator.feedback.triage import build_clarification_questions, run_preplan_triage
-from council_os.orchestrator.feedback.utils import plan_hash
+from council_os.orchestrator.feedback.utils import plan_hash, write_planning_artifact
 from council_os.orchestrator.handoff.finalize import build_config_snapshot, finalize_and_write_handoff
 from council_os.orchestrator.tools import (
     EchoTool,
@@ -2214,6 +2214,7 @@ class Engine:
                         else:
                             triage_payload = PrePlanTriage(schema_version="1.0", avenues_considered=[], uncertainties=[])
                         planning_store.write_json("preplan_triage.json", triage_payload.model_dump())
+                        write_planning_artifact(run_root, "preplan_triage.json", triage_payload.model_dump())
 
                     questions_payload: ClarificationQuestions | None = None
                     if planning_store.exists("clarification_questions.json"):
@@ -2247,12 +2248,22 @@ class Engine:
                             planning_store.write_json(
                                 "clarification_questions.json", questions_payload.model_dump()
                             )
+                            write_planning_artifact(
+                                run_root,
+                                "clarification_questions.json",
+                                questions_payload.model_dump(),
+                            )
                         if not questions_payload.questions:
                             empty_responses = ClarificationResponses(schema_version="1.0", responses=[])
                             planning_store.write_json("clarification_responses.json", empty_responses.model_dump())
                             clarification_resolutions = ClarificationResolutions(schema_version="1.0", resolutions=[])
                             planning_store.write_json(
                                 "clarification_resolutions.json", clarification_resolutions.model_dump()
+                            )
+                            write_planning_artifact(
+                                run_root,
+                                "clarification_resolutions.json",
+                                clarification_resolutions.model_dump(),
                             )
                         else:
                             response = feedback_gate.request_response(
@@ -2273,6 +2284,11 @@ class Engine:
                             )
                             planning_store.write_json(
                                 "clarification_resolutions.json", clarification_resolutions.model_dump()
+                            )
+                            write_planning_artifact(
+                                run_root,
+                                "clarification_resolutions.json",
+                                clarification_resolutions.model_dump(),
                             )
 
                     if clarification_resolutions is not None:

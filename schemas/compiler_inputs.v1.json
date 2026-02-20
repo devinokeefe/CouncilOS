@@ -1,0 +1,34 @@
+{
+  "title": "CompilerInputs",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "plan_content_hash": {
+      "type": "string"
+    },
+    "repo_snapshot_hash": {
+      "type": "string"
+    },
+    "config_snapshot_hash": {
+      "type": "string"
+    },
+    "env_snapshot_hash": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "hash_spec_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "plan_content_hash",
+    "repo_snapshot_hash",
+    "config_snapshot_hash"
+  ]
+}

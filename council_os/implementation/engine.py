@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import shutil
 import subprocess
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
+from fnmatch import fnmatch
 from pathlib import Path
 from typing import Any
 from uuid import UUID, uuid4
@@ -53,6 +55,7 @@ from council_os.implementation.schemas import (
     InterfaceContractsPayload,
     JobEvent,
     JobEventsPayload,
+    JobResultPayload,
     JobSpecPayload,
     LeaseHolder,
     PatchChange,
@@ -92,6 +95,8 @@ from council_os.implementation.schemas import (
     TraceReportPayload,
     VerificationPlanPayload,
     WorkGraphEventsPayload,
+    WorkGraphBudget,
+    WorkGraphTask,
     WorkGraphPayload,
     WorkLane,
     WorkPlanPayload,
@@ -101,6 +106,8 @@ from council_os.implementation.schemas import (
     WorkTaskV2,
     deterministic_json_dumps,
 )
+from council_os.handoff.hashing import artifact_hash, default_hash_spec, plan_content_hash
+from council_os.handoff.schemas import HashSpec, RepoSnapshot
 from council_os.implementation.secrets import scan_for_secrets
 from council_os.implementation.store import ArtifactNotFoundError, ImplementationArtifactStore
 from council_os.implementation.v2_1.execution.cache import IdempotencyCache
@@ -138,6 +145,8 @@ from council_os.implementation.validators import (
 )
 from council_os.implementation.workspace import WorkspaceManager
 from council_os.orchestrator.checkpoints import CheckpointState, write_checkpoint
+from council_os.orchestrator.handoff.repo_snapshot import capture_repo_snapshot
+from council_os.vnext.events import append_vnext_event
 
 STAGES = [
     "intake",
@@ -150,6 +159,30 @@ STAGES = [
     "review",
     "judge",
     "freeze",
+]
+
+DEPENDENCY_FILE_PATTERNS = [
+    "requirements*.txt",
+    "pyproject.toml",
+    "poetry.lock",
+    "Pipfile",
+    "Pipfile.lock",
+    "setup.cfg",
+    "setup.py",
+    "package.json",
+    "package-lock.json",
+    "pnpm-lock.yaml",
+    "yarn.lock",
+    "go.mod",
+    "go.sum",
+    "Cargo.toml",
+    "Cargo.lock",
+    "Gemfile",
+    "Gemfile.lock",
+    "composer.json",
+    "composer.lock",
+    "mix.exs",
+    "mix.lock",
 ]
 
 
@@ -167,6 +200,22 @@ class LaneResult:
 class ImplementationRunResult:
     run_id: UUID
     run_root: Path
+
+
+@dataclass
+class GuardrailPolicy:
+    in_scope_paths: list[str] = field(default_factory=list)
+    out_of_scope_paths: list[str] = field(default_factory=list)
+    max_files_changed: int | None = None
+    max_loc_changed: int | None = None
+    max_dep_changes: int | None = None
+
+
+@dataclass
+class GuardrailCounters:
+    files_changed: int = 0
+    loc_changed: int = 0
+    dep_changes: int = 0
 
 
 class ImplementationEngine:
@@ -256,6 +305,731 @@ class ImplementationEngine:
         if any(value for key, value in flags.items() if key != "v2_1") and not schema_version.startswith("2"):
             raise ValueError("v2 feature flags require schemas_version 2.x")
         return flags
+
+    def _impl_artifacts_root(self, run_root: Path) -> Path:
+        path = run_root / "implementation" / "artifacts"
+        path.mkdir(parents=True, exist_ok=True)
+        return path
+
+    def _impl_jobs_root(self, run_root: Path) -> Path:
+        path = run_root / "implementation" / "jobs"
+        path.mkdir(parents=True, exist_ok=True)
+        return path
+
+    def _write_impl_json(self, run_root: Path, name: str, payload: dict[str, Any]) -> Path:
+        path = self._impl_artifacts_root(run_root) / name
+        encoded = deterministic_json_dumps(payload)
+        if path.exists():
+            existing = path.read_text(encoding="utf-8")
+            if existing == encoded:
+                return path
+            raise RuntimeError(f"Implementation artifact already exists with different content: {path}")
+        path.write_text(encoded, encoding="utf-8")
+        return path
+
+    def _read_impl_json(self, run_root: Path, name: str) -> dict[str, Any] | None:
+        path = self._impl_artifacts_root(run_root) / name
+        if not path.exists():
+            return None
+        return json.loads(path.read_text(encoding="utf-8"))
+
+    def _write_discrepancy_report(
+        self,
+        run_root: Path,
+        *,
+        expected: dict[str, Any],
+        actual: dict[str, Any],
+        reason: str,
+    ) -> Path:
+        payload = {
+            "schema_version": "discrepancy_report.v1",
+            "reason": reason,
+            "expected": expected,
+            "actual": actual,
+        }
+        return self._write_impl_json(run_root, "discrepancy_report.json", payload)
+
+    def _impl_inputs_root(self, run_root: Path) -> Path:
+        path = run_root / "implementation" / "inputs" / "planning"
+        path.mkdir(parents=True, exist_ok=True)
+        return path
+
+    def _impl_job_dir(self, run_root: Path, name: str) -> Path:
+        path = self._impl_jobs_root(run_root) / name
+        path.mkdir(parents=True, exist_ok=True)
+        return path
+
+    def _write_job_json(self, path: Path, payload: dict[str, Any]) -> None:
+        encoded = deterministic_json_dumps(payload)
+        if path.exists():
+            if path.read_text(encoding="utf-8") == encoded:
+                return
+            raise RuntimeError(f"Job artifact already exists with different content: {path}")
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(encoded, encoding="utf-8")
+
+    def _append_job_run_record(self, run_root: Path, job_id: str, payload: dict[str, Any]) -> None:
+        path = self._impl_job_dir(run_root, "run_records") / f"{job_id}.jsonl"
+        with path.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(payload, default=str))
+            handle.write("\n")
+
+    def _compute_tree_hash(self, repo_root: Path) -> str:
+        try:
+            return subprocess.check_output(
+                ["git", "-C", str(repo_root), "rev-parse", "HEAD^{tree}"],
+                text=True,
+                stderr=subprocess.DEVNULL,
+            ).strip()
+        except Exception:
+            entries: list[str] = []
+            for path in sorted(repo_root.rglob("*")):
+                if path.is_dir():
+                    continue
+                rel = path.relative_to(repo_root).as_posix()
+                if rel.startswith(".git/"):
+                    continue
+                try:
+                    content = path.read_bytes()
+                except Exception:
+                    continue
+                digest = hashlib.sha256(content).hexdigest()
+                entries.append(f"{rel}:{digest}")
+            digest = hashlib.sha256("\n".join(entries).encode("utf-8")).hexdigest()
+            return digest
+
+    def _ensure_input_json(self, root: Path, name: str, payload: dict[str, Any]) -> Path:
+        path = root / name
+        if not path.exists():
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(deterministic_json_dumps(payload), encoding="utf-8")
+        return path
+
+    def _load_hash_spec(self, root: Path) -> HashSpec:
+        path = root / "hash_spec.json"
+        if path.exists():
+            return HashSpec.model_validate_json(path.read_text(encoding="utf-8"))
+        spec = default_hash_spec()
+        self._ensure_input_json(root, "hash_spec.json", spec.model_dump())
+        return spec
+
+    def _normalize_resume_mode(self, value: object) -> str:
+        mode = str(value or "RESUME_EXACT").strip().upper()
+        if mode not in {"RESUME_EXACT", "REPAIR_WITHIN_PLAN", "REPLAN_REQUIRED"}:
+            return "RESUME_EXACT"
+        return mode
+
+    def _normalize_guardrail_patterns(self, value: object) -> list[str]:
+        if isinstance(value, list):
+            return [str(item) for item in value if str(item).strip()]
+        if isinstance(value, str) and value.strip():
+            return [value.strip()]
+        return []
+
+    def _safe_id(self, value: str, fallback: str) -> str:
+        cleaned = re.sub(r"[^A-Za-z0-9_-]+", "_", str(value)).strip("_")
+        return cleaned or fallback
+
+    def _extract_guardrails(self, plan: PlanPackage, config: dict[str, Any]) -> GuardrailPolicy | None:
+        guard_cfg = config.get("guardrails", {}) if isinstance(config.get("guardrails", {}), dict) else {}
+        scope = plan.scope
+        constraints = plan.constraints
+        caps = constraints.caps if constraints else None
+
+        in_scope = self._normalize_guardrail_patterns(guard_cfg.get("in_scope_paths"))
+        if not in_scope and scope is not None:
+            in_scope = [p for p in scope.in_scope_paths if str(p).strip()]
+        out_scope = self._normalize_guardrail_patterns(guard_cfg.get("out_of_scope_paths"))
+        if not out_scope and scope is not None:
+            out_scope = [p for p in scope.out_of_scope_paths if str(p).strip()]
+
+        def _coerce_int(value: object | None) -> int | None:
+            if value is None:
+                return None
+            try:
+                return int(value)
+            except Exception:
+                return None
+
+        max_files = _coerce_int(guard_cfg.get("max_files_changed"))
+        if max_files is None and caps is not None:
+            max_files = caps.max_files_changed
+        max_loc = _coerce_int(guard_cfg.get("max_loc_changed"))
+        if max_loc is None and caps is not None:
+            max_loc = caps.max_loc_changed
+        max_dep = _coerce_int(guard_cfg.get("max_dep_changes"))
+        if max_dep is None and caps is not None:
+            max_dep = caps.max_dep_changes
+
+        if not any([in_scope, out_scope, max_files, max_loc, max_dep]):
+            return None
+        return GuardrailPolicy(
+            in_scope_paths=in_scope,
+            out_of_scope_paths=out_scope,
+            max_files_changed=max_files,
+            max_loc_changed=max_loc,
+            max_dep_changes=max_dep,
+        )
+
+    def _patchset_loc_changed(self, patchset: PatchsetPayload) -> int:
+        total = 0
+        for change in patchset.changes:
+            before = change.before or ""
+            after = change.after or ""
+            before_lines = before.splitlines()
+            after_lines = after.splitlines()
+            if change.action == "add":
+                total += len(after_lines)
+            elif change.action == "delete":
+                total += len(before_lines)
+            else:
+                total += max(len(before_lines), len(after_lines))
+        return total
+
+    def _patchset_dep_changes(self, patchset: PatchsetPayload) -> int:
+        count = 0
+        for change in patchset.changes:
+            rel_path = change.path.replace("\\", "/").lstrip("/")
+            if any(fnmatch(rel_path, pattern) for pattern in DEPENDENCY_FILE_PATTERNS):
+                count += 1
+        return count
+
+    def _enforce_patchset_guardrails(
+        self,
+        *,
+        guardrails: GuardrailPolicy,
+        counters: GuardrailCounters,
+        patchset: PatchsetPayload,
+        run_root: Path,
+        plan_hash: str | None,
+        milestone_id: str | None,
+    ) -> None:
+        changed_paths = sorted(
+            {change.path.replace("\\", "/").lstrip("/") for change in patchset.changes if change.path}
+        )
+        if guardrails.in_scope_paths:
+            for path in changed_paths:
+                if not any(fnmatch(path, pattern) for pattern in guardrails.in_scope_paths):
+                    if plan_hash:
+                        self._emit_vnext_change_request(
+                            run_root,
+                            plan_hash=plan_hash,
+                            reason_code="SCOPE_CHANGE",
+                            summary=f"Patchset {patchset.patchset_id} touches out-of-scope path {path}.",
+                            blocked_task_ids=[],
+                            blocked_job_ids=[],
+                            blocked_check_ids=[],
+                            milestones=[milestone_id or "MS-001"],
+                        )
+                    raise RuntimeError(f"Scope violation: {path} not in scope")
+        if guardrails.out_of_scope_paths:
+            for path in changed_paths:
+                if any(fnmatch(path, pattern) for pattern in guardrails.out_of_scope_paths):
+                    if plan_hash:
+                        self._emit_vnext_change_request(
+                            run_root,
+                            plan_hash=plan_hash,
+                            reason_code="SCOPE_CHANGE",
+                            summary=f"Patchset {patchset.patchset_id} touches out-of-scope path {path}.",
+                            blocked_task_ids=[],
+                            blocked_job_ids=[],
+                            blocked_check_ids=[],
+                            milestones=[milestone_id or "MS-001"],
+                        )
+                    raise RuntimeError(f"Scope violation: {path} out of scope")
+
+        counters.files_changed += len(changed_paths)
+        counters.loc_changed += self._patchset_loc_changed(patchset)
+        counters.dep_changes += self._patchset_dep_changes(patchset)
+
+        if guardrails.max_files_changed is not None and counters.files_changed > guardrails.max_files_changed:
+            if plan_hash:
+                self._emit_vnext_change_request(
+                    run_root,
+                    plan_hash=plan_hash,
+                    reason_code="SCOPE_CHANGE",
+                    summary="File change budget exceeded; requires plan update.",
+                    blocked_task_ids=[],
+                    blocked_job_ids=[],
+                    blocked_check_ids=[],
+                    milestones=[milestone_id or "MS-001"],
+                )
+            raise RuntimeError("File change budget exceeded")
+        if guardrails.max_loc_changed is not None and counters.loc_changed > guardrails.max_loc_changed:
+            if plan_hash:
+                self._emit_vnext_change_request(
+                    run_root,
+                    plan_hash=plan_hash,
+                    reason_code="SCOPE_CHANGE",
+                    summary="LOC change budget exceeded; requires plan update.",
+                    blocked_task_ids=[],
+                    blocked_job_ids=[],
+                    blocked_check_ids=[],
+                    milestones=[milestone_id or "MS-001"],
+                )
+            raise RuntimeError("LOC change budget exceeded")
+        if guardrails.max_dep_changes is not None and counters.dep_changes > guardrails.max_dep_changes:
+            if plan_hash:
+                self._emit_vnext_change_request(
+                    run_root,
+                    plan_hash=plan_hash,
+                    reason_code="SCOPE_CHANGE",
+                    summary="Dependency change budget exceeded; requires plan update.",
+                    blocked_task_ids=[],
+                    blocked_job_ids=[],
+                    blocked_check_ids=[],
+                    milestones=[milestone_id or "MS-001"],
+                )
+            raise RuntimeError("Dependency change budget exceeded")
+
+    def _build_vnext_expectation_registry(
+        self,
+        expectation_registry: ExpectationRegistryPayload,
+        *,
+        plan_hash: str,
+        hash_spec_version: str,
+        required_expectations: set[str],
+        extra_expectations: list[dict[str, Any]] | None = None,
+    ) -> dict[str, Any]:
+        expectations: list[dict[str, Any]] = []
+        for exp in sorted(expectation_registry.expectations, key=lambda item: item.expectation_id):
+            severity = "MUST" if exp.expectation_id in required_expectations else "SHOULD"
+            if exp.oracle:
+                oracle = exp.oracle.model_dump(exclude_none=True)
+                oracle.setdefault("type", exp.oracle.type)
+            else:
+                oracle = {"type": "exists"}
+            expectations.append(
+                {
+                    "expectation_id": exp.expectation_id,
+                    "severity": severity,
+                    "oracle": oracle,
+                    "required_env_class": "LOCAL",
+                    "evidence_type": "job_result",
+                }
+            )
+        if extra_expectations:
+            for item in extra_expectations:
+                if isinstance(item, dict):
+                    expectations.append(item)
+        expectations.sort(key=lambda item: item.get("expectation_id", ""))
+        return {
+            "schema_version": "expectation_registry.v1",
+            "meta": {"plan_hash": plan_hash, "hash_spec_version": hash_spec_version},
+            "expectations": expectations,
+        }
+
+    def _build_vnext_verification_plan(
+        self,
+        job_spec_map: dict[str, JobSpecPayload],
+        *,
+        milestone_id: str,
+        plan_hash: str,
+        hash_spec_version: str,
+    ) -> dict[str, Any]:
+        required_expectations: set[str] = set()
+        for spec in job_spec_map.values():
+            if spec.job_type == "research":
+                continue
+            required_expectations.update(spec.expected_expectation_ids)
+        return {
+            "schema_version": "verification_plan.v1",
+            "meta": {
+                "plan_hash": plan_hash,
+                "compiler_version": "verify_compiler.v1",
+                "hash_spec_version": hash_spec_version,
+            },
+            "milestone_id": milestone_id,
+            "required_expectations": sorted(required_expectations),
+            "jobs_to_run": sorted(job_spec_map.keys()),
+        }
+
+    def _build_vnext_work_graph(
+        self,
+        work_graph: WorkGraphPayload,
+        *,
+        plan_hash: str,
+        compiler_inputs_hashes: list[str],
+    ) -> dict[str, Any]:
+        tasks: list[dict[str, Any]] = []
+        for task in sorted(work_graph.tasks, key=lambda item: item.task_id):
+            source_ids = sorted(set(task.program_check_ids + task.expectation_ids + task.assumption_ids))
+            task_payload: dict[str, Any] = {
+                "task_id": task.task_id,
+                "title": f"Task {task.task_id}",
+                "source_plan_ids": source_ids,
+                "depends_on": list(task.deps),
+                "target_paths": [],
+                "acceptance_check_ids": sorted(task.expectation_ids),
+                "inputs": [],
+                "expected_outputs": [],
+            }
+            if task.budget is not None:
+                task_payload["budgets"] = {
+                    "max_runtime_sec": task.budget.max_runtime_sec,
+                    "max_cost_usd": task.budget.max_cost_usd,
+                    "max_calls": task.budget.max_calls,
+                }
+            tasks.append(task_payload)
+        return {
+            "schema_version": "work_graph.v1",
+            "meta": {
+                "source_plan_hash": plan_hash,
+                "compiler_version": "work_compiler.v1",
+                "compiler_inputs_hashes": compiler_inputs_hashes,
+            },
+            "tasks": tasks,
+        }
+
+    def _topo_sort_tasks(self, work_graph: dict[str, Any]) -> list[str]:
+        tasks = work_graph.get("tasks", []) if isinstance(work_graph, dict) else []
+        task_ids = {task.get("task_id") for task in tasks if isinstance(task, dict)}
+        deps_map: dict[str, set[str]] = {}
+        for task in tasks:
+            if not isinstance(task, dict):
+                continue
+            task_id = task.get("task_id")
+            if not task_id:
+                continue
+            deps = {dep for dep in task.get("depends_on", []) if dep in task_ids}
+            deps_map[str(task_id)] = deps
+        ordered: list[str] = []
+        ready = sorted([tid for tid, deps in deps_map.items() if not deps])
+        while ready:
+            current = ready.pop(0)
+            ordered.append(current)
+            for tid, deps in deps_map.items():
+                if current in deps:
+                    deps.remove(current)
+                    if not deps and tid not in ordered and tid not in ready:
+                        ready.append(tid)
+                        ready.sort()
+        if len(ordered) != len(deps_map):
+            return sorted(deps_map.keys())
+        return ordered
+
+    def _build_vnext_execution_plan(
+        self,
+        work_graph: dict[str, Any],
+        job_map: dict[str, list[str]],
+    ) -> dict[str, Any]:
+        runlist: list[dict[str, Any]] = []
+        for idx, task_id in enumerate(self._topo_sort_tasks(work_graph), start=1):
+            runlist.append({"sequence": idx, "task_id": task_id, "job_ids": sorted(job_map.get(task_id, []))})
+        return {"schema_version": "execution_plan.v1", "task_runlist": runlist}
+
+    def _build_vnext_job_specs(
+        self,
+        job_spec_map: dict[str, JobSpecPayload],
+        work_graph: WorkGraphPayload,
+        *,
+        repo_snapshot: RepoSnapshot | None,
+        env_snapshot_hash: str | None = None,
+    ) -> tuple[list[dict[str, Any]], dict[str, list[str]]]:
+        job_to_task: dict[str, str] = {}
+        for task in work_graph.tasks:
+            for job_id in task.job_specs:
+                job_to_task[str(job_id)] = task.task_id
+        job_specs: list[dict[str, Any]] = []
+        task_job_map: dict[str, list[str]] = {}
+        repo_ref = None
+        if repo_snapshot and repo_snapshot.tree_hash:
+            repo_ref = f"repo@{repo_snapshot.tree_hash}"
+        for job_id, spec in sorted(job_spec_map.items(), key=lambda item: item[0]):
+            inputs: list[dict[str, Any]] = []
+            for inp in spec.inputs:
+                if inp.artifact_ref:
+                    inputs.append({"type": "artifact", "ref": inp.artifact_ref})
+                if inp.snapshot_ref:
+                    inputs.append({"type": "snapshot", "ref": inp.snapshot_ref})
+            if repo_ref:
+                inputs.append({"type": "repo", "ref": repo_ref})
+            budgets: dict[str, Any] = {}
+            if spec.budget is not None:
+                if spec.budget.max_runtime_sec is not None:
+                    budgets["max_runtime_sec"] = spec.budget.max_runtime_sec
+                if spec.budget.max_calls is not None:
+                    budgets["max_retries"] = spec.budget.max_calls
+            task_id = job_to_task.get(job_id)
+            if task_id:
+                task_job_map.setdefault(task_id, []).append(job_id)
+            payload = {
+                "schema_version": "job_spec.v1",
+                "job_id": job_id,
+                "job_type": spec.job_type,
+                "task_id": task_id,
+                "idempotency_key": spec.idempotency_key,
+                "inputs": inputs,
+                "budgets": budgets or None,
+                "expectation_ids": spec.expected_expectation_ids,
+                "env_profile_ref": f"profile:{spec.profile_id}",
+                "env_snapshot_hash": env_snapshot_hash,
+            }
+            job_specs.append(payload)
+        return job_specs, task_job_map
+
+    def _write_vnext_compiled_artifacts(
+        self,
+        run_root: Path,
+        *,
+        compiler_inputs: dict[str, Any],
+        expectation_registry: dict[str, Any],
+        verification_plan: dict[str, Any],
+        work_graph: dict[str, Any],
+        execution_plan: dict[str, Any],
+        resume_mode: str,
+    ) -> dict[str, Any]:
+        existing_inputs = self._read_impl_json(run_root, "compiler_inputs.json")
+        if existing_inputs is not None and existing_inputs != compiler_inputs:
+            self._write_discrepancy_report(
+                run_root,
+                expected=existing_inputs,
+                actual=compiler_inputs,
+                reason="compiler_inputs_mismatch",
+            )
+            if resume_mode == "RESUME_EXACT":
+                raise RuntimeError("Compiler inputs mismatch during resume")
+            if resume_mode == "REPAIR_WITHIN_PLAN":
+                reused = {
+                    "expectation_registry": self._read_impl_json(run_root, "expectation_registry.json"),
+                    "verification_plan": self._read_impl_json(run_root, "verification_plan.json"),
+                    "work_graph": self._read_impl_json(run_root, "work_graph.json"),
+                    "execution_plan": self._read_impl_json(run_root, "execution_plan.json"),
+                }
+                if all(reused.values()):
+                    return reused
+        if existing_inputs is None:
+            self._write_impl_json(run_root, "compiler_inputs.json", compiler_inputs)
+        if existing_inputs is not None and existing_inputs == compiler_inputs:
+            # Reuse existing compiled artifacts if present.
+            reused = {
+                "expectation_registry": self._read_impl_json(run_root, "expectation_registry.json"),
+                "verification_plan": self._read_impl_json(run_root, "verification_plan.json"),
+                "work_graph": self._read_impl_json(run_root, "work_graph.json"),
+                "execution_plan": self._read_impl_json(run_root, "execution_plan.json"),
+            }
+            if all(reused.values()):
+                return reused
+        self._write_impl_json(run_root, "expectation_registry.json", expectation_registry)
+        self._write_impl_json(run_root, "verification_plan.json", verification_plan)
+        self._write_impl_json(run_root, "work_graph.json", work_graph)
+        self._write_impl_json(run_root, "execution_plan.json", execution_plan)
+        return {
+            "expectation_registry": expectation_registry,
+            "verification_plan": verification_plan,
+            "work_graph": work_graph,
+            "execution_plan": execution_plan,
+        }
+
+    def _write_vnext_job_specs(self, run_root: Path, job_specs: list[dict[str, Any]]) -> None:
+        specs_root = self._impl_job_dir(run_root, "specs")
+        for spec in job_specs:
+            job_id = spec.get("job_id")
+            if not job_id:
+                continue
+            self._write_job_json(specs_root / f"{job_id}.json", spec)
+
+    def _write_vnext_job_results(
+        self,
+        run_root: Path,
+        job_results: list[JobResultPayload],
+        job_spec_map: dict[str, JobSpecPayload],
+    ) -> list[dict[str, Any]]:
+        results_root = self._impl_job_dir(run_root, "results")
+        vnext_results: list[dict[str, Any]] = []
+        for result in job_results:
+            status = "SUCCEEDED" if result.status in {"success", "cache_hit"} else "FAILED"
+            outputs = [{"type": "artifact", "ref": output.artifact_ref} for output in result.outputs]
+            spec = job_spec_map.get(result.job_id)
+            satisfies = spec.expected_expectation_ids if spec and status == "SUCCEEDED" else []
+            payload = {
+                "schema_version": "job_result.v1",
+                "job_id": result.job_id,
+                "status": status,
+                "outputs": outputs,
+                "logs_refs": [],
+                "metrics_refs": [],
+                "satisfies_expectations": satisfies,
+            }
+            self._write_job_json(results_root / f"{result.job_id}.json", payload)
+            vnext_results.append(payload)
+        return vnext_results
+
+    def _build_vnext_evidence_index(
+        self,
+        expectation_registry: dict[str, Any],
+        *,
+        job_results: list[dict[str, Any]],
+        job_spec_map: dict[str, JobSpecPayload],
+        milestone_id: str,
+        plan_hash: str,
+    ) -> tuple[dict[str, Any], dict[str, str]]:
+        expectation_status: dict[str, str] = {}
+        evidence_refs: dict[str, list[str]] = {}
+        for exp in expectation_registry.get("expectations", []):
+            exp_id = exp.get("expectation_id")
+            if exp_id:
+                expectation_status[exp_id] = "PENDING"
+                evidence_refs[exp_id] = []
+        for result in job_results:
+            job_id = result.get("job_id")
+            status = result.get("status")
+            satisfies = result.get("satisfies_expectations", []) or []
+            if status == "SUCCEEDED":
+                for exp_id in satisfies:
+                    if exp_id in expectation_status:
+                        expectation_status[exp_id] = "PASS"
+                        evidence_refs[exp_id].append(f"jobs/results/{job_id}.json")
+            else:
+                spec = job_spec_map.get(job_id) if job_id else None
+                for exp_id in (spec.expected_expectation_ids if spec else []):
+                    if exp_id in expectation_status and expectation_status[exp_id] != "PASS":
+                        expectation_status[exp_id] = "FAIL"
+        entries: list[dict[str, Any]] = []
+        for exp_id in sorted(expectation_status.keys()):
+            entries.append(
+                {
+                    "expectation_id": exp_id,
+                    "status": expectation_status[exp_id],
+                    "evidence_refs": [
+                        {"type": "job_result", "ref": ref} for ref in evidence_refs.get(exp_id, [])
+                    ],
+                }
+            )
+        payload = {
+            "schema_version": "evidence_index.v1",
+            "meta": {"plan_hash": plan_hash, "milestone_id": milestone_id},
+            "expectations": entries,
+        }
+        return payload, expectation_status
+
+    def _build_vnext_decision_record(
+        self,
+        expectation_registry: dict[str, Any],
+        expectation_status: dict[str, str],
+        *,
+        evidence_index: dict[str, Any],
+        milestone_id: str,
+        plan_hash: str,
+    ) -> tuple[dict[str, Any], list[str]]:
+        must_failures: list[str] = []
+        per_expectation: list[dict[str, Any]] = []
+        evidence_map: dict[str, list[dict[str, Any]]] = {}
+        for entry in evidence_index.get("expectations", []):
+            if not isinstance(entry, dict):
+                continue
+            exp_id = entry.get("expectation_id")
+            if exp_id:
+                evidence_map[exp_id] = entry.get("evidence_refs", []) or []
+        for exp in expectation_registry.get("expectations", []):
+            exp_id = exp.get("expectation_id")
+            if not exp_id:
+                continue
+            status = expectation_status.get(exp_id, "PENDING")
+            per_expectation.append(
+                {
+                    "expectation_id": exp_id,
+                    "status": status,
+                    "evidence_refs": [ref.get("ref") for ref in evidence_map.get(exp_id, []) if isinstance(ref, dict)],
+                }
+            )
+            if exp.get("severity") == "MUST" and status != "PASS":
+                must_failures.append(exp_id)
+        decision = "PASS" if not must_failures else "FAIL"
+        payload = {
+            "schema_version": "decision_record.v1",
+            "meta": {"plan_hash": plan_hash, "milestone_id": milestone_id, "rubric_version": "1"},
+            "decision": decision,
+            "per_expectation": per_expectation,
+        }
+        return payload, must_failures
+
+    def _build_baseline_report(
+        self,
+        *,
+        expectation_registry: dict[str, Any],
+        evidence_index: dict[str, Any],
+        expectation_status: dict[str, str],
+        plan_hash: str,
+        milestone_id: str,
+        run_root: Path,
+    ) -> dict[str, Any] | None:
+        entries: list[dict[str, Any]] = []
+        evidence_map: dict[str, list[dict[str, Any]]] = {}
+        for entry in evidence_index.get("expectations", []):
+            if not isinstance(entry, dict):
+                continue
+            exp_id = entry.get("expectation_id")
+            if exp_id:
+                evidence_map[exp_id] = entry.get("evidence_refs", []) or []
+        planning_root = run_root / "implementation" / "inputs" / "planning"
+        for exp in expectation_registry.get("expectations", []):
+            if not isinstance(exp, dict):
+                continue
+            oracle = exp.get("oracle") or {}
+            if not isinstance(oracle, dict) or oracle.get("type") != "differential_baseline":
+                continue
+            exp_id = exp.get("expectation_id", "")
+            baseline_ref = oracle.get("baseline_ref")
+            baseline_present = False
+            if isinstance(baseline_ref, str) and baseline_ref:
+                candidate = (planning_root / baseline_ref).resolve()
+                if candidate.exists():
+                    baseline_present = True
+                else:
+                    alt = (run_root / baseline_ref).resolve()
+                    baseline_present = alt.exists()
+            entries.append(
+                {
+                    "expectation_id": exp_id,
+                    "status": expectation_status.get(exp_id, "PENDING"),
+                    "baseline_ref": baseline_ref,
+                    "baseline_present": baseline_present,
+                    "evidence_refs": evidence_map.get(exp_id, []),
+                }
+            )
+        if not entries:
+            return None
+        return {
+            "schema_version": "baseline_report.v1",
+            "meta": {"plan_hash": plan_hash, "milestone_id": milestone_id},
+            "entries": entries,
+        }
+
+    def _emit_vnext_change_request(
+        self,
+        run_root: Path,
+        *,
+        plan_hash: str,
+        reason_code: str,
+        summary: str,
+        blocked_task_ids: list[str],
+        blocked_job_ids: list[str],
+        blocked_check_ids: list[str],
+        milestones: list[str],
+    ) -> None:
+        payload = {
+            "schema_version": "change_request.v1",
+            "meta": {"impl_run_id": run_root.name, "source_plan_hash": plan_hash},
+            "reason": {"code": reason_code, "summary": summary},
+            "blocked_entities": {
+                "task_ids": blocked_task_ids,
+                "job_ids": blocked_job_ids,
+                "check_ids": blocked_check_ids,
+            },
+            "evidence_refs": [],
+            "proposed_plan_edits_ref": None,
+            "impact": {"milestones_affected": milestones, "checks_affected": blocked_check_ids},
+        }
+        self._write_impl_json(run_root, "change_request_v1.json", payload)
+        append_vnext_event(
+            run_root,
+            "implementation",
+            "CHANGE_REQUESTED",
+            run_id=run_root.name,
+            plan_hash=plan_hash,
+            payload={"reason_code": reason_code},
+        )
 
     def _load_config_payload(self, config: dict[str, Any], config_path: Path, key: str) -> dict[str, Any] | None:
         raw = config.get("v2_inputs", {}) if isinstance(config.get("v2_inputs", {}), dict) else {}
@@ -1737,6 +2511,64 @@ class ImplementationEngine:
     def _lane_tasks(self, work_plan: WorkPlanPayload | WorkPlanPayloadV2, lane_id: str) -> list[WorkTask | WorkTaskV2]:
         return [task for task in work_plan.tasks if task.lane_id == lane_id]
 
+    def _apply_patchset_transactional(
+        self,
+        repo_root: Path,
+        patchset: PatchsetPayload,
+        repo_context: RepoContextPayload | RepoContextPayloadV2,
+        patchset_limits: PatchsetLimits,
+        *,
+        allow_protected: bool,
+    ) -> dict[str, Any]:
+        temp_root = repo_root.parent / f".worktree_{patchset.patchset_id}"
+        if temp_root.exists():
+            shutil.rmtree(temp_root)
+        if not repo_root.exists():
+            raise RuntimeError(f"Repo root missing: {repo_root}")
+        shutil.copytree(repo_root, temp_root)
+        try:
+            result = apply_patchset(
+                temp_root,
+                patchset,
+                repo_context.forbidden_paths,
+                repo_context.protected_paths,
+                patchset_limits.max_operations,
+                allow_protected=allow_protected,
+            )
+            changed_files = result.get("changed_files", [])
+            backups: dict[str, bytes] = {}
+            added: set[str] = set()
+            for rel_path in changed_files:
+                dest = repo_root / rel_path
+                if dest.exists():
+                    backups[rel_path] = dest.read_bytes()
+                else:
+                    added.add(rel_path)
+            try:
+                for rel_path in changed_files:
+                    src = temp_root / rel_path
+                    dest = repo_root / rel_path
+                    if src.exists():
+                        dest.parent.mkdir(parents=True, exist_ok=True)
+                        shutil.copyfile(src, dest)
+                    else:
+                        if dest.exists():
+                            dest.unlink()
+            except Exception:
+                for rel_path, content in backups.items():
+                    dest = repo_root / rel_path
+                    dest.parent.mkdir(parents=True, exist_ok=True)
+                    dest.write_bytes(content)
+                for rel_path in added:
+                    dest = repo_root / rel_path
+                    if dest.exists():
+                        dest.unlink()
+                raise
+        finally:
+            if temp_root.exists():
+                shutil.rmtree(temp_root)
+        return result
+
     def _apply_patchsets_to_checkout(
         self,
         repo_root: Path,
@@ -1748,12 +2580,21 @@ class ImplementationEngine:
         stage: str,
         lane_id: str | None = None,
         approved_patchsets: set[str] | None = None,
+        record_patchsets: bool = False,
+        guardrails: GuardrailPolicy | None = None,
+        plan_hash: str | None = None,
+        milestone_id: str | None = None,
     ) -> tuple[list[str], dict[str, str]]:
         changed_files: list[str] = []
         file_hashes: dict[str, str] = {}
         approved_patchsets = approved_patchsets or set()
         cycle_cap = patchset_limits.max_operations_total or patchset_limits.max_operations
         total_ops = 0
+        patchsets_root: Path | None = None
+        guardrail_counters = GuardrailCounters()
+        if record_patchsets:
+            patchsets_root = run_root / "implementation" / "patchsets"
+            patchsets_root.mkdir(parents=True, exist_ok=True)
         for patchset in patchsets:
             if patchset.base_commit != repo_context.base_commit:
                 raise RuntimeError("Patchset base_commit mismatch")
@@ -1761,6 +2602,15 @@ class ImplementationEngine:
             if total_ops > cycle_cap:
                 raise PatchLimitError("Patchset operation cycle cap exceeded")
             approved = patchset.patchset_id in approved_patchsets
+            if guardrails is not None:
+                self._enforce_patchset_guardrails(
+                    guardrails=guardrails,
+                    counters=guardrail_counters,
+                    patchset=patchset,
+                    run_root=run_root,
+                    plan_hash=plan_hash,
+                    milestone_id=milestone_id,
+                )
             if self._patchset_touches_paths(patchset, repo_context.protected_paths):
                 if not approved:
                     self._event(
@@ -1788,16 +2638,16 @@ class ImplementationEngine:
                         "approved": approved,
                     },
                 )
+            pre_tree_hash = self._compute_tree_hash(repo_root) if record_patchsets else None
             try:
-                result = apply_patchset(
+                result = self._apply_patchset_transactional(
                     repo_root,
                     patchset,
-                    repo_context.forbidden_paths,
-                    repo_context.protected_paths,
-                    patchset_limits.max_operations,
+                    repo_context,
+                    patchset_limits,
                     allow_protected=approved,
                 )
-            except (PatchApplyError, PatchConflictError, PatchLimitError) as exc:
+            except Exception as exc:
                 payload: dict[str, object] = {"error": str(exc), "patchset": patchset.patchset_id}
                 if lane_id:
                     payload["lane_id"] = lane_id
@@ -1808,7 +2658,65 @@ class ImplementationEngine:
                     event_type="error",
                     payload=payload,
                 )
+                if record_patchsets and patchsets_root is not None:
+                    apply_result = {
+                        "schema_version": "apply_result.v1",
+                        "patchset_id": patchset.patchset_id,
+                        "status": "failed",
+                        "pre_apply_tree_hash": pre_tree_hash,
+                        "post_apply_tree_hash": None,
+                        "error": str(exc),
+                        "per_file": [],
+                        "integration_status": "failed",
+                    }
+                    (patchsets_root / f"apply_result_{patchset.patchset_id}_v1.json").write_text(
+                        deterministic_json_dumps(apply_result),
+                        encoding="utf-8",
+                    )
                 raise
+            if record_patchsets and patchsets_root is not None:
+                post_tree_hash = self._compute_tree_hash(repo_root)
+                files_touched = sorted({change.path for change in patchset.changes})
+                diff_path = patchsets_root / f"{patchset.patchset_id}_v1.diff"
+                if not diff_path.exists():
+                    diff_path.write_text(deterministic_json_dumps(patchset.model_dump()), encoding="utf-8")
+                patch_manifest = {
+                    "schema_version": "patch_manifest.v1",
+                    "patchset_id": patchset.patchset_id,
+                    "files_touched": files_touched,
+                    "stats": {
+                        "files": len(files_touched),
+                        "operations": len(patchset.changes),
+                        "bytes_changed": patchset.bytes_changed or patchset_bytes_changed(patchset),
+                    },
+                    "linked_plan_ids": sorted(
+                        set(patchset.maps_to_requirements + patchset.maps_to_acceptance_tests)
+                    ),
+                }
+                (patchsets_root / f"patch_manifest_{patchset.patchset_id}_v1.json").write_text(
+                    deterministic_json_dumps(patch_manifest),
+                    encoding="utf-8",
+                )
+                apply_result = {
+                    "schema_version": "apply_result.v1",
+                    "patchset_id": patchset.patchset_id,
+                    "status": "success",
+                    "pre_apply_tree_hash": pre_tree_hash,
+                    "post_apply_tree_hash": post_tree_hash,
+                    "per_file": [{"path": path, "status": "applied"} for path in files_touched],
+                    "integration_status": "applied",
+                }
+                (patchsets_root / f"apply_result_{patchset.patchset_id}_v1.json").write_text(
+                    deterministic_json_dumps(apply_result),
+                    encoding="utf-8",
+                )
+                append_vnext_event(
+                    run_root,
+                    "implementation",
+                    "PATCH_APPLIED",
+                    run_id=str(run_id),
+                    payload={"patchset_id": patchset.patchset_id, "post_tree_hash": post_tree_hash},
+                )
             changed_files.extend(result["changed_files"])
             file_hashes.update(result["file_hashes"])
         return sorted(set(changed_files)), file_hashes
@@ -1891,12 +2799,11 @@ class ImplementationEngine:
                     },
                 )
             try:
-                result = apply_patchset(
+                result = self._apply_patchset_transactional(
                     repo_root,
                     patchset,
-                    repo_context.forbidden_paths,
-                    repo_context.protected_paths,
-                    patchset_limits.max_operations,
+                    repo_context,
+                    patchset_limits,
                     allow_protected=approved,
                 )
             except PatchConflictError as exc:
@@ -2625,6 +3532,7 @@ class ImplementationEngine:
         workspace_context_path: Path,
         config_path: Path,
         handoff_bundle_path: Path,
+        config_snapshot_path: Path,
         *,
         run_id: UUID,
         run_root: Path,
@@ -2633,19 +3541,72 @@ class ImplementationEngine:
         roles: dict[str, RoleConfig],
         role_sets: dict[str, set[str]],
         role_assignments: dict[str, str],
+        plan_content_hash: str,
     ) -> ImplementationRunResult:
         writer_role = role_assignments["writer"]
         reviewer_role = role_assignments["reviewer"]
         judge_role = role_assignments["judge"]
 
         plan = self._load_plan_package(plan_path)
-        handoff_bundle = PlanningHandoffBundlePayload.model_validate_json(
-            handoff_bundle_path.read_text(encoding="utf-8")
-        )
+        handoff_bundle: PlanningHandoffBundlePayload | None = None
+        try:
+            handoff_bundle = PlanningHandoffBundlePayload.model_validate_json(
+                handoff_bundle_path.read_text(encoding="utf-8")
+            )
+        except Exception:
+            handoff_bundle = None
         repo_context = RepoContextPayloadV21.model_validate_json(repo_context_path.read_text(encoding="utf-8"))
         workspace_context = WorkspaceContextPayload.model_validate_json(
             workspace_context_path.read_text(encoding="utf-8")
         )
+        planning_inputs_root = plan_path.parent
+        hash_spec = self._load_hash_spec(planning_inputs_root)
+        hash_spec_version = hash_spec.hash_spec_version
+        config_snapshot_payload = json.loads(config_snapshot_path.read_text(encoding="utf-8"))
+        repo_snapshot_path = planning_inputs_root / "repo_snapshot.json"
+        if repo_snapshot_path.exists():
+            repo_snapshot_payload = json.loads(repo_snapshot_path.read_text(encoding="utf-8"))
+        else:
+            try:
+                snapshot = capture_repo_snapshot(Path(repo_context.repo_root))
+            except Exception:
+                snapshot = RepoSnapshot(
+                    commit_sha="unknown",
+                    branch="unknown",
+                    dirty=True,
+                    tree_hash=self._compute_tree_hash(Path(repo_context.repo_root)),
+                )
+            repo_snapshot_payload = snapshot.model_dump()
+            repo_snapshot_path = self._ensure_input_json(
+                planning_inputs_root, "repo_snapshot.json", repo_snapshot_payload
+            )
+        env_snapshot_payload: dict[str, Any] | None = None
+        env_snapshot_path = planning_inputs_root / "env_snapshot.json"
+        if env_snapshot_path.exists():
+            env_snapshot_payload = json.loads(env_snapshot_path.read_text(encoding="utf-8"))
+
+        compiler_inputs = {
+            "schema_version": "compiler_inputs.v1",
+            "plan_content_hash": plan_content_hash,
+            "repo_snapshot_hash": artifact_hash(repo_snapshot_payload),
+            "config_snapshot_hash": artifact_hash(config_snapshot_payload),
+            "env_snapshot_hash": artifact_hash(env_snapshot_payload) if env_snapshot_payload else None,
+            "hash_spec_version": hash_spec_version,
+        }
+        compiler_inputs_hashes = [
+            plan_content_hash,
+            compiler_inputs["repo_snapshot_hash"],
+            compiler_inputs["config_snapshot_hash"],
+        ]
+        if compiler_inputs["env_snapshot_hash"]:
+            compiler_inputs_hashes.append(compiler_inputs["env_snapshot_hash"])
+        existing_compiler_inputs = self._read_impl_json(run_root, "compiler_inputs.json")
+        compiler_inputs_mismatch = (
+            existing_compiler_inputs is not None and existing_compiler_inputs != compiler_inputs
+        )
+        resume_mode = self._normalize_resume_mode(config.get("resume_mode"))
+        vnext_enforce_gates = bool(config.get("vnext_enforce_gates", True))
+        vnext_milestone_id = plan.milestones[0].id if plan.milestones else "MS-001"
 
         workspace = WorkspaceManager(
             run_root,
@@ -2669,6 +3630,7 @@ class ImplementationEngine:
                 else None
             ),
         )
+        guardrails = self._extract_guardrails(plan, config)
 
         v2_inputs = {
             "execution_profile_catalog": self._load_config_payload(config, config_path, "execution_profile_catalog"),
@@ -2701,16 +3663,17 @@ class ImplementationEngine:
             parents=[],
             stage="intake",
         )
-        artifact_refs["planning_handoff_bundle"] = self._write_artifact(
-            store,
-            workspace,
-            run_id,
-            "planning_handoff_bundle",
-            "planning_handoff_bundle_v21",
-            handoff_bundle.model_dump(),
-            parents=[artifact_refs["plan_package_final"]],
-            stage="intake",
-        )
+        if handoff_bundle is not None:
+            artifact_refs["planning_handoff_bundle"] = self._write_artifact(
+                store,
+                workspace,
+                run_id,
+                "planning_handoff_bundle",
+                "planning_handoff_bundle_v21",
+                handoff_bundle.model_dump(),
+                parents=[artifact_refs["plan_package_final"]],
+                stage="intake",
+            )
         artifact_refs["repo_context"] = self._write_artifact(
             store,
             workspace,
@@ -2793,6 +3756,33 @@ class ImplementationEngine:
             if expectation_payload
             else self._compile_expectation_registry_from_plan(plan, schema_version=self._schema_version)
         )
+        research_contracts: ResearchContractsPayload | None = None
+        research_contract_ids: list[tuple[str, str]] = []
+        research_payload = v2_inputs.get("research_contracts")
+        if research_payload:
+            research_contracts = ResearchContractsPayload.model_validate(research_payload)
+            existing_ids = {exp.expectation_id for exp in expectation_registry.expectations}
+            for idx, contract in enumerate(research_contracts.contracts, start=1):
+                safe_id = self._safe_id(contract.contract_id, f"contract_{idx}")
+                exp_id = f"EXP-RESEARCH-{safe_id}"
+                research_contract_ids.append((contract.contract_id, safe_id))
+                if exp_id in existing_ids:
+                    continue
+                expectation_registry.expectations.append(
+                    Expectation(
+                        expectation_id=exp_id,
+                        level="plan",
+                        source={"type": "research_contract", "id": contract.contract_id},
+                        subject={"kind": "research", "artifact_type": "experiment_results", "name": contract.contract_id},
+                        oracle={"type": "exists"},
+                        tolerance=None,
+                        inputs=[],
+                        parents=[],
+                        children=[],
+                        must_exist_before_remote_ops=False,
+                    )
+                )
+                existing_ids.add(exp_id)
         if not expectation_payload and repo_context.default_expectations:
             existing_ids = {exp.expectation_id for exp in expectation_registry.expectations}
             extras = [exp for exp in repo_context.default_expectations if exp.expectation_id not in existing_ids]
@@ -2993,6 +3983,46 @@ class ImplementationEngine:
             if not job_specs:
                 job_specs = build_result.job_specs
 
+        if job_specs:
+            job_ids_in_graph = {job_id for task in work_graph.tasks for job_id in task.job_specs}
+            if job_ids_in_graph != {spec.job_id for spec in job_specs}:
+                tool_probe_task_ids = [task.task_id for task in work_graph.tasks if task.kind == "tool_probe"]
+                existing_task_ids = {task.task_id for task in work_graph.tasks}
+                for spec in sorted(job_specs, key=lambda item: item.job_id):
+                    if spec.job_id in job_ids_in_graph:
+                        continue
+                    base_task_id = f"task_{spec.job_id}"
+                    task_id = base_task_id
+                    suffix = 1
+                    while task_id in existing_task_ids:
+                        suffix += 1
+                        task_id = f"{base_task_id}_{suffix}"
+                    existing_task_ids.add(task_id)
+                    budget = None
+                    if spec.budget is not None:
+                        budget = WorkGraphBudget(
+                            max_runtime_sec=spec.budget.max_runtime_sec,
+                            max_cost_usd=spec.budget.max_cost_usd,
+                            max_calls=spec.budget.max_calls,
+                        )
+                    work_graph.tasks.append(
+                        WorkGraphTask(
+                            task_id=task_id,
+                            kind=spec.job_type,
+                            deps=list(tool_probe_task_ids),
+                            profile_id=spec.profile_id,
+                            program_check_ids=[],
+                            expectation_ids=list(spec.expected_expectation_ids),
+                            assumption_ids=list(spec.assumption_ids),
+                            surfaces=list(spec.surfaces),
+                            job_specs=[spec.job_id],
+                            risk_class="low",
+                            budget=budget,
+                            rollback_or_comp_plan_ref=None,
+                            priority=spec.priority,
+                        )
+                    )
+
         artifact_refs["work_graph"] = self._write_artifact(
             store,
             workspace,
@@ -3005,9 +4035,11 @@ class ImplementationEngine:
         )
 
         job_spec_map: dict[str, JobSpecPayload] = {}
+        written_job_specs: set[str] = set()
         for spec in job_specs:
             artifact_id = f"job_spec_{spec.job_id}"
             job_spec_map[spec.job_id] = spec
+            written_job_specs.add(spec.job_id)
             self._write_artifact(
                 store,
                 workspace,
@@ -3043,6 +4075,154 @@ class ImplementationEngine:
             work_graph_events_payload.model_dump(),
             parents=[artifact_refs["work_graph"]],
             stage="work_planning",
+        )
+
+        if research_contracts and research_contract_ids:
+            profile_id = (
+                execution_profile_catalog.profiles[0].profile_id
+                if execution_profile_catalog.profiles
+                else "legacy_v1"
+            )
+            for idx, (_contract_id, safe_id) in enumerate(research_contract_ids, start=1):
+                exp_id = f"EXP-RESEARCH-{safe_id}"
+                job_id = f"JOB-RESEARCH-{safe_id}"
+                if job_id not in job_spec_map:
+                    job_spec_map[job_id] = JobSpecPayload(
+                        job_id=job_id,
+                        job_type="research",
+                        profile_id=profile_id,
+                        inputs=[],
+                        idempotency_key=f"plan:{plan_content_hash}/research:{safe_id}",
+                        expected_expectation_ids=[exp_id],
+                        priority=0,
+                    )
+
+        for job_id, spec in job_spec_map.items():
+            if job_id in written_job_specs:
+                continue
+            artifact_id = f"job_spec_{spec.job_id}"
+            self._write_artifact(
+                store,
+                workspace,
+                run_id,
+                "job_spec",
+                artifact_id,
+                spec.model_dump(),
+                parents=[artifact_refs["work_graph"]],
+                stage="work_planning",
+                role=writer_role,
+            )
+            written_job_specs.add(job_id)
+
+        if job_spec_map:
+            job_ids_in_graph = {job_id for task in work_graph.tasks for job_id in task.job_specs}
+            existing_task_ids = {task.task_id for task in work_graph.tasks}
+            tool_probe_task_ids = [task.task_id for task in work_graph.tasks if task.kind == "tool_probe"]
+            for spec in sorted(job_spec_map.values(), key=lambda item: item.job_id):
+                if spec.job_id in job_ids_in_graph:
+                    continue
+                base_task_id = f"task_{spec.job_id}"
+                task_id = base_task_id
+                suffix = 1
+                while task_id in existing_task_ids:
+                    suffix += 1
+                    task_id = f"{base_task_id}_{suffix}"
+                existing_task_ids.add(task_id)
+                budget = None
+                if spec.budget is not None:
+                    budget = WorkGraphBudget(
+                        max_runtime_sec=spec.budget.max_runtime_sec,
+                        max_cost_usd=spec.budget.max_cost_usd,
+                        max_calls=spec.budget.max_calls,
+                    )
+                work_graph.tasks.append(
+                    WorkGraphTask(
+                        task_id=task_id,
+                        kind=spec.job_type,
+                        deps=list(tool_probe_task_ids),
+                        profile_id=spec.profile_id,
+                        program_check_ids=[],
+                        expectation_ids=list(spec.expected_expectation_ids),
+                        assumption_ids=list(spec.assumption_ids),
+                        surfaces=list(spec.surfaces),
+                        job_specs=[spec.job_id],
+                        risk_class="low",
+                        budget=budget,
+                        rollback_or_comp_plan_ref=None,
+                        priority=spec.priority,
+                    )
+                )
+
+        repo_snapshot = RepoSnapshot.model_validate(repo_snapshot_payload)
+        required_expectations: set[str] = set()
+        for spec in job_spec_map.values():
+            if spec.job_type == "research":
+                continue
+            required_expectations.update(spec.expected_expectation_ids)
+        vnext_expectation_registry = self._build_vnext_expectation_registry(
+            expectation_registry,
+            plan_hash=plan_content_hash,
+            hash_spec_version=hash_spec_version,
+            required_expectations=required_expectations,
+        )
+        vnext_job_specs, vnext_task_job_map = self._build_vnext_job_specs(
+            job_spec_map,
+            work_graph,
+            repo_snapshot=repo_snapshot,
+            env_snapshot_hash=compiler_inputs.get("env_snapshot_hash"),
+        )
+        vnext_work_graph = self._build_vnext_work_graph(
+            work_graph,
+            plan_hash=plan_content_hash,
+            compiler_inputs_hashes=compiler_inputs_hashes,
+        )
+        vnext_verification_plan = self._build_vnext_verification_plan(
+            job_spec_map,
+            milestone_id=vnext_milestone_id,
+            plan_hash=plan_content_hash,
+            hash_spec_version=hash_spec_version,
+        )
+        vnext_execution_plan = self._build_vnext_execution_plan(vnext_work_graph, vnext_task_job_map)
+        if compiler_inputs_mismatch and resume_mode == "REPLAN_REQUIRED":
+            self._write_discrepancy_report(
+                run_root,
+                expected=existing_compiler_inputs or {},
+                actual=compiler_inputs,
+                reason="compiler_inputs_mismatch",
+            )
+            self._emit_vnext_change_request(
+                run_root,
+                plan_hash=plan_content_hash,
+                reason_code="DEP_CONFLICT",
+                summary="Compiler inputs changed; replan required.",
+                blocked_task_ids=[],
+                blocked_job_ids=[],
+                blocked_check_ids=[],
+                milestones=[vnext_milestone_id],
+            )
+            raise RuntimeError("Compiler inputs mismatch; replan required.")
+        compiled_outputs = self._write_vnext_compiled_artifacts(
+            run_root,
+            compiler_inputs=compiler_inputs,
+            expectation_registry=vnext_expectation_registry,
+            verification_plan=vnext_verification_plan,
+            work_graph=vnext_work_graph,
+            execution_plan=vnext_execution_plan,
+            resume_mode=resume_mode,
+        )
+        vnext_expectation_registry = compiled_outputs.get("expectation_registry") or vnext_expectation_registry
+        vnext_verification_plan = compiled_outputs.get("verification_plan") or vnext_verification_plan
+        vnext_work_graph = compiled_outputs.get("work_graph") or vnext_work_graph
+        vnext_execution_plan = compiled_outputs.get("execution_plan") or vnext_execution_plan
+        self._write_vnext_job_specs(run_root, vnext_job_specs)
+        append_vnext_event(
+            run_root,
+            "implementation",
+            "EXECUTION_PLANNED",
+            run_id=str(run_id),
+            plan_hash=plan_content_hash,
+            milestone_id=vnext_milestone_id,
+            payload={"compiler_inputs": compiler_inputs_hashes},
         )
 
         lease_events_extra: list[dict[str, Any]] = []
@@ -3199,6 +4379,10 @@ class ImplementationEngine:
                 run_root,
                 run_id,
                 stage="patch_apply",
+                record_patchsets=True,
+                guardrails=guardrails,
+                plan_hash=plan_content_hash,
+                milestone_id=vnext_milestone_id,
             )
             for surface_id, lease_id, holder in held:
                 event = lease_manager.release_lease(surface_id, lease_id, holder)
@@ -3258,6 +4442,31 @@ class ImplementationEngine:
         def job_logger(payload: dict[str, Any]) -> None:
             job_events.append(payload)
             _append_log(job_events_path, payload)
+            job_id = str(payload.get("job_id") or "")
+            if job_id:
+                self._append_job_run_record(run_root, job_id, payload)
+                event = payload.get("event")
+                if event == "attempt_started":
+                    append_vnext_event(
+                        run_root,
+                        "implementation",
+                        "JOB_STARTED",
+                        run_id=str(run_id),
+                        plan_hash=plan_content_hash,
+                        milestone_id=vnext_milestone_id,
+                        job_id=job_id,
+                    )
+                if event == "completed":
+                    append_vnext_event(
+                        run_root,
+                        "implementation",
+                        "JOB_FINISHED",
+                        run_id=str(run_id),
+                        plan_hash=plan_content_hash,
+                        milestone_id=vnext_milestone_id,
+                        job_id=job_id,
+                        payload={"status": payload.get("status")},
+                    )
 
         def work_logger(payload: dict[str, Any]) -> None:
             work_events.append(payload)
@@ -3383,6 +4592,70 @@ class ImplementationEngine:
             parents=[artifact_refs["work_graph"]],
             stage="validate",
         )
+
+        vnext_job_results = self._write_vnext_job_results(
+            run_root,
+            [JobResultPayload.model_validate(env.payload) for env in store.list_artifacts("job_result")],
+            job_spec_map,
+        )
+        vnext_evidence_index, vnext_expectation_status = self._build_vnext_evidence_index(
+            vnext_expectation_registry,
+            job_results=vnext_job_results,
+            job_spec_map=job_spec_map,
+            milestone_id=vnext_milestone_id,
+            plan_hash=plan_content_hash,
+        )
+        self._write_impl_json(run_root, "evidence_index.json", vnext_evidence_index)
+        vnext_decision_record, must_failures = self._build_vnext_decision_record(
+            vnext_expectation_registry,
+            vnext_expectation_status,
+            evidence_index=vnext_evidence_index,
+            milestone_id=vnext_milestone_id,
+            plan_hash=plan_content_hash,
+        )
+        self._write_impl_json(run_root, "decision_record.json", vnext_decision_record)
+        baseline_report = self._build_baseline_report(
+            expectation_registry=vnext_expectation_registry,
+            evidence_index=vnext_evidence_index,
+            expectation_status=vnext_expectation_status,
+            plan_hash=plan_content_hash,
+            milestone_id=vnext_milestone_id,
+            run_root=run_root,
+        )
+        if baseline_report is not None:
+            self._write_impl_json(run_root, "baseline_report.json", baseline_report)
+        if vnext_decision_record.get("decision") == "PASS":
+            append_vnext_event(
+                run_root,
+                "implementation",
+                "MILESTONE_VERIFIED",
+                run_id=str(run_id),
+                plan_hash=plan_content_hash,
+                milestone_id=vnext_milestone_id,
+            )
+        if vnext_enforce_gates and vnext_decision_record.get("decision") != "PASS":
+            blocked_check_ids = must_failures
+            blocked_job_ids = [
+                job_id
+                for job_id, spec in job_spec_map.items()
+                if any(exp in blocked_check_ids for exp in spec.expected_expectation_ids)
+            ]
+            blocked_task_ids = [
+                task.task_id
+                for task in work_graph.tasks
+                if any(job_id in task.job_specs for job_id in blocked_job_ids)
+            ]
+            self._emit_vnext_change_request(
+                run_root,
+                plan_hash=plan_content_hash,
+                reason_code="INFEASIBLE",
+                summary="Required expectations failed verification.",
+                blocked_task_ids=blocked_task_ids,
+                blocked_job_ids=blocked_job_ids,
+                blocked_check_ids=blocked_check_ids,
+                milestones=[vnext_milestone_id],
+            )
+            raise RuntimeError("Milestone verification failed; change request emitted.")
 
         if scheduler_result.diagnosis_report_id:
             raise RuntimeError("Scheduler stalled; diagnosis report emitted")
@@ -3599,6 +4872,14 @@ class ImplementationEngine:
             parents=[artifact_refs["decision_record"]],
             stage="freeze",
         )
+        append_vnext_event(
+            run_root,
+            "implementation",
+            "RELEASE_FROZEN",
+            run_id=str(run_id),
+            plan_hash=plan_content_hash,
+            milestone_id=vnext_milestone_id,
+        )
 
         self._validate_role_outputs(workspace, role_sets)
         workspace.assert_index_complete()
@@ -3680,6 +4961,7 @@ class ImplementationEngine:
                 workspace_context_path,
                 config_path,
                 handoff_bundle_path,
+                accepted.config_snapshot_path,
                 run_id=run_id,
                 run_root=run_root,
                 config=config,
@@ -3687,6 +4969,7 @@ class ImplementationEngine:
                 roles=roles,
                 role_sets=role_sets,
                 role_assignments=role_assignments,
+                plan_content_hash=accepted.plan_content_hash,
             )
 
         v2_inputs = {

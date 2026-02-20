@@ -1,18 +1,15 @@
 {
-  "title": "DecisionRecord",
+  "title": "PlanLintReport",
   "type": "object",
   "additionalProperties": false,
   "properties": {
     "schema_version": {
       "type": "string"
     },
-    "meta": {
-      "type": "object"
+    "passed": {
+      "type": "boolean"
     },
-    "decision": {
-      "type": "string"
-    },
-    "per_expectation": {
+    "issues": {
       "type": "array",
       "items": {
         "type": "object"
@@ -21,7 +18,7 @@
   },
   "required": [
     "schema_version",
-    "decision",
-    "per_expectation"
+    "passed",
+    "issues"
   ]
 }

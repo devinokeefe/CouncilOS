@@ -1,0 +1,25 @@
+{
+  "title": "DiscrepancyReport",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "expected": {
+      "type": "object"
+    },
+    "actual": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema_version",
+    "reason",
+    "expected",
+    "actual"
+  ]
+}

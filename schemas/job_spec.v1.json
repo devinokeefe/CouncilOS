@@ -1,0 +1,61 @@
+{
+  "title": "JobSpec",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "job_id": {
+      "type": "string"
+    },
+    "job_type": {
+      "type": "string"
+    },
+    "task_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "idempotency_key": {
+      "type": "string"
+    },
+    "inputs": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "budgets": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "expectation_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "env_profile_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "env_snapshot_hash": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "schema_version",
+    "job_id",
+    "job_type",
+    "idempotency_key"
+  ]
+}

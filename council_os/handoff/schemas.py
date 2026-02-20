@@ -83,6 +83,7 @@ class PlanFreezeRecord(HandoffModel):
     plan_approval_ref: HandoffArtifactRef | None = None
     approved_plan_hash: str | None = None
     repo_snapshot_ref: HandoffArtifactRef | None = None
+    env_snapshot_ref: HandoffArtifactRef | None = None
     hash_spec_ref: HandoffArtifactRef | None = None
     config_snapshot_ref: HandoffArtifactRef
     human_feedback_bundle_ref: HandoffArtifactRef
@@ -120,6 +121,8 @@ class ManifestPointers(HandoffModel):
 
 
 class RepoAcquisitionSpec(HandoffModel):
+    repo_id: str | None = None
+    checkout_path: str | None = None
     repo_url: str
     git_commit: str
     git_tree_hash: str | None = None
@@ -131,7 +134,7 @@ class HandoffManifest(HandoffModel):
     schema_version: str = "handoff_manifest.v1"
     hash_spec_version: str
     pointers: ManifestPointers
-    repo_acquisition_spec: RepoAcquisitionSpec
+    repo_acquisition_spec: RepoAcquisitionSpec | list[RepoAcquisitionSpec]
     artifacts: list[ManifestArtifactRef]
     env_requirements_ref: str | None = None
     handoff_digest: str
@@ -155,6 +158,7 @@ class HandoffAck(HandoffModel):
     env_fingerprint: str | None = None
     imported_artifacts: list[ImportedArtifactRef] = Field(default_factory=list)
     acquired_repo: dict[str, Any] | None = None
+    acquired_repos: list[dict[str, Any]] | None = None
 
 
 class HandoffRejection(HandoffModel):

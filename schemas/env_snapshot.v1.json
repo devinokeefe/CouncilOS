@@ -1,0 +1,38 @@
+{
+  "title": "EnvSnapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "captured_at": {
+      "type": "string"
+    },
+    "platform": {
+      "type": "string"
+    },
+    "python_version": {
+      "type": "string"
+    },
+    "python_executable": {
+      "type": "string"
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "captured_at",
+    "platform",
+    "python_version"
+  ]
+}

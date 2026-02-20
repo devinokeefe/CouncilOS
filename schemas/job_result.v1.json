@@ -1,0 +1,45 @@
+{
+  "title": "JobResult",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "job_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "outputs": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "logs_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "metrics_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "satisfies_expectations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "job_id",
+    "status"
+  ]
+}

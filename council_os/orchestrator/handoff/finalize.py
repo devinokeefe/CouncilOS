@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import shutil
+import re
+import platform
+import sys
 from copy import deepcopy
 from datetime import UTC, datetime
 from pathlib import Path
@@ -19,6 +23,7 @@ from council_os.handoff.schemas import (
     PlanFreezeRecord,
     PlanningHandoffBundle,
     RepoAcquisitionSpec,
+    RepoSnapshot,
 )
 from council_os.handoff.manifest import with_manifest_digest
 from council_os.orchestrator.feedback.config import FeedbackConfig
@@ -30,7 +35,12 @@ from council_os.orchestrator.feedback.schemas import (
 from council_os.orchestrator.feedback.store import PlanningArtifactStore
 from council_os.orchestrator.feedback.utils import stable_json_dumps
 from council_os.orchestrator.handoff.bundle import compute_handoff_digest
-from council_os.orchestrator.handoff.repo_snapshot import capture_repo_snapshot, resolve_repo_url
+from council_os.orchestrator.handoff.repo_snapshot import (
+    capture_repo_snapshot,
+    resolve_repo_root,
+    resolve_repo_url,
+)
+from council_os.vnext.events import append_vnext_event
 
 
 def _planning_ref(name: str) -> str:
@@ -130,6 +140,14 @@ def _ensure_context_snapshot(
     if source_path is None:
         if dest.exists():
             return dest
+        if label == "repo_context":
+            repo_payload = _default_repo_context(run_root)
+            _write_json(dest, repo_payload, force=True)
+            return dest
+        if label == "workspace_context":
+            workspace_payload = _default_workspace_context()
+            _write_json(dest, workspace_payload, force=True)
+            return dest
         raise FileNotFoundError(f"Missing required {label}.json")
     source_path = source_path.resolve()
     if dest.exists():
@@ -140,6 +158,97 @@ def _ensure_context_snapshot(
     dest.parent.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(source_path, dest)
     return dest
+
+
+def _default_repo_context(run_root: Path) -> dict[str, Any]:
+    repo_root = run_root
+    commit = "unknown"
+    branch = "unknown"
+    try:
+        repo_root = resolve_repo_root(Path.cwd())
+    except Exception:
+        repo_root = run_root
+    try:
+        snapshot = capture_repo_snapshot(repo_root)
+        commit = snapshot.commit_sha
+        branch = snapshot.branch
+    except Exception:
+        pass
+    return {
+        "repo_root": str(repo_root),
+        "base_commit": commit,
+        "head_commit": commit,
+        "branch_name": branch,
+        "build_entrypoints": [],
+        "validator_entrypoints": [],
+        "protected_paths": [".git/*"],
+        "forbidden_paths": [],
+        "metadata": {},
+        "execution_profiles": None,
+        "validator_runners": [],
+        "dependency_policy": None,
+        "surfaces": [],
+        "default_expectations": [],
+    }
+
+
+def _default_workspace_context() -> dict[str, Any]:
+    return {
+        "workspace_root": "workspace",
+        "namespace_rules": [],
+        "partition_rules": {
+            "canonical_prefixes": ["canonical/"],
+            "non_canonical_prefixes": ["non_canonical/"],
+        },
+        "retention_policy": {"max_age_days": 7, "max_size_mb": 10, "compaction_strategy": "none"},
+        "access_control": [],
+        "context_pack_limits": {"max_items": 20, "max_bytes": 4000},
+    }
+
+
+def _build_env_snapshot() -> dict[str, Any]:
+    return {
+        "schema_version": "env_snapshot.v1",
+        "captured_at": datetime.now(UTC).isoformat(),
+        "platform": platform.platform(),
+        "python_version": sys.version.split()[0],
+        "python_executable": sys.executable,
+        "runtime": {"implementation": sys.implementation.name},
+        "notes": [],
+    }
+
+
+def _compute_tree_hash(repo_root: Path) -> str | None:
+    if not repo_root.exists():
+        return None
+    entries: list[str] = []
+    for path in sorted(repo_root.rglob("*")):
+        if path.is_dir():
+            continue
+        rel = path.relative_to(repo_root).as_posix()
+        if rel.startswith(".git/"):
+            continue
+        try:
+            content = path.read_bytes()
+        except Exception:
+            continue
+        digest = hashlib.sha256(content).hexdigest()
+        entries.append(f"{rel}:{digest}")
+    if not entries:
+        return None
+    return hashlib.sha256("\n".join(entries).encode("utf-8")).hexdigest()
+
+
+def _safe_repo_snapshot(repo_root: Path) -> RepoSnapshot:
+    try:
+        return capture_repo_snapshot(repo_root)
+    except Exception:
+        return RepoSnapshot(
+            commit_sha="unknown",
+            branch="unknown",
+            dirty=True,
+            tree_hash=_compute_tree_hash(repo_root),
+        )
 
 
 def _build_human_feedback_bundle(
@@ -209,6 +318,277 @@ def _build_human_feedback_bundle(
     return bundle
 
 
+def _build_traceability_matrix(plan: dict[str, Any]) -> dict[str, Any]:
+    if not isinstance(plan, dict):
+        return {"schema_version": "traceability_matrix.v1", "requirements": []}
+    requirements = plan.get("requirements", []) if isinstance(plan, dict) else []
+    acceptance_tests = plan.get("acceptance_tests", []) if isinstance(plan, dict) else []
+    work_items = plan.get("work_items", []) if isinstance(plan, dict) else []
+    checks = plan.get("checks") or plan.get("expectations") or []
+
+    use_vnext = bool(work_items or checks or plan.get("scope") or plan.get("constraints"))
+    if use_vnext:
+        req_ids = {req.get("id") for req in requirements if isinstance(req, dict) and req.get("id")}
+        work_item_map: dict[str, set[str]] = {}
+        for item in work_items:
+            if not isinstance(item, dict):
+                continue
+            item_id = item.get("id")
+            if not item_id:
+                continue
+            mapped = item.get("maps_to_requirements", []) or []
+            work_item_map[item_id] = {req_id for req_id in mapped if req_id}
+
+        def _check_requirements(check: dict[str, Any]) -> set[str]:
+            mapped: set[str] = set()
+            direct = check.get("maps_to_requirements", []) or []
+            for req_id in direct:
+                if req_id:
+                    mapped.add(req_id)
+            via_work = (
+                check.get("maps_to_work_items")
+                or check.get("maps_to_work_item_ids")
+                or check.get("work_item_ids")
+                or []
+            )
+            for item_id in via_work:
+                mapped.update(work_item_map.get(item_id, set()))
+            return mapped
+
+        matrix: list[dict[str, Any]] = []
+        for req_id in sorted(req_ids):
+            work_ids = sorted([item_id for item_id, mapped in work_item_map.items() if req_id in mapped])
+            check_ids: set[str] = set()
+            for check in checks:
+                if not isinstance(check, dict):
+                    continue
+                check_id = check.get("id")
+                if not check_id:
+                    continue
+                if req_id in _check_requirements(check):
+                    check_ids.add(check_id)
+            matrix.append(
+                {
+                    "requirement_id": req_id,
+                    "work_item_ids": work_ids,
+                    "check_ids": sorted(check_ids),
+                }
+            )
+        return {"schema_version": "traceability_matrix.v1", "requirements": matrix}
+
+    matrix: list[dict[str, Any]] = []
+    for req in requirements:
+        if not isinstance(req, dict):
+            continue
+        req_id = req.get("id", "")
+        mapped = []
+        for test in acceptance_tests:
+            if not isinstance(test, dict):
+                continue
+            mapped_to = test.get("maps_to_requirements", []) or []
+            if req_id and req_id in mapped_to:
+                mapped.append(test.get("id", ""))
+        matrix.append({"requirement_id": req_id, "acceptance_test_ids": [m for m in mapped if m]})
+    return {"schema_version": "traceability_matrix.v1", "requirements": matrix}
+
+
+def _build_plan_lint_report(plan: dict[str, Any]) -> dict[str, Any]:
+    issues: list[dict[str, Any]] = []
+    if not isinstance(plan, dict):
+        return {"schema_version": "plan_lint_report.v1", "passed": False, "issues": issues}
+
+    requirements = plan.get("requirements", []) if isinstance(plan, dict) else []
+    acceptance_tests = plan.get("acceptance_tests", []) if isinstance(plan, dict) else []
+    work_items = plan.get("work_items", []) if isinstance(plan, dict) else []
+    checks = plan.get("checks") or plan.get("expectations") or []
+    milestones = plan.get("milestones", []) if isinstance(plan, dict) else []
+
+    is_vnext = bool(work_items or checks or plan.get("scope") or plan.get("constraints"))
+
+    requirement_ids = {req.get("id") for req in requirements if isinstance(req, dict) and req.get("id")}
+    covered: dict[str, int] = {req_id: 0 for req_id in requirement_ids if req_id}
+
+    if work_items:
+        for idx, item in enumerate(work_items):
+            if not isinstance(item, dict):
+                continue
+            item_id = item.get("id")
+            if item_id and not re.match(r"^WI-", str(item_id)):
+                issues.append(
+                    {
+                        "severity": "warning",
+                        "message": f"Work item id {item_id} does not match WI-### convention",
+                        "json_pointer": f"/work_items/{idx}/id",
+                    }
+                )
+            mapped = item.get("maps_to_requirements", []) or []
+            if not mapped:
+                issues.append(
+                    {
+                        "severity": "error",
+                        "message": "Work item has no maps_to_requirements entries",
+                        "json_pointer": f"/work_items/{idx}/maps_to_requirements",
+                    }
+                )
+            for req_id in mapped:
+                if req_id not in requirement_ids:
+                    issues.append(
+                        {
+                            "severity": "error",
+                            "message": f"Work item maps to unknown requirement {req_id}",
+                            "json_pointer": f"/work_items/{idx}/maps_to_requirements",
+                        }
+                    )
+                else:
+                    covered[req_id] = covered.get(req_id, 0) + 1
+
+    if acceptance_tests:
+        for idx, test in enumerate(acceptance_tests):
+            if not isinstance(test, dict):
+                continue
+            mapped = test.get("maps_to_requirements", []) or []
+            for req_id in mapped:
+                if req_id not in requirement_ids:
+                    issues.append(
+                        {
+                            "severity": "error",
+                            "message": f"Acceptance test maps to unknown requirement {req_id}",
+                            "json_pointer": f"/acceptance_tests/{idx}/maps_to_requirements",
+                        }
+                    )
+                else:
+                    covered[req_id] = covered.get(req_id, 0) + 1
+
+    for req_idx, req in enumerate(requirements):
+        if not isinstance(req, dict):
+            continue
+        req_id = req.get("id")
+        if req_id and not re.match(r"^REQ-", str(req_id)):
+            issues.append(
+                {
+                    "severity": "warning",
+                    "message": f"Requirement id {req_id} does not match REQ-### convention",
+                    "json_pointer": f"/requirements/{req_idx}/id",
+                }
+            )
+        if req_id and covered.get(req_id, 0) == 0:
+            issues.append(
+                {
+                    "severity": "error",
+                    "message": f"Requirement {req_id} has no mapped work items or acceptance tests",
+                    "json_pointer": f"/requirements/{req_idx}",
+                }
+            )
+
+    for idx, check in enumerate(checks):
+        if not isinstance(check, dict):
+            continue
+        check_id = check.get("id")
+        if check_id and not re.match(r"^(CHK|EXP)-", str(check_id)):
+            issues.append(
+                {
+                    "severity": "warning",
+                    "message": f"Check id {check_id} does not match CHK/EXP convention",
+                    "json_pointer": f"/checks/{idx}/id",
+                }
+            )
+        oracle = (
+            check.get("oracle")
+            or check.get("oracle_ref")
+            or check.get("oracle_entrypoint")
+            or check.get("entrypoint")
+        )
+        if not oracle:
+            issues.append(
+                {
+                    "severity": "error",
+                    "message": f"Check {check_id or idx} missing oracle mapping",
+                    "json_pointer": f"/checks/{idx}",
+                }
+            )
+
+    for idx, test in enumerate(acceptance_tests):
+        if not isinstance(test, dict):
+            continue
+        test_id = test.get("id")
+        if test_id and not re.match(r"^(CHK|EXP|AT)-", str(test_id)):
+            issues.append(
+                {
+                    "severity": "warning",
+                    "message": f"Acceptance test id {test_id} does not match CHK/EXP convention",
+                    "json_pointer": f"/acceptance_tests/{idx}/id",
+                }
+            )
+
+    for idx, milestone in enumerate(milestones):
+        if not isinstance(milestone, dict):
+            continue
+        milestone_id = milestone.get("id")
+        if milestone_id and not re.match(r"^MS-", str(milestone_id)):
+            issues.append(
+                {
+                    "severity": "warning",
+                    "message": f"Milestone id {milestone_id} does not match MS-### convention",
+                    "json_pointer": f"/milestones/{idx}/id",
+                }
+            )
+        required_checks = (
+            milestone.get("required_check_ids")
+            or milestone.get("required_checks")
+            or milestone.get("exit_criteria")
+        )
+        if not required_checks:
+            issues.append(
+                {
+                    "severity": "error" if is_vnext else "warning",
+                    "message": "Milestone has no required_check_ids/exit_criteria checks",
+                    "json_pointer": f"/milestones/{idx}/required_check_ids",
+                }
+            )
+
+    scope = plan.get("scope")
+    constraints = plan.get("constraints")
+    if is_vnext:
+        if not scope:
+            issues.append(
+                {
+                    "severity": "error",
+                    "message": "Scope section missing; expected scope.in_scope_paths/out_of_scope_paths",
+                    "json_pointer": "/scope",
+                }
+            )
+        if not constraints:
+            issues.append(
+                {
+                    "severity": "error",
+                    "message": "Constraints section missing; expected constraints.caps",
+                    "json_pointer": "/constraints",
+                }
+            )
+    else:
+        if "scope" not in plan:
+            issues.append(
+                {
+                    "severity": "warning",
+                    "message": "Scope section missing; expected scope.in_scope_paths/out_of_scope_paths",
+                    "json_pointer": "/scope",
+                }
+            )
+    capsule = plan.get("project_capsule", {}) if isinstance(plan, dict) else {}
+    capsule_constraints = capsule.get("constraints") if isinstance(capsule, dict) else None
+    if not capsule_constraints and not constraints:
+        issues.append(
+            {
+                "severity": "warning",
+                "message": "No constraints defined in project_capsule.constraints or constraints.caps",
+                "json_pointer": "/project_capsule/constraints",
+            }
+        )
+
+    passed = not any(issue["severity"] == "error" for issue in issues)
+    return {"schema_version": "plan_lint_report.v1", "passed": passed, "issues": issues}
+
+
 def finalize_and_write_handoff(
     *,
     run_id: str,
@@ -258,6 +638,12 @@ def finalize_and_write_handoff(
             raise RuntimeError("Plan review approval required before handoff")
         if approval.approved_plan_hash != selected_draft_hash:
             raise RuntimeError("Plan approval hash does not match latest draft plan")
+    approval_ref: HandoffArtifactRef | None = None
+    if approval is not None:
+        approval_ref = HandoffArtifactRef(
+            path=_planning_ref("plan_approval.json"),
+            sha256=artifact_hash(approval.model_dump()),
+        )
 
     clarification_resolutions: ClarificationResolutions | None = None
     if feedback_cfg.clarify:
@@ -271,8 +657,35 @@ def finalize_and_write_handoff(
     meta = plan_final.get("meta", {})
     if isinstance(meta, dict):
         meta["plan_status"] = "FROZEN"
+        if "hash_spec_version" not in meta:
+            meta["hash_spec_version"] = hash_spec.hash_spec_version
+        lineage_cfg = config_snapshot.get("plan_lineage") if isinstance(config_snapshot, dict) else None
+        if isinstance(lineage_cfg, dict) and not feedback_cfg.plan_review:
+            parent_hash = lineage_cfg.get("parent_plan_hash")
+            amendment_id = lineage_cfg.get("amendment_id")
+            if parent_hash and "parent_plan_hash" not in meta:
+                meta["parent_plan_hash"] = parent_hash
+            if amendment_id and "amendment_id" not in meta:
+                meta["amendment_id"] = amendment_id
         plan_final["meta"] = meta
     plan_hash = plan_content_hash(plan_final, hash_spec=hash_spec)
+    append_vnext_event(
+        run_root,
+        "planning",
+        "PLAN_DRAFTED",
+        run_id=run_id,
+        plan_hash=selected_draft_hash,
+        payload={"draft_ref": selected_draft_ref},
+    )
+    if feedback_cfg.plan_review and approval is not None:
+        append_vnext_event(
+            run_root,
+            "planning",
+            "PLAN_REVIEWED",
+            run_id=run_id,
+            plan_hash=selected_draft_hash,
+            payload={"approval_ref": approval_ref.path if approval_ref else None},
+        )
 
     _write_json(store.path("config_snapshot.json"), config_snapshot, force=force)
     _write_json(artifacts_root / "config_snapshot.json", config_snapshot, force=force)
@@ -285,10 +698,34 @@ def finalize_and_write_handoff(
         sha256=artifact_hash(config_snapshot),
     )
 
+    env_snapshot_path = store.path("env_snapshot.json")
+    if env_snapshot_path.exists():
+        env_snapshot_payload = _load_json(env_snapshot_path)
+    else:
+        env_snapshot_payload = _build_env_snapshot()
+        _write_json(env_snapshot_path, env_snapshot_payload, force=force)
+    _write_json(artifacts_root / "env_snapshot.json", env_snapshot_payload, force=force)
+    env_snapshot_ref = HandoffArtifactRef(
+        path=_planning_ref("env_snapshot.json"),
+        sha256=artifact_hash(env_snapshot_payload),
+    )
+    env_snapshot_ref_artifact = HandoffArtifactRef(
+        path=_artifact_ref("env_snapshot.json"),
+        sha256=artifact_hash(env_snapshot_payload),
+    )
+
     plan_final_path = store.path("plan_package_final.json")
     _write_json(plan_final_path, plan_final, force=force)
     plan_final_artifact_name = f"plan_package_final_v{draft_version}.json"
     _write_json(artifacts_root / plan_final_artifact_name, plan_final, force=force)
+    append_vnext_event(
+        run_root,
+        "planning",
+        "PLAN_FROZEN",
+        run_id=run_id,
+        plan_hash=plan_hash,
+        payload={"final_ref": _artifact_ref(plan_final_artifact_name)},
+    )
     plan_ref = HandoffArtifactRef(
         path=_planning_ref("plan_package_final.json"),
         sha256=artifact_hash(plan_final),
@@ -297,6 +734,31 @@ def finalize_and_write_handoff(
         path=_artifact_ref(plan_final_artifact_name),
         sha256=artifact_hash(plan_final),
     )
+
+    lint_report = _build_plan_lint_report(plan_final)
+    _write_json(store.path("plan_lint_report.json"), lint_report, force=force)
+    _write_json(artifacts_root / "plan_lint_report.json", lint_report, force=force)
+    traceability = _build_traceability_matrix(plan_final)
+    _write_json(store.path("traceability_matrix.json"), traceability, force=force)
+    _write_json(artifacts_root / "traceability_matrix.json", traceability, force=force)
+
+    plan_migration_record: dict[str, Any] | None = None
+    plan_migration_ref: HandoffArtifactRef | None = None
+    parent_plan_hash = meta.get("parent_plan_hash") if isinstance(meta, dict) else None
+    if parent_plan_hash:
+        plan_migration_record = {
+            "schema_version": "plan_migration_record.v1",
+            "parent_plan_hash": parent_plan_hash,
+            "child_plan_hash": plan_hash,
+            "amendment_id": meta.get("amendment_id") if isinstance(meta, dict) else None,
+            "notes": [],
+        }
+        _write_json(store.path("plan_migration_record.json"), plan_migration_record, force=force)
+        _write_json(artifacts_root / "plan_migration_record.json", plan_migration_record, force=force)
+        plan_migration_ref = HandoffArtifactRef(
+            path=_planning_ref("plan_migration_record.json"),
+            sha256=artifact_hash(plan_migration_record),
+        )
 
     append_event(
         run_root,
@@ -321,12 +783,12 @@ def finalize_and_write_handoff(
             force=force,
         )
 
-    approval_ref = None
     if approval is not None:
-        approval_ref = HandoffArtifactRef(
-            path=_planning_ref("plan_approval.json"),
-            sha256=artifact_hash(approval.model_dump()),
-        )
+        if approval_ref is None:
+            approval_ref = HandoffArtifactRef(
+                path=_planning_ref("plan_approval.json"),
+                sha256=artifact_hash(approval.model_dump()),
+            )
         _write_json(artifacts_root / "plan_approval.json", approval.model_dump(), force=force)
 
     human_feedback_bundle = _build_human_feedback_bundle(
@@ -381,7 +843,7 @@ def finalize_and_write_handoff(
 
     repo_root_value = repo_context_payload.get("repo_root") if isinstance(repo_context_payload, dict) else None
     repo_root = Path(str(repo_root_value)).expanduser() if repo_root_value else run_root
-    repo_snapshot = capture_repo_snapshot(repo_root)
+    repo_snapshot = _safe_repo_snapshot(repo_root)
     repo_snapshot_path = artifacts_root / "repo_snapshot.json"
     _write_json(repo_snapshot_path, repo_snapshot.model_dump(), force=force)
     repo_snapshot_ref = HandoffArtifactRef(
@@ -406,6 +868,7 @@ def finalize_and_write_handoff(
         plan_approval_ref=approval_ref,
         approved_plan_hash=approval.approved_plan_hash if approval is not None else None,
         repo_snapshot_ref=repo_snapshot_ref,
+        env_snapshot_ref=env_snapshot_ref,
         hash_spec_ref=hash_spec_ref,
         config_snapshot_ref=config_ref,
         human_feedback_bundle_ref=human_feedback_ref,
@@ -465,6 +928,12 @@ def finalize_and_write_handoff(
             role="REQUIRED",
         ),
         ManifestArtifactRef(
+            ref=env_snapshot_ref_artifact.path,
+            digest=env_snapshot_ref_artifact.sha256,
+            schema_version="env_snapshot.v1",
+            role="REQUIRED",
+        ),
+        ManifestArtifactRef(
             ref=repo_snapshot_ref.path,
             digest=repo_snapshot_ref.sha256,
             schema_version="repo_snapshot.v1",
@@ -483,6 +952,31 @@ def finalize_and_write_handoff(
             role="REQUIRED",
         ),
     ]
+    manifest_artifacts.append(
+        ManifestArtifactRef(
+            ref=_artifact_ref("plan_lint_report.json"),
+            digest=artifact_hash(lint_report),
+            schema_version="plan_lint_report.v1",
+            role="OPTIONAL",
+        )
+    )
+    manifest_artifacts.append(
+        ManifestArtifactRef(
+            ref=_artifact_ref("traceability_matrix.json"),
+            digest=artifact_hash(traceability),
+            schema_version="traceability_matrix.v1",
+            role="OPTIONAL",
+        )
+    )
+    if plan_migration_record is not None:
+        manifest_artifacts.append(
+            ManifestArtifactRef(
+                ref=_artifact_ref("plan_migration_record.json"),
+                digest=artifact_hash(plan_migration_record),
+                schema_version="plan_migration_record.v1",
+                role="OPTIONAL",
+            )
+        )
     if human_feedback_ref_artifact:
         manifest_artifacts.append(
             ManifestArtifactRef(
@@ -519,7 +1013,33 @@ def finalize_and_write_handoff(
         )
     )
 
-    repo_url = resolve_repo_url(repo_root) or str(repo_root)
+    try:
+        repo_url = resolve_repo_url(repo_root) or str(repo_root)
+    except Exception:
+        repo_url = str(repo_root)
+    primary_repo_id = None
+    if isinstance(config_snapshot, dict):
+        primary_repo_id = config_snapshot.get("repo_id")
+    repo_specs = [
+        RepoAcquisitionSpec(
+            repo_id=str(primary_repo_id) if primary_repo_id else None,
+            repo_url=repo_url,
+            git_commit=repo_snapshot.commit_sha,
+            git_tree_hash=repo_snapshot.tree_hash,
+            submodules="NONE",
+        )
+    ]
+    extra_specs_raw = []
+    if isinstance(config_snapshot, dict):
+        extra_specs_raw = config_snapshot.get("repo_acquisition_specs") or config_snapshot.get("additional_repos") or []
+    if isinstance(extra_specs_raw, list):
+        for item in extra_specs_raw:
+            if not isinstance(item, dict):
+                continue
+            try:
+                repo_specs.append(RepoAcquisitionSpec.model_validate(item))
+            except Exception:
+                continue
     manifest = HandoffManifest(
         hash_spec_version=hash_spec.hash_spec_version,
         pointers=ManifestPointers(
@@ -527,28 +1047,34 @@ def finalize_and_write_handoff(
             freeze_record_ref=freeze_ref_artifact.path,
             hash_spec_ref=hash_spec_ref.path,
         ),
-        repo_acquisition_spec=RepoAcquisitionSpec(
-            repo_url=repo_url,
-            git_commit=repo_snapshot.commit_sha,
-            git_tree_hash=repo_snapshot.tree_hash,
-            submodules="NONE",
-        ),
+        repo_acquisition_spec=repo_specs,
         artifacts=manifest_artifacts,
-        env_requirements_ref=None,
+        env_requirements_ref=env_snapshot_ref_artifact.path,
         handoff_digest="",
     )
     manifest = with_manifest_digest(manifest)
     _write_json(artifacts_root / "handoff_manifest.json", manifest.model_dump(), force=force)
     _write_json(store.path("handoff_manifest.json"), manifest.model_dump(), force=force)
+    append_vnext_event(
+        run_root,
+        "planning",
+        "HANDOFF_READY",
+        run_id=run_id,
+        plan_hash=plan_hash,
+        payload={"handoff_manifest_ref": _artifact_ref("handoff_manifest.json")},
+    )
 
     required_artifacts = [
         plan_ref,
         freeze_ref,
         config_ref,
+        env_snapshot_ref,
         repo_context_ref,
         workspace_context_ref,
     ]
     optional_artifacts = [human_feedback_ref]
+    if plan_migration_ref is not None:
+        optional_artifacts.append(plan_migration_ref)
 
     bundle = PlanningHandoffBundle(
         handoff_bundle_id=f"HB-{run_id}",

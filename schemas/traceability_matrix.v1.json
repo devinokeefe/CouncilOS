@@ -1,0 +1,47 @@
+{
+  "title": "TraceabilityMatrix",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "requirements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "requirement_id": {
+            "type": "string"
+          },
+          "acceptance_test_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "work_item_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "check_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "requirement_id"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "requirements"
+  ]
+}

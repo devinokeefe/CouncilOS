@@ -1,5 +1,5 @@
 {
-  "title": "DecisionRecord",
+  "title": "VerificationPlan",
   "type": "object",
   "additionalProperties": false,
   "properties": {
@@ -9,19 +9,26 @@
     "meta": {
       "type": "object"
     },
-    "decision": {
+    "milestone_id": {
       "type": "string"
     },
-    "per_expectation": {
+    "required_expectations": {
       "type": "array",
       "items": {
-        "type": "object"
+        "type": "string"
+      }
+    },
+    "jobs_to_run": {
+      "type": "array",
+      "items": {
+        "type": "string"
       }
     }
   },
   "required": [
     "schema_version",
-    "decision",
-    "per_expectation"
+    "milestone_id",
+    "required_expectations",
+    "jobs_to_run"
   ]
 }

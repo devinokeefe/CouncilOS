@@ -38,6 +38,7 @@ _DEFAULT_EXCLUDED_POINTERS: tuple[str, ...] = (
     "/meta/source_run_id",
     "/meta/run_id",
     "/meta/last_updated",
+    "/meta/hash_spec_version",
     "/meta/*timestamp*",
     "/meta/*nonce*",
 )

@@ -1,0 +1,46 @@
+{
+  "title": "ExpectationRegistry",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "meta": {
+      "type": "object"
+    },
+    "expectations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "expectation_id": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string"
+          },
+          "oracle": {
+            "type": "object"
+          },
+          "required_env_class": {
+            "type": "string"
+          },
+          "evidence_type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "expectation_id",
+          "severity",
+          "oracle"
+        ],
+        "additionalProperties": true
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "expectations"
+  ]
+}

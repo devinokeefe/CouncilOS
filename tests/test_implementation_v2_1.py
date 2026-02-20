@@ -421,6 +421,49 @@ def _latest_run_root(storage_root: Path) -> Path:
     return runs[-1]
 
 
+def test_vnext_kernel_artifacts_written(tmp_path: Path) -> None:
+    job_specs = [
+        JobSpecPayload(
+            schema_version="2.1.0",
+            job_id="job_vnext_1",
+            job_type="validate",
+            profile_id="legacy_v1",
+            inputs=[],
+            idempotency_key="vnext:job1",
+            budget=None,
+            expected_expectation_ids=["EXP-PLAN-R1", "EXP-AT-AT1"],
+        )
+    ]
+    inputs = _setup_run_inputs(
+        tmp_path,
+        v2_inputs={"job_specs": [job.model_dump() for job in job_specs]},
+    )
+    engine = ImplementationEngine(storage_root=inputs["storage_root"])
+    result = engine.run(
+        inputs["plan_path"],
+        inputs["repo_context_path"],
+        inputs["workspace_context_path"],
+        inputs["config_path"],
+        inputs["handoff_bundle_path"],
+        allow_repo_override=True,
+    )
+    run_root = inputs["storage_root"] / str(result.run_id)
+    artifacts_root = run_root / "implementation" / "artifacts"
+    assert (artifacts_root / "compiler_inputs.json").exists()
+    assert (artifacts_root / "work_graph.json").exists()
+    assert (artifacts_root / "verification_plan.json").exists()
+    assert (artifacts_root / "execution_plan.json").exists()
+    assert (artifacts_root / "expectation_registry.json").exists()
+    assert (artifacts_root / "evidence_index.json").exists()
+    assert (artifacts_root / "decision_record.json").exists()
+    jobs_root = run_root / "implementation" / "jobs"
+    assert list((jobs_root / "specs").glob("*.json"))
+    assert list((jobs_root / "results").glob("*.json"))
+    assert list((jobs_root / "run_records").glob("*.jsonl"))
+    events_path = run_root / "implementation" / "events.jsonl"
+    assert events_path.exists()
+
+
 def test_at24_profiles_enforced_forbidden_dep(tmp_path: Path) -> None:
     inputs = _setup_run_inputs(
         tmp_path,

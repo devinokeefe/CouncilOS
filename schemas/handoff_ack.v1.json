@@ -28,6 +28,13 @@
     "acquired_repo": {
       "type": ["object", "null"],
       "additionalProperties": true
+    },
+    "acquired_repos": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
     }
   },
   "required": [

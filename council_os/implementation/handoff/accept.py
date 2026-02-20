@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -26,6 +27,7 @@ from council_os.implementation.handoff.importer import copy_with_provenance
 from council_os.orchestrator.feedback.schemas import ClarificationResolutions, PlanApproval
 from council_os.orchestrator.feedback.utils import stable_json_dumps
 from council_os.orchestrator.handoff.repo_snapshot import capture_repo_snapshot
+from council_os.vnext.events import append_vnext_event
 
 
 @dataclass
@@ -100,6 +102,8 @@ def _write_rejection(
     *,
     reason_code: str | None = None,
     remediation_hints: list[str] | None = None,
+    run_id: str | None = None,
+    plan_hash: str | None = None,
 ) -> Path:
     rejection = HandoffRejection(
         rejected_at=datetime.now(UTC).isoformat(),
@@ -111,7 +115,58 @@ def _write_rejection(
     )
     path = run_root / "handoff_rejection.json"
     _write_json(path, rejection.model_dump())
+    if run_id:
+        append_vnext_event(
+            run_root,
+            "implementation",
+            "HANDOFF_REJECTED",
+            run_id=run_id,
+            plan_hash=plan_hash,
+            payload={"reason": reason, "reason_code": reason_code},
+        )
     return path
+
+
+def _run_git(args: list[str], cwd: Path) -> str:
+    return subprocess.check_output(["git", *args], cwd=cwd, text=True, stderr=subprocess.DEVNULL).strip()
+
+
+def _ensure_repo_acquired(repo_root: Path, repo_url: str | None) -> None:
+    if repo_root.exists():
+        return
+    if not repo_url:
+        raise RuntimeError("repo_root missing and repo_url not provided")
+    repo_root.parent.mkdir(parents=True, exist_ok=True)
+    subprocess.check_call(["git", "clone", repo_url, str(repo_root)], stderr=subprocess.DEVNULL)
+
+
+def _resolve_repo_checkout(primary_root: Path, spec: "RepoAcquisitionSpec", index: int) -> Path:
+    if index == 0:
+        return primary_root
+    if spec.checkout_path:
+        candidate = Path(spec.checkout_path)
+        if candidate.is_absolute():
+            return candidate
+        return (primary_root / candidate).resolve()
+    if spec.repo_id:
+        return (primary_root / "repos" / spec.repo_id).resolve()
+    return (primary_root / "repos" / f"repo_{index}").resolve()
+
+
+def _git_has_commit(repo_root: Path, commit: str) -> bool:
+    try:
+        _run_git(["cat-file", "-e", f"{commit}^{{commit}}"], cwd=repo_root)
+    except Exception:
+        return False
+    return True
+
+
+def _checkout_commit(repo_root: Path, commit: str) -> bool:
+    try:
+        _run_git(["checkout", commit], cwd=repo_root)
+    except Exception:
+        return False
+    return True
 
 
 def _write_override(
@@ -133,6 +188,13 @@ def _write_override(
     path = run_root / "handoff_override.json"
     _write_json(path, override.model_dump())
     return path
+
+
+def _load_override(run_root: Path, override_path: Path | None = None) -> tuple[HandoffOverride | None, Path | None]:
+    candidate = override_path or (run_root / "handoff_override.json")
+    if candidate.exists():
+        return HandoffOverride.model_validate_json(candidate.read_text(encoding="utf-8")), candidate
+    return None, None
 
 
 def _compute_handoff_digest(bundle: PlanningHandoffBundle) -> str:
@@ -174,6 +236,7 @@ def accept_handoff(
             {"expected": bundle.handoff_digest},
             {"actual": computed_digest},
             reason_code="HASH_MISMATCH",
+            run_id=implementation_run_id,
         )
         raise HandoffRejected("Handoff digest mismatch", rejection_path)
 
@@ -198,6 +261,7 @@ def accept_handoff(
                 {"path": item.path},
                 {"actual": "missing"},
                 reason_code="MISSING_ARTIFACT",
+                run_id=implementation_run_id,
             )
             raise HandoffRejected(f"Missing required artifact: {item.path}", rejection_path)
         actual_hash = artifact_hash(_load_json(artifact_path))
@@ -208,6 +272,7 @@ def accept_handoff(
                 {"path": item.path, "expected": item.sha256},
                 {"actual": actual_hash},
                 reason_code="HASH_MISMATCH",
+                run_id=implementation_run_id,
             )
             raise HandoffRejected(f"Hash mismatch for required artifact: {item.path}", rejection_path)
 
@@ -220,6 +285,8 @@ def accept_handoff(
             "plan_not_frozen",
             {"expected": "FROZEN"},
             {"actual": plan_meta.get("plan_status")},
+            reason_code="SCHEMA_UNSUPPORTED",
+            run_id=implementation_run_id,
         )
         raise HandoffRejected("plan_package_final must be frozen", rejection_path)
 
@@ -231,6 +298,8 @@ def accept_handoff(
             {"expected": bundle.final_plan.plan_content_hash},
             {"actual": plan_hash},
             reason_code="HASH_MISMATCH",
+            run_id=implementation_run_id,
+            plan_hash=plan_hash,
         )
         raise HandoffRejected("Plan content hash mismatch", rejection_path)
 
@@ -243,6 +312,8 @@ def accept_handoff(
             {"expected": freeze_record.plan_content_hash},
             {"actual": plan_hash},
             reason_code="HASH_MISMATCH",
+            run_id=implementation_run_id,
+            plan_hash=plan_hash,
         )
         raise HandoffRejected("Plan freeze record hash mismatch", rejection_path)
 
@@ -254,6 +325,8 @@ def accept_handoff(
                 {"expected": "plan_approval.json"},
                 {"actual": "missing"},
                 reason_code="MISSING_ARTIFACT",
+                run_id=implementation_run_id,
+                plan_hash=plan_hash,
             )
             raise HandoffRejected("Plan approval required but missing", rejection_path)
         approval_path = _resolve_path(bundle_path, bundle.approval.path)
@@ -265,6 +338,8 @@ def accept_handoff(
                 {"expected": True},
                 {"actual": approval.approved},
                 reason_code="HASH_MISMATCH",
+                run_id=implementation_run_id,
+                plan_hash=plan_hash,
             )
             raise HandoffRejected("Plan approval not granted", rejection_path)
         if approval.approved_plan_hash != plan_hash:
@@ -274,6 +349,8 @@ def accept_handoff(
                 {"expected": plan_hash},
                 {"actual": approval.approved_plan_hash},
                 reason_code="HASH_MISMATCH",
+                run_id=implementation_run_id,
+                plan_hash=plan_hash,
             )
             raise HandoffRejected("Plan approval hash mismatch", rejection_path)
 
@@ -285,6 +362,8 @@ def accept_handoff(
                 {"expected": "clarification_resolutions.json"},
                 {"actual": "missing"},
                 reason_code="MISSING_ARTIFACT",
+                run_id=implementation_run_id,
+                plan_hash=plan_hash,
             )
             raise HandoffRejected("Clarification resolutions required but missing", rejection_path)
         clar_path = _resolve_path(bundle_path, bundle.clarifications.path)
@@ -301,66 +380,78 @@ def accept_handoff(
             {"expected": str(repo_root)},
             {"actual": "missing"},
             reason_code="REPO_ACQUIRE_FAILED",
+            run_id=implementation_run_id,
+            plan_hash=plan_hash,
         )
         raise HandoffRejected("Repo root missing", rejection_path)
 
-    override_path = None
+    override, override_path = _load_override(run_root)
+    allow_override = allow_repo_override or override is not None
     try:
         actual_snapshot = capture_repo_snapshot(repo_root)
     except Exception as exc:
-        if not allow_repo_override:
+        if not allow_override:
             rejection_path = _write_rejection(
                 run_root,
                 "repo_snapshot_unavailable",
                 {"expected": bundle.repo_snapshot.model_dump()},
                 {"actual": str(exc)},
                 reason_code="REPO_ACQUIRE_FAILED",
+                run_id=implementation_run_id,
+                plan_hash=plan_hash,
             )
             raise HandoffRejected("Repo snapshot unavailable", rejection_path)
-        override_path = _write_override(
-            run_root,
-            "REPO_SNAPSHOT_OVERRIDE",
-            {"expected": bundle.repo_snapshot.model_dump()},
-            {"actual": str(exc)},
-        )
+        if override is None:
+            override_path = _write_override(
+                run_root,
+                "REPO_SNAPSHOT_OVERRIDE",
+                {"expected": bundle.repo_snapshot.model_dump()},
+                {"actual": str(exc)},
+            )
         actual_snapshot = bundle.repo_snapshot
 
     if (
         actual_snapshot.commit_sha != bundle.repo_snapshot.commit_sha
         or actual_snapshot.dirty != bundle.repo_snapshot.dirty
     ):
-        if not allow_repo_override:
+        if not allow_override:
             rejection_path = _write_rejection(
                 run_root,
                 "repo_snapshot_mismatch",
                 {"expected": bundle.repo_snapshot.model_dump()},
                 {"actual": actual_snapshot.model_dump()},
                 reason_code="TREE_HASH_MISMATCH",
+                run_id=implementation_run_id,
+                plan_hash=plan_hash,
             )
             raise HandoffRejected("Repo snapshot mismatch", rejection_path)
-        override_path = _write_override(
-            run_root,
-            "REPO_SNAPSHOT_OVERRIDE",
-            {"expected": bundle.repo_snapshot.model_dump()},
-            {"actual": actual_snapshot.model_dump()},
-        )
+        if override is None:
+            override_path = _write_override(
+                run_root,
+                "REPO_SNAPSHOT_OVERRIDE",
+                {"expected": bundle.repo_snapshot.model_dump()},
+                {"actual": actual_snapshot.model_dump()},
+            )
 
     if bundle.repo_snapshot.tree_hash and actual_snapshot.tree_hash != bundle.repo_snapshot.tree_hash:
-        if not allow_repo_override:
+        if not allow_override:
             rejection_path = _write_rejection(
                 run_root,
                 "repo_tree_hash_mismatch",
                 {"expected": bundle.repo_snapshot.tree_hash},
                 {"actual": actual_snapshot.tree_hash},
                 reason_code="TREE_HASH_MISMATCH",
+                run_id=implementation_run_id,
+                plan_hash=plan_hash,
             )
             raise HandoffRejected("Repo tree hash mismatch", rejection_path)
-        override_path = _write_override(
-            run_root,
-            "TREE_HASH_MATCHES_AFTER_PATCH",
-            {"expected": bundle.repo_snapshot.tree_hash},
-            {"actual": actual_snapshot.tree_hash},
-        )
+        if override is None:
+            override_path = _write_override(
+                run_root,
+                "TREE_HASH_MATCHES_AFTER_PATCH",
+                {"expected": bundle.repo_snapshot.tree_hash},
+                {"actual": actual_snapshot.tree_hash},
+            )
 
     inputs = {
         "plan_package_final": plan_path,
@@ -372,15 +463,38 @@ def accept_handoff(
         inputs["clarification_resolutions"] = _resolve_path(bundle_path, bundle.clarifications.path)
     if bundle.approval.required and bundle.approval.path:
         inputs["plan_approval"] = _resolve_path(bundle_path, bundle.approval.path)
+    if freeze_record.repo_snapshot_ref is not None:
+        inputs["repo_snapshot"] = _resolve_path(bundle_path, freeze_record.repo_snapshot_ref.path)
+    if getattr(freeze_record, "env_snapshot_ref", None) is not None:
+        inputs["env_snapshot"] = _resolve_path(bundle_path, freeze_record.env_snapshot_ref.path)
+    if freeze_record.hash_spec_ref is not None:
+        inputs["hash_spec"] = _resolve_path(bundle_path, freeze_record.hash_spec_ref.path)
+    if "hash_spec" not in inputs and hash_spec_path is not None and hash_spec_path.exists():
+        inputs["hash_spec"] = hash_spec_path
+    if "repo_snapshot" not in inputs:
+        for candidate in (
+            base_root / "planning" / "artifacts" / "repo_snapshot.json",
+            base_root / "planning" / "repo_snapshot.json",
+            base_root / "repo_snapshot.json",
+        ):
+            if candidate.exists():
+                inputs["repo_snapshot"] = candidate
+                break
     inputs["planning_handoff_bundle"] = bundle_path
     inputs["repo_context"] = repo_context_path
     inputs["workspace_context"] = workspace_context_path
+    if override_path:
+        inputs["handoff_override"] = override_path
 
-    copied = copy_with_provenance(inputs, run_root / "inputs" / "planning")
+    copied = copy_with_provenance(inputs, run_root / "implementation" / "inputs" / "planning")
 
     imported = [
         ImportedArtifactRef(ref=item.path, digest=item.sha256) for item in bundle.required_artifacts
     ]
+    env_fingerprint = None
+    env_path = copied.get("env_snapshot")
+    if env_path is not None and Path(env_path).exists():
+        env_fingerprint = artifact_hash(_load_json(Path(env_path)))
     ack = HandoffAck(
         implementation_run_id=implementation_run_id,
         accepted_at=datetime.now(UTC).isoformat(),
@@ -390,6 +504,7 @@ def accept_handoff(
         accepted_repo_tree_hash=actual_snapshot.tree_hash,
         accepted_config_sha256=bundle.config_snapshot.sha256,
         implementation_engine_version=implementation_engine_version,
+        env_fingerprint=env_fingerprint,
         imported_artifacts=imported,
         acquired_repo={
             "git_commit": actual_snapshot.commit_sha,
@@ -397,6 +512,14 @@ def accept_handoff(
         },
     )
     _write_json(ack_path, ack.model_dump())
+    append_vnext_event(
+        run_root,
+        "implementation",
+        "HANDOFF_ACCEPTED",
+        run_id=implementation_run_id,
+        plan_hash=plan_hash,
+        payload={"handoff_digest": bundle.handoff_digest},
+    )
 
     append_event(
         run_root,
@@ -469,6 +592,7 @@ def accept_handoff_manifest(
             {"expected": manifest.handoff_digest},
             {"actual": computed_digest},
             reason_code="HASH_MISMATCH",
+            run_id=implementation_run_id,
         )
         raise HandoffRejected("Handoff manifest digest mismatch", rejection_path)
 
@@ -483,6 +607,7 @@ def accept_handoff_manifest(
                 {"path": artifact.ref},
                 {"actual": "missing"},
                 reason_code="MISSING_ARTIFACT",
+                run_id=implementation_run_id,
             )
             raise HandoffRejected(f"Missing required artifact: {artifact.ref}", rejection_path)
         actual_hash = artifact_hash(_load_json(artifact_path))
@@ -493,6 +618,7 @@ def accept_handoff_manifest(
                 {"path": artifact.ref, "expected": artifact.digest},
                 {"actual": actual_hash},
                 reason_code="HASH_MISMATCH",
+                run_id=implementation_run_id,
             )
             raise HandoffRejected(f"Hash mismatch for required artifact: {artifact.ref}", rejection_path)
 
@@ -505,6 +631,7 @@ def accept_handoff_manifest(
             {"expected": manifest.hash_spec_version},
             {"actual": hash_spec.hash_spec_version},
             reason_code="SCHEMA_UNSUPPORTED",
+            run_id=implementation_run_id,
         )
         raise HandoffRejected("Hash spec version mismatch", rejection_path)
 
@@ -517,7 +644,8 @@ def accept_handoff_manifest(
             "plan_not_frozen",
             {"expected": "FROZEN"},
             {"actual": plan_meta.get("plan_status")},
-            reason_code="HASH_MISMATCH",
+            reason_code="SCHEMA_UNSUPPORTED",
+            run_id=implementation_run_id,
         )
         raise HandoffRejected("plan_package_final must be frozen", rejection_path)
 
@@ -532,6 +660,8 @@ def accept_handoff_manifest(
             {"expected": freeze_record.plan_content_hash},
             {"actual": plan_hash},
             reason_code="HASH_MISMATCH",
+            run_id=implementation_run_id,
+            plan_hash=plan_hash,
         )
         raise HandoffRejected("Plan freeze record hash mismatch", rejection_path)
 
@@ -545,6 +675,8 @@ def accept_handoff_manifest(
                 {"expected": True},
                 {"actual": approval.approved},
                 reason_code="HASH_MISMATCH",
+                run_id=implementation_run_id,
+                plan_hash=plan_hash,
             )
             raise HandoffRejected("Plan approval not granted", rejection_path)
         if approval.approved_plan_hash != plan_hash:
@@ -554,6 +686,8 @@ def accept_handoff_manifest(
                 {"expected": plan_hash},
                 {"actual": approval.approved_plan_hash},
                 reason_code="HASH_MISMATCH",
+                run_id=implementation_run_id,
+                plan_hash=plan_hash,
             )
             raise HandoffRejected("Plan approval hash mismatch", rejection_path)
 
@@ -568,75 +702,140 @@ def accept_handoff_manifest(
         else _resolve_manifest_ref(manifest_path, _artifact_ref("repo_context.json"))
     )
     repo_context_payload = _load_json(repo_context_path)
-    repo_root = Path(str(repo_context_payload.get("repo_root", ""))).expanduser()
-    if not repo_root.exists():
+    primary_root = Path(str(repo_context_payload.get("repo_root", ""))).expanduser()
+    repo_specs_raw = manifest.repo_acquisition_spec
+    if isinstance(repo_specs_raw, list):
+        repo_specs = repo_specs_raw
+    else:
+        repo_specs = [repo_specs_raw]
+    if not repo_specs:
         rejection_path = _write_rejection(
             run_root,
-            "repo_root_missing",
-            {"expected": str(repo_root)},
-            {"actual": "missing"},
-            reason_code="REPO_ACQUIRE_FAILED",
+            "repo_spec_missing",
+            {"expected": "repo_acquisition_spec"},
+            {"actual": "empty"},
+            reason_code="SCHEMA_UNSUPPORTED",
+            run_id=implementation_run_id,
+            plan_hash=plan_hash,
         )
-        raise HandoffRejected("Repo root missing", rejection_path)
+        raise HandoffRejected("Repo acquisition spec missing", rejection_path)
 
-    override_path = None
-    try:
-        actual_snapshot = capture_repo_snapshot(repo_root)
-    except Exception as exc:
-        if not allow_repo_override:
+    override, override_path = _load_override(run_root)
+    allow_override = allow_repo_override or override is not None
+    acquired_repos: list[dict[str, Any]] = []
+    actual_snapshot: RepoSnapshot | None = None
+
+    for idx, repo_spec in enumerate(repo_specs):
+        repo_root = _resolve_repo_checkout(primary_root, repo_spec, idx)
+        try:
+            _ensure_repo_acquired(repo_root, repo_spec.repo_url)
+        except Exception as exc:
             rejection_path = _write_rejection(
                 run_root,
-                "repo_snapshot_unavailable",
-                {"expected": manifest.repo_acquisition_spec.model_dump()},
+                "repo_acquire_failed",
+                {"expected": repo_spec.model_dump()},
                 {"actual": str(exc)},
                 reason_code="REPO_ACQUIRE_FAILED",
+                run_id=implementation_run_id,
+                plan_hash=plan_hash,
             )
-            raise HandoffRejected("Repo snapshot unavailable", rejection_path)
-        override_path = _write_override(
-            run_root,
-            "REPO_ACQUIRE_FAILED",
-            {"expected": manifest.repo_acquisition_spec.model_dump()},
-            {"actual": str(exc)},
-            rationale="Repo snapshot unavailable; override allowed.",
-        )
-        actual_snapshot = capture_repo_snapshot(repo_root)
-
-    repo_spec = manifest.repo_acquisition_spec
-    if actual_snapshot.commit_sha != repo_spec.git_commit:
-        if not allow_repo_override:
+            raise HandoffRejected("Repo acquisition failed", rejection_path)
+        if not repo_root.exists():
             rejection_path = _write_rejection(
                 run_root,
-                "repo_commit_mismatch",
-                {"expected": repo_spec.git_commit},
-                {"actual": actual_snapshot.commit_sha},
-                reason_code="TREE_HASH_MISMATCH",
+                "repo_root_missing",
+                {"expected": str(repo_root)},
+                {"actual": "missing"},
+                reason_code="REPO_ACQUIRE_FAILED",
+                run_id=implementation_run_id,
+                plan_hash=plan_hash,
             )
-            raise HandoffRejected("Repo commit mismatch", rejection_path)
-        override_path = _write_override(
-            run_root,
-            "FAST_FORWARD_ALLOWED",
-            {"expected": repo_spec.git_commit},
-            {"actual": actual_snapshot.commit_sha},
-            rationale="Repo commit mismatch override allowed.",
-        )
+            raise HandoffRejected("Repo root missing", rejection_path)
 
-    if repo_spec.git_tree_hash and actual_snapshot.tree_hash != repo_spec.git_tree_hash:
-        if not allow_repo_override:
-            rejection_path = _write_rejection(
-                run_root,
-                "tree_hash_mismatch",
-                {"expected": repo_spec.git_tree_hash},
-                {"actual": actual_snapshot.tree_hash},
-                reason_code="TREE_HASH_MISMATCH",
-            )
-            raise HandoffRejected("Repo tree hash mismatch", rejection_path)
-        override_path = _write_override(
-            run_root,
-            "TREE_HASH_MATCHES_AFTER_PATCH",
-            {"expected": repo_spec.git_tree_hash},
-            {"actual": actual_snapshot.tree_hash},
-            rationale="Repo tree hash mismatch override allowed.",
+        try:
+            snapshot = capture_repo_snapshot(repo_root)
+        except Exception as exc:
+            if not allow_override:
+                rejection_path = _write_rejection(
+                    run_root,
+                    "repo_snapshot_unavailable",
+                    {"expected": repo_spec.model_dump()},
+                    {"actual": str(exc)},
+                    reason_code="REPO_ACQUIRE_FAILED",
+                    run_id=implementation_run_id,
+                    plan_hash=plan_hash,
+                )
+                raise HandoffRejected("Repo snapshot unavailable", rejection_path)
+            if override is None:
+                override_path = _write_override(
+                    run_root,
+                    "REPO_ACQUIRE_FAILED",
+                    {"expected": repo_spec.model_dump()},
+                    {"actual": str(exc)},
+                    rationale="Repo snapshot unavailable; override allowed.",
+                )
+            snapshot = capture_repo_snapshot(repo_root)
+
+        if snapshot.commit_sha != repo_spec.git_commit and _git_has_commit(repo_root, repo_spec.git_commit):
+            if _checkout_commit(repo_root, repo_spec.git_commit):
+                snapshot = capture_repo_snapshot(repo_root)
+        if snapshot.commit_sha != repo_spec.git_commit:
+            if not allow_override:
+                rejection_path = _write_rejection(
+                    run_root,
+                    "repo_commit_mismatch",
+                    {"expected": repo_spec.git_commit, "repo_id": repo_spec.repo_id},
+                    {"actual": snapshot.commit_sha},
+                    reason_code="TREE_HASH_MISMATCH",
+                    run_id=implementation_run_id,
+                    plan_hash=plan_hash,
+                )
+                raise HandoffRejected("Repo commit mismatch", rejection_path)
+            if override is None:
+                override_path = _write_override(
+                    run_root,
+                    "FAST_FORWARD_ALLOWED",
+                    {"expected": repo_spec.git_commit, "repo_id": repo_spec.repo_id},
+                    {"actual": snapshot.commit_sha},
+                    rationale="Repo commit mismatch override allowed.",
+                )
+
+        if repo_spec.git_tree_hash and snapshot.tree_hash != repo_spec.git_tree_hash:
+            if not allow_override:
+                rejection_path = _write_rejection(
+                    run_root,
+                    "tree_hash_mismatch",
+                    {"expected": repo_spec.git_tree_hash, "repo_id": repo_spec.repo_id},
+                    {"actual": snapshot.tree_hash},
+                    reason_code="TREE_HASH_MISMATCH",
+                    run_id=implementation_run_id,
+                    plan_hash=plan_hash,
+                )
+                raise HandoffRejected("Repo tree hash mismatch", rejection_path)
+            if override is None:
+                override_path = _write_override(
+                    run_root,
+                    "TREE_HASH_MATCHES_AFTER_PATCH",
+                    {"expected": repo_spec.git_tree_hash, "repo_id": repo_spec.repo_id},
+                    {"actual": snapshot.tree_hash},
+                    rationale="Repo tree hash mismatch override allowed.",
+                )
+
+        acquired_repos.append(
+            {
+                "repo_id": repo_spec.repo_id,
+                "repo_url": repo_spec.repo_url,
+                "checkout_path": repo_spec.checkout_path,
+                "repo_root": str(repo_root),
+                "git_commit": snapshot.commit_sha,
+                "git_tree_hash": snapshot.tree_hash,
+            }
         )
+        if idx == 0:
+            actual_snapshot = snapshot
+
+    if actual_snapshot is None:
+        raise RuntimeError("Primary repo snapshot missing after acquisition")
 
     workspace_context_artifact = _find_manifest_artifact(manifest, schema_version="workspace_context.v1")
     workspace_context_path = (
@@ -651,6 +850,7 @@ def accept_handoff_manifest(
         else _resolve_manifest_ref(manifest_path, _artifact_ref("config_snapshot.json"))
     )
     human_feedback_artifact = _find_manifest_artifact(manifest, schema_version="human_feedback_bundle.v1")
+    repo_snapshot_artifact = _find_manifest_artifact(manifest, schema_version="repo_snapshot.v1")
 
     inputs = {
         "plan_package_final": plan_path,
@@ -660,6 +860,34 @@ def accept_handoff_manifest(
         "workspace_context": workspace_context_path,
         "handoff_manifest": manifest_path,
     }
+    if repo_snapshot_artifact is not None:
+        inputs["repo_snapshot"] = _resolve_manifest_ref(manifest_path, repo_snapshot_artifact.ref)
+    if hash_spec_path.exists():
+        inputs["hash_spec"] = hash_spec_path
+    if manifest.env_requirements_ref is None:
+        rejection_path = _write_rejection(
+            run_root,
+            "env_requirements_missing",
+            {"expected": "env_snapshot"},
+            {"actual": "missing"},
+            reason_code="ENV_MISMATCH",
+            run_id=implementation_run_id,
+            plan_hash=plan_hash,
+        )
+        raise HandoffRejected("Env requirements missing", rejection_path)
+    env_snapshot_path = _resolve_manifest_ref(manifest_path, manifest.env_requirements_ref)
+    if not env_snapshot_path.exists():
+        rejection_path = _write_rejection(
+            run_root,
+            "env_requirements_missing",
+            {"expected": manifest.env_requirements_ref},
+            {"actual": "missing"},
+            reason_code="ENV_MISMATCH",
+            run_id=implementation_run_id,
+            plan_hash=plan_hash,
+        )
+        raise HandoffRejected("Env requirements missing", rejection_path)
+    inputs["env_snapshot"] = env_snapshot_path
     if human_feedback_artifact is not None:
         inputs["human_feedback_bundle"] = _resolve_manifest_ref(manifest_path, human_feedback_artifact.ref)
     if freeze_record.clarification_resolutions_ref is not None:
@@ -668,8 +896,10 @@ def accept_handoff_manifest(
         )
     if freeze_record.plan_approval_ref is not None:
         inputs["plan_approval"] = _resolve_manifest_ref(manifest_path, freeze_record.plan_approval_ref.path)
+    if override_path:
+        inputs["handoff_override"] = override_path
 
-    copied = copy_with_provenance(inputs, run_root / "inputs" / "planning")
+    copied = copy_with_provenance(inputs, run_root / "implementation" / "inputs" / "planning")
 
     imported = [
         ImportedArtifactRef(ref=item.ref, digest=item.digest)
@@ -681,6 +911,10 @@ def accept_handoff_manifest(
         if config_artifact is not None
         else artifact_hash(_load_json(config_snapshot_path))
     )
+    env_fingerprint = None
+    env_path = copied.get("env_snapshot")
+    if env_path is not None and Path(env_path).exists():
+        env_fingerprint = artifact_hash(_load_json(Path(env_path)))
     ack = HandoffAck(
         implementation_run_id=implementation_run_id,
         accepted_at=datetime.now(UTC).isoformat(),
@@ -690,13 +924,23 @@ def accept_handoff_manifest(
         accepted_repo_tree_hash=actual_snapshot.tree_hash,
         accepted_config_sha256=accepted_config_sha,
         implementation_engine_version=implementation_engine_version,
+        env_fingerprint=env_fingerprint,
         imported_artifacts=imported,
         acquired_repo={
             "git_commit": actual_snapshot.commit_sha,
             "git_tree_hash": actual_snapshot.tree_hash,
         },
+        acquired_repos=acquired_repos or None,
     )
     _write_json(ack_path, ack.model_dump())
+    append_vnext_event(
+        run_root,
+        "implementation",
+        "HANDOFF_ACCEPTED",
+        run_id=implementation_run_id,
+        plan_hash=plan_hash,
+        payload={"handoff_digest": manifest.handoff_digest},
+    )
 
     append_event(
         run_root,

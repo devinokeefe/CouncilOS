@@ -1,0 +1,42 @@
+{
+  "title": "ApplyResult",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "patchset_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "pre_apply_tree_hash": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "post_apply_tree_hash": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "per_file": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "integration_status": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "patchset_id",
+    "status"
+  ]
+}

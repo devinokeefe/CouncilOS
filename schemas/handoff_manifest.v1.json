@@ -16,16 +16,39 @@
       "required": ["plan_ref", "freeze_record_ref", "hash_spec_ref"]
     },
     "repo_acquisition_spec": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "repo_url": {"type": "string"},
-        "git_commit": {"type": "string"},
-        "git_tree_hash": {"type": ["string", "null"]},
-        "submodules": {"type": ["string", "null"]},
-        "fetch_depth": {"type": ["integer", "null"]}
-      },
-      "required": ["repo_url", "git_commit"]
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "repo_id": {"type": ["string", "null"]},
+            "checkout_path": {"type": ["string", "null"]},
+            "repo_url": {"type": "string"},
+            "git_commit": {"type": "string"},
+            "git_tree_hash": {"type": ["string", "null"]},
+            "submodules": {"type": ["string", "null"]},
+            "fetch_depth": {"type": ["integer", "null"]}
+          },
+          "required": ["repo_url", "git_commit"]
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "repo_id": {"type": ["string", "null"]},
+              "checkout_path": {"type": ["string", "null"]},
+              "repo_url": {"type": "string"},
+              "git_commit": {"type": "string"},
+              "git_tree_hash": {"type": ["string", "null"]},
+              "submodules": {"type": ["string", "null"]},
+              "fetch_depth": {"type": ["integer", "null"]}
+            },
+            "required": ["repo_url", "git_commit"]
+          }
+        }
+      ]
     },
     "artifacts": {
       "type": "array",

@@ -1,0 +1,33 @@
+{
+  "title": "PlanMigrationRecord",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "parent_plan_hash": {
+      "type": "string"
+    },
+    "child_plan_hash": {
+      "type": "string"
+    },
+    "amendment_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "parent_plan_hash",
+    "child_plan_hash"
+  ]
+}

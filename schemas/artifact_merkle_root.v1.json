@@ -1,0 +1,10 @@
+{
+  "title": "ArtifactMerkleRoot",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"type": "string"},
+    "root_hash": {"type": "string"}
+  },
+  "required": ["schema_version", "root_hash"]
+}

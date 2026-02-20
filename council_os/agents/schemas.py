@@ -115,6 +115,21 @@ class ProjectCapsulePayload(StrictModel):
     glossary: list[GlossaryItem] = Field(default_factory=list)
 
 
+class PlanScope(StrictModel):
+    in_scope_paths: list[str] = Field(default_factory=list)
+    out_of_scope_paths: list[str] = Field(default_factory=list)
+
+
+class PlanCaps(StrictModel):
+    max_files_changed: int | None = None
+    max_loc_changed: int | None = None
+    max_dep_changes: int | None = None
+
+
+class PlanConstraints(StrictModel):
+    caps: PlanCaps | None = None
+
+
 class ClarificationItem(StrictModel):
     id: str
     text: str
@@ -520,6 +535,8 @@ class CandidateDeltaPayload(StrictModel):
 
 
 class PlanMeta(StrictModel):
+    model_config = ConfigDict(extra="forbid", ser_json_exclude_none=True)
+
     plan_id: UUID
     version: str = Field(pattern=r"^(v\d+|vFinal)$")
     created_at: datetime
@@ -528,11 +545,16 @@ class PlanMeta(StrictModel):
     candidate_id: str
     branch_id: str
     plan_status: Literal["CANDIDATE", "FROZEN"]
+    parent_plan_hash: str | None = None
+    amendment_id: str | None = None
+    hash_spec_version: str | None = None
 
 
 class PlanPackage(StrictModel):
     meta: PlanMeta
     project_capsule: ProjectCapsulePayload
+    scope: PlanScope | None = None
+    constraints: PlanConstraints | None = None
     executive_summary: str | None = None
     requirements: list[Requirement]
     acceptance_tests: list[AcceptanceTest]

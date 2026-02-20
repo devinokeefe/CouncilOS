@@ -1,102 +1,41 @@
 {
-  "$defs": {
-    "EvidencePointer": {
-      "additionalProperties": false,
-      "properties": {
-        "artifact_ref": {
-          "title": "Artifact Ref",
-          "type": "string"
-        },
-        "entity_id": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Entity Id"
-        },
-        "json_pointer": {
-          "title": "Json Pointer",
-          "type": "string"
-        },
-        "note": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Note"
-        }
-      },
-      "required": [
-        "artifact_ref",
-        "json_pointer"
-      ],
-      "title": "EvidencePointer",
+  "title": "ChangeRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "meta": {
+      "type": "object"
+    },
+    "reason": {
+      "type": "object"
+    },
+    "blocked_entities": {
+      "type": "object"
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "proposed_plan_edits_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "impact": {
       "type": "object"
     }
   },
-  "additionalProperties": false,
-  "properties": {
-    "change_id": {
-      "title": "Change Id",
-      "type": "string"
-    },
-    "description": {
-      "title": "Description",
-      "type": "string"
-    },
-    "affected_entities": {
-      "items": {
-        "type": "string"
-      },
-      "title": "Affected Entities",
-      "type": "array"
-    },
-    "rationale": {
-      "title": "Rationale",
-      "type": "string"
-    },
-    "approvals": {
-      "items": {
-        "type": "string"
-      },
-      "title": "Approvals",
-      "type": "array"
-    },
-    "status": {
-      "enum": [
-        "proposed",
-        "approved",
-        "rejected"
-      ],
-      "title": "Status",
-      "type": "string"
-    },
-    "evidence": {
-      "items": {
-        "$ref": "#/$defs/EvidencePointer"
-      },
-      "title": "Evidence",
-      "type": "array"
-    }
-  },
   "required": [
-    "change_id",
-    "description",
-    "affected_entities",
-    "rationale",
-    "approvals",
-    "status"
-  ],
-  "title": "ChangeRequestPayload",
-  "type": "object"
+    "schema_version",
+    "meta",
+    "reason",
+    "blocked_entities",
+    "impact"
+  ]
 }
