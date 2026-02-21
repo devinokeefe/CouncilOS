@@ -3,32 +3,45 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "schema_version": {
-      "type": "string"
-    },
+    "schema_version": {"type": "string"},
     "meta": {
-      "type": "object"
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "impl_run_id": {"type": "string"},
+        "source_plan_hash": {"type": "string"}
+      },
+      "required": ["impl_run_id", "source_plan_hash"]
     },
     "reason": {
-      "type": "object"
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "code": {"type": "string"},
+        "summary": {"type": "string"}
+      },
+      "required": ["code", "summary"]
     },
     "blocked_entities": {
-      "type": "object"
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "task_ids": {"type": "array", "items": {"type": "string"}},
+        "job_ids": {"type": "array", "items": {"type": "string"}},
+        "check_ids": {"type": "array", "items": {"type": "string"}}
+      },
+      "required": ["task_ids", "job_ids", "check_ids"]
     },
-    "evidence_refs": {
-      "type": "array",
-      "items": {
-        "type": "object"
-      }
-    },
-    "proposed_plan_edits_ref": {
-      "type": [
-        "string",
-        "null"
-      ]
-    },
+    "evidence_refs": {"type": "array", "items": {"type": "object"}},
+    "proposed_plan_edits_ref": {"type": ["string", "null"]},
     "impact": {
-      "type": "object"
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "milestones_affected": {"type": "array", "items": {"type": "string"}},
+        "checks_affected": {"type": "array", "items": {"type": "string"}}
+      },
+      "required": ["milestones_affected", "checks_affected"]
     }
   },
   "required": [
@@ -36,6 +49,8 @@
     "meta",
     "reason",
     "blocked_entities",
+    "evidence_refs",
+    "proposed_plan_edits_ref",
     "impact"
   ]
 }

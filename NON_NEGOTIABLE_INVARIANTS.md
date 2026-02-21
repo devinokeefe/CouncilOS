@@ -1,3 +1,12 @@
+**CouncilOS vNext (One Sentence)**
+CouncilOS vNext turns a vague brief into a versioned frozen plan and then executes it via persisted execution contracts (WorkGraph + VerificationPlan), completing milestones only when required expectations are PASS with linked evidence, and evolving the plan only via ChangeRequests -> new frozen plan versions with lineage.
+
+**Authority Model (3 Roots + Receipt)**
+- Semantic authority: `plan_package_final_vN.json` defines intent, scope, constraints, and acceptance requirements.
+- Seal/binding authority: `plan_freeze_record.json` binds plan hash, selected draft, approvals, snapshot refs, and hash spec.
+- Transport/index authority: `handoff_manifest.json` lists required artifacts, hashes, and repo acquisition specs.
+- Acceptance receipt: `handoff_ack.json` records what implementation accepted and acquired.
+
 **Non-Negotiable Invariants**
 - Single semantic authority: `plan_package_final_vN.json` is the only file that defines intent, scope, constraints, and acceptance requirements.
 - Freeze is hash-bound to a specific draft: freeze must reference `selected_draft_ref` and approvals must match that exact plan hash.

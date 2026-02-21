@@ -1,0 +1,214 @@
+{
+  "artifact_type": "failure_mode_findings",
+  "artifact_id": "failure_modes_B1A_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:15:17.883166Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "plan_candidate_B1A_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B1A_v1",
+    "taxonomy": "inputs.taxonomy_categories",
+    "critical_findings": [
+      {
+        "id": "FM1",
+        "category": "Security (XSS/Injection/Unsafe URLs)",
+        "severity": "critical",
+        "finding": "Rendered note content can execute attacker-controlled script (XSS) if raw HTML is passed through unsafely or if link/image URLs allow unsafe schemes (e.g., javascript:). This compromises readers of the generated static site and is explicitly called out as critical risk, but the current canonical acceptance test set lacks a dedicated security/XSS test gate.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "risk_gov_canonical_v1:/inputs/risk_gov/risk_register/2 (K3 critical XSS); plan_candidate_B1A_v1:/inputs/plan_candidate/plan_package/milestones/0/exit_criteria (M1 requires K3 mitigation exercised); plan_candidate_B1A_v1:/inputs/plan_candidate/plan_package/synthesis_warnings/0 (W1: missing explicit XSS acceptance test); acceptance_canonical_v1:/inputs/acceptance_tests/acceptance_tests (no explicit AT for XSS).",
+          "closure_target": "Before M1 exit criteria signoff; add/route for dedicated security acceptance test coverage and enforce default-deny rendering.",
+          "earliest_prevention_stage": "Generate",
+          "recommended_mitigation": "Enforce default-deny Markdown rendering: disable raw HTML by default or sanitize with an allowlist; block unsafe URL schemes in href/src; consider adding CSP guidance for deployment. Add a dedicated XSS fixture test in the acceptance suite (requires reroute to mint new AT id if needed).",
+          "verification": "Validation must include automated fixtures containing common XSS payloads in Markdown (raw HTML, event handlers, javascript: URLs, data: URLs) and confirm rendered output is inert in-browser."
+        }
+      },
+      {
+        "id": "FM2",
+        "category": "Ingestion & Filesystem Safety",
+        "severity": "high",
+        "finding": "Ingestion may unintentionally read and publish files outside the intended root (symlink following, path traversal via odd paths, or overly broad inclusion), leaking local/private content into the generated static site output.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "risk_gov_canonical_v1:/inputs/risk_gov/risk_register/8 (K9); plan_candidate_B1A_v1:/inputs/plan_candidate/plan_package/decision_log/4 (DEC5 ingestion constraints).",
+          "closure_target": "Implement and document ingestion root enforcement + symlink policy in M1; verify before any external sharing/deploy step.",
+          "earliest_prevention_stage": "Generate",
+          "recommended_mitigation": "Canonicalize and validate all discovered paths (realpath) to ensure they remain under declared root; do not follow symlinks by default; allowlist extensions; produce an inclusion manifest for review; fail build on escape attempts.",
+          "verification": "Add ingestion fixtures with symlinks (inside→outside root), .. segments, and unusual unicode/case paths; confirm builder excludes/blocks and reports clearly."
+        }
+      },
+      {
+        "id": "FM3",
+        "category": "Link Graph (Forward Links, Backlinks, Anchors)",
+        "severity": "high",
+        "finding": "Forward links/backlinks correctness can fail at scale or in real note sets if internal link syntax and normalization rules (wiki-links vs Markdown links, anchors, URL-encoding, relative paths) are not specified and implemented consistently. This yields broken navigation and missing/incorrect backlinks even if pages render.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "capsule_canonical_v1:/inputs/project_capsule/open_questions/0 (Q1 blocking); risk_gov_canonical_v1:/inputs/risk_gov/risk_register/0 (K1); risk_gov_canonical_v1:/inputs/risk_gov/risk_register/9 (K10); plan_candidate_B1A_v1:/inputs/plan_candidate/plan_package/milestones/0/deliverables/0 (DL1 spec lock); plan_candidate_B1A_v1:/inputs/plan_candidate/plan_package/milestones/1/exit_criteria (M2 canonicalization consistency requirement).",
+          "closure_target": "Resolve Q1 with HITL approval in M1 (DL1), then enforce a single canonical internal-target model before implementing M2 link/backlink features.",
+          "earliest_prevention_stage": "Intake",
+          "recommended_mitigation": "Lock a single supported link syntax (or explicitly configured modes) and define normalization: case rules, spaces, encoding/decoding, anchor handling, relative path resolution, title/alias mapping if any. Ensure URL/slug generation and link resolution share the same canonicalization library.",
+          "verification": "AT8/AT9 must include fixtures for anchors, URL-encoded characters, mixed path separators, and nested directories; verify 100% backlink expectations (R21) on those edge cases."
+        }
+      },
+      {
+        "id": "FM4",
+        "category": "Tags & Metadata Extraction",
+        "severity": "high",
+        "finding": "Tag extraction can be incomplete or inconsistent if the tag representation (frontmatter vs inline #tags, precedence, nested tags) is not specified and enforced deterministically, leading to missing notes on tag pages and failure of the 100% completeness metric.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "capsule_canonical_v1:/inputs/project_capsule/open_questions/1 (Q2 blocking); risk_gov_canonical_v1:/inputs/risk_gov/risk_register/1 (K2); plan_candidate_B1A_v1:/inputs/plan_candidate/plan_package/milestones/2/exit_criteria (M3 gating on actionable diagnostics + AT6/AT7).",
+          "closure_target": "Resolve Q2 with HITL approval in M1 (DL1), then implement deterministic tag parsing in M3 with validation and diagnostics before claiming R20.",
+          "earliest_prevention_stage": "Intake",
+          "recommended_mitigation": "Define tag grammar (allowed characters, case-folding, whitespace), canonicalization rules, and precedence when both frontmatter and inline tags exist; add strict vs permissive modes. Emit build-time inventory summary to spot gaps.",
+          "verification": "AT6 should include mixed formats, duplicates, invalid tokens, nested tags (if supported), and confirm tag completeness (R20) and correct normalization."
+        }
+      },
+      {
+        "id": "FM5",
+        "category": "Deployment & Base Path/Hosting Compatibility",
+        "severity": "high",
+        "finding": "The generated site can appear correct locally but break when deployed under a subpath (e.g., GitHub Pages repo site) or in nested directories due to incorrect asset/link path resolution and missing basePath handling (broken CSS/JS, broken internal links, broken images).",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "risk_gov_canonical_v1:/inputs/risk_gov/risk_register/11 (K12); requirements_canonical_v1:/inputs/requirements/requirements/12/text (R13 cross-browser functionality depends on correct runtime asset loading).",
+          "closure_target": "Define basePath/linking rules by M1 (URL strategy) and add deployment-mode fixture validation before M5 cross-browser signoff.",
+          "earliest_prevention_stage": "Generate",
+          "recommended_mitigation": "Generate URLs and asset references using a single routing/basePath function; support configurable basePath; avoid absolute-root ('/') references unless explicitly configured; add an output link checker over generated HTML.",
+          "verification": "Add a validation fixture that serves the site from a non-root path and checks that navigation, CSS/JS load, search index loads, and internal links all function."
+        }
+      },
+      {
+        "id": "FM6",
+        "category": "Build Determinism & Reproducibility",
+        "severity": "high",
+        "finding": "Build outputs may vary across machines/runs (file traversal order, locale/timezone formatting, unpinned dependencies), causing unstable URLs/assets, noisy diffs, and hard-to-debug regressions—especially problematic for static hosting via CI.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "risk_gov_canonical_v1:/inputs/risk_gov/risk_register/5 (K6); plan_candidate_B1A_v1:/inputs/plan_candidate/plan_package/milestones/0/deliverables/3 (DL4 stable ordering/determinism).",
+          "closure_target": "Implement determinism controls in M1 (DL4) and add a reproducibility check before M2+ features increase output surface area.",
+          "earliest_prevention_stage": "Generate",
+          "recommended_mitigation": "Stable sort all file lists, tags, backlinks, and search index entries; fix locale/timezone; pin dependencies with a lockfile; ensure any hashing is stable; avoid embedding absolute paths or timestamps in artifacts unless explicitly requested.",
+          "verification": "Run two clean builds on different machines/CI runners and compare output hashes; differences must be explainable and intentionally versioned."
+        }
+      },
+      {
+        "id": "FM7",
+        "category": "Search Indexing & Query UX",
+        "severity": "high",
+        "finding": "Client-side search can become unusable or fail quality targets if the index grows too large or query latency degrades at the user’s actual scale (unknown Q3). This can cause slow page loads, browser memory pressure, and failure to meet the 90% top-10 metric despite correct indexing logic.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "capsule_canonical_v1:/inputs/project_capsule/open_questions/2 (Q3 scale unknown); risk_gov_canonical_v1:/inputs/risk_gov/risk_register/3 (K4); requirements_canonical_v1:/inputs/requirements/requirements/18/text (R19 metric); plan_candidate_B1A_v1:/inputs/plan_candidate/plan_package/milestones/3/deliverables/2 (DL13 measurement step).",
+          "closure_target": "Before committing to final search approach in M4, capture scale assumptions (Q3) and establish performance budgets; update plan if chunking/sharding is needed.",
+          "earliest_prevention_stage": "Intake",
+          "recommended_mitigation": "Define expected corpus size and performance targets; choose an indexing approach that supports incremental loading or compact serialization; budget index size and query latency; add stopword/stemming/tokenization controls and measure impact on R19 quality.",
+          "verification": "Benchmark on a representative dataset; enforce budgets in CI (index size, first-search latency, memory). Validate R19 with a fixed query set (AT12)."
+        }
+      },
+      {
+        "id": "FM8",
+        "category": "Privacy & Information Disclosure",
+        "severity": "high",
+        "finding": "Generated artifacts (HTML, search index JSON, logs/manifests) may leak sensitive information such as absolute filesystem paths, excluded/private note titles/content, or unintended metadata. Even in a trusted-user workflow, this becomes high impact once the static site is published.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "risk_gov_canonical_v1:/inputs/risk_gov/risk_register/16 (K17); governance/tool_policy/stage_policies/1/restrictions (no_secrets_or_local_paths rule expressed in plan_candidate_B1A_v1:/inputs/plan_candidate/plan_package/governance/tool_policy).",
+          "closure_target": "Implement output-sanitization rules and exclude/private mechanisms before any recommended deployment workflow; verify by M5 risk review gate.",
+          "earliest_prevention_stage": "Generate",
+          "recommended_mitigation": "Ensure no absolute source paths are emitted (use relative IDs/slugs only); support exclude globs and/or a frontmatter private flag; generate an inclusion manifest for review; ensure search index only contains intended fields.",
+          "verification": "Add a validation step that scans output for absolute-path patterns and for content from excluded/private fixtures; confirm excluded notes do not appear in tag pages, backlinks, or search results."
+        }
+      },
+      {
+        "id": "FM-001",
+        "category": "Security Vulnerability",
+        "severity": "critical",
+        "finding": "User-provided Markdown content, when rendered, executes arbitrary JavaScript in the browser due to unsafe HTML rendering (e.g., raw HTML passthrough, 'javascript:' URLs), leading to XSS attacks against site readers.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "mitigation_plan": "Mitigation planned in M1/DL3 by disabling raw HTML rendering by default and blocking unsafe URL schemes. Closure requires verification via dedicated security-focused acceptance tests, as referenced in risk K3."
+        }
+      },
+      {
+        "id": "FM-002",
+        "category": "Security Vulnerability",
+        "severity": "critical",
+        "finding": "The ingestion process is vulnerable to path traversal, where malformed links or symlinks cause the build to read and publish sensitive files from outside the intended notes directory.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "mitigation_plan": "Mitigation planned via strict input path validation, canonicalization to resolve '../' sequences, and disabling symlink following by default, as identified in risk K9. Closure requires tests that attempt to read files outside the project root."
+        }
+      },
+      {
+        "id": "FM-003",
+        "category": "Performance & Resource Consumption",
+        "severity": "high",
+        "finding": "The client-side search index for large note sets becomes excessively large, causing extreme initial page load times and high browser memory usage, making the site unresponsive or unusable.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "mitigation_plan": "Mitigation requires establishing performance targets based on expected scale (Q3), and implementing index size reduction techniques or lazy-loading/chunking if targets are not met. Baseline measurements are planned in M4/DL13 (Ref: K4)."
+        }
+      },
+      {
+        "id": "FM-004",
+        "category": "Data Processing Error",
+        "severity": "high",
+        "finding": "Due to ambiguity in the supported internal link syntax, the link graph is computed incorrectly, resulting in broken forward links and incomplete backlink lists, corrupting the site's primary navigation structure.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "mitigation_plan": "Gated by HITL resolution of Q1. Closure requires implementing the chosen link specification with a canonical resolution model and validating against a comprehensive test suite covering edge cases, as planned in M1 and M2 (Ref: K1)."
+        }
+      },
+      {
+        "id": "FM-005",
+        "category": "Build Determinism & Reproducibility",
+        "severity": "high",
+        "finding": "The build process is non-deterministic, producing different output for the same input across runs. This makes reviewing changes impossible, breaks caching, and undermines trust in the build artifacts.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "mitigation_plan": "Implement and enforce deterministic practices throughout the pipeline: stable sorting of all collections (files, tags, links) and use of content hashes for assets. Closure requires a CI check that verifies identical output from two consecutive clean builds (Ref: K6, M1/DL4)."
+        }
+      },
+      {
+        "id": "FM-006",
+        "category": "Privacy & Information Disclosure",
+        "severity": "high",
+        "finding": "The build process embeds absolute filesystem paths from the build machine into generated HTML or JavaScript artifacts (e.g., in a search index or error message), leaking private user and system information.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "mitigation_plan": "Ensure all paths are converted to relative, project-specific identifiers during ingestion. Add a post-build check that scans all output artifacts for patterns resembling absolute paths and fails the build if any are found (Ref: K17)."
+        }
+      },
+      {
+        "id": "FM-007",
+        "category": "Deployment & Base Path/Hosting Compatibility",
+        "severity": "high",
+        "finding": "The generated site is not portable and fails to function when deployed to a non-root path (e.g., a sub-directory), resulting in broken links, missing styles, and non-functional JavaScript.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "mitigation_plan": "Implement support for a configurable `basePath` that is prepended to all generated links for assets, pages, CSS, and JS. Closure requires an acceptance test that builds and validates the site with a non-root `basePath` (Ref: K12)."
+        }
+      }
+    ],
+    "closure_pass": false
+  }
+}

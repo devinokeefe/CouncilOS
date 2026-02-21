@@ -749,6 +749,18 @@
           "title": "Version",
           "type": "string"
         },
+        "plan_version": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Plan Version"
+        },
         "created_at": {
           "format": "date-time",
           "title": "Created At",

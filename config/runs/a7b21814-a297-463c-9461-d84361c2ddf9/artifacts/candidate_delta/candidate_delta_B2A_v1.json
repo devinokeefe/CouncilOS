@@ -1,0 +1,586 @@
+{
+  "artifact_type": "candidate_delta",
+  "artifact_id": "candidate_delta_B2A_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:36:16.013714Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "branch_set_v1"
+  ],
+  "payload": {
+    "candidate_id": "B2A",
+    "executive_summary": "This candidate selects the plugin-based architecture (O2) to produce a static, searchable Markdown notes site while keeping future extensibility (alternate Markdown flavors, link/tag conventions, themes, search approaches) isolated behind a stable core build engine. Delivery follows a hybrid strategy: front-load a “big-bang” foundation (core engine, lifecycle hooks, shared build context, plugin loader and ordering) and then ship user-visible capabilities as thin-slice plugins (ingest+render, links/backlinks, tags, search, theme), validated via acceptance tests (AT1–AT14) after each slice. Because the plugin contract is a critical early decision with cascading impact, governance is set to high HITL strictness and sandboxed tooling; several blocking open questions (Q1/Q2/Q3/Q4/Q10) require confirmation during Intake to avoid rework in link parsing, tag extraction/normalization, performance targets, information architecture, and user-facing interface choices.",
+    "architecture_choice": {
+      "option_id": "O2",
+      "rationale": "A plugin-based core (O2) best fits the stated need to generate a static site (R2) while supporting variability in real-world note collections: internal link syntaxes (R15/Q1), tag conventions and normalization (R11/R16/Q2), theming/navigation (R17/Q4), and search tradeoffs/performance (R7/R8/R22/Q3). The core engine + shared build context provides a stable lifecycle (ingest/transform/render/emit) and a single source of truth for derived structures (note records, tag indexes, link graph/backlinks, rendered HTML, search artifacts). This upfront complexity is accepted because it reduces long-term coupling and makes risky/uncertain areas configurable at the plugin boundary rather than forcing rewrites of a monolith when conventions change or features expand.",
+      "high_level_dataflow": "CLI config drives Core Build Engine (C9) which loads and orders plugins. Ingest hook: Ingestion Plugin (C11) scans the source directory and writes normalized note records into Shared Build Context (C10). Transform hook(s): Metadata/Tag Plugin (C12) parses configured tag conventions and writes tags + normalized forms to C10; Link/Backlink Plugin (C13) parses internal links, resolves targets, and writes forward links + backlinks into C10. Render hook(s): Markdown Render Plugin (C14) converts Markdown to per-note HTML stored in C10; Theme/Template Plugin (C15) reads rendered notes + tags + backlinks and produces final page outputs (note pages, tags index, per-tag pages, navigation pages). Search Index Plugin (C16) builds a static client-side index artifact from the corpus in C10. Emit hook: Emit Plugin (C17) writes pages and assets (including search index) to the output directory, applying base URL/path rules when configured.",
+      "key_design_decisions": [
+        "DEC1",
+        "DEC2",
+        "DEC3",
+        "DEC4",
+        "DEC5",
+        "DEC6",
+        "DEC7"
+      ]
+    },
+    "milestones": [
+      {
+        "id": "M1",
+        "name": "Intake: confirm conventions, scope guardrails, and acceptance mapping",
+        "deliverables": [
+          {
+            "id": "DL1",
+            "text": "Documented answers (or explicitly deferred decisions) for Q1 (link syntax), Q2 (tag syntax/normalization), Q3 (scale), Q4 (IA/navigation pages), and Q10 (CLI/GUI/build integration), including which SHOULD features are in-scope for this release."
+          },
+          {
+            "id": "DL2",
+            "text": "Initial plugin roster + responsibilities mapped to requirements: ingestion (R1/R5/R6), render (R3/R4), link/backlinks (R9/R10), tags (R11–R13), theme/navigation (R17), search (R7/R8)."
+          },
+          {
+            "id": "DL3",
+            "text": "Acceptance test execution plan showing when AT1–AT14 will be run per plugin slice and identifying any additional plugin-isolation smoke checks needed by governance posture."
+          }
+        ],
+        "exit_criteria": [
+          "Blocking questions Q1/Q2/Q3/Q4/Q10 have a confirmed decision or an explicit, approved default with documented risk.",
+          "Requirements-to-plugin mapping is agreed and no planned work violates capsule non-goals (no server runtime, no auth, no database at runtime)."
+        ],
+        "depends_on": []
+      },
+      {
+        "id": "M2",
+        "name": "Generate (Phase A foundation): core engine, lifecycle, shared context, plugin loader",
+        "deliverables": [
+          {
+            "id": "DL4",
+            "text": "Core Build Engine skeleton implementing lifecycle hooks (ingest/transform/render/emit), plugin discovery/registration, ordering, and a consistent error/reporting surface (supports R6)."
+          },
+          {
+            "id": "DL5",
+            "text": "Shared Build Context data model/API (notes, metadata, tags, link graph, rendered HTML, page outputs, emitted assets) with a versioned schema boundary for plugin compatibility."
+          },
+          {
+            "id": "DL6",
+            "text": "Integration smoke test proving: plugins load, lifecycle executes end-to-end, failures are surfaced with actionable messages, and a minimal static output directory is produced (R2/R5/R6 baseline)."
+          }
+        ],
+        "exit_criteria": [
+          "A minimal end-to-end build can run with placeholder plugins and produces a static output directory structure.",
+          "Plugin ordering and shared-context mutation rules are defined (who writes what, at which stage), preventing undefined behavior between plugins."
+        ],
+        "depends_on": [
+          "M1"
+        ]
+      },
+      {
+        "id": "M3",
+        "name": "Generate + Validate (Phase B thin slices): ingestion + Markdown render plugins (core note pages)",
+        "deliverables": [
+          {
+            "id": "DL7",
+            "text": "Ingestion Plugin (C11) implementing directory input, recursive discovery, default .md inclusion, and exclusion configuration support as available (R1, R20 as future/optional)."
+          },
+          {
+            "id": "DL8",
+            "text": "Markdown Render Plugin (C14) implementing CommonMark-compliant parsing/rendering and formatting fidelity (R3, R4), with explicit raw-HTML handling policy surfaced in config."
+          },
+          {
+            "id": "DL9",
+            "text": "CLI build workflow wired through core engine to run ingest+render and write note pages via the emit stage (R5), with clear failure modes (R6)."
+          }
+        ],
+        "exit_criteria": [
+          "AT1, AT3, AT4, AT5, and AT6 pass for the ingestion/render path (with any exclusions configured as per AT3).",
+          "Generated site artifacts remain static-only (HTML/CSS/JS/assets) satisfying R2/AT2."
+        ],
+        "depends_on": [
+          "M2"
+        ]
+      },
+      {
+        "id": "M4",
+        "name": "Generate + Validate (Phase B): link/backlink plugin and tag plugin",
+        "deliverables": [
+          {
+            "id": "DL10",
+            "text": "Link Resolution & Backlink Plugin (C13) implementing standard Markdown relative link resolution to generated note pages (R9) and backlinks section generation (R10), plus unresolved-link warnings behavior as configured (R18)."
+          },
+          {
+            "id": "DL11",
+            "text": "Metadata & Tag Extraction Plugin (C12) implementing at least one user-selectable tagging convention (R11) and optional normalization rules (R16) per confirmed Q2."
+          },
+          {
+            "id": "DL12",
+            "text": "Theme/Template Plugin (C15) renders note pages with tag display (R12), produces tags index + per-tag pages (R13), and provides global navigation scaffolding for future R17 (subject to Q4 decisions)."
+          }
+        ],
+        "exit_criteria": [
+          "AT9 and AT10 pass for internal links and backlinks; backlink computation is stable for simple multi-note fixtures.",
+          "AT11, AT12, and AT13 pass for tags extraction, tag links, tag index, and per-tag pages."
+        ],
+        "depends_on": [
+          "M3"
+        ]
+      },
+      {
+        "id": "M5",
+        "name": "Generate + Validate (Phase B): search index plugin + cross-browser compatibility",
+        "deliverables": [
+          {
+            "id": "DL13",
+            "text": "Search Index Plugin (C16) generates and ships a client-side search index artifact at build time (R8) enabling in-browser full-text search (R7)."
+          },
+          {
+            "id": "DL14",
+            "text": "Search UI integration via templates/assets so users can query titles and bodies and navigate to results without server requests (R7/R8)."
+          },
+          {
+            "id": "DL15",
+            "text": "Cross-browser validation runbook and fixes for core functionality across Chrome/Firefox/Safari/Edge (R14)."
+          }
+        ],
+        "exit_criteria": [
+          "AT7 and AT8 pass with networking disabled (static-only behavior).",
+          "AT14 passes across target browsers for navigation, search, backlinks, and tags."
+        ],
+        "depends_on": [
+          "M4"
+        ]
+      },
+      {
+        "id": "M6",
+        "name": "Review -> Judge -> Freeze: security/privacy review, performance check, and release hardening",
+        "deliverables": [
+          {
+            "id": "DL16",
+            "text": "Security review findings and mitigations applied for XSS/template injection concerns (K7/K19), including the documented trust model and default sanitization/escaping behaviors."
+          },
+          {
+            "id": "DL17",
+            "text": "Privacy “publish warning” and documentation for static-site exposure risk (K8), with an explicit user acknowledgement step or prominent build-time warning."
+          },
+          {
+            "id": "DL18",
+            "text": "Deterministic-build and packaging/release checklist (stable ordering, reproducibility expectations per K20; dependency pinning per K21) resulting in a release candidate build."
+          }
+        ],
+        "exit_criteria": [
+          "High/critical risks that require product/security decisions (notably K7/K8/K19) have an explicit decision and documented mitigation/acceptance.",
+          "Performance target for search (R22) is evaluated against confirmed scale (Q3) and either met or explicitly scoped/accepted before freezing."
+        ],
+        "depends_on": [
+          "M5"
+        ]
+      }
+    ],
+    "decision_log": [
+      {
+        "id": "DEC1",
+        "question": "Which architecture option will be used for the generator implementation?",
+        "choice": "Choose O2 (plugin-based core engine with lifecycle hooks and a shared build context).",
+        "rationale": "Multiple requirements and open questions indicate variability in conventions (links/tags), theming, and search behavior; isolating these behind plugins reduces coupling and makes future changes additive. This aligns with the branch’s stated expectation of project growth and community/extensibility needs.",
+        "alternatives_considered": [
+          "O1 (monolithic CLI pipeline)",
+          "O3 (extend an existing static site generator)",
+          "O4 (multi-stage pipeline with intermediate artifacts)"
+        ],
+        "what_would_change_this_decision": [
+          "If the project is confirmed to have stable conventions and minimal future extensibility needs, O1 could be preferred to reduce complexity.",
+          "If the primary goal shifts to leveraging an existing ecosystem (templates/watch mode) and accepting SSG coupling, O3 could be preferred.",
+          "If confirmed scale (Q3) or incremental build needs (R23/Q7) become primary, O4 could be preferred."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "architecture_canonical_v1",
+            "entity_id": "O2",
+            "json_pointer": "/architecture/options/1",
+            "note": "O2 defines plugin lifecycle hooks and a shared build context for tags/links/render/search.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "branch_set_v1",
+            "entity_id": "O2",
+            "json_pointer": "/inputs/branch/selected_arch_option_id",
+            "note": "Branch B2 selects O2.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "DEC2",
+        "question": "How will plugin execution be structured and coordinated?",
+        "choice": "Implement a fixed lifecycle (ingest -> transform -> render -> emit) with explicit plugin ordering/dependencies and a single shared build context API boundary.",
+        "rationale": "A fixed lifecycle reduces nondeterminism and clarifies ownership of derived data (notes, tags, link graph, rendered HTML, emitted assets). Ordering constraints are necessary to ensure link/tag extraction runs before templates and search indexing; this reduces subtle bugs from shared mutable state.",
+        "alternatives_considered": [
+          "Ad-hoc plugin execution order (user-defined without constraints)",
+          "Event-driven plugin bus without stage boundaries",
+          "Independent pipelines per feature (duplicating parsing/IO)"
+        ],
+        "what_would_change_this_decision": [
+          "If plugins must support highly dynamic interleavings or cross-cutting transforms that do not fit stage boundaries, an event-driven model could be revisited.",
+          "If performance profiling shows shared context contention or mutation hazards, the context could be made immutable per stage (copy-on-write) with stronger typing."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "architecture_canonical_v1",
+            "entity_id": "O2",
+            "json_pointer": "/architecture/options/1/components",
+            "note": "C9/C10 define lifecycle orchestration plus a shared build context.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "architecture_canonical_v1",
+            "entity_id": "IF9",
+            "json_pointer": "/architecture/options/1/interfaces/0",
+            "note": "O2 interfaces are expressed as lifecycle hook invocations.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "DEC3",
+        "question": "What is the canonical identifier for notes used for link resolution and output paths?",
+        "choice": "Use a path-based canonical note identifier derived from the note’s relative file path (with a stable slugging rule) rather than title-based identifiers.",
+        "rationale": "Path-based IDs reduce collisions and make standard Markdown relative links (R9) resolvable deterministically. Title-based linking can be added later as an optional resolver mode (R15) if Q1 confirms wiki-link/title conventions are required.",
+        "alternatives_considered": [
+          "Title-based canonical IDs",
+          "Front-matter-defined IDs/aliases as canonical",
+          "Content-hash-based IDs"
+        ],
+        "what_would_change_this_decision": [
+          "If Q1 confirms wiki-links by title are the primary convention, title/alias-based resolution could become first-class (while retaining path-based uniqueness internally).",
+          "If users require stable URLs independent of file paths, a front-matter-permalink scheme could become canonical."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "requirements_canonical_v1",
+            "entity_id": "R9",
+            "json_pointer": "/requirements/requirements/8",
+            "note": "R9 requires correct resolution of standard Markdown relative links at minimum.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q1",
+            "json_pointer": "/project_capsule/open_questions/0",
+            "note": "Linking conventions are a blocker; additional syntaxes may be required.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "DEC4",
+        "question": "How will tags be parsed and normalized given differing user conventions?",
+        "choice": "Make tag extraction convention user-selectable via configuration (R11), and implement a single, consistent normalization pipeline (R16) that can be enabled/parameterized based on Q2.",
+        "rationale": "Tag conventions vary widely; configurability avoids hard-coding an incorrect assumption. A single normalization pipeline prevents duplicate tag pages caused by inconsistent casing/whitespace and supports predictable navigation.",
+        "alternatives_considered": [
+          "Support only one fixed convention (e.g., YAML front matter only)",
+          "Auto-detect conventions without configuration",
+          "No normalization; treat tags as raw strings"
+        ],
+        "what_would_change_this_decision": [
+          "If Q2 confirms a single convention is guaranteed, configuration can be simplified to that convention with normalization defaults.",
+          "If users strongly prefer raw tags (case-sensitive), normalization would be disabled by default with opt-in behavior."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "requirements_canonical_v1",
+            "entity_id": "R11",
+            "json_pointer": "/requirements/requirements/10",
+            "note": "R11 requires at least one supported tagging convention that is user-selectable/configurable.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "requirements_canonical_v1",
+            "entity_id": "R16",
+            "json_pointer": "/requirements/requirements/15",
+            "note": "R16 calls for configurable normalization rules.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q2",
+            "json_pointer": "/project_capsule/open_questions/1",
+            "note": "Tag rules and normalization are blocking decisions.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "DEC5",
+        "question": "How will search be implemented to meet static-only constraints and performance expectations?",
+        "choice": "Implement client-side, in-browser search (R7) backed by a build-time generated index artifact shipped with the site (R8), with performance targets (R22) evaluated after confirming scale (Q3).",
+        "rationale": "This directly satisfies the static hosting constraint and avoids a server/runtime database. Deferring performance commitments until Q3 prevents over-optimizing prematurely or choosing an index format that fails at the target note scale.",
+        "alternatives_considered": [
+          "Server-side search (rejected: violates static-only constraint)",
+          "No full-text search (rejected: violates core MUST requirements)",
+          "Runtime crawling of site content by the browser without a prebuilt index"
+        ],
+        "what_would_change_this_decision": [
+          "If Q3 indicates very large corpora beyond feasible client-only indexing, the solution would need index chunking/lazy loading or reconsideration of scope/performance expectations while keeping output static.",
+          "If user goals shift away from full-text search toward only metadata/title search, a lighter index strategy could be adopted."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "requirements_canonical_v1",
+            "entity_id": "R7",
+            "json_pointer": "/requirements/requirements/6",
+            "note": "R7 requires client-side full-text search entirely in the browser.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "requirements_canonical_v1",
+            "entity_id": "R8",
+            "json_pointer": "/requirements/requirements/7",
+            "note": "R8 requires a build-time search index artifact shipped with the site.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q3",
+            "json_pointer": "/project_capsule/open_questions/2",
+            "note": "Scale is blocking; it affects indexing and performance budgets.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "DEC6",
+        "question": "What is the default security posture for rendering and templating (XSS/template injection)?",
+        "choice": "Default to safe rendering: escape user-controlled strings in templates and either disallow raw HTML in Markdown or sanitize it; treat themes/templates as trusted only when provided by the user with clear warnings and a sandbox boundary for third-party plugins.",
+        "rationale": "The output is static but executes in a browser; unsafe rendering introduces XSS risk (K7). A plugin architecture increases injection and supply-chain surface area (K19/K21), so defaults must be conservative and explicit about trust boundaries.",
+        "alternatives_considered": [
+          "Allow raw HTML and arbitrary template execution by default",
+          "Rely solely on user trust with no sanitization/escaping guidance",
+          "Strip all HTML-like constructs from Markdown unconditionally"
+        ],
+        "what_would_change_this_decision": [
+          "If the user explicitly confirms the site is strictly private/local-only and accepts the risk, the default could be relaxed (with explicit acknowledgement).",
+          "If a required Markdown flavor mandates raw HTML support, sanitization would remain but allowlisted elements/attributes could be configured."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K7",
+            "json_pointer": "/risk_gov/risk_register/6",
+            "note": "XSS/content injection risk in rendered output.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K19",
+            "json_pointer": "/risk_gov/risk_register/18",
+            "note": "Template/theme customization can introduce unsafe injections.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "DEC7",
+        "question": "How will the delivery plan balance the need for a stable plugin API with incremental feature shipping?",
+        "choice": "Adopt the hybrid plan: Phase A establishes the stable plugin API/shared context and lifecycle; Phase B ships features as isolated plugins with acceptance tests run after each plugin; Phase C adds selected SHOULD/COULD plugins only after core stability and cross-browser validation.",
+        "rationale": "The plugin contract is a high-leverage decision; stabilizing it early prevents cascading rework. Incremental plugin delivery keeps user-visible progress and enables isolated debugging/testing per feature area (ingest/render, links, tags, search, theme).",
+        "alternatives_considered": [
+          "Fully incremental from day one (core API evolves continuously alongside features)",
+          "Fully big-bang (deliver all features in one integrated release)",
+          "Start monolithic then refactor into plugins later"
+        ],
+        "what_would_change_this_decision": [
+          "If there is a tight deadline for a minimal feature set and limited expected extension, a simpler O1-style pipeline could be chosen and the plugin API deferred.",
+          "If Q1/Q2 are highly uncertain and likely to change repeatedly, it may be better to prototype conventions in a single plugin first before freezing the core context schema."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "branch_set_v1",
+            "entity_id": null,
+            "json_pointer": "/inputs/branch/milestone_strategy",
+            "note": "Branch strategy explicitly describes Phase A foundation then Phase B thin-slice plugins.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "branch_set_v1",
+            "entity_id": null,
+            "json_pointer": "/inputs/branch/acceptance_strategy",
+            "note": "Acceptance plan validates plugin loading after Phase A and runs acceptance tests after each plugin slice.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      }
+    ],
+    "supplemental_evaluations": [
+      {
+        "title": "Risk alignment for plugin-based extensibility under high HITL strictness",
+        "notes": "O2 increases early complexity and expands the surface area for unsafe plugins and template customization, but it also localizes convention variability (links/tags) to plugin-level configuration, directly addressing ambiguity risks (K2/K3). With high HITL strictness, the key control is to freeze the shared context schema and plugin contracts early (Phase A), require plugin isolation smoke tests, and perform a security review focusing on sanitization and template boundaries before freezing a release candidate.",
+        "evidence": [
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K2",
+            "json_pointer": "/risk_gov/risk_register/1",
+            "note": "Ambiguous link conventions risk; mitigated by configurability.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K3",
+            "json_pointer": "/risk_gov/risk_register/2",
+            "note": "Tag convention ambiguity risk; mitigated by normalization/configurable sources.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K19",
+            "json_pointer": "/risk_gov/risk_register/18",
+            "note": "Template injection risk elevated by extensibility.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      }
+    ],
+    "synthesis_warnings": [
+      {
+        "id": "W1",
+        "severity": "critical",
+        "summary": "Blocking open questions Q1/Q2/Q3/Q4/Q10 are unresolved; they materially affect link parsing/backlinks behavior, tag extraction/normalization, search indexing/performance targets, navigation/IA pages, and the user-facing interface (CLI vs other). Proceeding without confirmed decisions risks major rework of plugins and shared context schema.",
+        "routing_target": "HITL: Product Owner + Tech Lead (confirm conventions, IA, scale, interface constraints before Phase A API freeze)",
+        "evidence": [
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q1",
+            "json_pointer": "/project_capsule/open_questions/0",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q2",
+            "json_pointer": "/project_capsule/open_questions/1",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q3",
+            "json_pointer": "/project_capsule/open_questions/2",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q4",
+            "json_pointer": "/project_capsule/open_questions/3",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q10",
+            "json_pointer": "/project_capsule/open_questions/9",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "W2",
+        "severity": "high",
+        "summary": "Security boundary decisions are required early for Markdown raw HTML handling and template/theme extensibility; in a plugin architecture, unsafe defaults can propagate across multiple plugins and outputs (XSS/template injection risks).",
+        "routing_target": "HITL: Security Reviewer (approve default sanitization/escaping and template/plugin trust model before Freeze)",
+        "evidence": [
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K7",
+            "json_pointer": "/risk_gov/risk_register/6",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K19",
+            "json_pointer": "/risk_gov/risk_register/18",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "W3",
+        "severity": "critical",
+        "summary": "Privacy leakage risk (publishing sensitive notes to static hosting) requires explicit user acknowledgement and documentation; it is a critical risk with no built-in access control per non-goals.",
+        "routing_target": "HITL: Product Owner (decide required warnings/acknowledgements and documentation for K8 before release)",
+        "evidence": [
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K8",
+            "json_pointer": "/risk_gov/risk_register/7",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": null,
+            "json_pointer": "/project_capsule/non_goals",
+            "note": "Access control/authentication is a non-goal; static publishing can be public.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,180 @@
+{
+  "artifact_type": "failure_mode_findings",
+  "artifact_id": "failure_modes_B2B_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:14:24.208480Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "plan_candidate_B2B_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2B_v1",
+    "taxonomy": "inputs.taxonomy_categories",
+    "critical_findings": [
+      {
+        "id": "FM-001",
+        "category": "Security (XSS/Injection/Unsafe URLs)",
+        "severity": "critical",
+        "finding": "Rendered note content can introduce XSS/injection in the generated static site if raw HTML is passed through, if Markdown renderer allows dangerous attributes, or if unsafe URL schemes (e.g., javascript:) are emitted into href/src. Impact: compromises readers of the published site despite static hosting.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "risk_gov_canonical_v1:/risk_register/2 (K3); plan M4 DL21 mentions sanitisation + unsafe URL blocking",
+          "closure_target": "Implement and default-enable HTML sanitisation or disable raw HTML; block unsafe URL schemes; add XSS payload regression tests (per M4 deliverable DL21) and require AT-level security gating before release",
+          "earliest_prevention_stage": "M1 (renderer/markdown parser contract decisions) with enforcement completed no later than M4 hardening"
+        }
+      },
+      {
+        "id": "FM-002",
+        "category": "Ingestion & Filesystem Safety",
+        "severity": "critical",
+        "finding": "Ingestion may unintentionally include or leak files outside the intended input root (e.g., following symlinks, path traversal via unusual paths), resulting in private local files being published into the static output. This is high-impact because it can silently disclose sensitive information.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "risk_gov_canonical_v1:/risk_register/8 (K9); plan M4 DL22 explicitly calls for symlink policy/root containment/allowlist",
+          "closure_target": "Define and enforce root-directory containment, default no-symlink-following, extension allowlist, and a build inclusion manifest; add negative tests proving no read outside root (per DL22)",
+          "earliest_prevention_stage": "M1 (file collector design) with full verification no later than M4"
+        }
+      },
+      {
+        "id": "FM-003",
+        "category": "Information Disclosure",
+        "severity": "high",
+        "finding": "Generated artifacts (HTML/JS/search index) may embed sensitive source identifiers (e.g., absolute filesystem paths, full raw frontmatter, or unintended notes) which can disclose private structure/content beyond what the user expects to publish.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "risk_gov_canonical_v1:/risk_register/16 (K17); governance tool_policy includes restriction 'no_secrets_or_local_paths'",
+          "closure_target": "Guarantee output never contains absolute source paths; support exclude patterns and/or a 'private' flag; emit an inclusion manifest for review and ensure search index contains only intended fields",
+          "earliest_prevention_stage": "M1 (context schema + renderer/search serialization fields) and M2 (tag/link warning payloads)"
+        }
+      },
+      {
+        "id": "FM-004",
+        "category": "Deployment & Base Path/Hosting Compatibility",
+        "severity": "high",
+        "finding": "Site can work in local preview but fail when deployed under a subpath (e.g., GitHub Pages) due to incorrect basePath handling or relative asset/link generation, breaking navigation, CSS/JS loading, and search index retrieval.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "risk_gov_canonical_v1:/risk_register/11 (K12); requirements_canonical_v1:/requirements/1 (R2 static output) implies broad hosting compatibility",
+          "closure_target": "Add configurable basePath and ensure all internal links/assets/search index references are generated relative to it; add deployment-mode test fixture (non-root basePath) that validates navigation + search loading",
+          "earliest_prevention_stage": "M2 (URL/link generation & renderer) before M3 search UI hard-codes asset paths"
+        }
+      },
+      {
+        "id": "FM-005",
+        "category": "Link Graph (Forward Links, Backlinks, Anchors)",
+        "severity": "high",
+        "finding": "Backlinks/forward-link resolution can be incorrect due to ambiguous link syntax (Q1 unresolved) and inconsistent normalization (anchors, URL encoding/decoding, relative paths, case-sensitivity). This causes broken navigation and failing correctness metrics (R21/AT9).",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "capsule_canonical_v1:/open_questions/0 (Q1 blocking); risk_gov_canonical_v1:/risk_register/0 (K1) and /risk_register/9 (K10); acceptance_canonical_v1:/acceptance_tests/8 (AT9)",
+          "closure_target": "Finalize a single canonical internal-link model + normalization rules shared by slug/URL generation and resolver; add fixtures for anchors/encoding/case; ensure AT8+AT9 cover edge cases, not only simple graphs",
+          "earliest_prevention_stage": "M1 (canonical link model in parser output) and M2 (resolver implementation)"
+        }
+      },
+      {
+        "id": "FM-006",
+        "category": "Performance & Resource Consumption",
+        "severity": "high",
+        "finding": "Client-side search can become unusable at scale (large index payload, slow queries, long build time, browser memory spikes). Additionally, offline/local file:// usage can break search if the UI relies on fetch/XHR blocked by browser restrictions.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "risk_gov_canonical_v1:/risk_register/3 (K4) and /risk_register/10 (K11); capsule_canonical_v1:/open_questions/2 (Q3 scale unknown); requirements_canonical_v1:/requirements/22 (R23 performance targets not yet defined)",
+          "closure_target": "Agree on scale/performance targets before locking search approach; implement index size controls and optional sharding/chunking; ensure search works under typical static hosting constraints and provide local-server guidance or bundling to avoid file:// fetch failures",
+          "earliest_prevention_stage": "M2 (set targets, choose index strategy) and M3 (search implementation)"
+        }
+      },
+      {
+        "id": "FM-007",
+        "category": "Build Determinism & Reproducibility",
+        "severity": "high",
+        "finding": "Non-deterministic builds (unstable iteration order, locale/time-dependent formatting, non-pinned dependencies) can produce different output across machines/runs, undermining stable URLs (R4), creating noisy diffs, and breaking reproducibility expectations.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "risk_gov_canonical_v1:/risk_register/5 (K6); plan M4 DL26 requires byte-identical outputs across two clean builds; requirements_canonical_v1:/requirements/3 (R4 stable URLs)",
+          "closure_target": "Enforce stable sorting everywhere; pin deps/lockfile; fix locale/timezone; add reproducibility CI check comparing two clean builds (DL26) and fail on mismatches",
+          "earliest_prevention_stage": "M1 (orchestrator ordering guarantees + canonical slug rules) with CI enforcement no later than M4"
+        }
+      },
+      {
+        "id": "FM01",
+        "category": "Security (XSS/Injection/Unsafe URLs)",
+        "severity": "critical",
+        "finding": "The Markdown-to-HTML rendering process might unsafely process raw HTML or `javascript:` URLs within notes, leading to Cross-Site Scripting (XSS) vulnerabilities on the generated static site that could compromise readers.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {}
+      },
+      {
+        "id": "FM02",
+        "category": "Privacy & Information Disclosure",
+        "severity": "critical",
+        "finding": "The File Collector plugin, when processing the input directory, could follow symbolic links or mishandle relative paths (e.g., containing '..'), causing path traversal that reads and publishes sensitive files from outside the intended project directory into the static site.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {}
+      },
+      {
+        "id": "FM03",
+        "category": "Performance & Resource Consumption",
+        "severity": "critical",
+        "finding": "The in-memory build process and single-file search index generation may not scale to large note sets, leading to excessive memory usage, build-process crashes, or a client-side search index so large it degrades or crashes the browser.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {}
+      },
+      {
+        "id": "FM04",
+        "category": "Build Process Failure",
+        "severity": "high",
+        "finding": "The plugin architecture could allow for circular dependencies between plugins within the same build hook. This would cause an infinite loop or deadlock in the Core Orchestrator, resulting in a total and difficult-to-debug build failure.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {}
+      },
+      {
+        "id": "FM05",
+        "category": "Data Processing Error",
+        "severity": "high",
+        "finding": "The use of a shared, mutable context (`NoteRegistry`) by multiple plugins creates a risk of race conditions if execution is not strictly sequential. This can lead to data corruption, resulting in incorrect or missing backlinks, tags, and other metadata in the final output.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {}
+      },
+      {
+        "id": "FM06",
+        "category": "Dependency and Environment Issue",
+        "severity": "high",
+        "finding": "A mismatch in the data contract between plugins (e.g., a parser plugin changes its output format, but a dependent resolver plugin is not updated) can cause the build to fail with obscure errors or, worse, succeed while silently generating incorrect output like missing all backlinks.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {}
+      },
+      {
+        "id": "FM07",
+        "category": "Build Determinism & Reproducibility",
+        "severity": "high",
+        "finding": "The build process may lack determinism due to unstable sorting of inputs (files, tags), reliance on timestamps, or uncontrolled concurrency. This would result in different site output for the same set of notes, creating meaningless diffs in version control and undermining reproducibility.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {}
+      },
+      {
+        "id": "FM08",
+        "category": "Link Graph (Forward Links, Backlinks, Anchors)",
+        "severity": "high",
+        "finding": "The process for generating URL slugs from filenames may not handle collisions, such as identical filenames in different subdirectories. This would cause one page to silently overwrite another during the build, resulting in data loss and broken links across the generated site.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {}
+      }
+    ],
+    "closure_pass": false
+  }
+}

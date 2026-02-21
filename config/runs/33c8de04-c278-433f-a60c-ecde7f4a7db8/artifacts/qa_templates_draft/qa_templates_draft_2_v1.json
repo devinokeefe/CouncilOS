@@ -1,0 +1,145 @@
+{
+  "artifact_type": "qa_templates_draft",
+  "artifact_id": "qa_templates_draft_2_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T11:57:48.809597Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "capsule_canonical_v1"
+  ],
+  "payload": {
+    "templates": [
+      {
+        "id": "ATT1",
+        "name": "Static Site Generation Success",
+        "description": "Verify that the build tool successfully ingests a representative folder of Markdown notes and produces a complete static site (HTML/CSS/JS/assets) without errors. Confirm the output directory contains all expected files and the site is browsable locally or via static hosting.",
+        "applies_to": [
+          "SM1",
+          "G1",
+          "CNS1"
+        ]
+      },
+      {
+        "id": "ATT2",
+        "name": "Full-Text Search Accuracy",
+        "description": "Test full-text search by executing a predefined set of queries (at least 10 representative queries) against the generated site. Measure precision: each query must return the expected target note within the top 10 results. Verify search index is generated at build time and queries execute client-side without backend.",
+        "applies_to": [
+          "SM2",
+          "G2",
+          "CNS1"
+        ]
+      },
+      {
+        "id": "ATT3",
+        "name": "Tag Extraction and Navigation",
+        "description": "Verify that all tags defined in notes (via the agreed representation: frontmatter, inline, or both) are correctly extracted and indexed. Confirm that tag pages/filters are generated and that navigating to a tag displays all notes with that tag. Test with a dataset covering single tags, multiple tags per note, and notes without tags.",
+        "applies_to": [
+          "SM3",
+          "G3"
+        ]
+      },
+      {
+        "id": "ATT4",
+        "name": "Forward Links and Backlinks Rendering",
+        "description": "Test link detection and backlink computation by creating a test dataset with known link relationships (using the agreed Markdown/wiki-link syntax). Verify that forward links render correctly in each note and that backlinks sections list all notes linking to the current note. Confirm 100% accuracy on the test dataset.",
+        "applies_to": [
+          "SM4",
+          "G4"
+        ]
+      },
+      {
+        "id": "ATT5",
+        "name": "Markdown Formatting Preservation",
+        "description": "Verify that the generated site preserves Markdown formatting and structure (headings, lists, code blocks, emphasis, images, etc.) as rendered HTML. Test with a representative sample of Markdown features and confirm visual and semantic correctness in the output.",
+        "applies_to": [
+          "G5"
+        ]
+      },
+      {
+        "id": "ATT6",
+        "name": "Static Hosting Verification",
+        "description": "Deploy the generated static site to a chosen static hosting platform (e.g., GitHub Pages, Netlify) or serve locally via a static file server. Confirm that all core features (browsing, search, tags, links, backlinks) function correctly without requiring server-side runtime or database.",
+        "applies_to": [
+          "SM5",
+          "CNS1",
+          "A5"
+        ]
+      },
+      {
+        "id": "ATT7",
+        "name": "Cross-Browser Compatibility",
+        "description": "Open the generated site in modern browsers (Chrome, Firefox, Safari, Edge) and verify that all features (navigation, search, tags, links, backlinks) work without errors or visual issues. Test on a representative dataset.",
+        "applies_to": [
+          "SM6"
+        ]
+      },
+      {
+        "id": "ATT8",
+        "name": "Performance and Scale Validation",
+        "description": "Measure site generation time and search responsiveness on a representative dataset (e.g., 100+ notes). Confirm that performance meets agreed targets (to be defined once scale and targets are clarified). Record baseline metrics for future comparison.",
+        "applies_to": [
+          "SM7",
+          "Q3"
+        ]
+      },
+      {
+        "id": "ATT9",
+        "name": "Link Syntax Handling",
+        "description": "Test the tool with the agreed Markdown flavor and link syntax (e.g., CommonMark/GFM, standard Markdown links, [[WikiLinks]]). Verify correct parsing, rendering, and backlink computation for all supported link formats. Confirm unsupported formats are handled gracefully (ignored or flagged).",
+        "applies_to": [
+          "Q1",
+          "A2"
+        ]
+      },
+      {
+        "id": "ATT10",
+        "name": "Tag Representation Handling",
+        "description": "Test tag extraction and rendering using the agreed tag representation (YAML frontmatter, inline #tags, or both). Verify correct parsing, indexing, and navigation. If nested tags are supported, confirm hierarchy is preserved.",
+        "applies_to": [
+          "Q2",
+          "A4"
+        ]
+      },
+      {
+        "id": "ATT11",
+        "name": "Build Workflow and Environment",
+        "description": "Verify that the build tool runs successfully in the target OS environments (to be specified) and supports the preferred workflow (CLI, watch mode, git-based build). Confirm installation, configuration, and execution steps are documented and repeatable.",
+        "applies_to": [
+          "Q4",
+          "A6"
+        ]
+      },
+      {
+        "id": "ATT12",
+        "name": "Input File Assumptions",
+        "description": "Confirm that the tool correctly reads Markdown files from a local filesystem or repository as input. Test with various directory structures, file encodings, and edge cases (empty files, missing frontmatter, special characters in filenames).",
+        "applies_to": [
+          "A1"
+        ]
+      }
+    ],
+    "coverage_guidance": [
+      "Ensure acceptance tests cover all success metrics (SM1-SM7) with measurable pass criteria.",
+      "Test both happy path (valid inputs, expected usage) and edge cases (empty notes, malformed Markdown, missing links/tags, large datasets).",
+      "Validate constraints CNS1 and CNS2: output must be static and input must be standard Markdown.",
+      "Confirm all high-impact assumptions (A1-A4) are testable once open questions (Q1, Q2) are resolved.",
+      "Include tests for non-goals to verify they are explicitly NOT implemented (e.g., no server-side runtime, no real-time editing).",
+      "Test interoperability: generated site must work across target browsers and hosting platforms.",
+      "Performance tests should establish baseline metrics and be repeatable as the project scales.",
+      "Acceptance tests should be automatable where possible (build success, link/backlink accuracy, tag extraction) and include manual verification steps where needed (visual rendering, cross-browser checks)."
+    ],
+    "definition_of_done": [
+      "All acceptance test templates (ATT1-ATT12) have been executed with documented results.",
+      "Success metrics SM1-SM7 are met with measurable evidence.",
+      "High-impact open questions Q1 and Q2 are resolved and corresponding tests (ATT9, ATT10) pass.",
+      "Generated static site is deployable to target hosting platform and functions without server-side dependencies.",
+      "Core features (search, tags, links, backlinks, Markdown rendering) are verified on a representative dataset.",
+      "Cross-browser compatibility is confirmed for all target browsers.",
+      "Performance baseline is established for generation time and search responsiveness on agreed dataset scale.",
+      "All constraints (CNS1, CNS2) are satisfied and validated.",
+      "Non-goals (NG1-NG7) are confirmed as out-of-scope and not implemented.",
+      "Documentation includes setup, build, and deployment instructions verified via ATT11.",
+      "Any deviations from success metrics or unresolved blocking questions are explicitly documented and approved by stakeholders."
+    ]
+  }
+}

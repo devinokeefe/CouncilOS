@@ -147,6 +147,7 @@ from council_os.implementation.workspace import WorkspaceManager
 from council_os.orchestrator.checkpoints import CheckpointState, write_checkpoint
 from council_os.orchestrator.handoff.repo_snapshot import capture_repo_snapshot
 from council_os.vnext.events import append_vnext_event
+from council_os.utils import deterministic_json_hash, git_code_version, model_portfolio_from_roles
 
 STAGES = [
     "intake",
@@ -227,16 +228,6 @@ class ImplementationEngine:
         self._tool_policy: dict[str, Any] = {}
         self._schema_version: str = IMPL_SCHEMA_VERSION_V1
         self._features: dict[str, bool] = {}
-
-    def _git_code_version(self) -> str:
-        try:
-            commit = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True, stderr=subprocess.DEVNULL).strip()
-            dirty = bool(
-                subprocess.check_output(["git", "status", "--porcelain"], text=True, stderr=subprocess.DEVNULL).strip()
-            )
-            return f"{commit}:{'dirty' if dirty else 'clean'}"
-        except Exception:
-            return "unknown:dirty"
 
     def _event(
         self,
@@ -507,6 +498,7 @@ class ImplementationEngine:
         changed_paths = sorted(
             {change.path.replace("\\", "/").lstrip("/") for change in patchset.changes if change.path}
         )
+        evidence_refs = [{"type": "patchset", "ref": patchset.patchset_id}]
         if guardrails.in_scope_paths:
             for path in changed_paths:
                 if not any(fnmatch(path, pattern) for pattern in guardrails.in_scope_paths):
@@ -520,6 +512,7 @@ class ImplementationEngine:
                             blocked_job_ids=[],
                             blocked_check_ids=[],
                             milestones=[milestone_id or "MS-001"],
+                            evidence_refs=evidence_refs,
                         )
                     raise RuntimeError(f"Scope violation: {path} not in scope")
         if guardrails.out_of_scope_paths:
@@ -535,6 +528,7 @@ class ImplementationEngine:
                             blocked_job_ids=[],
                             blocked_check_ids=[],
                             milestones=[milestone_id or "MS-001"],
+                            evidence_refs=evidence_refs,
                         )
                     raise RuntimeError(f"Scope violation: {path} out of scope")
 
@@ -553,6 +547,7 @@ class ImplementationEngine:
                     blocked_job_ids=[],
                     blocked_check_ids=[],
                     milestones=[milestone_id or "MS-001"],
+                    evidence_refs=evidence_refs,
                 )
             raise RuntimeError("File change budget exceeded")
         if guardrails.max_loc_changed is not None and counters.loc_changed > guardrails.max_loc_changed:
@@ -566,6 +561,7 @@ class ImplementationEngine:
                     blocked_job_ids=[],
                     blocked_check_ids=[],
                     milestones=[milestone_id or "MS-001"],
+                    evidence_refs=evidence_refs,
                 )
             raise RuntimeError("LOC change budget exceeded")
         if guardrails.max_dep_changes is not None and counters.dep_changes > guardrails.max_dep_changes:
@@ -579,6 +575,7 @@ class ImplementationEngine:
                     blocked_job_ids=[],
                     blocked_check_ids=[],
                     milestones=[milestone_id or "MS-001"],
+                    evidence_refs=evidence_refs,
                 )
             raise RuntimeError("Dependency change budget exceeded")
 
@@ -855,6 +852,22 @@ class ImplementationEngine:
             vnext_results.append(payload)
         return vnext_results
 
+    def _write_vnext_plan_edits(
+        self,
+        run_root: Path,
+        *,
+        plan_hash: str,
+        ops: list[dict[str, Any]] | None = None,
+    ) -> str:
+        payload = {
+            "schema_version": "1.0",
+            "round": 0,
+            "plan_hash": plan_hash,
+            "ops": ops or [],
+        }
+        self._write_impl_json(run_root, "plan_edits_v1.json", payload)
+        return "artifacts/plan_edits_v1.json"
+
     def _build_vnext_evidence_index(
         self,
         expectation_registry: dict[str, Any],
@@ -996,6 +1009,54 @@ class ImplementationEngine:
             "entries": entries,
         }
 
+    def _build_regression_report(
+        self,
+        *,
+        evidence_index: dict[str, Any],
+        expectation_status: dict[str, str],
+        plan_hash: str,
+        milestone_id: str,
+    ) -> dict[str, Any] | None:
+        failures = [exp_id for exp_id, status in expectation_status.items() if status == "FAIL"]
+        if not failures:
+            return None
+        evidence_map: dict[str, list[dict[str, Any]]] = {}
+        for entry in evidence_index.get("expectations", []):
+            if not isinstance(entry, dict):
+                continue
+            exp_id = entry.get("expectation_id")
+            if exp_id:
+                evidence_map[exp_id] = entry.get("evidence_refs", []) or []
+        entries = [
+            {"expectation_id": exp_id, "status": "FAIL", "evidence_refs": evidence_map.get(exp_id, [])}
+            for exp_id in sorted(failures)
+        ]
+        return {
+            "schema_version": "regression_report.v1",
+            "meta": {"plan_hash": plan_hash, "milestone_id": milestone_id},
+            "entries": entries,
+        }
+
+    def _validate_vnext_evidence_refs(
+        self,
+        run_root: Path,
+        evidence_index: dict[str, Any],
+    ) -> list[str]:
+        missing: list[str] = []
+        for entry in evidence_index.get("expectations", []):
+            if not isinstance(entry, dict):
+                continue
+            for ref in entry.get("evidence_refs", []) or []:
+                if not isinstance(ref, dict):
+                    continue
+                ref_path = ref.get("ref")
+                if not ref_path:
+                    continue
+                candidate = (run_root / "implementation" / ref_path).resolve()
+                if not candidate.exists():
+                    missing.append(ref_path)
+        return sorted(set(missing))
+
     def _emit_vnext_change_request(
         self,
         run_root: Path,
@@ -1007,7 +1068,14 @@ class ImplementationEngine:
         blocked_job_ids: list[str],
         blocked_check_ids: list[str],
         milestones: list[str],
+        evidence_refs: list[dict[str, Any]] | None = None,
+        plan_edits_ops: list[dict[str, Any]] | None = None,
     ) -> None:
+        proposed_plan_edits_ref = self._write_vnext_plan_edits(
+            run_root,
+            plan_hash=plan_hash,
+            ops=plan_edits_ops,
+        )
         payload = {
             "schema_version": "change_request.v1",
             "meta": {"impl_run_id": run_root.name, "source_plan_hash": plan_hash},
@@ -1017,8 +1085,8 @@ class ImplementationEngine:
                 "job_ids": blocked_job_ids,
                 "check_ids": blocked_check_ids,
             },
-            "evidence_refs": [],
-            "proposed_plan_edits_ref": None,
+            "evidence_refs": evidence_refs or [],
+            "proposed_plan_edits_ref": proposed_plan_edits_ref,
             "impact": {"milestones_affected": milestones, "checks_affected": blocked_check_ids},
         }
         self._write_impl_json(run_root, "change_request_v1.json", payload)
@@ -1309,16 +1377,7 @@ class ImplementationEngine:
         }
 
     def _model_portfolio(self, roles: dict[str, RoleConfig]) -> dict[str, dict[str, object]]:
-        portfolio: dict[str, dict[str, object]] = {}
-        for name, role in roles.items():
-            portfolio[name] = {
-                "provider": role.model_provider,
-                "model": role.model_name,
-                "temperature": role.temperature,
-                "max_tokens": role.max_tokens,
-                "prompt_version_hash": role.prompt_version_hash,
-            }
-        return portfolio
+        return model_portfolio_from_roles(roles, sort_keys=False)
 
     def _load_plan_package(self, plan_path: Path) -> PlanPackage:
         data = json.loads(plan_path.read_text(encoding="utf-8"))
@@ -1432,7 +1491,7 @@ class ImplementationEngine:
         )
 
     def _default_profile_catalog(self, schema_version: str | None = None) -> ExecutionProfileCatalogPayload:
-        digest = hashlib.sha256(self._git_code_version().encode("utf-8")).hexdigest()
+        digest = hashlib.sha256(git_code_version(include_dirty=True).encode("utf-8")).hexdigest()
         schema_version = schema_version or IMPL_SCHEMA_VERSION_V2
         payload = {
             "schema_version": schema_version,
@@ -1533,9 +1592,6 @@ class ImplementationEngine:
             "expectations": expectations,
         }
         return ExpectationRegistryPayload.model_validate(payload)
-
-    def _hash_payload(self, payload: dict[str, Any]) -> str:
-        return hashlib.sha256(deterministic_json_dumps(payload).encode()).hexdigest()
 
     def _deterministic_metric(self, experiment_id: str, metric: str, seed: int) -> float:
         key = f"{experiment_id}:{metric}:{seed}".encode()
@@ -1662,7 +1718,7 @@ class ImplementationEngine:
         for ref in inputs:
             try:
                 payload = store.read_artifact(ref).payload
-                input_refs.append({"artifact_ref": ref, "hash": self._hash_payload(payload)})
+                input_refs.append({"artifact_ref": ref, "hash": deterministic_json_hash(payload)})
                 parent_refs.append(ref)
             except ArtifactNotFoundError:
                 input_refs.append({"artifact_ref": ref, "hash": None})
@@ -2225,8 +2281,8 @@ class ImplementationEngine:
                 time_sec=time_used,
                 calls_used=calls_used,
                 output_ref=None,
-                output_hash=self._hash_payload({"output": output}) if output is not None else (
-                    self._hash_payload({"output": canary_output}) if canary_output is not None else None
+                output_hash=deterministic_json_hash({"output": output}) if output is not None else (
+                    deterministic_json_hash({"output": canary_output}) if canary_output is not None else None
                 ),
                 evaluator_verdict=verdict,
                 diff_report_ref=diff_report_ref,
@@ -2302,7 +2358,7 @@ class ImplementationEngine:
         )
         path = store.write_artifact(envelope)
         workspace.index_artifact(path, artifact_type, envelope.schema_version, {"stage": stage, "role": role})
-        payload_hash = self._hash_payload(payload)
+        payload_hash = deterministic_json_hash(payload)
         self._event(
             workspace.run_root,
             run_id,
@@ -3880,7 +3936,7 @@ class ImplementationEngine:
             run_root,
             ManifestInput(
                 run_id=run_id,
-                code_version=self._git_code_version(),
+                code_version=git_code_version(include_dirty=True),
                 schema_versions={"implementation": self._schema_version},
                 run_config_version=str(config.get("version", "")),
                 stage_machine_version=str(config.get("stage_machine_version", "2.1.0")),
@@ -4199,6 +4255,7 @@ class ImplementationEngine:
                 blocked_job_ids=[],
                 blocked_check_ids=[],
                 milestones=[vnext_milestone_id],
+                evidence_refs=[{"type": "discrepancy_report", "ref": "artifacts/discrepancy_report.json"}],
             )
             raise RuntimeError("Compiler inputs mismatch; replan required.")
         compiled_outputs = self._write_vnext_compiled_artifacts(
@@ -4228,6 +4285,7 @@ class ImplementationEngine:
         lease_events_extra: list[dict[str, Any]] = []
         lease_requirements_extra: list[tuple[str, str]] = []
         patchsets: list[PatchsetPayload] = []
+        merge_train_entries: list[dict[str, Any]] = []
 
         stage_handoffs.append(
             self._write_stage_handoff(
@@ -4311,6 +4369,13 @@ class ImplementationEngine:
             held: list[tuple[str, str, LeaseHolder]] = []
             for patchset in patchsets:
                 surface_ids = resolver.resolve_patchset([change.path for change in patchset.changes])
+                merge_train_entries.append(
+                    {
+                        "patchset_id": patchset.patchset_id,
+                        "surfaces": sorted(surface_ids),
+                        "applied_at": datetime.now(UTC).isoformat(),
+                    }
+                )
                 holder = LeaseHolder(run_id=str(run_id), lane_id=None, task_id=f"patch_apply:{patchset.patchset_id}")
                 for surface_id in surface_ids:
                     surface = surface_map.get(surface_id)
@@ -4384,6 +4449,12 @@ class ImplementationEngine:
                 plan_hash=plan_content_hash,
                 milestone_id=vnext_milestone_id,
             )
+            if merge_train_entries:
+                merge_train_payload = {
+                    "schema_version": "merge_train.v1",
+                    "entries": merge_train_entries,
+                }
+                self._write_impl_json(run_root, "merge_train.json", merge_train_payload)
             for surface_id, lease_id, holder in held:
                 event = lease_manager.release_lease(surface_id, lease_id, holder)
                 if event:
@@ -4624,6 +4695,31 @@ class ImplementationEngine:
         )
         if baseline_report is not None:
             self._write_impl_json(run_root, "baseline_report.json", baseline_report)
+        regression_report = self._build_regression_report(
+            evidence_index=vnext_evidence_index,
+            expectation_status=vnext_expectation_status,
+            plan_hash=plan_content_hash,
+            milestone_id=vnext_milestone_id,
+        )
+        if regression_report is not None:
+            self._write_impl_json(run_root, "regression_report.json", regression_report)
+        missing_refs = self._validate_vnext_evidence_refs(run_root, vnext_evidence_index)
+        if missing_refs:
+            self._emit_vnext_change_request(
+                run_root,
+                plan_hash=plan_content_hash,
+                reason_code="TOOL_LIMITATION",
+                summary=f"Evidence refs missing: {', '.join(missing_refs)}",
+                blocked_task_ids=[],
+                blocked_job_ids=[],
+                blocked_check_ids=[],
+                milestones=[vnext_milestone_id],
+                evidence_refs=[
+                    {"type": "evidence_index", "ref": "artifacts/evidence_index.json"},
+                    {"type": "decision_record", "ref": "artifacts/decision_record.json"},
+                ],
+            )
+            raise RuntimeError("Evidence refs missing; change request emitted.")
         if vnext_decision_record.get("decision") == "PASS":
             append_vnext_event(
                 run_root,
@@ -4645,6 +4741,16 @@ class ImplementationEngine:
                 for task in work_graph.tasks
                 if any(job_id in task.job_specs for job_id in blocked_job_ids)
             ]
+            evidence_refs: list[dict[str, Any]] = []
+            for entry in vnext_evidence_index.get("expectations", []):
+                if not isinstance(entry, dict):
+                    continue
+                exp_id = entry.get("expectation_id")
+                if exp_id and exp_id in blocked_check_ids:
+                    refs = entry.get("evidence_refs") or []
+                    if isinstance(refs, list):
+                        evidence_refs.extend([ref for ref in refs if isinstance(ref, dict)])
+            evidence_refs.append({"type": "decision_record", "ref": "artifacts/decision_record.json"})
             self._emit_vnext_change_request(
                 run_root,
                 plan_hash=plan_content_hash,
@@ -4654,6 +4760,7 @@ class ImplementationEngine:
                 blocked_job_ids=blocked_job_ids,
                 blocked_check_ids=blocked_check_ids,
                 milestones=[vnext_milestone_id],
+                evidence_refs=evidence_refs,
             )
             raise RuntimeError("Milestone verification failed; change request emitted.")
 
@@ -5031,7 +5138,7 @@ class ImplementationEngine:
             run_root,
             ManifestInput(
                 run_id=run_id,
-                code_version=self._git_code_version(),
+                code_version=git_code_version(include_dirty=True),
                 schema_versions={"implementation": schema_version},
                 run_config_version=str(config.get("version", "")),
                 stage_machine_version=str(config.get("stage_machine_version", "1.0.0")),

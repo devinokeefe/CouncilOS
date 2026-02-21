@@ -1,0 +1,41 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B2A_primary_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:37:14.990102Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B2A_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2A_v1",
+    "findings": [
+      {
+        "id": "TG-01",
+        "severity": "medium",
+        "summary": "Core requirements R1 (directory recursion) and R3 (CommonMark parsing) are scheduled for implementation in Milestone M3, missing the sample check target of Milestones M1 or M2.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "DL7",
+            "json_pointer": "/plan_package/milestones/2/deliverables/0/text",
+            "note": "Plan schedules full R1 implementation (Ingestion Plugin) in Milestone M3.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Ingestion Plugin (C11) implementing directory input, recursive discovery, default .md inclusion... (R1)"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "DL8",
+            "json_pointer": "/plan_package/milestones/2/deliverables/1/text",
+            "note": "Plan schedules full R3 implementation (Markdown Render Plugin) in Milestone M3.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Markdown Render Plugin (C14) implementing CommonMark-compliant parsing... (R3)"
+          }
+        ],
+        "routing_target": "Plan Lead"
+      }
+    ]
+  }
+}

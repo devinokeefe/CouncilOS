@@ -1,0 +1,16 @@
+{
+  "artifact_type": "patch_or_reroute",
+  "artifact_id": "patch_B1B_1_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:13:10.154564Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "plan_candidate_B1B_v1"
+  ],
+  "payload": {
+    "action": "reroute",
+    "rationale": "Hard-gate id_integrity failures require editing /plan_package/architecture/options/*/risks to replace free-text risk strings with resolvable risk_register IDs (or otherwise restructure risk references). /architecture/options is a locked canonical section and should not be edited by this Patch Generator per rules; therefore this repair must be rerouted to the synthesizer/owner that can regenerate architecture options with correct risk ID references. Secondary id_integrity issue in decision_log evidence_pointers (entity_id: \"B1\") is patchable, but does not resolve the primary locked-section blocker.",
+    "patch": [],
+    "reroute_target": "synthesizer"
+  }
+}

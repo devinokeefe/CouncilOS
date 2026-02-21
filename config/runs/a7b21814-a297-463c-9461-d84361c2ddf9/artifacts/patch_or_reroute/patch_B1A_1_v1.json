@@ -1,0 +1,60 @@
+{
+  "artifact_type": "patch_or_reroute",
+  "artifact_id": "patch_B1A_1_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:39:37.292570Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B1A_v1"
+  ],
+  "payload": {
+    "action": "patch",
+    "rationale": "Fix hard-gate failures with minimal changes: (1) repair id_integrity by replacing architecture option risk free-text with valid risk_register IDs (or empty lists where no matching IDs exist), and (2) satisfy risk_closure by adding mitigation and acceptance text for critical risk K8.",
+    "patch": [
+      {
+        "op": "replace",
+        "path": "/plan_package/architecture/options/0/risks",
+        "from": null,
+        "value": [
+          "K4",
+          "K5"
+        ]
+      },
+      {
+        "op": "replace",
+        "path": "/plan_package/architecture/options/1/risks",
+        "from": null,
+        "value": []
+      },
+      {
+        "op": "replace",
+        "path": "/plan_package/architecture/options/2/risks",
+        "from": null,
+        "value": []
+      },
+      {
+        "op": "replace",
+        "path": "/plan_package/architecture/options/3/risks",
+        "from": null,
+        "value": []
+      },
+      {
+        "op": "replace",
+        "path": "/plan_package/risk_register/7/mitigation",
+        "from": null,
+        "value": {
+          "text": "Add explicit user-facing safety messaging: document that generated outputs may expose private notes when hosted publicly; include a prominent pre-build warning in CLI help/docs; provide and document exclusion/ignore configuration patterns (e.g., ignore private folders/files) and generate a build report listing all included source files so users can review what will be published.",
+          "owner": "pm",
+          "status": "planned"
+        }
+      },
+      {
+        "op": "replace",
+        "path": "/plan_package/risk_register/7/acceptance",
+        "from": null,
+        "value": "Docs/CLI help contain a prominent warning about public hosting exposure; build output includes a human-readable manifest/report enumerating included files and configured excludes, enabling user review before deployment."
+      }
+    ],
+    "reroute_target": null
+  }
+}

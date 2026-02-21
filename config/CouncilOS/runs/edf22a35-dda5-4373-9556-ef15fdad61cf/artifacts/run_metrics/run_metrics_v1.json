@@ -1,0 +1,31 @@
+{
+  "artifact_type": "run_metrics",
+  "artifact_id": "run_metrics_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:19:41.241144Z",
+  "source_run_id": "edf22a35-dda5-4373-9556-ef15fdad61cf",
+  "parents": [
+    "frozen_B2-SA_vFinal"
+  ],
+  "payload": {
+    "run_id": "edf22a35-dda5-4373-9556-ef15fdad61cf",
+    "stage_durations_sec": {
+      "intake": 0.001951,
+      "clarify": 0.006285,
+      "draft_pods": 0.015048,
+      "branch": 0.003757,
+      "synthesize": 0.010774,
+      "validate": 0.040384,
+      "triage": 0.032027,
+      "failure_mode": 0.025576,
+      "judge": 0.030172,
+      "freeze": 0.306183
+    },
+    "candidate_count": 4,
+    "repaired_candidate_count": 0,
+    "validator_pass_count": 4,
+    "validator_fail_count": 0,
+    "frozen_count": 1,
+    "total_duration_sec": 0.541085
+  }
+}

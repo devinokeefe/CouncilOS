@@ -1,0 +1,162 @@
+{
+  "artifact_type": "validator_report",
+  "artifact_id": "validator_B1B_v3",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:56:25.953889Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B1B_v3"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B1B_v3",
+    "overall_status": "FAIL_REPAIRABLE",
+    "checks": [
+      {
+        "name": "schema",
+        "hard_gate": true,
+        "pass": true,
+        "violations": []
+      },
+      {
+        "name": "id_integrity",
+        "hard_gate": true,
+        "pass": false,
+        "violations": [
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O1 references missing risk Large collections can lead to high memory usage if all notes and derived structures are held in memory",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O1 references missing risk Client-side search index size can grow large and impact browser load/interaction time",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O1 references missing risk Tight coupling between graph-building and rendering may complicate future extensibility",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O2 references missing risk Plugin API and data model may evolve, causing breaking changes and ecosystem churn",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O2 references missing risk Third-party plugin compatibility/versioning can become an ongoing maintenance burden",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O2 references missing risk Conflicting plugins can cause non-obvious behavior and hard-to-reproduce build failures",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O3 references missing risk SSG major-version changes can break custom plugins/configuration",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O3 references missing risk Wiki-link/backlink behavior may vary with Markdown plugins and require ongoing compatibility work",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O3 references missing risk Search integration may be constrained by what the SSG build lifecycle exposes without deeper customization",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O4 references missing risk Cache invalidation and dependency tracking bugs can lead to stale or inconsistent site output",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O4 references missing risk Intermediate artifact schema changes can break builds or require migrations",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O4 references missing risk Increased pipeline complexity introduces more failure points (partial stage failures, corrupted cache)",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/decision_log",
+            "message": "Evidence pointer references missing id: B1",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/decision_log",
+            "message": "Evidence pointer references missing id: B1",
+            "repair_hint": null
+          }
+        ]
+      },
+      {
+        "name": "coverage",
+        "hard_gate": true,
+        "pass": true,
+        "violations": []
+      },
+      {
+        "name": "milestone_exit_criteria",
+        "hard_gate": true,
+        "pass": true,
+        "violations": []
+      },
+      {
+        "name": "risk_closure",
+        "hard_gate": true,
+        "pass": false,
+        "violations": [
+          {
+            "severity": "critical",
+            "json_pointer": "/plan_package/risk_register",
+            "message": "Risk K8 missing closure",
+            "repair_hint": null
+          }
+        ]
+      },
+      {
+        "name": "tool_policy_parse",
+        "hard_gate": true,
+        "pass": true,
+        "violations": []
+      },
+      {
+        "name": "measurability_heuristic",
+        "hard_gate": false,
+        "pass": true,
+        "violations": []
+      },
+      {
+        "name": "contradiction_heuristic",
+        "hard_gate": false,
+        "pass": true,
+        "violations": []
+      },
+      {
+        "name": "completeness_heuristic",
+        "hard_gate": false,
+        "pass": true,
+        "violations": []
+      }
+    ]
+  }
+}

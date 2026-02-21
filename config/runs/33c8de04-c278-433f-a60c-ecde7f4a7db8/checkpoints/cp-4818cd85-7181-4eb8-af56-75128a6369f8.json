@@ -1,0 +1,30 @@
+{
+  "checkpoint_id": "cp-4818cd85-7181-4eb8-af56-75128a6369f8",
+  "run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "created_at": "2026-02-21T12:01:13.472759Z",
+  "stage_name": "merge.architecture_merge",
+  "stage_index": 9,
+  "event_cursor": "c6a161d5-64b7-4d07-b094-9af857170f85",
+  "artifact_refs": {
+    "capsule_draft_a": "capsule_draft_a_v1",
+    "capsule_draft_b": "capsule_draft_b_v1",
+    "capsule": "capsule_canonical_v1",
+    "clarification_plan": "clarification_plan_v1",
+    "requirements_draft_1": "requirements_draft_1_v1",
+    "requirements_draft_2": "requirements_draft_2_v1",
+    "architecture_draft_1": "architecture_draft_1_v1",
+    "architecture_draft_2": "architecture_draft_2_v1",
+    "qa_templates_draft_1": "qa_templates_draft_1_v1",
+    "qa_templates_draft_2": "qa_templates_draft_2_v1",
+    "risk_gov_draft_1": "risk_gov_draft_1_v1",
+    "risk_gov_draft_2": "risk_gov_draft_2_v1",
+    "requirements_merge": "requirements_merge_v1",
+    "requirements_canonical": "requirements_canonical_v1",
+    "architecture_merge": "architecture_merge_v1"
+  },
+  "routing_state": {
+    "stage": "merge.architecture_merge",
+    "index": 9
+  },
+  "tool_side_effect_ledger_ref": null
+}

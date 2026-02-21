@@ -1,0 +1,197 @@
+{
+  "artifact_type": "decision_record",
+  "artifact_id": "decision_record_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T11:07:36.628794Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B1A_v4",
+    "freeze_v1"
+  ],
+  "payload": {
+    "winner_ref": "plan_candidate_B1A_v4",
+    "winner_summary": "Selected candidate B1A (plan_candidate_B1A_v4), which commits to architecture option O1: a custom-built, monolithic single-process CLI pipeline that ingests a directory of Markdown notes, builds a link/tag graph with backlinks, renders templates to static HTML/CSS/JS, and ships a build-time-generated client-side search index, delivered via thin-slice milestones M1–M5.",
+    "reasons": [
+      "Directly aligns with the project capsule’s core goals: generate a static site from Markdown with full-text search, tags, and backlinks, and avoid any server-side runtime at deploy time.",
+      "Chooses the lowest-complexity architecture (O1) that still covers all MUST requirements end-to-end (CLI build, static output, Markdown rendering, internal link resolution + backlinks, tag extraction + tag pages, build-time index + client-side search).",
+      "Explicitly sequences delivery via milestones that de-risk the build: first lock ingestion/render/static output (M1), then add tags (M2), links/backlinks (M3), search/index (M4), and finally compatibility/polish and risk mitigations like broken-link warnings, base URL support, GFM support, and cross-browser QA (M5).",
+      "Handles the two highest-ambiguity functional areas (link conventions and tag conventions) by making them explicit configuration decisions and by warning on unresolved cases, reducing the risk of surprising behavior while still satisfying the minimum MUST behavior for standard Markdown relative links.",
+      "Includes explicit security and governance defaults for a static publishing tool (notably: disallow/sanitize raw HTML to reduce XSS risk; clear handling of broken links; deterministic ordering intent), which supports safer, more predictable static outputs."
+    ],
+    "tradeoffs": [
+      "Compared to a plugin-based core (O2), O1 reduces upfront complexity and API surface area, but is harder to extend safely later without refactoring toward a plugin/lifecycle model.",
+      "Compared to building atop an existing static site generator (O3), O1 avoids tight coupling and distribution/toolchain dependencies, but gives up mature SSG conveniences (watch mode, existing theme ecosystems) unless implemented later.",
+      "Compared to an intermediate-artifact multi-stage pipeline (O4), O1 is simpler for the initial target scope, but may face scalability limits (memory/time) on very large note sets without incremental build/caching mechanisms.",
+      "The plan acknowledges critical open questions (especially link and tag conventions) that can materially affect implementation details; the chosen approach defers those specifics behind configuration rather than guessing defaults, which may slow feature completion until those decisions are confirmed."
+    ],
+    "evidence": [
+      {
+        "artifact_ref": "capsule_canonical_v1",
+        "entity_id": null,
+        "json_pointer": "/project_capsule/goals",
+        "note": "Goals require static site generation from Markdown plus search, tags, backlinks, and static-hosting compatibility.",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "capsule_canonical_v1",
+        "entity_id": "CNS1",
+        "json_pointer": "/project_capsule/constraints/0",
+        "note": "Hard constraint: output must be static HTML/CSS/JS hostable on any web server.",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "frozen_B1A_vFinal",
+        "entity_id": null,
+        "json_pointer": "/plan_package/executive_summary",
+        "note": "Executive summary states selection of O1 monolithic CLI pipeline and thin-slice milestones M1–M5.",
+        "candidate_id": "B1A",
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "frozen_B1A_vFinal",
+        "entity_id": "DEC1",
+        "json_pointer": "/plan_package/decision_log/0",
+        "note": "Decision explicitly selects O1 as the initial architecture with rationale tied to MUST requirements and simplicity.",
+        "candidate_id": "B1A",
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "frozen_B1A_vFinal",
+        "entity_id": "O1",
+        "json_pointer": "/plan_package/architecture/chosen",
+        "note": "Chosen architecture option is O1 with rationale and high-level dataflow.",
+        "candidate_id": "B1A",
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "requirements_canonical_v1",
+        "entity_id": "R2",
+        "json_pointer": "/requirements/1",
+        "note": "Static-only build output requirement.",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "requirements_canonical_v1",
+        "entity_id": "R5",
+        "json_pointer": "/requirements/4",
+        "note": "CLI build workflow requirement.",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "requirements_canonical_v1",
+        "entity_id": "R7",
+        "json_pointer": "/requirements/6",
+        "note": "Client-side full-text search must run entirely in-browser.",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "requirements_canonical_v1",
+        "entity_id": "R8",
+        "json_pointer": "/requirements/7",
+        "note": "Search index artifact must be generated at build time and shipped with the static site.",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "requirements_canonical_v1",
+        "entity_id": "R9",
+        "json_pointer": "/requirements/8",
+        "note": "Must resolve standard Markdown relative links between notes to generated HTML.",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "requirements_canonical_v1",
+        "entity_id": "R10",
+        "json_pointer": "/requirements/9",
+        "note": "Must generate backlinks section listing notes that link to the current note.",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "requirements_canonical_v1",
+        "entity_id": "R11",
+        "json_pointer": "/requirements/10",
+        "note": "Tags must be extracted via at least one supported user-selectable convention.",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "frozen_B1A_vFinal",
+        "entity_id": null,
+        "json_pointer": "/plan_package/milestones",
+        "note": "Milestones M1–M5 define thin-slice sequencing and exit criteria mapped to acceptance tests.",
+        "candidate_id": "B1A",
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "risk_gov_canonical_v1",
+        "entity_id": "K2",
+        "json_pointer": "/risk_register/1",
+        "note": "High risk: ambiguous/unsupported internal link conventions; plan mitigates via explicit configuration and resolver rules.",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "risk_gov_canonical_v1",
+        "entity_id": "K3",
+        "json_pointer": "/risk_register/2",
+        "note": "High risk: tag extraction/normalization ambiguity; plan mitigates via configurable convention + normalization pipeline.",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "risk_gov_canonical_v1",
+        "entity_id": "K7",
+        "json_pointer": "/risk_register/6",
+        "note": "High risk: XSS/content injection; plan adopts disallow/sanitize raw HTML by default and template escaping.",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "frozen_B1A_vFinal",
+        "entity_id": "DEC6",
+        "json_pointer": "/plan_package/decision_log/5",
+        "note": "Default security stance: disallow or sanitize raw HTML; escape user-controlled strings in templates.",
+        "candidate_id": "B1A",
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "frozen_B1A_vFinal",
+        "entity_id": "W1",
+        "json_pointer": "/plan_package/synthesis_warnings/0",
+        "note": "Blocking open questions on link and tag conventions are called out as requiring confirmation before implementing beyond the minimum behaviors.",
+        "candidate_id": "B1A",
+        "artifact_id": null,
+        "quote": null
+      }
+    ],
+    "runner_ups": [
+      "plan_candidate_B2A_v3",
+      "plan_candidate_B2B_v3",
+      "plan_candidate_B1B_v3"
+    ]
+  }
+}

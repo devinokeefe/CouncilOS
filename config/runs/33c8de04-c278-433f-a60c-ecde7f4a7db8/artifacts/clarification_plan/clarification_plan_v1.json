@@ -1,0 +1,410 @@
+{
+  "artifact_type": "clarification_plan",
+  "artifact_id": "clarification_plan_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T11:57:18.751876Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "capsule_canonical_v1"
+  ],
+  "payload": {
+    "questions": [
+      {
+        "id": "QX1",
+        "text": "Which internal link syntaxes must be supported for forward-links/backlinks, and how should link targets be resolved (relative paths, case-sensitivity, file extensions like \".md\", and handling of duplicate note titles)?",
+        "impact": "high",
+        "blocking": true,
+        "rationale": "Backlink computation and site routing depend on a deterministic link grammar and resolution rules; without this, link parsing and URL/slug generation are under-specified.",
+        "evidence": [
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": null,
+            "json_pointer": "/open_questions/0",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "What Markdown flavor and internal link syntax should be supported for links/backlinks..."
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": null,
+            "json_pointer": "/assumptions/1",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Backlinks can be derived from explicit links in the Markdown..."
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": null,
+            "json_pointer": "/non_goals/6",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Guaranteeing compatibility with every Markdown extension or every wiki-link dialect..."
+          }
+        ]
+      },
+      {
+        "id": "QX2",
+        "text": "How are tags represented in notes (YAML frontmatter field name(s), inline #tags, or both), and what exact parsing rules are required (nested tags, spaces, punctuation, normalization/case)?",
+        "impact": "high",
+        "blocking": true,
+        "rationale": "Tag extraction and tag browsing pages/filters require a single authoritative tag representation and parsing rules to avoid inconsistent indexing.",
+        "evidence": [
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": null,
+            "json_pointer": "/open_questions/1",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "How are tags represented in the notes (YAML frontmatter key, inline #tags, both)...?"
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": null,
+            "json_pointer": "/assumptions/3",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Tags are expressed in a consistent, parseable way..."
+          }
+        ]
+      },
+      {
+        "id": "QX1",
+        "text": "Which Markdown flavor and internal link syntax must be supported (e.g., Standard Markdown links `[Label](url)`, Obsidian-style WikiLinks `[[Page Name]]`, or both)?",
+        "impact": "high",
+        "blocking": true,
+        "rationale": "The parsing strategy and link resolution logic differ significantly between standard Markdown links and WikiLinks. Clarifying this ensures the ingestion engine is built correctly from the start.",
+        "evidence": [
+          {
+            "artifact_ref": "capsule",
+            "entity_id": "Q1",
+            "json_pointer": "/open_questions/0",
+            "note": "Originally defined as open question Q1",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "capsule",
+            "entity_id": null,
+            "json_pointer": "/goals/3",
+            "note": "Goal G4 requires detecting links",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Detect and render forward links and backlinks between notes."
+          }
+        ]
+      },
+      {
+        "id": "QX2",
+        "text": "How will tags be represented in the source Markdown files (e.g., YAML frontmatter `tags: []`, inline hash-tags `#tag`, or both)?",
+        "impact": "high",
+        "blocking": true,
+        "rationale": "Tag extraction logic is a core browsing feature. Knowing availability of Frontmatter vs. inline tags influences the parser choice and metadata schema.",
+        "evidence": [
+          {
+            "artifact_ref": "capsule",
+            "entity_id": "Q2",
+            "json_pointer": "/open_questions/1",
+            "note": "Originally defined as open question Q2",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "capsule",
+            "entity_id": null,
+            "json_pointer": "/goals/2",
+            "note": "Goal G3 requires processing tags",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Support tags to categorize notes and enable browsing/filtering by tag."
+          }
+        ]
+      },
+      {
+        "id": "QX001",
+        "text": "What Markdown flavor (e.g., CommonMark, GFM) and internal link syntax (e.g., standard `[text](file.md)`, Obsidian-style `[[wikilinks]]`) should be supported for creating links and backlinks?",
+        "impact": "high",
+        "blocking": true,
+        "rationale": "The choice of Markdown flavor and link syntax is fundamental to the core parsing logic. Without a decision, it's impossible to implement Goal G4 (backlinks) or correctly process input files as per Constraint CNS2.",
+        "evidence": [
+          {
+            "artifact_ref": "capsule",
+            "entity_id": "Q1",
+            "json_pointer": "/inputs/project_capsule/open_questions/0",
+            "note": "The original capsule identified this as a blocking open question.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "What Markdown flavor and internal link syntax should be supported for links/backlinks (CommonMark/GFM; standard Markdown links, Obsidian-style [[WikiLinks]], both)?"
+          },
+          {
+            "artifact_ref": "capsule",
+            "entity_id": "G4",
+            "json_pointer": "/inputs/project_capsule/goals/3",
+            "note": "Defining link syntax is required to implement the backlinking goal.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Detect and render forward links and backlinks between notes."
+          },
+          {
+            "artifact_ref": "capsule",
+            "entity_id": "A2",
+            "json_pointer": "/inputs/project_capsule/assumptions/1",
+            "note": "The capsule included an assumption that link syntax needs to be specified.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Backlinks can be derived from explicit links in the Markdown...and the link syntax can be standardized/specified for this project."
+          }
+        ]
+      },
+      {
+        "id": "QX002",
+        "text": "How should tags be specified in the notes? For example, should we support YAML frontmatter (e.g., `tags: [tag1, tag2]`), inline hashtags (e.g., `#tag1`), or both? Should nested tags (e.g., `#project/alpha`) be supported?",
+        "impact": "high",
+        "blocking": true,
+        "rationale": "This decision is critical for implementing Goal G3 (tag-based browsing). The parsing and indexing logic depends entirely on a defined tag syntax.",
+        "evidence": [
+          {
+            "artifact_ref": "capsule",
+            "entity_id": "Q2",
+            "json_pointer": "/inputs/project_capsule/open_questions/1",
+            "note": "The original capsule identified this as a blocking open question about tag representation.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "How are tags represented in the notes (YAML frontmatter key, inline #tags, both), and should nested tags be supported?"
+          },
+          {
+            "artifact_ref": "capsule",
+            "entity_id": "G3",
+            "json_pointer": "/inputs/project_capsule/goals/2",
+            "note": "Defining tag syntax is required to implement tag-based browsing.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Support tags to categorize notes and enable browsing/filtering by tag."
+          }
+        ]
+      },
+      {
+        "id": "QX3",
+        "text": "What is the expected scale (approx. number of notes and total text size), and are there any hard performance targets for build time, initial page load, and search latency?",
+        "impact": "high",
+        "blocking": false,
+        "rationale": "Scale strongly influences choice of client-side search library/index format and whether to precompute per-page excerpts/snippets and highlighting.",
+        "evidence": [
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": null,
+            "json_pointer": "/open_questions/2",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "What is the expected scale (number of notes/total size) and performance targets...?"
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": null,
+            "json_pointer": "/success_metrics/6",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "generation time and search responsiveness meet agreed performance targets..."
+          }
+        ]
+      },
+      {
+        "id": "QX4",
+        "text": "Are there any restrictions on client-side JavaScript (must work with JS disabled, CSP limitations, offline/file:// browsing), and what hosting target is intended (e.g., GitHub Pages/Netlify/local-only)?",
+        "impact": "high",
+        "blocking": false,
+        "rationale": "The current direction assumes in-browser search and dynamic UI behavior; JS/CSP/hosting constraints can force different implementations (or reduced search features).",
+        "evidence": [
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": null,
+            "json_pointer": "/constraints/0",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Output must be a static site... with no required server-side runtime..."
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": null,
+            "json_pointer": "/assumptions/2",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Search is acceptable as an in-browser (client-side) search index..."
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": null,
+            "json_pointer": "/open_questions/5",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Where will the site be hosted... and are there any restrictions on client-side JavaScript usage?"
+          }
+        ]
+      },
+      {
+        "id": "QX003",
+        "text": "What is the expected scale (e.g., number of notes, total size) of the site? Also, are there specific search features required, such as fuzzy search, filtering by tags, or result highlighting?",
+        "impact": "high",
+        "blocking": false,
+        "rationale": "Understanding the scale and required search features will inform the choice of client-side search library and indexing strategy to ensure performance targets (SM7) and user satisfaction with the search functionality (G2) are met.",
+        "evidence": [
+          {
+            "artifact_ref": "capsule",
+            "entity_id": "Q3",
+            "json_pointer": "/inputs/project_capsule/open_questions/2",
+            "note": "The capsule raised a question about scale and performance targets.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "What is the expected scale (number of notes/total size) and performance targets for search and page load?"
+          },
+          {
+            "artifact_ref": "capsule",
+            "entity_id": "Q8",
+            "json_pointer": "/inputs/project_capsule/open_questions/7",
+            "note": "The capsule raised a question about specific search features.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Are there any specific search features required (e.g., fuzzy search, tag filters, sorting, highlighting)?"
+          },
+          {
+            "artifact_ref": "capsule",
+            "entity_id": "G2",
+            "json_pointer": "/inputs/project_capsule/goals/1",
+            "note": "This question helps refine the 'full-text search' goal.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Provide full-text search across all notes in the generated static site."
+          }
+        ]
+      },
+      {
+        "id": "QX004",
+        "text": "Are there other navigation features you consider important, such as a visual graph of connections, a table of contents for each note, or automatically generated index pages for each tag?",
+        "impact": "medium",
+        "blocking": false,
+        "rationale": "This helps clarify the full desired scope beyond the core requirements. While not blocking, knowing this helps in designing an extensible architecture.",
+        "evidence": [
+          {
+            "artifact_ref": "capsule",
+            "entity_id": "Q5",
+            "json_pointer": "/inputs/project_capsule/open_questions/4",
+            "note": "This question was raised in the capsule to explore additional navigation features.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Do you need additional navigation features such as a graph view, note outline/TOC generation, or automatic index pages per tag?"
+          }
+        ]
+      }
+    ],
+    "assumptions": [
+      {
+        "id": "AX1",
+        "text": "If unspecified, support GitHub-Flavored Markdown (GFM) for parsing, plus standard Markdown links ([text](path/to/note.md)) and Obsidian-style wikilinks ([[Note Title]] and [[path/to/note|alias]]).",
+        "impact": "high",
+        "confidence": "medium",
+        "needs_confirmation": true
+      },
+      {
+        "id": "AX2",
+        "text": "If unspecified, define canonical note IDs/URLs as the input relative file path without the .md extension (normalized to URL-safe slugs), and treat links without extensions as targeting the corresponding .md file.",
+        "impact": "high",
+        "confidence": "medium",
+        "needs_confirmation": true
+      },
+      {
+        "id": "AX3",
+        "text": "If unspecified, tags are sourced from YAML frontmatter key \"tags\" (array or comma-separated string); inline #tags are ignored unless explicitly requested.",
+        "impact": "high",
+        "confidence": "medium",
+        "needs_confirmation": true
+      },
+      {
+        "id": "AX4",
+        "text": "If unspecified, implement full-text search via a build-time generated client-side index (loaded as a static JSON or similar), requiring JavaScript enabled in modern browsers.",
+        "impact": "high",
+        "confidence": "high",
+        "needs_confirmation": true
+      },
+      {
+        "id": "AX1",
+        "text": "The tool will process files from a local filesystem via a CLI interface.",
+        "impact": "high",
+        "confidence": "high",
+        "needs_confirmation": true
+      },
+      {
+        "id": "AX2",
+        "text": "Search will be implemented as a client-side index generated at build time, with no server-side runtime.",
+        "impact": "high",
+        "confidence": "high",
+        "needs_confirmation": true
+      },
+      {
+        "id": "AX3",
+        "text": "The input dataset size is suitable for a personal knowledge base (e.g., <10,000 notes), allowing full client-side search.",
+        "impact": "medium",
+        "confidence": "medium",
+        "needs_confirmation": false
+      },
+      {
+        "id": "AX4",
+        "text": "The site will utilize a default theme without complex user-defined theming for the MVP.",
+        "impact": "low",
+        "confidence": "high",
+        "needs_confirmation": false
+      },
+      {
+        "id": "AX5",
+        "text": "Advanced navigation visualizations (e.g., interactive graph view) are out of scope for the MVP.",
+        "impact": "medium",
+        "confidence": "medium",
+        "needs_confirmation": false
+      },
+      {
+        "id": "AX001",
+        "text": "The tool will be a command-line interface (CLI) that processes Markdown files from a local directory.",
+        "impact": "medium",
+        "confidence": "high",
+        "needs_confirmation": false
+      },
+      {
+        "id": "AX002",
+        "text": "Search functionality will be implemented client-side, using a pre-built search index, which is consistent with the static site constraint.",
+        "impact": "high",
+        "confidence": "high",
+        "needs_confirmation": false
+      },
+      {
+        "id": "AX003",
+        "text": "The generated static site will be self-contained and compatible with any standard static hosting provider (e.g., GitHub Pages, Netlify) or local file server.",
+        "impact": "medium",
+        "confidence": "high",
+        "needs_confirmation": false
+      },
+      {
+        "id": "AX004",
+        "text": "A default, clean theme will be provided. Advanced theming and custom styling are not part of the initial scope.",
+        "impact": "low",
+        "confidence": "medium",
+        "needs_confirmation": true
+      }
+    ],
+    "notes": [
+      "IDs QX* and AX* are minted for this clarification plan because the capsule’s existing open_questions/assumptions use different ID formats.",
+      "If answers are not provided, the AX* assumptions above act as defaults to unblock design/implementation decisions while staying within the static-site constraint.",
+      "Prioritizing syntax clarification (QX1, QX2) as these block core parser implementation.",
+      "Assuming client-side architecture (AX2) based on non-goals regarding server-side runtimes."
+    ]
+  }
+}

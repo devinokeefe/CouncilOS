@@ -1,0 +1,120 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B2B_fallback_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:18:59.938287Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "plan_candidate_B2B_v2"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2B_v2",
+    "findings": [
+      {
+        "id": "TG001",
+        "severity": "high",
+        "summary": "Requirement R1 (recursive Markdown discovery) is not explicitly traced to any M1 deliverable, creating a gap between the requirement and the milestone that claims to satisfy it.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "R1",
+            "json_pointer": "/plan_package/requirements/0",
+            "note": "R1 requires recursive discovery of .md files",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "The system MUST accept a user-specified folder (or repository working directory) as input and recursively discover Markdown (.md) files"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0",
+            "note": "M1 deliverables include File Collector Plugin (DL4) but R1 is not explicitly listed in M1 exit criteria",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "File Collector Plugin (C9) that recursively discovers .md files and populates the noteRegistry."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "AT1",
+            "json_pointer": "/plan_package/acceptance_tests/0",
+            "note": "AT1 maps to R1 but references M1 and M2 in the sample check without clear M1 exit validation",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "All .md files in all subfolders are included as notes; non-.md files are excluded."
+          }
+        ],
+        "routing_target": "review"
+      },
+      {
+        "id": "TG002",
+        "severity": "medium",
+        "summary": "Requirement R2 (static-only output) acceptance test AT2 is listed in the sample as validating M1 and M2, but M1 exit criteria do not include any validation of static-only output generation, only plugin infrastructure.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "R2",
+            "json_pointer": "/plan_package/requirements/1",
+            "note": "R2 mandates static-only output with no server-side runtime",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "The system MUST generate a static website output consisting only of static files"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/exit_criteria",
+            "note": "M1 exit criteria focus on plugin API and orchestrator, not on static output validation",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Core Orchestrator executes all lifecycle hooks in the correct order with registered plugins."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "AT2",
+            "json_pointer": "/plan_package/acceptance_tests/1",
+            "note": "AT2 requires inspecting output directory for static-only assets, but M1 does not produce a complete site",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Build completes successfully; output contains only static assets (HTML/CSS/JS/media)"
+          }
+        ],
+        "routing_target": "review"
+      },
+      {
+        "id": "TG003",
+        "severity": "medium",
+        "summary": "Requirement R3 (Markdown rendering with formatting preservation) is tested by AT3 (human_eval), but M1 exit criteria only validate AST production, not HTML rendering or formatting preservation, creating a validation gap.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "R3",
+            "json_pointer": "/plan_package/requirements/2",
+            "note": "R3 requires faithful Markdown-to-HTML rendering preserving structure",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "The system MUST parse and render each input Markdown file into a corresponding static HTML page while preserving Markdown formatting"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/exit_criteria",
+            "note": "M1 validates AST production but not HTML rendering or formatting preservation",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Markdown Parser Plugin produces correct AST and extracts frontmatter for representative Markdown files."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "AT3",
+            "json_pointer": "/plan_package/acceptance_tests/2",
+            "note": "AT3 requires visual comparison of rendered HTML, which cannot be satisfied in M1",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Build the site and visually compare rendered HTML output to expected formatting."
+          }
+        ],
+        "routing_target": "review"
+      }
+    ]
+  }
+}

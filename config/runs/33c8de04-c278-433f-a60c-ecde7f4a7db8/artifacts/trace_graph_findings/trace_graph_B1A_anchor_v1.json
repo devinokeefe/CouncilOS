@@ -1,0 +1,121 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B1A_anchor_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:10:09.861297Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "plan_candidate_B1A_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B1A_v1",
+    "findings": [
+      {
+        "id": "TG001",
+        "severity": "high",
+        "summary": "AT2 (mapped to R2) requires verifying the site functions for browsing/search/tags/backlinks without server-side runtime, but M1 scope does not yet include implementing search/tags/backlinks (those appear in later milestones). This creates an ambiguity/likely gating failure if AT2 is used as a strict M1 exit gate.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "AT2",
+            "json_pointer": "/inputs/plan_candidate/plan_package/acceptance_tests/1/pass_criteria",
+            "note": "AT2 pass criteria asserts functioning for search/tags/backlinks.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Build completes successfully; output contains only static assets (HTML/CSS/JS/media); site functions without any server-side runtime for browsing, search, tags, or backlinks."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "M1",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/0/deliverables",
+            "note": "M1 deliverables cover per-note HTML generation and security guardrails; search/tags/backlinks are scheduled later.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "M2",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/1/name",
+            "note": "Backlinks/forward links are in M2 (not M1).",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Generate + Validate (Thin Slice 2): Forward links + backlink computation and rendering"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "M3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/2/name",
+            "note": "Tags are in M3 (not M1).",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Generate + Validate (Thin Slice 3): Tag extraction + per-tag navigation pages"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "M4",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/3/name",
+            "note": "Search is in M4 (not M1).",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Generate + Validate (Thin Slice 4): Client-side search index + search UI"
+          }
+        ],
+        "routing_target": "Review/QA Lead"
+      },
+      {
+        "id": "TG002",
+        "severity": "medium",
+        "summary": "Deterministic sample checks claim R1/R2/R3 are associated with milestones M1 and M2, but M2 deliverables/exit criteria do not explicitly trace back to R1/R2/R3. If the trace graph expects explicit milestone-to-requirement coverage, the M2 linkage appears unsupported in the provided candidate package.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "R1",
+            "json_pointer": "/inputs/deterministic_sample_checks/0/milestones",
+            "note": "Sample check associates R1 with M1 and M2.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "R2",
+            "json_pointer": "/inputs/deterministic_sample_checks/1/milestones",
+            "note": "Sample check associates R2 with M1 and M2.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "R3",
+            "json_pointer": "/inputs/deterministic_sample_checks/2/milestones",
+            "note": "Sample check associates R3 with M1 and M2.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "M2",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/1/deliverables",
+            "note": "M2 deliverables focus on forward links/backlinks and diagnostics; no explicit mention of R1/R2/R3.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "M2",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/1/exit_criteria",
+            "note": "M2 exit criteria gate AT8/AT9 and backlink/link canonicalization; no explicit gate tying back to AT1/AT2/AT3 for R1/R2/R3.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "Review/Traceability"
+      }
+    ]
+  }
+}

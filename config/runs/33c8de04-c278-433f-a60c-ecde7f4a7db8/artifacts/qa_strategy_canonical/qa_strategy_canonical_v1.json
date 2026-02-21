@@ -1,0 +1,153 @@
+{
+  "artifact_type": "qa_strategy_canonical",
+  "artifact_id": "qa_strategy_canonical_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:03:26.925817Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "capsule_canonical_v1"
+  ],
+  "payload": {
+    "templates": [
+      {
+        "id": "ATT-STATIC-BUILD-001",
+        "name": "Static site build output verification",
+        "description": "Procedure: Run the build on a representative notes folder. Verify build completes without errors. Confirm output directory contains only static assets (HTML/CSS/JS/media) and can be opened from a local file server and/or deployed to a chosen static host without backend services. Pass criteria: Build exits successfully; output contains no server-side executables/configs; site pages render in browser from static hosting or local serving with core functionality available.",
+        "applies_to": [
+          "G1",
+          "CNS1",
+          "SM1",
+          "SM5"
+        ]
+      },
+      {
+        "id": "ATT-MD-RENDER-002",
+        "name": "Markdown fidelity rendering check",
+        "description": "Procedure: Prepare a test note set covering headings, lists, code blocks, blockquotes, links, images, and tables per selected Markdown flavor. Build site and compare rendered HTML against expected structure. Pass criteria: All elements render correctly and consistently across notes with no loss of formatting.",
+        "applies_to": [
+          "G5",
+          "CNS2"
+        ]
+      },
+      {
+        "id": "ATT-SEARCH-003",
+        "name": "Full-text search relevance",
+        "description": "Procedure: Define a query set with expected target notes. Build site and execute queries via UI. Capture top 10 results for each. Pass criteria: ≥90% of queries return expected note within top 10 results; zero client-side errors during search.",
+        "applies_to": [
+          "G2",
+          "SM2"
+        ]
+      },
+      {
+        "id": "ATT-TAGS-004",
+        "name": "Tag extraction and navigation",
+        "description": "Procedure: Create dataset with tagged and untagged notes using the specified tag syntax. Build site and open tag index/filters. Pass criteria: 100% of tagged notes appear under each corresponding tag; untagged notes do not appear under any tag; tag links are navigable.",
+        "applies_to": [
+          "G3",
+          "SM3"
+        ]
+      },
+      {
+        "id": "ATT-BACKLINKS-005",
+        "name": "Backlinks computation and display",
+        "description": "Procedure: Prepare notes with known link graph (A→B, C→B, B→D). Build site. On each note page, verify backlinks list contains all and only notes that link to it. Pass criteria: 100% expected backlinks appear; no false backlinks.",
+        "applies_to": [
+          "G4",
+          "SM4"
+        ]
+      },
+      {
+        "id": "ATT-LINKS-006",
+        "name": "Forward link resolution",
+        "description": "Procedure: Create notes with internal links using specified syntax. Build site and click through internal links. Pass criteria: All internal links resolve to correct target pages; broken links are reported or handled per spec.",
+        "applies_to": [
+          "G4"
+        ]
+      },
+      {
+        "id": "ATT-BROWSER-007",
+        "name": "Cross-browser static functionality",
+        "description": "Procedure: Open generated site in latest Chrome, Firefox, Safari, Edge. Validate navigation, search, tags, backlinks. Pass criteria: No console errors; core features function consistently.",
+        "applies_to": [
+          "SM6",
+          "CNS1"
+        ]
+      },
+      {
+        "id": "ATT-PERF-008",
+        "name": "Build and search performance targets",
+        "description": "Procedure: Use representative dataset size. Measure build time and client-side search response time for agreed targets. Pass criteria: Metrics meet agreed thresholds.",
+        "applies_to": [
+          "SM7"
+        ]
+      },
+      {
+        "id": "ATT9",
+        "name": "Link Syntax Handling",
+        "description": "Test the tool with the agreed Markdown flavor and link syntax (e.g., CommonMark/GFM, standard Markdown links, [[WikiLinks]]). Verify correct parsing, rendering, and backlink computation for all supported link formats. Confirm unsupported formats are handled gracefully (ignored or flagged).",
+        "applies_to": [
+          "Q1",
+          "A2"
+        ]
+      },
+      {
+        "id": "ATT10",
+        "name": "Tag Representation Handling",
+        "description": "Test tag extraction and rendering using the agreed tag representation (YAML frontmatter, inline #tags, or both). Verify correct parsing, indexing, and navigation. If nested tags are supported, confirm hierarchy is preserved.",
+        "applies_to": [
+          "Q2",
+          "A4"
+        ]
+      },
+      {
+        "id": "ATT11",
+        "name": "Build Workflow and Environment",
+        "description": "Verify that the build tool runs successfully in the target OS environments (to be specified) and supports the preferred workflow (CLI, watch mode, git-based build). Confirm installation, configuration, and execution steps are documented and repeatable.",
+        "applies_to": [
+          "Q4",
+          "A6"
+        ]
+      },
+      {
+        "id": "ATT12",
+        "name": "Input File Assumptions",
+        "description": "Confirm that the tool correctly reads Markdown files from a local filesystem or repository as input. Test with various directory structures, file encodings, and edge cases (empty files, missing frontmatter, special characters in filenames).",
+        "applies_to": [
+          "A1"
+        ]
+      }
+    ],
+    "coverage_guidance": [
+      "Ensure test datasets include edge cases: empty notes folder, single note, large note set, and notes with special characters/Unicode.",
+      "Include notes with duplicate titles and file names to verify unique URL/slug handling per spec.",
+      "Verify behavior for missing or malformed frontmatter/tag syntax per chosen standard.",
+      "Include mixed internal link formats if multiple syntaxes are supported; otherwise ensure unsupported syntax is documented and handled.",
+      "Validate that search index and assets are referenced with relative paths that work on static hosts and local file servers.",
+      "Check that generated site does not depend on network access for core features unless explicitly allowed.",
+      "Confirm that backlinks and tags update correctly when notes are added/removed between builds.",
+      "Ensure acceptance tests cover all success metrics (SM1-SM7) with measurable pass criteria.",
+      "Validate constraints CNS1 and CNS2: output must be static and input must be standard Markdown.",
+      "Include tests for non-goals to verify they are explicitly NOT implemented (e.g., no server-side runtime, no real-time editing).",
+      "Test interoperability: generated site must work across target browsers and hosting platforms.",
+      "Performance tests should establish baseline metrics and be repeatable as the project scales.",
+      "Acceptance tests should be automatable where possible (build success, link/backlink accuracy, tag extraction) and include manual verification steps where needed (visual rendering, cross-browser checks)."
+    ],
+    "definition_of_done": [
+      "All QA templates executed with passing results on representative dataset.",
+      "Blocking open questions (Markdown flavor, link syntax, tag syntax) resolved and tests updated accordingly.",
+      "Success metrics SM1–SM6 met; SM7 met once performance targets are defined.",
+      "No critical or high severity defects remain; medium defects have documented remediation plan.",
+      "Build output verified as fully static and deployable to chosen static hosting target.",
+      "Documentation includes setup, build, and deployment instructions verified via ATT11.",
+      "Non-goals (NG1-NG7) are confirmed as out-of-scope and not implemented.",
+      "Performance baseline is established for generation time and search responsiveness on agreed dataset scale.",
+      "Any deviations from success metrics or unresolved blocking questions are explicitly documented and approved by stakeholders."
+    ],
+    "merge_log": [
+      "Kept detailed core feature templates from draft 1 (ATT-STATIC-BUILD-001, ATT-MD-RENDER-002, ATT-SEARCH-003, ATT-TAGS-004, ATT-BACKLINKS-005, ATT-LINKS-006, ATT-BROWSER-007, ATT-PERF-008) and removed overlapping draft 2 templates ATT1-ATT8.",
+      "Merged static hosting verification intent from draft 2 ATT6 into ATT-STATIC-BUILD-001 description (deployment/serving without backend).",
+      "Added non-overlapping draft 2 templates ATT9-ATT12 to cover link syntax, tag representation, build workflow/environment, and input file assumptions.",
+      "Combined and deduplicated coverage guidance and definition-of-done items from both drafts while preserving intent."
+    ]
+  }
+}

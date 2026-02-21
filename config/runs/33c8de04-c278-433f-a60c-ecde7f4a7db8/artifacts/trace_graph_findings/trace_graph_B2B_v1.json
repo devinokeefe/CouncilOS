@@ -1,0 +1,104 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B2B_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:09:38.343991Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "trace_graph_B2B_primary_v1",
+    "trace_graph_B2B_anchor_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2B_v1",
+    "findings": [
+      {
+        "id": "TG-001",
+        "severity": "medium",
+        "summary": "The trace graph sample incorrectly maps Requirements R1, R2, and R3 to Milestone M2. In the plan, M2 ('Phase B') is scoped strictly to Backlinks and Forward Links (verifying AT8 and AT9), while R1, R2, and R3 are delivered and verified in Milestone M1 ('Phase A') and regression-tested in M5 ('Phase C').",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/exit_criteria",
+            "note": "Milestone M1 explicitly includes exit criteria for AT1 (R1), AT2 (R2), and AT3 (R3), confirming primary verification occurs here.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "AT1 passes... AT2 passes... AT3 passes..."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/exit_criteria",
+            "note": "Milestone M2 exit criteria are limited to AT8, AT9, and K10; they do not encompass R1, R2, or R3.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "AT8 passes... AT9 passes... K10 mitigation verified..."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/deliverables",
+            "note": "Milestone M2 deliverables are specific to the Backlink Resolver and Backlink rendering, not core file discovery or basic page rendering.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Backlink Resolver Plugin (C11)... Backlink section rendered..."
+          }
+        ],
+        "routing_target": "review"
+      },
+      {
+        "id": "TG1",
+        "severity": "medium",
+        "summary": "Deterministic sample checks for R1–R3 list milestone M2, but M2 exit criteria does not include AT1/AT2/AT3 (those are Phase A/M1 gates). This creates a trace ambiguity about where these requirements are actually validated.",
+        "evidence": [
+          {
+            "artifact_ref": "trace_graph_audit_input_v1",
+            "entity_id": null,
+            "json_pointer": "/inputs/deterministic_sample_checks/0/milestones",
+            "note": "R1 sample check milestones include M1 and M2",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "[\"M1\",\"M2\"]"
+          },
+          {
+            "artifact_ref": "trace_graph_audit_input_v1",
+            "entity_id": null,
+            "json_pointer": "/inputs/deterministic_sample_checks/1/milestones",
+            "note": "R2 sample check milestones include M1 and M2",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "[\"M1\",\"M2\"]"
+          },
+          {
+            "artifact_ref": "trace_graph_audit_input_v1",
+            "entity_id": null,
+            "json_pointer": "/inputs/deterministic_sample_checks/2/milestones",
+            "note": "R3 sample check milestones include M1 and M2",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "[\"M1\",\"M2\"]"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/exit_criteria",
+            "note": "M2 exit criteria gate on backlinks tests (AT8/AT9), not AT1–AT3",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "[\"AT8 passes: forward links resolve correctly and are clickable.\",\"AT9 passes: 100% of expected backlinks appear on target pages (R21).\",\"K10 mitigation verified: anchor links...\"]"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/exit_criteria",
+            "note": "M1 exit criteria explicitly include AT1/AT2/AT3",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "[\"AT1 passes: all .md files recursively discovered.\",\"AT2 passes: output is static files only...\",\"AT3 passes: Markdown formatting preserved...\"]"
+          }
+        ],
+        "routing_target": "review"
+      }
+    ]
+  }
+}

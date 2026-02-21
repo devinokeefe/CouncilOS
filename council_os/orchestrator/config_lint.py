@@ -7,15 +7,15 @@ import yaml
 
 from council_os.agents.roles import load_role_configs
 from council_os.agents.schemas import SCHEMA_VERSION
-from council_os.orchestrator.engine import _is_hq_config
 from council_os.orchestrator.hq_pipeline import PROMPT_LABELS, _resolve_config_path
+from council_os.utils import is_hq_config
 
 
 def lint_config(config_path: Path) -> list[str]:
     raw = yaml.safe_load(config_path.read_text(encoding="utf-8"))
     if not isinstance(raw, dict):
         return ["Config must be a YAML mapping at the top level."]
-    if _is_hq_config(raw):
+    if is_hq_config(raw):
         return _lint_hq_config(raw, config_path)
     return _lint_engine_config(raw, config_path)
 

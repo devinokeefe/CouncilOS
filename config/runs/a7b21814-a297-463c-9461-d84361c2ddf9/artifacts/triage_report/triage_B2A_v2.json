@@ -1,0 +1,490 @@
+{
+  "artifact_type": "triage_report",
+  "artifact_id": "triage_B2A_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:50:30.250741Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B2A_v2",
+    "validator_B2A_v2"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2A_v2",
+    "critic_id": "MERGED",
+    "verdict": "reject",
+    "defects": [
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Hard-gate failure: architecture options contain risk references that do not resolve to entries in the plan risk_register (id_integrity FAIL).",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": null,
+            "json_pointer": "/inputs/validator_report/checks/1",
+            "note": "validator_report id_integrity hard-gate is failing with multiple 'references missing risk ...' violations.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "O1",
+            "json_pointer": "/inputs/plan_candidate/plan_package/architecture/options/0/risks",
+            "note": "O1 risks are free-text strings that do not map to risk_register IDs.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "O2",
+            "json_pointer": "/inputs/plan_candidate/plan_package/architecture/options/1/risks",
+            "note": "O2 risks are free-text strings that do not map to risk_register IDs.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "O3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/architecture/options/2/risks",
+            "note": "O3 risks are free-text strings that do not map to risk_register IDs.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "O4",
+            "json_pointer": "/inputs/plan_candidate/plan_package/architecture/options/3/risks",
+            "note": "O4 risks are free-text strings that do not map to risk_register IDs.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": [
+          {
+            "recommendation": "patch",
+            "patch_type": "json_patch",
+            "ops": [
+              {
+                "op": "replace",
+                "path": "/inputs/plan_candidate/plan_package/architecture/options/0/risks",
+                "value": []
+              },
+              {
+                "op": "replace",
+                "path": "/inputs/plan_candidate/plan_package/architecture/options/1/risks",
+                "value": []
+              },
+              {
+                "op": "replace",
+                "path": "/inputs/plan_candidate/plan_package/architecture/options/2/risks",
+                "value": []
+              },
+              {
+                "op": "replace",
+                "path": "/inputs/plan_candidate/plan_package/architecture/options/3/risks",
+                "value": []
+              }
+            ],
+            "note": "This is the only safe repair without minting new risk IDs. If preserving these risks is desired, reroute is needed to add corresponding risk_register entries with new K* IDs (not allowed for this role)."
+          },
+          {
+            "recommendation": "reroute",
+            "reroute_target": "Risk/Governance",
+            "reason": "If option-specific risks must be retained, new risk_register entries (new K* IDs) are required; this role cannot mint them."
+          }
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Hard-gate failure: critical risk K8 has no mitigation (risk_closure FAIL). Plan elsewhere defines a mitigation (DEC8/DL18), but risk_register.K8.mitigation is null.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": null,
+            "json_pointer": "/inputs/validator_report/checks/4",
+            "note": "validator_report risk_closure hard-gate reports: 'Risk K8 missing closure'.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "K8",
+            "json_pointer": "/inputs/plan_candidate/plan_package/risk_register/7/mitigation",
+            "note": "K8 mitigation is null.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "DEC8",
+            "json_pointer": "/inputs/plan_candidate/plan_package/decision_log/7/choice",
+            "note": "DEC8 specifies a concrete build-time privacy safeguard approach.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "DL18",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/4/deliverables/3/text",
+            "note": "DL18 also describes implementing the K8 safeguard.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "risk_closure",
+        "patch": [
+          {
+            "recommendation": "patch",
+            "patch_type": "json_patch",
+            "ops": [
+              {
+                "op": "replace",
+                "path": "/inputs/plan_candidate/plan_package/risk_register/7/mitigation",
+                "value": {
+                  "text": "Implement a mandatory build-time privacy safeguard: notes marked private (e.g., front matter flag) are excluded from emitted pages and the search index by default; the build fails if any private notes are detected unless the user supplies an explicit override/acknowledgement flag; emit a report listing excluded private notes and the reason for exclusion.",
+                  "owner": "sec",
+                  "status": "planned"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "Inconsistency: DEC8 explicitly states fail-the-build-unless-override for private notes, but M5 deliverable DL18 does not explicitly include fail-by-default behavior, creating ambiguity in enforcement strength for K8.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "DEC8",
+            "json_pointer": "/inputs/plan_candidate/plan_package/decision_log/7/choice",
+            "note": "DEC8 includes 'the build fails unless the user explicitly acknowledges an override flag'.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "DL18",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/4/deliverables/3/text",
+            "note": "DL18 describes override mechanism but does not explicitly state fail-by-default.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {
+            "recommendation": "patch",
+            "patch_type": "json_patch",
+            "ops": [
+              {
+                "op": "replace",
+                "path": "/inputs/plan_candidate/plan_package/milestones/4/deliverables/3/text",
+                "value": "Privacy leakage safeguard implementation for notes marked private (K8): mandatory build-time check that excludes private notes from outputs/search by default AND fails the build unless an explicit user override/acknowledgement flag is provided; plus confirmation tests and a report listing excluded private notes."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "note",
+        "severity": "high",
+        "summary": "Product ambiguity: Q10 is marked blocking (CLI vs GUI vs build integration), but the plan hard-requires a CLI (R5) and commits early milestones to implementing it, effectively treating Q10 as non-blocking. Requires HITL product decision (keep CLI as requirement vs relax Q10 blocking).",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "Q10",
+            "json_pointer": "/inputs/plan_candidate/plan_package/project_capsule/open_questions/9",
+            "note": "Q10 is blocking:true.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "R5",
+            "json_pointer": "/inputs/plan_candidate/plan_package/requirements/4",
+            "note": "R5 makes CLI a MUST.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "M2",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/1/name",
+            "note": "Milestone M2 commits to CLI orchestration early.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {
+            "recommendation": "reroute",
+            "reroute_target": "HITL/Product Owner",
+            "reason": "Confirm whether CLI is mandatory (keep R5) or whether Q10 should remain blocking and broaden acceptable interfaces."
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Risk hygiene: K6 (malformed YAML front matter) has null mitigation/acceptance despite being part of core ingestion/metadata parsing responsibilities; should define a handling policy (warn+skip vs fail file vs fail build).",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "K6",
+            "json_pointer": "/inputs/plan_candidate/plan_package/risk_register/5",
+            "note": "K6 mitigation and acceptance are null.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "C2",
+            "json_pointer": "/inputs/plan_candidate/plan_package/architecture/options/0/components/1/responsibilities",
+            "note": "Front matter parsing is a stated responsibility.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "C12",
+            "json_pointer": "/inputs/plan_candidate/plan_package/architecture/options/1/components/3/responsibilities",
+            "note": "Tag/metadata extraction plugin parses front matter and tags.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "completeness_heuristic",
+        "patch": [
+          {
+            "recommendation": "patch",
+            "patch_type": "json_patch",
+            "ops": [
+              {
+                "op": "replace",
+                "path": "/inputs/plan_candidate/plan_package/risk_register/5/mitigation",
+                "value": {
+                  "text": "Handle malformed YAML front matter deterministically: parse errors produce a build-time warning with file path and error details; default behavior is to ignore front matter for that file (treat as plain Markdown) and continue the build; provide a strict mode to fail the build on any front matter parse errors.",
+                  "owner": "eng",
+                  "status": "planned"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Risk K8 (critical privacy leakage) has null mitigation in risk_register, violating risk_closure gate. Validator reports missing closure for K8. Mitigation is defined in DEC8 and DL18 but not recorded in risk_register/7/mitigation field.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "K8",
+            "json_pointer": "/plan_package/risk_register/7/mitigation",
+            "note": "K8 mitigation field is null despite critical severity",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "\"mitigation\": null"
+          },
+          {
+            "artifact_ref": "candidate_delta_B2A_v2",
+            "entity_id": null,
+            "json_pointer": "/inputs/validator_report/checks/4",
+            "note": "Validator reports risk_closure gate failure for K8",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "\"name\": \"risk_closure\", \"hard_gate\": true, \"pass\": false"
+          }
+        ],
+        "violated_gate": "risk_closure",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Validator reports 12 missing risk IDs referenced in architecture options O1/O2/O3/O4 tradeoffs/risks fields. These inline risk descriptions must be promoted to formal risk_register entries or removed.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B2A_v2",
+            "entity_id": null,
+            "json_pointer": "/inputs/validator_report/checks/1/violations",
+            "note": "id_integrity gate reports 12 missing risk references",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Option O1 references missing risk Large collections can lead to high memory usage"
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Consistency finding CS1: Q10 marked blocking but plan commits to CLI in R5 (MUST) and M2 (DL5) without gating on Q10 resolution. This creates a logical contradiction requiring HITL resolution or Q10 reclassification.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B2A_v2",
+            "entity_id": "CS1",
+            "json_pointer": "/inputs/consistency_findings/findings/0",
+            "note": "CS1 identifies blocking question vs locked requirement conflict",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Q10 is marked blocking (CLI vs GUI vs build integration), but the plan simultaneously hard-requires a CLI"
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Consistency finding CS3: Privacy safeguard default behavior (fail-by-default) is explicit in DEC8 but ambiguous in DL18. This ambiguity affects K8 mitigation enforcement and requires clarification before approval.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B2A_v2",
+            "entity_id": "CS3",
+            "json_pointer": "/inputs/consistency_findings/findings/2",
+            "note": "CS3 identifies inconsistent privacy safeguard behavior description",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "DEC8 states the build fails unless the user explicitly acknowledges an override, while M5 deliverable DL18 describes a mandatory check plus override mechanism but does not explicitly state fail-by-def"
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Risk K6 (malformed YAML front matter) has null mitigation and null acceptance despite medium severity and core ingestion dependency. Mitigation strategy should be defined or risk accepted explicitly.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "K6",
+            "json_pointer": "/plan_package/risk_register/5",
+            "note": "K6 has no mitigation or acceptance defined",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "\"mitigation\": null, \"acceptance\": null"
+          }
+        ],
+        "violated_gate": "risk_closure",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Consistency finding CS2: Assumption A5 (CLI acceptability needs confirmation) conflicts with R5 (CLI is MUST). Either confirm A5 or remove needs_confirmation flag to align with locked requirement.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B2A_v2",
+            "entity_id": "CS2",
+            "json_pointer": "/inputs/consistency_findings/findings/1",
+            "note": "CS2 identifies assumption vs requirement mismatch",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Assumption A5 states that a CLI build workflow is merely acceptable and needs confirmation, but the requirements and milestones treat a CLI as mandatory"
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Consistency finding CS4: K8 mitigation null in risk_register but defined in DEC8 and DL18. Risk_register should reference or contain the mitigation to maintain single source of truth.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B2A_v2",
+            "entity_id": "CS4",
+            "json_pointer": "/inputs/consistency_findings/findings/3",
+            "note": "CS4 identifies risk_register vs decision_log inconsistency",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Risk register entry K8 (critical privacy leakage) has mitigation set to null, but the decision log (DEC8) and milestone deliverables (DL18) specify a concrete mitigation approach"
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "note",
+        "severity": "low",
+        "summary": "Consistency finding CS5: Term 'Generate' used for both governance stage (no side effects) and milestone labels (with side effects). Consider renaming milestone phases to avoid confusion.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B2A_v2",
+            "entity_id": "CS5",
+            "json_pointer": "/inputs/consistency_findings/findings/4",
+            "note": "CS5 identifies naming collision between governance and milestones",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "The term/stage name \"Generate\" is used in two places with potentially conflicting semantics"
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "note",
+        "severity": "low",
+        "summary": "Consistency finding CS005: AT14 pass criteria do not explicitly verify site 'loads' correctly, only that functionality works without JS errors. R14 requires both load and function.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B2A_v2",
+            "entity_id": "CS005",
+            "json_pointer": "/inputs/consistency_findings/findings/8",
+            "note": "CS005 identifies incomplete acceptance test coverage for R14",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "AT14 maps to R14 (cross-browser compatibility) but does not explicitly verify that the site 'loads' correctly"
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {}
+        ]
+      }
+    ],
+    "reroute_target": "HITL/Product Owner",
+    "reroute_reason": "Resolve Q10 (interface shape) given the plan currently locks in a CLI as MUST (R5) and implements it early; confirm whether to keep CLI as requirement or adjust blocking status/scope."
+  }
+}

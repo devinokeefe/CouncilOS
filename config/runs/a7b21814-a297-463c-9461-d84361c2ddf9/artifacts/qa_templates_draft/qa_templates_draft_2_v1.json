@@ -1,0 +1,141 @@
+{
+  "artifact_type": "qa_templates_draft",
+  "artifact_id": "qa_templates_draft_2_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:24:53.518039Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "capsule_canonical_v1"
+  ],
+  "payload": {
+    "templates": [
+      {
+        "id": "ATT-01",
+        "name": "Static Site Build Acceptance",
+        "description": "Verify that the build process successfully ingests Markdown notes from an input directory and produces a complete static site output directory with all expected files (HTML, CSS, JS, assets) without errors.",
+        "applies_to": [
+          "goals[0]",
+          "success_metrics[0]",
+          "CNS1"
+        ]
+      },
+      {
+        "id": "ATT-02",
+        "name": "Markdown Rendering Acceptance",
+        "description": "Verify that all Markdown files in the input set (excluding configured ignores) are converted to accessible HTML pages preserving formatting and structure per the supported Markdown flavor.",
+        "applies_to": [
+          "goals[1]",
+          "success_metrics[1]",
+          "CNS2"
+        ]
+      },
+      {
+        "id": "ATT-03",
+        "name": "Full-Text Search Acceptance",
+        "description": "Verify that the search feature returns relevant results matching note titles and body text for representative queries, and that search interaction remains responsive at the confirmed target scale.",
+        "applies_to": [
+          "goals[2]",
+          "success_metrics[2]",
+          "A4"
+        ]
+      },
+      {
+        "id": "ATT-04",
+        "name": "Tag Browsing and Filtering Acceptance",
+        "description": "Verify that tag index pages are generated correctly, that selecting a tag displays all notes containing that tag, and that each note page displays its associated tags parsed from the agreed convention.",
+        "applies_to": [
+          "goals[3]",
+          "success_metrics[4]",
+          "Q2"
+        ]
+      },
+      {
+        "id": "ATT-05",
+        "name": "Internal Links and Backlinks Acceptance",
+        "description": "Verify that internal links between notes render correctly, that each destination note page includes a backlinks section listing all source notes linking to it, and that backlinks are clickable and functional.",
+        "applies_to": [
+          "goals[4]",
+          "success_metrics[3]",
+          "Q1",
+          "Q8"
+        ]
+      },
+      {
+        "id": "ATT-06",
+        "name": "Static Hosting Compatibility Acceptance",
+        "description": "Verify that the generated site output can be deployed and served on the target static hosting environment (e.g., local file browsing, GitHub Pages, Netlify) without requiring server-side runtime, and that all pages and features function correctly.",
+        "applies_to": [
+          "goals[5]",
+          "success_metrics[5]",
+          "CNS1",
+          "Q5"
+        ]
+      },
+      {
+        "id": "ATT-07",
+        "name": "Browser Compatibility Acceptance",
+        "description": "Verify that the generated site loads and functions without errors in modern browsers (e.g., Chrome, Firefox, Safari, Edge) covering the expected user base.",
+        "applies_to": [
+          "success_metrics[5]"
+        ]
+      },
+      {
+        "id": "ATT-08",
+        "name": "Markdown Flavor Support Acceptance",
+        "description": "Verify that the supported Markdown features (e.g., CommonMark/GFM, tables, code highlighting, etc.) render correctly in the generated site per the agreed scope.",
+        "applies_to": [
+          "CNS2",
+          "Q6"
+        ]
+      },
+      {
+        "id": "ATT-09",
+        "name": "Broken Link Handling Acceptance",
+        "description": "Verify that broken internal links are detected and handled per the agreed policy (warn, fail build, or render as plain text) and that the behavior is consistent and documented.",
+        "applies_to": [
+          "Q8"
+        ]
+      },
+      {
+        "id": "ATT-10",
+        "name": "Build Workflow Acceptance",
+        "description": "Verify that the build can be invoked via the agreed interface (CLI, GUI, or build script) and that the workflow is documented and repeatable.",
+        "applies_to": [
+          "A5",
+          "Q7",
+          "Q10"
+        ]
+      }
+    ],
+    "coverage_guidance": [
+      "Ensure test coverage for the full build pipeline from input directory to output directory, including error cases (missing files, malformed Markdown, invalid links).",
+      "Test search functionality with a representative corpus at the confirmed scale, including edge cases (empty queries, special characters, very long queries, no results).",
+      "Verify tag parsing and normalization across all agreed conventions (YAML front matter, inline hashtags, etc.), including edge cases (empty tags, special characters, case sensitivity, duplicates).",
+      "Test internal link resolution for all supported conventions (standard Markdown links, wiki-links, relative paths, etc.), including cross-directory links and edge cases (self-links, circular links, links to non-existent notes).",
+      "Verify backlink generation for all valid internal links, including notes with no backlinks and notes with many backlinks.",
+      "Test the generated site on the target hosting environment(s) with realistic deployment scenarios (base URL configuration, relative paths, CORS if applicable).",
+      "Test browser compatibility on the agreed set of browsers and versions, covering all interactive features (search, navigation, tag filtering).",
+      "Verify that the output is fully static (no server-side dependencies) by serving from a simple HTTP server or file system.",
+      "Test incremental builds and watch mode (if implemented) to ensure correctness and performance.",
+      "Verify that the site information architecture (home, all notes, tags index, per-tag pages, per-note layout) matches the agreed design per Q4.",
+      "Test handling of large note sets and edge cases (very large notes, many tags, deeply nested links) to confirm performance targets per Q3.",
+      "Verify that the build fails gracefully or warns appropriately for unsupported Markdown features or invalid input per Q6."
+    ],
+    "definition_of_done": [
+      "All acceptance test templates have been executed with passing results for the agreed scope and confirmed assumptions.",
+      "Build process completes successfully on the target environment(s) without errors for a representative input corpus.",
+      "All Markdown notes in the input set are rendered as accessible HTML pages in the output (excluding configured ignores).",
+      "Full-text search returns relevant results and performs responsively at the confirmed target scale.",
+      "Tag index and per-tag pages are generated correctly, and all notes display their associated tags.",
+      "Internal links resolve correctly, and backlinks are generated and displayed on all linked notes.",
+      "Generated site can be deployed and functions correctly on the target static hosting environment(s) without server-side runtime.",
+      "Site loads and functions without errors in all agreed modern browsers.",
+      "All supported Markdown features render correctly per the agreed flavor and scope.",
+      "Broken link handling behavior matches the agreed policy and is documented.",
+      "Build workflow is documented and repeatable via the agreed interface (CLI, GUI, or build script).",
+      "All blocking open questions (Q1, Q2, Q3, Q4, Q10) have been resolved and incorporated into the implementation and tests.",
+      "Performance, scale, and usability targets per success metrics are met.",
+      "Code and build artifacts are delivered with documentation covering usage, supported conventions, and limitations."
+    ]
+  }
+}

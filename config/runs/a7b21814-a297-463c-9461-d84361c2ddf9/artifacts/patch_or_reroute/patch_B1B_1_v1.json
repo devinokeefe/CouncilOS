@@ -1,0 +1,16 @@
+{
+  "artifact_type": "patch_or_reroute",
+  "artifact_id": "patch_B1B_1_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:41:39.927849Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B1B_v1"
+  ],
+  "payload": {
+    "action": "reroute",
+    "rationale": "Hard-gate failures require edits in locked/unsafe sections that this role is not allowed to change: (1) /plan_package/architecture/options/*/risks must be removed or converted to valid in-register risk IDs to satisfy id_integrity; (2) /plan_package/risk_register/7 (K8) needs mitigation/acceptance populated to satisfy risk_closure; (3) /plan_package/acceptance_tests/2 (AT3) procedure/pass_criteria need adjustment to remove dependency on exclusion config, but this role is prohibited from editing /acceptance_tests. Additionally, decision_log evidence pointers referencing missing entity_id B1 can be fixed here, but doing only that would not clear the hard gates. Reroute is required to a role permitted to edit architecture/options, risk_register, and acceptance_tests.",
+    "patch": [],
+    "reroute_target": "plan_candidate"
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "artifact_type": "branch_set",
+  "artifact_id": "branch_set_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:06:28.682512Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "alignment_warnings_v1"
+  ],
+  "payload": {
+    "branches": [
+      {
+        "branch_id": "B2",
+        "selected_arch_option_id": "O2",
+        "milestone_strategy": {
+          "style": "hybrid",
+          "notes": "Phase A (thin-slice): Build the core orchestrator (C8) with the file-collector plugin (C9) and Markdown parser plugin (C10) to produce basic HTML output — validates the plugin lifecycle and satisfies R1-R4. Phase B (parallel plugins): Develop backlink resolver (C11), tag aggregator (C12), and search index (C13) plugins in parallel, each with its own acceptance gate. Phase C (integration): Integrate all plugins, add theme/renderer (C14) and client-side runtime (C15), run full acceptance suite. Phase D (harden): Watch mode, performance benchmarks, optional features. The hybrid approach front-loads the plugin API design and then parallelises feature work."
+        },
+        "acceptance_strategy": {
+          "notes": "Phase A gates on AT1/AT2/AT3/AT4/AT13 plus a plugin-contract smoke test. Phase B gates each plugin independently: AT8/AT9 for backlinks, AT6/AT7 for tags, AT5/AT12 for search. Phase C runs the full suite AT1-AT13 end-to-end. A dedicated security acceptance test for K3 (XSS payloads) is required before Phase C exit. Phase D adds performance and cross-browser tests (AT10/AT11)."
+        },
+        "governance_posture": {
+          "tooling_level": "sandboxed",
+          "hitl_strictness": "high"
+        },
+        "risk_posture": {
+          "notes": "K16 (config/plugin instability) is the primary additional risk for this branch; mitigated by designing a minimal, versioned plugin API with schema validation before Phase B begins. K1 and K2 (link/tag ambiguity) must be resolved before Phase A exits because plugin contracts depend on canonical link/tag models. K3 (XSS) handled identically to B1 — sanitisation in the renderer plugin. K18 (dependency management) is lower risk here since fewer external dependencies are needed compared to O3. Accepts higher upfront design cost (plugin API iterations) as a trade-off for long-term extensibility."
+        },
+        "rationale": "The plugin-based architecture (O2) invests more upfront in API design but yields a highly extensible system where features like graph views (R26), themes (R27), and advanced search (R28) can be added as plugins without core changes. The hybrid milestone strategy mitigates the over-engineering risk (noted in O2 cons) by delivering a working thin-slice first, then parallelising plugin development. Best suited if the project anticipates growth beyond MVP scope."
+      },
+      {
+        "branch_id": "B2",
+        "selected_arch_option_id": "O2",
+        "milestone_strategy": {
+          "style": "hybrid",
+          "notes": "Build a solid foundation first. Milestone 1 (Big Bang): Design and build the core orchestrator, plugin API, and shared context schema. Milestone 2 (Thin Slice): Implement individual features as separate plugins, starting with the file collector and Markdown parser, followed by tags, backlinks, and finally the search indexer and renderer. This ensures a stable core before adding functional components."
+        },
+        "acceptance_strategy": {
+          "notes": "Acceptance criteria are heavily focused on the plugin API contract. Each plugin must be tested in isolation by mocking the build context. The Core Orchestrator requires testing to ensure lifecycle hooks are executed in the correct order and that inter-plugin dependencies are managed properly. Final acceptance requires an E2E test with all plugins enabled."
+        },
+        "governance_posture": {
+          "tooling_level": "sandboxed",
+          "hitl_strictness": "high"
+        },
+        "risk_posture": {
+          "notes": "Accepts significant upfront implementation risk related to designing a stable and performant plugin API (O2 cons). This is mitigated by dedicating the first milestone exclusively to the core architecture. This posture actively mitigates long-term maintainability risks by enforcing a clean separation of concerns. It addresses scalability risks (K4, K13) by design, as performance-critical components like the search indexer can be swapped with more advanced implementations later without rewriting the core."
+        },
+        "rationale": "This branch prioritizes long-term extensibility and architectural purity. By investing in a custom plugin-based core, it provides maximum control and flexibility for future evolution. This approach is ideal if the project is expected to grow in complexity, for example by adding features like graph visualizations or multiple theme options. It trades initial development speed for superior maintainability and adaptability down the line."
+      },
+      {
+        "branch_id": "B1",
+        "selected_arch_option_id": "O1",
+        "milestone_strategy": {
+          "style": "thin_slice",
+          "notes": "Milestone 1: CLI ingests a folder of .md files and produces bare HTML pages with preserved formatting (R1, R2, R3, R4). Milestone 2: Add forward-link detection, backlink computation, and backlink section rendering (R9, R10, R21). Milestone 3: Tag extraction and per-tag navigation pages (R7, R8, R20). Milestone 4: Client-side search index generation and search UI (R5, R19). Milestone 5: Polish — error reporting (R12), cross-browser validation (R13), watch mode (R25), and optional features (R24, R26-R29). Each milestone delivers a shippable increment that can be tested against its acceptance tests before proceeding."
+        },
+        "acceptance_strategy": {
+          "notes": "Each thin-slice milestone gates on its mapped acceptance tests: AT1/AT2/AT3/AT4/AT13 for M1; AT8/AT9 for M2; AT6/AT7 for M3; AT5/AT12 for M4; AT10/AT11 for M5. A security-focused XSS acceptance test (covering K3) must be added before M1 exits. Tag and backlink completeness metrics (R20, R21) are validated with deterministic fixture datasets at M2 and M3 exits."
+        },
+        "governance_posture": {
+          "tooling_level": "sandboxed",
+          "hitl_strictness": "high"
+        },
+        "risk_posture": {
+          "notes": "Prioritises resolving blocking questions Q1 (link syntax) and Q2 (tag format) before any coding begins, per AL-001 and AL-002. K3 (XSS) mitigated by disabling raw HTML and blocking unsafe URL schemes in the Markdown renderer from day one. K9 (path traversal) addressed by constraining ingestion to a declared root and rejecting symlinks in the monolithic parser component C2. K4 (search index scale) deferred to M4 with a concrete benchmark step. Accepts K20 (scope creep) risk by explicitly deferring COULD requirements to post-M5."
+        },
+        "rationale": "The monolithic CLI (O1) minimises upfront design overhead and delivers the fastest path to a working end-to-end prototype. Thin-slice milestones let each core goal (G1-G5) be validated incrementally. High HITL strictness ensures blocking questions and security risks are resolved early. This branch optimises for speed-to-first-value and simplicity at the cost of long-term extensibility."
+      }
+    ]
+  }
+}

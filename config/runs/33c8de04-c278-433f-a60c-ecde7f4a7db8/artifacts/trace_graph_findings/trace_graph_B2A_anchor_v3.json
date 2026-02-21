@@ -1,0 +1,129 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B2A_anchor_v3",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:18:18.020883Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "plan_candidate_B2A_v3"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2A_v3",
+    "findings": [
+      {
+        "id": "TG1",
+        "severity": "high",
+        "summary": "Deterministic sample check for R2 maps compliance to milestones [M1,M2], but the candidate plan places AT2 (static output constraint verification) in M5, and the first explicit renderer deliverable enabling static HTML/CSS/JS output appears in M3. This makes the sample check’s milestone trace for R2 inconsistent with the plan package.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": null,
+            "json_pointer": "/deterministic_sample_checks/1/milestones",
+            "note": "Sample check claims R2 is covered by milestones M1 and M2 only.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "M5",
+            "json_pointer": "/plan_package/milestones/4/exit_criteria/0",
+            "note": "M5 exit criteria includes AT2 for static-only output validation.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "AT2 and AT13 pass on a representative notes folder (static output only; build completes without errors)."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "M3",
+            "json_pointer": "/plan_package/milestones/2/deliverables/2",
+            "note": "M3 introduces the Renderer/Theme Plugin skeleton that actually renders pages into static outputs.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Renderer/Theme Plugin skeleton (C14) capable of rendering note pages with injected backlinks section and per-note tag list plus tag index pages (R2/R10/R8)."
+          }
+        ],
+        "routing_target": "orchestrator.audit.sample_check_trace_alignment"
+      },
+      {
+        "id": "TG2",
+        "severity": "high",
+        "summary": "Deterministic sample check for R3 maps the requirement to milestones [M1,M2], but M2 deliverables do not include any renderer/templating component, while M2 exit criteria asserts AT3 (visual comparison of rendered HTML output) passes. Rendering capability is first explicitly introduced in M3, creating an internal trace inconsistency around where R3 can be validated.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": null,
+            "json_pointer": "/deterministic_sample_checks/2/milestones",
+            "note": "Sample check claims R3 is covered by milestones M1 and M2 only.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/deliverables",
+            "note": "M2 deliverables list file collection + Markdown parsing + slug strategy, but no rendering deliverable.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/exit_criteria/1",
+            "note": "M2 exit criteria asserts AT3 passes, which requires rendered HTML output.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "AT3 passes for the selected baseline Markdown features on the fixture set."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "M3",
+            "json_pointer": "/plan_package/milestones/2/deliverables/2",
+            "note": "Renderer is explicitly scheduled in M3, not M2.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Renderer/Theme Plugin skeleton (C14) capable of rendering note pages..."
+          }
+        ],
+        "routing_target": "orchestrator.audit.sample_check_trace_alignment"
+      },
+      {
+        "id": "TG3",
+        "severity": "low",
+        "summary": "Deterministic sample check for R1 includes milestone M1, but the plan’s first concrete implementation and validation of recursive .md discovery is in M2 (DL5 + AT1). Including M1 may be acceptable as a dependency milestone, but it is not the milestone where R1 is substantively delivered/tested per the plan text.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": null,
+            "json_pointer": "/deterministic_sample_checks/0/milestones",
+            "note": "Sample check maps R1 to milestones M1 and M2.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/deliverables/0",
+            "note": "DL5 in M2 is the explicit recursive .md discovery implementation.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "File Collector Plugin (C9): recursive .md discovery, include/exclude patterns, default symlink policy documented (R1; mitigates K9)."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/exit_criteria/0",
+            "note": "AT1 validation for recursive discovery is in M2 exit criteria.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "AT1 passes (recursive discovery of .md only)."
+          }
+        ],
+        "routing_target": "orchestrator.audit.sample_check_trace_precision"
+      }
+    ]
+  }
+}

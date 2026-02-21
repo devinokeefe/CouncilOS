@@ -1,0 +1,109 @@
+{
+  "checkpoint_id": "cp-7a58dcd0-2c0b-4ed0-aa2d-03bc8d4bdb3f",
+  "run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "created_at": "2026-02-21T10:54:05.939684Z",
+  "stage_name": "analysis.failure_modes",
+  "stage_index": 26,
+  "event_cursor": "0f092024-bd43-4444-9035-b0b7f8986859",
+  "artifact_refs": {
+    "capsule_draft_a": "capsule_draft_a_v1",
+    "capsule_draft_b": "capsule_draft_b_v1",
+    "capsule": "capsule_canonical_v1",
+    "clarification_plan": "clarification_plan_v1",
+    "requirements_draft_1": "requirements_draft_1_v1",
+    "requirements_draft_2": "requirements_draft_2_v1",
+    "architecture_draft_1": "architecture_draft_1_v1",
+    "architecture_draft_2": "architecture_draft_2_v1",
+    "qa_templates_draft_1": "qa_templates_draft_1_v1",
+    "qa_templates_draft_2": "qa_templates_draft_2_v1",
+    "risk_gov_draft_1": "risk_gov_draft_1_v1",
+    "risk_gov_draft_2": "risk_gov_draft_2_v1",
+    "requirements_merge": "requirements_merge_v1",
+    "requirements_canonical": "requirements_canonical_v1",
+    "architecture_merge": "architecture_merge_v1",
+    "architecture_canonical": "architecture_canonical_v1",
+    "risk_gov_merge": "risk_gov_merge_v1",
+    "risk_gov_canonical": "risk_gov_canonical_v1",
+    "qa_strategy_canonical": "qa_strategy_canonical_v1",
+    "acceptance_draft": "acceptance_draft_v1",
+    "acceptance_canonical": "acceptance_canonical_v1",
+    "alignment_warnings": "alignment_warnings_v1",
+    "branch_set": "branch_set_v1",
+    "candidate_delta_B2A": "candidate_delta_B2A_v2",
+    "candidate_delta_B1A": "candidate_delta_B1A_v2",
+    "candidate_delta_B2B": "candidate_delta_B2B_v1",
+    "candidate_delta_B1B": "candidate_delta_B1B_v1"
+  },
+  "routing_state": {
+    "candidate_count": 4,
+    "branch_count": 3,
+    "branch_ids": [
+      "B2",
+      "B2",
+      "B1"
+    ],
+    "candidates": [
+      {
+        "candidate_id": "B2A",
+        "branch_id": "B2",
+        "synthesizer_id": "candidate_a_openai",
+        "author_model": "openai/gpt-5.2",
+        "author_family": "openai",
+        "delta_ref": "candidate_delta_B2A_v2",
+        "plan_ref": "plan_candidate_B2A_v2",
+        "validator_ref": "validator_B2A_v2",
+        "triage_ref": "triage_B2A_v2",
+        "failure_mode_ref": "failure_modes_B2A_v2"
+      },
+      {
+        "candidate_id": "B1A",
+        "branch_id": "B1",
+        "synthesizer_id": "candidate_a_openai",
+        "author_model": "openai/gpt-5.2",
+        "author_family": "openai",
+        "delta_ref": "candidate_delta_B1A_v2",
+        "plan_ref": "plan_candidate_B1A_v3",
+        "validator_ref": "validator_B1A_v3",
+        "triage_ref": "triage_B1A_v2",
+        "failure_mode_ref": "failure_modes_B1A_v3"
+      },
+      {
+        "candidate_id": "B2B",
+        "branch_id": "B2",
+        "synthesizer_id": "candidate_b_anthropic",
+        "author_model": "anthropic/claude-opus-4-6",
+        "author_family": "anthropic",
+        "delta_ref": "candidate_delta_B2B_v1",
+        "plan_ref": "plan_candidate_B2B_v1",
+        "validator_ref": "validator_B2B_v1",
+        "triage_ref": "triage_B2B_v1",
+        "failure_mode_ref": "failure_modes_B2B_v1"
+      },
+      {
+        "candidate_id": "B1B",
+        "branch_id": "B1",
+        "synthesizer_id": "candidate_b_anthropic",
+        "author_model": "anthropic/claude-opus-4-6",
+        "author_family": "anthropic",
+        "delta_ref": "candidate_delta_B1B_v1",
+        "plan_ref": "plan_candidate_B1B_v1",
+        "validator_ref": "validator_B1B_v1",
+        "triage_ref": "triage_B1B_v1",
+        "failure_mode_ref": "failure_modes_B1B_v1"
+      }
+    ],
+    "expected_candidates": [
+      "B2A",
+      "B2B",
+      "B2A",
+      "B2B",
+      "B1A",
+      "B1B"
+    ],
+    "candidates_complete": false,
+    "candidate_cycle": 2,
+    "stage": "analysis.failure_modes",
+    "index": 26
+  },
+  "tool_side_effect_ledger_ref": null
+}

@@ -16,6 +16,9 @@ def canonical_json_dumps(value: Any) -> str:
 def canonical_json_bytes(value: Any) -> bytes:
     return canonical_json_dumps(value).encode("utf-8")
 
+def canonicalize_json(value: Any) -> bytes:
+    return canonical_json_bytes(value)
+
 
 def hash_bytes(payload: bytes) -> str:
     digest = hashlib.sha256(payload).hexdigest()
@@ -34,6 +37,7 @@ def hash_json(value: Any, *, excluded_pointers: Iterable[str] | None = None) -> 
 
 _DEFAULT_EXCLUDED_POINTERS: tuple[str, ...] = (
     "/meta/plan_status",
+    "/meta/plan_version",
     "/meta/created_at",
     "/meta/source_run_id",
     "/meta/run_id",

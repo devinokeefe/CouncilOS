@@ -1,0 +1,158 @@
+{
+  "artifact_type": "requirements_draft",
+  "artifact_id": "requirements_draft_2_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T11:57:54.141887Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "capsule_canonical_v1"
+  ],
+  "payload": {
+    "requirements": [
+      {
+        "id": "REQ_B_1",
+        "priority": "MUST",
+        "text": "The system shall accept a user-specified directory (or repository path) of Markdown files as input and recursively discover all `.md` files within it.",
+        "rationale": "Directly supports G1 (ingest a folder of Markdown notes). Without file discovery the pipeline cannot begin."
+      },
+      {
+        "id": "REQ_B_2",
+        "priority": "MUST",
+        "text": "The system shall parse each discovered Markdown file and generate a corresponding static HTML page that preserves the original Markdown formatting and structure (headings, lists, code blocks, images, emphasis, tables, etc.).",
+        "rationale": "Supports G5 (preserve Markdown formatting) and G1 (generate a static website). Ensures content fidelity."
+      },
+      {
+        "id": "REQ_B_3",
+        "priority": "MUST",
+        "text": "The generated output shall consist exclusively of static files (HTML, CSS, JS, and assets) that can be served by any static file server or opened locally, with no server-side runtime required for browsing, search, or backlinks.",
+        "rationale": "Enforces CNS1 (static site constraint) and non-goal NG1 (no hosted SaaS/server-side DB)."
+      },
+      {
+        "id": "REQ_B_4",
+        "priority": "MUST",
+        "text": "The system shall build a client-side full-text search index at generation time and embed it in the static site so that users can search across all note contents and titles from the browser without a server.",
+        "rationale": "Supports G2 (full-text search) and aligns with A3 (client-side search index) and CNS1."
+      },
+      {
+        "id": "REQ_B_5",
+        "priority": "MUST",
+        "text": "Search results shall return relevant notes for a given query, with at least 90% of predefined representative queries returning the expected note within the top 10 results.",
+        "rationale": "Directly maps to SM2 (search quality metric). Ensures search is practically useful."
+      },
+      {
+        "id": "REQ_B_6",
+        "priority": "MUST",
+        "text": "The system shall extract tags from notes (at minimum from a YAML frontmatter field, with inline #tag support dependent on Q2 resolution) and generate navigable tag index pages or filters so users can browse notes by tag.",
+        "rationale": "Supports G3 (tag-based browsing). Aligns with A4 (parseable tag representation) and SM3 (100% tag correctness)."
+      },
+      {
+        "id": "REQ_B_7",
+        "priority": "MUST",
+        "text": "100% of notes containing tags in a dataset shall appear under their corresponding tag pages or filters in the generated site.",
+        "rationale": "Directly maps to SM3 (tag extraction correctness metric). Ensures reliability of categorization."
+      },
+      {
+        "id": "REQ_B_8",
+        "priority": "MUST",
+        "text": "The system shall detect forward links between notes (standard Markdown links and, pending Q1 resolution, wiki-link syntax) and render them as navigable hyperlinks in the generated HTML pages.",
+        "rationale": "Supports G4 (detect and render forward links). Link detection is prerequisite for backlink computation."
+      },
+      {
+        "id": "REQ_B_9",
+        "priority": "MUST",
+        "text": "The system shall compute backlinks for each note by analyzing all forward links across the note set and display a backlinks section on each note's page listing all notes that link to it.",
+        "rationale": "Supports G4 (backlinks) and SM4 (100% backlink correctness). Core differentiating feature."
+      },
+      {
+        "id": "REQ_B_10",
+        "priority": "MUST",
+        "text": "For a test set of interlinked notes, 100% of expected backlinks shall appear on their target note pages.",
+        "rationale": "Directly maps to SM4 (backlink correctness metric)."
+      },
+      {
+        "id": "REQ_B_11",
+        "priority": "MUST",
+        "text": "The system shall be invocable via a command-line interface (CLI) that accepts at minimum the input directory path and an output directory path as arguments.",
+        "rationale": "Supports A6 (user can run a CLI/build tool) and provides the primary user interaction model."
+      },
+      {
+        "id": "REQ_B_12",
+        "priority": "MUST",
+        "text": "The build process shall complete without errors on a representative notes folder and produce a valid set of static files.",
+        "rationale": "Directly maps to SM1 (build success metric). Baseline for all other features."
+      },
+      {
+        "id": "REQ_B_13",
+        "priority": "MUST",
+        "text": "The generated site shall load and function correctly (navigation, search, backlinks, tags) in the latest stable versions of Chrome, Firefox, Safari, and Edge without JavaScript errors.",
+        "rationale": "Directly maps to SM6 (cross-browser compatibility metric)."
+      },
+      {
+        "id": "REQ_B_14",
+        "priority": "SHOULD",
+        "text": "The system shall support CommonMark as the baseline Markdown flavor and additionally support GitHub-Flavored Markdown (GFM) extensions (tables, task lists, strikethrough). The exact flavor shall be finalized upon resolution of Q1.",
+        "rationale": "Supports CNS2 (standard Markdown processing) and provides broad compatibility with common note-taking tools."
+      },
+      {
+        "id": "REQ_B_15",
+        "priority": "SHOULD",
+        "text": "The system shall support wiki-link syntax (e.g., [[Note Title]]) for inter-note linking, in addition to standard Markdown links, with the exact syntax finalized upon resolution of Q1.",
+        "rationale": "Wiki-links are the dominant convention in tools like Obsidian. Supports A2 (backlink derivation from wiki-links) and broadens usability."
+      },
+      {
+        "id": "REQ_B_16",
+        "priority": "SHOULD",
+        "text": "The generated site shall include a site-wide navigation structure with at minimum an index/home page listing all notes and a tag index page listing all tags.",
+        "rationale": "Improves discoverability and browsability of the note collection. Supports the overall goal of making notes navigable at scale."
+      },
+      {
+        "id": "REQ_B_17",
+        "priority": "SHOULD",
+        "text": "On a representative dataset of 100+ notes, the static site generation shall complete within an agreed performance target (target TBD per Q3), and client-side search shall return results within 500ms.",
+        "rationale": "Maps to SM7 (performance targets). Ensures the tool is practical for real-world note collections."
+      },
+      {
+        "id": "REQ_B_18",
+        "priority": "SHOULD",
+        "text": "The system shall generate a table of contents (outline) for each note page based on its heading structure.",
+        "rationale": "Addresses Q5 (note outline/TOC) and improves navigation within long notes."
+      },
+      {
+        "id": "REQ_B_19",
+        "priority": "SHOULD",
+        "text": "The system shall support both YAML frontmatter tags and inline #tag syntax, with the option to configure which sources are used, pending resolution of Q2.",
+        "rationale": "Maximizes compatibility with different note-taking conventions. Supports A4 and addresses Q2."
+      },
+      {
+        "id": "REQ_B_20",
+        "priority": "SHOULD",
+        "text": "The CLI shall provide a watch mode that monitors the input directory for changes and incrementally regenerates affected pages.",
+        "rationale": "Addresses Q4 (preferred build workflow). Significantly improves the authoring experience during development."
+      },
+      {
+        "id": "REQ_B_21",
+        "priority": "COULD",
+        "text": "The generated site shall include an interactive graph view visualizing the link relationships between notes.",
+        "rationale": "Addresses Q5 (graph view). Provides a powerful discovery mechanism but is not core to the primary goals."
+      },
+      {
+        "id": "REQ_B_22",
+        "priority": "COULD",
+        "text": "The system shall support theming or customizable styling of the generated site via user-provided CSS or a theme configuration.",
+        "rationale": "Addresses Q7 (themes/customizable styling). Enhances personalization but is secondary to core functionality."
+      },
+      {
+        "id": "REQ_B_23",
+        "priority": "COULD",
+        "text": "Search shall support advanced features such as fuzzy matching, tag-based filtering of results, result highlighting, and sorting by relevance.",
+        "rationale": "Addresses Q8 (specific search features). Improves search UX but basic full-text search satisfies the core goal."
+      },
+      {
+        "id": "REQ_B_24",
+        "priority": "COULD",
+        "text": "The system shall support nested/hierarchical tags (e.g., `#parent/child`) and reflect the hierarchy in tag navigation.",
+        "rationale": "Addresses the nested-tag aspect of Q2. Useful for users with complex taxonomies but not essential for initial delivery."
+      }
+    ]
+  }
+}

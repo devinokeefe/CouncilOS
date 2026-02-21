@@ -1,0 +1,679 @@
+{
+  "artifact_type": "triage_report",
+  "artifact_id": "triage_B2A_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:11:28.877920Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "plan_candidate_B2A_v1",
+    "validator_B2A_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2A_v1",
+    "critic_id": "MERGED",
+    "verdict": "reject",
+    "defects": [
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Hard-gate failure: architecture option risk references are not ID-integrity compatible with the risk_register (options list free-text risks that do not map to any K* entries; some risks mentioned in options are absent from risk_register). Fix requires editing the canonical risk_register (new K* IDs) or rewriting option risks to match existing K* IDs, which cannot be done safely without governance/schema-owner reroute.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "O1",
+            "json_pointer": "/plan_package/architecture/options/0/risks",
+            "note": "O1 risks are free-text items (not K* IDs) and include items not present as K* risks.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "O2",
+            "json_pointer": "/plan_package/architecture/options/1/risks",
+            "note": "O2 risks are free-text items (not K* IDs) and include plugin-API risks not represented in risk_register.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "O3",
+            "json_pointer": "/plan_package/architecture/options/2/risks",
+            "note": "O3 risks are free-text items (not K* IDs) and include items not present as K* risks.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "O4",
+            "json_pointer": "/plan_package/architecture/options/3/risks",
+            "note": "O4 risks are free-text items (not K* IDs) and include items not present as K* risks.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "risk_register",
+            "json_pointer": "/plan_package/risk_register",
+            "note": "Risk register contains K1–K20 only; architecture option risks are not represented as IDs and several described risks are absent.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "validator_report",
+            "json_pointer": "/inputs/validator_report/checks/1",
+            "note": "Validator id_integrity gate reports missing risk references across O1–O4.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": [
+          {
+            "intent": "reroute",
+            "reroute_target": "Review:SchemaOwner+TechLead",
+            "reason": "Repair requires either (a) adding new risk_register entries with new K* IDs (not allowed; only T* IDs allowed), or (b) rewriting architecture option risks to existing K* IDs with product/engineering signoff because semantics change."
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "Lifecycle dependency mismatch: render runs before finalize, but finalize writes search assets that rendered pages must reference. This becomes brittle/incorrect if search artifacts use sharded/chunked or content-hash filenames. The plan must define a manifest/contract or reorder phases so renderer can reference the correct search asset paths deterministically.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "DEC2",
+            "json_pointer": "/plan_package/decision_log/1/choice",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Standardize lifecycle hooks consistent with O2: init → collectFiles → transform → resolve → render → finalize"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "IF14",
+            "json_pointer": "/plan_package/architecture/options/1/interfaces/5",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Hook: render(context) → HTML files and static theme assets written to output directory using context data."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "IF13",
+            "json_pointer": "/plan_package/architecture/options/1/interfaces/4",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Hook: finalize(context) → search index artifacts written to output directory (optionally sharded)."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "DL14",
+            "json_pointer": "/plan_package/milestones/3/deliverables/0/text",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "can evolve to sharding/chunking if needed."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "chosen-high_level_dataflow",
+            "json_pointer": "/plan_package/architecture/chosen/high_level_dataflow",
+            "note": "Narrative expects rendered pages to reference search artifacts produced by finalize.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {
+            "intent": "patch_hint",
+            "op": "replace",
+            "path": "/plan_package/decision_log/1/choice",
+            "value": "Standardize lifecycle hooks consistent with O2: init → collectFiles → transform → resolve → finalize → render; run hooks deterministically with explicit ordering rules. (If keeping render before finalize, the search plugin MUST predeclare stable asset paths/manifest before render so HTML can reference deterministic URLs.)"
+          },
+          {
+            "intent": "patch_hint",
+            "op": "replace",
+            "path": "/plan_package/architecture/chosen/high_level_dataflow",
+            "value": "CLI invokes the Core Orchestrator (C8), which loads config, registers plugins, and executes a deterministic lifecycle: init → collectFiles → transform → resolve → finalize → render. (1) File Collector plugin (C9) scans the input root and populates context.noteRegistry with file paths and stable slugs. (2) Markdown Parser plugin (C10) parses each note, extracts frontmatter, and normalizes internal links into a canonical representation attached to each note. (3) Resolver plugins run in resolve: Backlink Resolver (C11) builds the corpus link graph and attaches backlinks; Tag Aggregator (C12) builds tag indices and registers tag pages. (4) Search Index plugin (C13) builds and writes client-side index artifacts to the output AND exposes a deterministic manifest/asset root in context. (5) Renderer/Theme plugin (C14) generates HTML pages and static assets from the enriched context (including backlinks/tags) and references the search manifest/asset root; the Client-Side Runtime (C15) provides in-browser search UX. All outputs are static files only, suitable for static hosting."
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Milestone M1 exit criteria claims a minimal pipeline run produces a static output folder using only no-op/reference plugins, but M1 deliverables do not include any reference renderer/theme plugin or other concrete writer of output files. Clarify what output is produced in M1 (e.g., build manifest/diagnostics) to avoid false milestone completion signals.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/exit_criteria/0",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "A minimal pipeline run executes all lifecycle hooks in the documented order with no-op/reference plugins and produces a static output folder."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "M1-DLs",
+            "json_pointer": "/plan_package/milestones/0/deliverables",
+            "note": "No deliverable in M1 specifies a reference renderer/theme that writes HTML/static assets.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "milestone_exit_criteria",
+        "patch": [
+          {
+            "intent": "patch_hint",
+            "op": "replace",
+            "path": "/plan_package/milestones/0/exit_criteria/0",
+            "value": "A minimal pipeline run executes all lifecycle hooks in the documented order with no-op/reference plugins and produces an output folder containing at least a build manifest/diagnostics artifact (not necessarily full HTML pages)."
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Offline search acceptance test AT5 is under-specified relative to known file:// restrictions (K11). Without stating whether to use a local static server vs file://, the test can be non-deterministic and fail for reasons unrelated to requirements.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "AT5",
+            "json_pointer": "/plan_package/acceptance_tests/4/procedure",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Open the site in a browser with network disabled and perform searches via the UI."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "K11",
+            "json_pointer": "/plan_package/risk_register/10/description",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Broken offline/local viewing when opened via file:// due to browser restrictions (e.g., fetch/XHR blocked)"
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {
+            "intent": "patch_hint",
+            "op": "replace",
+            "path": "/plan_package/acceptance_tests/4/procedure",
+            "value": "Build the site and verify that a search index artifact is generated. Serve the output via a local static file server (not file://). Open the site in a browser with outbound network disabled and perform searches via the UI."
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "Security default (DEC5/K3) is not explicitly validated by any acceptance test. M2 mentions security defaults, but the acceptance suite lacks an explicit check that raw HTML is disabled/sanitized and unsafe URL schemes are blocked, risking regression and undermining the stated critical-risk mitigation.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "DEC5",
+            "json_pointer": "/plan_package/decision_log/4/choice",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Disable raw HTML passthrough by default (or sanitize it) and block unsafe URL schemes (e.g., javascript:)"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "K3",
+            "json_pointer": "/plan_package/risk_register/2/description",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Client-side XSS or content injection vulnerabilities if Markdown/HTML is rendered unsafely"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "acceptance_tests",
+            "json_pointer": "/plan_package/acceptance_tests",
+            "note": "No acceptance test currently includes XSS payloads or unsafe URL-scheme link cases.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "coverage",
+        "patch": [
+          {
+            "intent": "patch_hint",
+            "op": "replace",
+            "path": "/plan_package/acceptance_tests/2/procedure",
+            "value": "Prepare notes covering headings, lists, code blocks, blockquotes, links, images, and tables per the selected Markdown flavor. Include at least one note containing raw HTML (e.g., a <script> tag or an <img onerror=...> payload) and at least one link using an unsafe scheme (e.g., javascript:). Build the site and visually compare rendered HTML output to expected formatting and security behavior."
+          },
+          {
+            "intent": "patch_hint",
+            "op": "replace",
+            "path": "/plan_package/acceptance_tests/2/pass_criteria",
+            "value": "All tested Markdown elements render correctly and preserve structure and formatting. Raw HTML is disabled or sanitized by default (no script execution / no inline event handler execution). Unsafe URL schemes are blocked or neutralized in rendered output."
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "HITL gate for blocking Q1/Q2 is implied (W1) but not explicitly enforced in milestone sequencing. M3 exit criteria requires Q1/Q2 resolved and reflected in defaults, yet there is no explicit statement that HITL approval is required before considering M3 complete.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "W1",
+            "json_pointer": "/plan_package/synthesis_warnings/0/summary",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "defaults must not be finalized without HITL approval"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "M3",
+            "json_pointer": "/plan_package/milestones/2/exit_criteria/2",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Open questions Q1 (link syntax) and Q2 (tag representation) are resolved and reflected in configuration defaults"
+          }
+        ],
+        "violated_gate": "governance",
+        "patch": [
+          {
+            "intent": "patch_hint",
+            "op": "replace",
+            "path": "/plan_package/milestones/2/exit_criteria/2",
+            "value": "Open questions Q1 (link syntax) and Q2 (tag representation) are resolved WITH HITL approval (per governance.hitl_policy) and reflected in configuration defaults and documentation (or explicitly gated behind configuration options)."
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "low",
+        "summary": "Plan metadata versioning is ambiguous: meta.version is \"v1\" while meta.plan_version is null. If both represent plan versioning, this should be made consistent to avoid downstream tooling ambiguity.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "meta",
+            "json_pointer": "/plan_package/meta/version",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "v1"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "meta",
+            "json_pointer": "/plan_package/meta/plan_version",
+            "note": "plan_version is null.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {
+            "intent": "patch_hint",
+            "op": "replace",
+            "path": "/plan_package/meta/plan_version",
+            "value": "v1"
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Tag completeness test AT6 procedure is vague about verifying exclusion of untagged notes (pass criteria mentions it, procedure does not). This can cause inconsistent execution and disputes over pass/fail.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "AT6",
+            "json_pointer": "/plan_package/acceptance_tests/5/procedure",
+            "note": "Procedure does not specify explicit verification steps for ensuring untagged notes are excluded.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "AT6",
+            "json_pointer": "/plan_package/acceptance_tests/5/pass_criteria",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "untagged notes are not listed; 100% of notes with tags are included"
+          }
+        ],
+        "violated_gate": "measurability_heuristic",
+        "patch": [
+          {
+            "intent": "patch_hint",
+            "op": "replace",
+            "path": "/plan_package/acceptance_tests/5/procedure",
+            "value": "Create a dataset with tagged and untagged notes using the specified tag convention. Build the site and navigate tag pages/filters. For each tag, enumerate the listed notes and compare to the source-of-truth list for that tag. Also verify that at least one known-untagged note does not appear in any tag listing."
+          }
+        ]
+      },
+      {
+        "label": "note",
+        "severity": "medium",
+        "summary": "Human-eval test ownership and signoff criteria are implicit: M2 exit criteria requires AT3 (human_eval) to pass, but does not specify evaluator role or how disagreements are resolved. Consider documenting the evaluator (e.g., QA + Tech Lead) and minimum review checklist.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/exit_criteria/1",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "AT3 (Markdown render correctness) passes for the selected baseline elements on the fixture set."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "AT3",
+            "json_pointer": "/plan_package/acceptance_tests/2/type",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "human_eval"
+          }
+        ],
+        "violated_gate": "milestone_exit_criteria",
+        "patch": [
+          {
+            "intent": "patch_hint",
+            "op": "replace",
+            "path": "/plan_package/milestones/1/exit_criteria/1",
+            "value": "AT3 (Markdown render correctness) passes for the selected baseline elements on the fixture set, with human-eval signoff recorded by an assigned reviewer (e.g., QA and/or Tech Lead) using a documented checklist."
+          }
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Validator id_integrity gate failed: 14 architecture option risks are referenced but missing from risk_register, blocking traceability and risk closure validation.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B2A_v1",
+            "entity_id": null,
+            "json_pointer": "/inputs/validator_report/checks/1",
+            "note": "id_integrity hard gate failed with 14 missing risk references",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "\"hard_gate\": true, \"pass\": false"
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "CS003: DEC5 mandates disabling raw HTML by default to mitigate critical XSS risk K3, but no requirement, acceptance test, or milestone deliverable validates enforcement, leaving critical security gap unverified.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B2A_v1",
+            "entity_id": "CS003",
+            "json_pointer": "/inputs/consistency_findings/findings/2",
+            "note": "Security default enforcement not validated",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "no requirement, acceptance test, or milestone deliverable explicitly validates that this security default is implemented"
+          }
+        ],
+        "violated_gate": "security_validation",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "CS008: W1 requires HITL approval for Q1/Q2 before finalizing defaults, but M3 exit criteria requires Q1/Q2 resolved without explicit HITL gate, creating approval gap for blocking decisions.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B2A_v1",
+            "entity_id": "CS008",
+            "json_pointer": "/inputs/consistency_findings/findings/7",
+            "note": "HITL gate missing for blocking questions",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "there is no explicit HITL gate or approval step in the milestone sequence before M3 completion"
+          }
+        ],
+        "violated_gate": "hitl_policy",
+        "patch": []
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "CS001: AT2 claims to verify R2 static-only constraint but does not explicitly test search/tags/backlinks function without server runtime, leaving core constraint coverage gap.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B2A_v1",
+            "entity_id": "CS001",
+            "json_pointer": "/inputs/consistency_findings/findings/4",
+            "note": "AT2 coverage gap for static constraint",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "does not explicitly test that search, tags, and backlinks function without server-side runtime"
+          }
+        ],
+        "violated_gate": "coverage",
+        "patch": []
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "CS005: M1 DL5 creates security policy stub but M2 requires enforcement with no explicit validation handoff, risking security defaults not wired by M2.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B2A_v1",
+            "entity_id": "CS005",
+            "json_pointer": "/inputs/consistency_findings/findings/5",
+            "note": "Security stub to enforcement handoff unclear",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "no explicit handoff or validation that DL5 stub is actually wired and enforced by M2"
+          }
+        ],
+        "violated_gate": "milestone_exit_criteria",
+        "patch": []
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "CS1: Lifecycle ordering mismatch: search artifacts written in finalize after render, but renderer must reference search asset paths; no manifest/contract defined for dynamic filenames (sharding/chunking).",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B2A_v1",
+            "entity_id": "CS1",
+            "json_pointer": "/inputs/consistency_findings/findings/0",
+            "note": "Render-before-finalize dependency issue for search assets",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "renderer may not know the correct asset paths at render time unless an explicit manifest/contract is defined"
+          }
+        ],
+        "violated_gate": "architecture_consistency",
+        "patch": []
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "CS2: M1 exit criteria claims output folder produced with no-op/reference plugins, but M1 deliverables lack concrete reference renderer, creating ambiguity in M1 completion.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B2A_v1",
+            "entity_id": "CS2",
+            "json_pointer": "/inputs/consistency_findings/findings/1",
+            "note": "M1 exit criteria ambiguous without reference renderer",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "M1 deliverables do not include any concrete reference renderer/theme plugin needed to emit HTML/static files"
+          }
+        ],
+        "violated_gate": "milestone_exit_criteria",
+        "patch": []
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "CS004: R12 error reporting is SHOULD priority but M3 exit criteria mandates warnings/errors, creating priority/enforcement mismatch.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B2A_v1",
+            "entity_id": "CS004",
+            "json_pointer": "/inputs/consistency_findings/findings/3",
+            "note": "R12 priority vs M3 enforcement mismatch",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "R12 is priority SHOULD for error reporting... M3 exit criteria mandates warnings/errors"
+          }
+        ],
+        "violated_gate": "requirements_consistency",
+        "patch": []
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "CS006: R23 performance targets deferred but M4 requires targets documented/benchmarked; no milestone or decision establishes who defines targets or when.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B2A_v1",
+            "entity_id": "CS006",
+            "json_pointer": "/inputs/consistency_findings/findings/6",
+            "note": "Performance target ownership undefined",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "no earlier milestone or decision establishes who defines these targets or when"
+          }
+        ],
+        "violated_gate": "milestone_exit_criteria",
+        "patch": []
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "CS4: AT5 offline search test does not specify local server vs file:// context, making test non-deterministic vs K11 risk (file:// restrictions).",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B2A_v1",
+            "entity_id": "CS4",
+            "json_pointer": "/inputs/consistency_findings/findings/3",
+            "note": "AT5 test context ambiguous",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "AT5 does not specify a local server/static hosting context, potentially making the test non-deterministic"
+          }
+        ],
+        "violated_gate": "acceptance_test_clarity",
+        "patch": []
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "CS007: AT6 maps to tag completeness but procedure does not specify verification that untagged notes are excluded from tag pages, leaving coverage gap.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B2A_v1",
+            "entity_id": "CS007",
+            "json_pointer": "/inputs/consistency_findings/findings/7",
+            "note": "AT6 untagged notes verification gap",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "procedure does not specify how to verify that untagged notes are correctly excluded"
+          }
+        ],
+        "violated_gate": "acceptance_test_clarity",
+        "patch": []
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "CS009: K11 mitigation proposes guidance or embedding index for file:// browsing, but no requirement/test/deliverable validates chosen approach or guidance provision.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B2A_v1",
+            "entity_id": "CS009",
+            "json_pointer": "/inputs/consistency_findings/findings/8",
+            "note": "K11 mitigation not validated",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "no requirement, acceptance test, or deliverable validates that the chosen approach works"
+          }
+        ],
+        "violated_gate": "risk_closure",
+        "patch": []
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "CS010: DEC7/DL14 allow search index evolution to sharding but no validation that initial implementation supports evolution without breaking changes.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B2A_v1",
+            "entity_id": "CS010",
+            "json_pointer": "/inputs/consistency_findings/findings/9",
+            "note": "Search index evolution strategy not validated",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "no explicit validation that the initial implementation supports evolution without breaking changes"
+          }
+        ],
+        "violated_gate": "architecture_consistency",
+        "patch": []
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "CS002: M2 exit criteria references AT3 (human_eval) passing but does not specify evaluator or pass/fail determination, creating milestone completion ambiguity.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B2A_v1",
+            "entity_id": "CS002",
+            "json_pointer": "/inputs/consistency_findings/findings/1",
+            "note": "AT3 human_eval evaluator undefined",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "exit criteria does not specify who performs the evaluation or how pass/fail is determined"
+          }
+        ],
+        "violated_gate": "milestone_exit_criteria",
+        "patch": []
+      },
+      {
+        "label": "note",
+        "severity": "low",
+        "summary": "CS3: Plan metadata has version='v1' but plan_version=null, creating internal versioning field inconsistency (non-blocking schema issue).",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B2A_v1",
+            "entity_id": "CS3",
+            "json_pointer": "/inputs/consistency_findings/findings/2",
+            "note": "Metadata versioning field inconsistency",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "meta.version is set to 'v1' while meta.plan_version is null"
+          }
+        ],
+        "violated_gate": "schema_consistency",
+        "patch": []
+      }
+    ],
+    "reroute_target": "Review:SchemaOwner+TechLead",
+    "reroute_reason": "Cannot repair id_integrity hard-gate failure without introducing new risk_register IDs (K*), which is outside allowed ID minting (only T* allowed). Requires schema/risk-governance owner to either add missing risks with new canonical IDs or revise the ID-integrity rule/expected representation."
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B1B_anchor_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:18:06.417471Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "plan_candidate_B1B_v2"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B1B_v2",
+    "findings": [
+      {
+        "id": "TG-001",
+        "severity": "medium",
+        "summary": "Deterministic sample checks for R1–R3 list milestones [\"M1\",\"M2\"], but the plan’s milestone definitions only trace these requirements/acceptance tests to M1 (Core Ingestion & HTML Rendering). M2 is scoped to forward links/backlinks (AT8/AT9) and does not include R1–R3 exit criteria/deliverables, so including M2 in these sample checks appears to be an incorrect trace.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "R1",
+            "json_pointer": "/inputs/deterministic_sample_checks/0/milestones",
+            "note": "Sample check includes M2 for R1",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "\"milestones\": [\"M1\", \"M2\"]"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "R2",
+            "json_pointer": "/inputs/deterministic_sample_checks/1/milestones",
+            "note": "Sample check includes M2 for R2",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "\"milestones\": [\"M1\", \"M2\"]"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "R3",
+            "json_pointer": "/inputs/deterministic_sample_checks/2/milestones",
+            "note": "Sample check includes M2 for R3",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "\"milestones\": [\"M1\", \"M2\"]"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "M1",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/0/exit_criteria",
+            "note": "M1 exit criteria explicitly include AT1/AT2/AT3",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "\"AT1 passes...\", \"AT2 passes...\", \"AT3 passes...\""
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "M2",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/1/exit_criteria",
+            "note": "M2 exit criteria are AT8/AT9 and backlink/link-related; no R1–R3 tests",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "\"AT8 passes...\", \"AT9 passes...\""
+          }
+        ],
+        "routing_target": "requirements_traceability"
+      }
+    ]
+  }
+}

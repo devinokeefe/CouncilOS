@@ -22,8 +22,9 @@ from council_os.orchestrator.feedback.config import FeedbackConfig
 from council_os.orchestrator.feedback.gates import NeedsUserInput
 from council_os.orchestrator.feedback.human_input import AutoProvider, CLIProvider, FileProvider, HumanInputProvider
 from council_os.implementation.engine import ImplementationEngine
-from council_os.orchestrator.hq_pipeline import HQPipeline, _git_code_version, _model_portfolio
+from council_os.orchestrator.hq_pipeline import HQPipeline, _model_portfolio
 from council_os.render import render_plan_markdown
+from council_os.utils import git_code_version, is_hq_config, storage_root_from_config
 
 app = typer.Typer(help="Council OS CLI")
 
@@ -34,35 +35,6 @@ def _engine(storage_root: Path) -> Engine:
 
 def _impl_engine(storage_root: Path) -> ImplementationEngine:
     return ImplementationEngine(storage_root=storage_root)
-
-
-def _storage_root_from_config(config_path: Path) -> Path:
-    raw = yaml.safe_load(config_path.read_text(encoding="utf-8"))
-    runtime = raw.get("runtime", {}) if isinstance(raw, dict) else {}
-    artifacts = runtime.get("artifacts", {}) if isinstance(runtime, dict) else {}
-    store_dir = artifacts.get("store_dir") if isinstance(artifacts, dict) else None
-    if isinstance(store_dir, str) and store_dir:
-        base = store_dir.replace("{{run_id}}", "").replace("{run_id}", "")
-        base = base.rstrip("/\\")
-        if base.endswith("artifacts"):
-            base = str(Path(base).parent)
-        base_path = Path(base) if base else Path(".")
-        if not base_path.is_absolute():
-            base_path = (config_path.parent / base_path).resolve()
-        return base_path
-    storage_root = raw.get("storage_root", "CouncilOS/runs") if isinstance(raw, dict) else "CouncilOS/runs"
-    if isinstance(storage_root, str):
-        base_path = Path(storage_root)
-        if not base_path.is_absolute():
-            base_path = (config_path.parent / base_path).resolve()
-        return base_path
-    return (config_path.parent / Path("CouncilOS/runs")).resolve()
-
-
-def _is_hq_config(raw: object) -> bool:
-    if not isinstance(raw, dict):
-        return False
-    return bool(raw.get("stages") and raw.get("models") and raw.get("providers"))
 
 
 NEEDS_USER_INPUT_CODE = 42
@@ -115,12 +87,12 @@ def _find_checkpoint_root(storage_root: Path, checkpoint_id: str) -> Path:
 
 
 def _fork_hq(checkpoint_id: str, new_config: Path) -> dict[str, object]:
-    storage_root = _storage_root_from_config(new_config)
+    storage_root = storage_root_from_config(new_config)
     config_raw = new_config.read_text(encoding="utf-8")
     config = yaml.safe_load(config_raw)
     if not isinstance(config, dict):
         raise ValueError("HQ config must be a mapping")
-    if not _is_hq_config(config):
+    if not is_hq_config(config):
         raise ValueError("HQ fork requires an HQ config with stages/models/providers")
 
     source_run_root = _find_checkpoint_root(storage_root, checkpoint_id)
@@ -151,7 +123,7 @@ def _fork_hq(checkpoint_id: str, new_config: Path) -> dict[str, object]:
         new_run_root,
         ManifestInput(
             run_id=new_run_id,
-            code_version=_git_code_version(),
+            code_version=git_code_version(include_dirty=False),
             schema_versions={"artifacts": schema_version},
             run_config_version=str(config.get("version", "")),
             stage_machine_version=str(config.get("version", "1.0.0")),
@@ -224,7 +196,7 @@ def run(
         help="Maximum plan review rounds before pausing.",
     ),
 ) -> None:
-    storage_root = _storage_root_from_config(config)
+    storage_root = storage_root_from_config(config)
     raw_text = config.read_text(encoding="utf-8")
     raw = yaml.safe_load(raw_text)
     engine = _engine(storage_root)
@@ -293,7 +265,7 @@ def implement(
         help="Allow repo snapshot mismatch during handoff acceptance (recorded).",
     ),
 ) -> None:
-    storage_root = _storage_root_from_config(config)
+    storage_root = storage_root_from_config(config)
     engine = _impl_engine(storage_root)
     if from_handoff is None:
         if plan is None or handoff_bundle is None or repo_context is None or workspace_context is None:
@@ -367,7 +339,7 @@ def resume(
             response_file=response_file,
             max_plan_review_rounds=max_plan_review_rounds,
         )
-        if isinstance(raw, dict) and raw.get("stages") and raw.get("models") and raw.get("providers"):
+        if is_hq_config(raw):
             pipeline = HQPipeline(
                 storage_root=storage_root,
                 config_path=config_snapshot,
@@ -454,11 +426,11 @@ def fork(
 ) -> None:
     config_raw = new_config.read_text(encoding="utf-8")
     config = yaml.safe_load(config_raw)
-    if _is_hq_config(config):
+    if is_hq_config(config):
         payload = _fork_hq(checkpoint_id, new_config)
         typer.echo(json.dumps(payload))
         return
-    result = _engine(_storage_root_from_config(new_config)).fork(
+    result = _engine(storage_root_from_config(new_config)).fork(
         checkpoint_id=checkpoint_id,
         new_config_path=new_config,
     )
@@ -504,7 +476,7 @@ def list_artifacts(
 
 @app.command()
 def eval(config: Path = typer.Option(...), golden: Path = typer.Option(...)) -> None:
-    metrics = run_eval(_engine(_storage_root_from_config(config)), config, golden)
+    metrics = run_eval(_engine(storage_root_from_config(config)), config, golden)
     typer.echo(
         json.dumps(
             {

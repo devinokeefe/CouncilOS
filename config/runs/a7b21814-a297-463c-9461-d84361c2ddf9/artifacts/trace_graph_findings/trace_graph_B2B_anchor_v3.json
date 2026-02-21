@@ -1,0 +1,138 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B2B_anchor_v3",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:58:10.587532Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B2B_v3"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2B_v3",
+    "findings": [
+      {
+        "id": "TG001",
+        "severity": "high",
+        "summary": "Deterministic sample check for R2 maps the requirement to milestones M1 and M2, but the plan’s concrete implementation of static-site emission (full HTML/CSS/JS assets) is scheduled in M4 (DL24). M1 explicitly describes only a skeleton emit plugin that writes placeholder output, which is insufficient to satisfy R2.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": null,
+            "json_pointer": "/inputs/deterministic_sample_checks/1",
+            "note": "Sample check claims R2 is covered by milestones M1 and M2.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "\"milestones\": [\"M1\", \"M2\"]"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "DL6",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/0/deliverables/5",
+            "note": "M1 emit deliverable is explicitly placeholder output, not full static site emission.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "\"Skeleton Emit Plugin (C17) that writes placeholder output\""
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "DL24",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/3/deliverables/5",
+            "note": "M4 includes the deliverable that actually fulfills static output emission for the site.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "\"Emit Plugin (C17) fully writing HTML pages and static assets to output directory (R2).\""
+          }
+        ],
+        "routing_target": "acceptance_canonical"
+      },
+      {
+        "id": "TG002",
+        "severity": "high",
+        "summary": "Deterministic sample check for R3 maps the requirement to milestones M1 and M2, but the plan schedules CommonMark rendering and actual HTML page generation in M4 (Markdown Render Plugin + Theme/Template + Emit). M1–M2 cover ingestion and metadata/tag extraction, not HTML rendering for each Markdown file.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": null,
+            "json_pointer": "/inputs/deterministic_sample_checks/2",
+            "note": "Sample check claims R3 is covered by milestones M1 and M2.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "\"milestones\": [\"M1\", \"M2\"]"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "R3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/requirements/2",
+            "note": "R3 explicitly requires CommonMark parsing and generating an HTML page per input Markdown file.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "\"parse each discovered Markdown file using at least CommonMark-compliant syntax and generate a corresponding HTML page\""
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "DL19",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/3/deliverables/0",
+            "note": "CommonMark-compliant Markdown-to-HTML conversion is delivered in M4.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "\"Markdown Render Plugin (C14) converting Markdown to HTML with CommonMark compliance\""
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "DL21",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/3/deliverables/2",
+            "note": "Final per-note page rendering is delivered in M4.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "\"Theme/Template Plugin (C15) rendering per-note pages\""
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "DL24",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/3/deliverables/5",
+            "note": "Emission of the rendered HTML pages to output is delivered in M4.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "\"fully writing HTML pages and static assets to output directory\""
+          }
+        ],
+        "routing_target": "requirements_canonical"
+      },
+      {
+        "id": "TG003",
+        "severity": "medium",
+        "summary": "Deterministic sample check for R3 cites AT3 as the acceptance test, but AT3 validates page-count and exclusion behavior; it does not validate the “CommonMark-compliant syntax” part of R3. This makes the sample check semantically incomplete for the stated requirement text.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": null,
+            "json_pointer": "/inputs/deterministic_sample_checks/2",
+            "note": "Sample check lists only AT3 for R3.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "\"acceptance_tests\": [\"AT3\"]"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "R3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/requirements/2",
+            "note": "R3 includes a CommonMark compliance requirement in addition to page generation.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "\"using at least CommonMark-compliant syntax\""
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "AT3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/acceptance_tests/2",
+            "note": "AT3 checks mapping/count of generated pages and exclusions, not syntax compliance.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "\"Count generated HTML note pages and verify a one-to-one mapping for non-excluded files.\""
+          }
+        ],
+        "routing_target": "acceptance_canonical"
+      }
+    ]
+  }
+}

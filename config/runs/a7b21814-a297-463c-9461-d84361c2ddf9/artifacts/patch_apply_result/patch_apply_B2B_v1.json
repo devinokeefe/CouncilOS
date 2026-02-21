@@ -1,0 +1,36 @@
+{
+  "artifact_type": "patch_apply_result",
+  "artifact_id": "patch_apply_B2B_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:40:40.791602Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B2B_v1",
+    "patch_B2B_1_v1",
+    "patch_B2B_2_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2B_v1",
+    "selected_patch_ref": null,
+    "reroute_target": "architecture_canonical_v1",
+    "applied_candidate_ref": null,
+    "candidates": [
+      {
+        "patch_ref": "patch_B2B_1_v1",
+        "applied": false,
+        "validator_status": "FAIL_STRUCTURAL",
+        "op_count": 12,
+        "paths_touched": 1,
+        "reason": "schema_error: 4 validation errors for PlanCandidatePayload\nplan_package.architecture.options.0.risks\n  Field required [type=missing, input_value={'id': 'O1', 'summary': '...istribution approach']}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.12/v/missing\nplan_package.architecture.options.1.risks\n  Field required [type=missing, input_value={'id': 'O2', 'summary': '...shared mutable state']}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.12/v/missing\nplan_package.architecture.options.2.risks\n  Field required [type=missing, input_value={'id': 'O3', 'summary': \"... the SSG environment']}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.12/v/missing\nplan_package.architecture.options.3.risks\n  Field required [type=missing, input_value={'id': 'O4', 'summary': '...at must be versioned']}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.12/v/missing"
+      },
+      {
+        "patch_ref": "patch_B2B_2_v1",
+        "applied": false,
+        "validator_status": "FAIL_REPAIRABLE",
+        "op_count": 0,
+        "paths_touched": 0,
+        "reason": "reroute"
+      }
+    ]
+  }
+}

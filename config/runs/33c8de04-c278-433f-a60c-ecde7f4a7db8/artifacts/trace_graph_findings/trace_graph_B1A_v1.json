@@ -1,0 +1,263 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B1A_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:10:25.707313Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "trace_graph_B1A_primary_v1",
+    "trace_graph_B1A_anchor_v1",
+    "trace_graph_B1A_fallback_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B1A_v1",
+    "findings": [
+      {
+        "id": "TG-1",
+        "severity": "low",
+        "summary": "The provided trace samples associate Requirements R1, R2, and R3 with Milestone M2, but the Plan restricts their explicit delivery and verification (AT1, AT2, AT3) to Milestone M1. Milestone M2 focuses on Requirements R9 and R10 (links/backlinks) and does not list AT1-AT3 in its exit criteria.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/exit_criteria",
+            "note": "Milestone M1 is where AT1, AT2, and AT3 are verified.",
+            "candidate_id": "B1A",
+            "artifact_id": "97173ca2-3073-40ef-a95c-20526d7adb73",
+            "quote": "AT1, AT2, AT3, AT4, and AT13 pass on a deterministic fixture dataset."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/deliverables/1/text",
+            "note": "Milestone M1 delivers R1 and R2.",
+            "candidate_id": "B1A",
+            "artifact_id": "97173ca2-3073-40ef-a95c-20526d7adb73",
+            "quote": "Monolithic CLI skeleton (C1) ... produces a static output folder ... (R1, R2, R4, R11)."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/exit_criteria",
+            "note": "Milestone M2 exit criteria does not include AT1, AT2, or AT3.",
+            "candidate_id": "B1A",
+            "artifact_id": "97173ca2-3073-40ef-a95c-20526d7adb73",
+            "quote": "AT8 and AT9 pass on a deterministic link-graph fixture dataset (meets R21)."
+          }
+        ],
+        "routing_target": "Generate/Tech Lead"
+      },
+      {
+        "id": "TG001",
+        "severity": "high",
+        "summary": "AT2 (mapped to R2) requires verifying the site functions for browsing/search/tags/backlinks without server-side runtime, but M1 scope does not yet include implementing search/tags/backlinks (those appear in later milestones). This creates an ambiguity/likely gating failure if AT2 is used as a strict M1 exit gate.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "AT2",
+            "json_pointer": "/inputs/plan_candidate/plan_package/acceptance_tests/1/pass_criteria",
+            "note": "AT2 pass criteria asserts functioning for search/tags/backlinks.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Build completes successfully; output contains only static assets (HTML/CSS/JS/media); site functions without any server-side runtime for browsing, search, tags, or backlinks."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "M1",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/0/deliverables",
+            "note": "M1 deliverables cover per-note HTML generation and security guardrails; search/tags/backlinks are scheduled later.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "M2",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/1/name",
+            "note": "Backlinks/forward links are in M2 (not M1).",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Generate + Validate (Thin Slice 2): Forward links + backlink computation and rendering"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "M3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/2/name",
+            "note": "Tags are in M3 (not M1).",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Generate + Validate (Thin Slice 3): Tag extraction + per-tag navigation pages"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "M4",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/3/name",
+            "note": "Search is in M4 (not M1).",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Generate + Validate (Thin Slice 4): Client-side search index + search UI"
+          }
+        ],
+        "routing_target": "Review/QA Lead"
+      },
+      {
+        "id": "TG002",
+        "severity": "medium",
+        "summary": "Deterministic sample checks claim R1/R2/R3 are associated with milestones M1 and M2, but M2 deliverables/exit criteria do not explicitly trace back to R1/R2/R3. If the trace graph expects explicit milestone-to-requirement coverage, the M2 linkage appears unsupported in the provided candidate package.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "R1",
+            "json_pointer": "/inputs/deterministic_sample_checks/0/milestones",
+            "note": "Sample check associates R1 with M1 and M2.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "R2",
+            "json_pointer": "/inputs/deterministic_sample_checks/1/milestones",
+            "note": "Sample check associates R2 with M1 and M2.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "R3",
+            "json_pointer": "/inputs/deterministic_sample_checks/2/milestones",
+            "note": "Sample check associates R3 with M1 and M2.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "M2",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/1/deliverables",
+            "note": "M2 deliverables focus on forward links/backlinks and diagnostics; no explicit mention of R1/R2/R3.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "M2",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/1/exit_criteria",
+            "note": "M2 exit criteria gate AT8/AT9 and backlink/link canonicalization; no explicit gate tying back to AT1/AT2/AT3 for R1/R2/R3.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "Review/Traceability"
+      },
+      {
+        "id": "TG001",
+        "severity": "high",
+        "summary": "R1 milestone mapping includes M2 but M2 deliverables do not address R1; R1 is fully satisfied in M1 and should not appear in M2 milestone list.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "R1",
+            "json_pointer": "/plan_package/requirements/0",
+            "note": "R1 requires accepting input folder and discovering .md files recursively.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "The system MUST accept a user-specified folder ... and recursively discover Markdown (.md) files"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/deliverables/1",
+            "note": "M1 DL2 delivers CLI skeleton that accepts input/output paths and produces static output, satisfying R1.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Monolithic CLI skeleton (C1) that accepts input/output paths ... (R1, R2, R4, R11)"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1",
+            "note": "M2 focuses on forward links and backlinks; no deliverables address file discovery or R1.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Generate + Validate (Thin Slice 2): Forward links + backlink computation and rendering"
+          }
+        ],
+        "routing_target": "Review/Tech Lead"
+      },
+      {
+        "id": "TG002",
+        "severity": "high",
+        "summary": "R2 milestone mapping includes M2 but M2 deliverables do not address static-site output generation; R2 is fully satisfied in M1 and should not appear in M2 milestone list.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "R2",
+            "json_pointer": "/plan_package/requirements/1",
+            "note": "R2 requires generating static website output with no server-side runtime.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "The system MUST generate a static website output consisting only of static files"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/deliverables/1",
+            "note": "M1 DL2 delivers static output folder generation, satisfying R2.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "produces a static output folder with one HTML page per note (R1, R2, R4, R11)"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1",
+            "note": "M2 focuses on links and backlinks; no deliverables address static-site output constraint.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Forward links + backlink computation and rendering"
+          }
+        ],
+        "routing_target": "Review/Tech Lead"
+      },
+      {
+        "id": "TG003",
+        "severity": "high",
+        "summary": "R3 milestone mapping includes M2 but M2 deliverables do not address Markdown rendering or formatting preservation; R3 is fully satisfied in M1 and should not appear in M2 milestone list.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "R3",
+            "json_pointer": "/plan_package/requirements/2",
+            "note": "R3 requires parsing and rendering Markdown with preserved formatting.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "The system MUST parse and render each input Markdown file ... while preserving Markdown formatting and structure"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/deliverables/2",
+            "note": "M1 DL3 delivers Markdown rendering pipeline that preserves formatting, satisfying R3.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Markdown rendering pipeline (C2+C6) that preserves core formatting/structure (R3)"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1",
+            "note": "M2 focuses on link extraction and backlinks; no deliverables address Markdown rendering.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Internal link extraction and normalization ... backlink computation"
+          }
+        ],
+        "routing_target": "Review/Tech Lead"
+      }
+    ]
+  }
+}

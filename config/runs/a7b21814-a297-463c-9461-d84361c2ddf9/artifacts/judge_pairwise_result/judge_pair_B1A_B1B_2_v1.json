@@ -1,0 +1,66 @@
+{
+  "artifact_type": "judge_pairwise_result",
+  "artifact_id": "judge_pair_B1A_B1B_2_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T11:05:59.486182Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B1A_v4",
+    "plan_candidate_B1B_v3"
+  ],
+  "payload": {
+    "comparison": {
+      "a": "B1A is solid but defers security defaults to a later milestone and highlights blocking open questions without integrating early mitigations.",
+      "b": "B1B adds early sanitization in M1 and includes more concrete polish items like deterministic builds and navigation, making the plan more execution-ready."
+    },
+    "judge_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+    "judge_model": "council-os-hq",
+    "winner": "b",
+    "scores": {
+      "feasibility": 8,
+      "testability": 8,
+      "governance": 7,
+      "architecture": 8,
+      "clarity": 8
+    },
+    "evidence": [
+      {
+        "artifact_ref": "plan_candidate_B1A_v4",
+        "entity_id": "W1",
+        "json_pointer": "/plan_package/synthesis_warnings/0/summary",
+        "note": "B1A flags blocking open questions before tags/links work proceeds.",
+        "candidate_id": "B1A",
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B1A_v4",
+        "entity_id": "DL20",
+        "json_pointer": "/plan_package/milestones/4/deliverables/4/text",
+        "note": "Security defaults appear in M5 rather than early.",
+        "candidate_id": "B1A",
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B1B_v3",
+        "entity_id": "DL7",
+        "json_pointer": "/plan_package/milestones/0/deliverables/6/text",
+        "note": "B1B introduces sanitization in M1 as an early mitigation.",
+        "candidate_id": "B1B",
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B1B_v3",
+        "entity_id": "DL28",
+        "json_pointer": "/plan_package/milestones/4/deliverables/7/text",
+        "note": "B1B explicitly targets deterministic builds in M5.",
+        "candidate_id": "B1B",
+        "artifact_id": null,
+        "quote": null
+      }
+    ],
+    "notes": "B1B is more execution-ready with earlier risk mitigation and concrete polish deliverables. B1A is cautious but less front-loaded on key mitigations."
+  }
+}

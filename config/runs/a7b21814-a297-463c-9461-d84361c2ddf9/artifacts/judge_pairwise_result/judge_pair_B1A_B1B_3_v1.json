@@ -1,0 +1,75 @@
+{
+  "artifact_type": "judge_pairwise_result",
+  "artifact_id": "judge_pair_B1A_B1B_3_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T11:05:59.490680Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B1A_v4",
+    "plan_candidate_B1B_v3"
+  ],
+  "payload": {
+    "comparison": {
+      "a": "More consistently treats link/tag conventions and privacy posture as unresolved blockers requiring explicit decisions before implementing higher-risk features. Governance and decision logging better constrain scope creep while still delivering an early thin-slice.",
+      "b": "Covers the same overall architecture and milestones, but asserts a “confirmed” scale (≤1,000 notes) and implies blocker questions are resolved without evidence in the capsule. Accepts critical privacy risk with documentation-only mitigation, but frames it as sufficient without the stronger HITL escalation seen in A."
+    },
+    "judge_id": "pairwise_judge",
+    "judge_model": "unspecified",
+    "winner": "a",
+    "scores": {
+      "feasibility": 8,
+      "testability": 8,
+      "governance": 9,
+      "architecture": 8,
+      "clarity": 7
+    },
+    "evidence": [
+      {
+        "artifact_ref": "plan_candidate_B1A_v4",
+        "entity_id": null,
+        "json_pointer": "/executive_summary",
+        "note": "Explicit thin-slice plan and explicitly manages convention ambiguity by requiring configuration before implementing links/tags/backlinks.",
+        "candidate_id": "B1A",
+        "artifact_id": null,
+        "quote": "deliver a static HTML/CSS/JS site... then incrementally adds tags... internal link resolution + backlinks... client-side search with a build-time index"
+      },
+      {
+        "artifact_ref": "plan_candidate_B1A_v4",
+        "entity_id": "W1",
+        "json_pointer": "/synthesis_warnings/0/summary",
+        "note": "Flags Q1/Q2 as blocking and routes for HITL, avoiding ungrounded assumptions.",
+        "candidate_id": "B1A",
+        "artifact_id": null,
+        "quote": "Open questions Q1... and Q2... are marked blocking... proceed with M1 but require confirmation/config decisions before implementing"
+      },
+      {
+        "artifact_ref": "plan_candidate_B1A_v4",
+        "entity_id": "DEC2",
+        "json_pointer": "/decision_log/1/choice",
+        "note": "Defines canonical path-based note identity and collision handling, directly supporting link/backlink correctness and determinism.",
+        "candidate_id": "B1A",
+        "artifact_id": null,
+        "quote": "Use source-relative file paths as canonical IDs... detect collisions and disambiguate or error with actionable messages."
+      },
+      {
+        "artifact_ref": "plan_candidate_B1B_v3",
+        "entity_id": null,
+        "json_pointer": "/executive_summary",
+        "note": "Claims a “confirmed” ≤1,000-note scope despite capsule marking scale (Q3) as blocking.",
+        "candidate_id": "B1B",
+        "artifact_id": null,
+        "quote": "well-suited for the confirmed single-user, ≤1,000-note scope."
+      },
+      {
+        "artifact_ref": "plan_candidate_B1B_v3",
+        "entity_id": "DEC6",
+        "json_pointer": "/decision_log/5/choice",
+        "note": "Accepts critical privacy leakage risk (K8) with documentation-only mitigation, without stronger escalation requirements.",
+        "candidate_id": "B1B",
+        "artifact_id": null,
+        "quote": "Accept K8 with documentation-only mitigation: build-time warning banner and README disclaimer advising users about public hosting exposure."
+      }
+    ],
+    "notes": "A is more defensible against the capsule’s explicitly blocking unknowns and keeps later milestones contingent on confirmed conventions. B’s added commitments are useful but rely on assumptions not supported by the provided capsule."
+  }
+}

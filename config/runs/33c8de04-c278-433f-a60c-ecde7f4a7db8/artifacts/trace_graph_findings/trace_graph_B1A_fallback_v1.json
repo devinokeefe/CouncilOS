@@ -1,0 +1,120 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B1A_fallback_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:10:25.702320Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "plan_candidate_B1A_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B1A_v1",
+    "findings": [
+      {
+        "id": "TG001",
+        "severity": "high",
+        "summary": "R1 milestone mapping includes M2 but M2 deliverables do not address R1; R1 is fully satisfied in M1 and should not appear in M2 milestone list.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "R1",
+            "json_pointer": "/plan_package/requirements/0",
+            "note": "R1 requires accepting input folder and discovering .md files recursively.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "The system MUST accept a user-specified folder ... and recursively discover Markdown (.md) files"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/deliverables/1",
+            "note": "M1 DL2 delivers CLI skeleton that accepts input/output paths and produces static output, satisfying R1.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Monolithic CLI skeleton (C1) that accepts input/output paths ... (R1, R2, R4, R11)"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1",
+            "note": "M2 focuses on forward links and backlinks; no deliverables address file discovery or R1.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Generate + Validate (Thin Slice 2): Forward links + backlink computation and rendering"
+          }
+        ],
+        "routing_target": "Review/Tech Lead"
+      },
+      {
+        "id": "TG002",
+        "severity": "high",
+        "summary": "R2 milestone mapping includes M2 but M2 deliverables do not address static-site output generation; R2 is fully satisfied in M1 and should not appear in M2 milestone list.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "R2",
+            "json_pointer": "/plan_package/requirements/1",
+            "note": "R2 requires generating static website output with no server-side runtime.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "The system MUST generate a static website output consisting only of static files"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/deliverables/1",
+            "note": "M1 DL2 delivers static output folder generation, satisfying R2.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "produces a static output folder with one HTML page per note (R1, R2, R4, R11)"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1",
+            "note": "M2 focuses on links and backlinks; no deliverables address static-site output constraint.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Forward links + backlink computation and rendering"
+          }
+        ],
+        "routing_target": "Review/Tech Lead"
+      },
+      {
+        "id": "TG003",
+        "severity": "high",
+        "summary": "R3 milestone mapping includes M2 but M2 deliverables do not address Markdown rendering or formatting preservation; R3 is fully satisfied in M1 and should not appear in M2 milestone list.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "R3",
+            "json_pointer": "/plan_package/requirements/2",
+            "note": "R3 requires parsing and rendering Markdown with preserved formatting.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "The system MUST parse and render each input Markdown file ... while preserving Markdown formatting and structure"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/deliverables/2",
+            "note": "M1 DL3 delivers Markdown rendering pipeline that preserves formatting, satisfying R3.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Markdown rendering pipeline (C2+C6) that preserves core formatting/structure (R3)"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1",
+            "note": "M2 focuses on link extraction and backlinks; no deliverables address Markdown rendering.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Internal link extraction and normalization ... backlink computation"
+          }
+        ],
+        "routing_target": "Review/Tech Lead"
+      }
+    ]
+  }
+}

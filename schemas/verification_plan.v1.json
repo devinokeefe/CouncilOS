@@ -3,32 +3,20 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "schema_version": {
-      "type": "string"
-    },
+    "schema_version": {"type": "string"},
     "meta": {
-      "type": "object"
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "plan_hash": {"type": "string"},
+        "compiler_version": {"type": "string"},
+        "hash_spec_version": {"type": "string"}
+      },
+      "required": ["plan_hash", "compiler_version", "hash_spec_version"]
     },
-    "milestone_id": {
-      "type": "string"
-    },
-    "required_expectations": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
-    },
-    "jobs_to_run": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
-    }
+    "milestone_id": {"type": "string"},
+    "required_expectations": {"type": "array", "items": {"type": "string"}},
+    "jobs_to_run": {"type": "array", "items": {"type": "string"}}
   },
-  "required": [
-    "schema_version",
-    "milestone_id",
-    "required_expectations",
-    "jobs_to_run"
-  ]
+  "required": ["schema_version", "meta", "milestone_id", "required_expectations", "jobs_to_run"]
 }

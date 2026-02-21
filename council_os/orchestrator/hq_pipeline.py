@@ -5,7 +5,6 @@ import inspect
 import json
 import os
 import re
-import subprocess
 import threading
 import time
 from collections.abc import Callable
@@ -110,9 +109,11 @@ from council_os.orchestrator.feedback.schemas import (
 )
 from council_os.orchestrator.feedback.store import PlanningArtifactStore
 from council_os.orchestrator.feedback.triage import build_clarification_questions, run_preplan_triage
-from council_os.orchestrator.feedback.utils import plan_hash, write_planning_artifact
+from council_os.handoff.hashing import plan_content_hash
+from council_os.orchestrator.feedback.utils import write_planning_artifact
 from council_os.orchestrator.handoff.finalize import build_config_snapshot, finalize_and_write_handoff
 from council_os.validation.validators import validate_candidate
+from council_os.utils import git_code_version
 
 PROMPT_LABELS: dict[str, tuple[str, str]] = {
     "capsule_normalizer_v3": ("CAPSULE_NORMALIZER_SYSTEM", "CAPSULE_NORMALIZER_USER"),
@@ -1716,7 +1717,7 @@ class HQPipeline:
                 if (
                     approval is None
                     or not approval.approved
-                    or approval.approved_plan_hash != plan_hash(plan_dict)
+                    or approval.approved_plan_hash != plan_content_hash(plan_dict)
                 ):
                     raise RuntimeError("Plan review approval required before freeze")
 
@@ -1901,7 +1902,7 @@ class HQPipeline:
             self.run_root,
             ManifestInput(
                 run_id=self.run_id,
-                code_version=_git_code_version(),
+                code_version=git_code_version(include_dirty=False),
                 schema_versions={"artifacts": self._schema_version},
                 run_config_version=str(self.config.get("version", "")),
                 stage_machine_version=str(self.config.get("version", "1.0.0")),
@@ -4431,12 +4432,16 @@ class HQPipeline:
                 else:
                     resolved_value = raw
                 source = "user"
+            impact = None
+            if question.decision_impact:
+                impact = ", ".join([str(item) for item in question.decision_impact])
             resolved_items.append(
                 {
                     "question_id": question.id,
                     "resolved_value": resolved_value,
                     "source": source,
                     "raw_response": raw,
+                    "impact_assessment": impact,
                 }
             )
         return ClarificationResolutions(schema_version="1.0", resolutions=resolved_items)
@@ -4988,13 +4993,6 @@ def _resolve_config_path(config: dict[str, object], path: str) -> object | None:
 
 def _now() -> datetime:
     return datetime.now(UTC)
-
-
-def _git_code_version() -> str:
-    try:
-        return subprocess.check_output(["git", "rev-parse", "HEAD"], text=True, stderr=subprocess.DEVNULL).strip()
-    except Exception:
-        return "unknown"
 
 
 def _model_portfolio(config: dict[str, object]) -> dict[str, dict[str, object]]:

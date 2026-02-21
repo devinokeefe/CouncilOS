@@ -1,0 +1,16 @@
+{
+  "title": "MergeTrain",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"type": "string"},
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    }
+  },
+  "required": ["schema_version", "entries"]
+}

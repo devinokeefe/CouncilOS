@@ -1,0 +1,14 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B1A_primary_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:48:01.080177Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B1A_v2"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B1A_v2",
+    "findings": []
+  }
+}

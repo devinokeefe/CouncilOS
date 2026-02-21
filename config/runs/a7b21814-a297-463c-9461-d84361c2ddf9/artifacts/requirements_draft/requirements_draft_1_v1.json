@@ -1,0 +1,110 @@
+{
+  "artifact_type": "requirements_draft",
+  "artifact_id": "requirements_draft_1_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:25:10.654445Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "capsule_canonical_v1"
+  ],
+  "payload": {
+    "requirements": [
+      {
+        "id": "REQ_A_1",
+        "priority": "MUST",
+        "text": "The system MUST ingest Markdown source content from a user-specified local directory and include all files with the \".md\" extension by default.",
+        "rationale": "The project assumes notes are individual Markdown files in a directory and the primary goal is to ingest a collection of Markdown notes."
+      },
+      {
+        "id": "REQ_A_2",
+        "priority": "MUST",
+        "text": "The system MUST generate a static build output consisting only of HTML, CSS, JavaScript, and other static assets (e.g., images) with no server-side runtime dependency.",
+        "rationale": "A core constraint and goal is output that can be hosted on common static hosting without requiring a server or database at runtime."
+      },
+      {
+        "id": "REQ_A_3",
+        "priority": "MUST",
+        "text": "The system MUST render each input Markdown note into a corresponding HTML page in the generated site output, excluding any files explicitly ignored by configuration.",
+        "rationale": "Success metrics require all Markdown files be rendered into accessible HTML pages, with support for configured ignores."
+      },
+      {
+        "id": "REQ_A_4",
+        "priority": "MUST",
+        "text": "The system MUST preserve standard Markdown formatting and structure in the generated HTML (e.g., headings, lists, emphasis, links, code blocks).",
+        "rationale": "A stated goal is to preserve Markdown formatting and structure in the generated site and to process standard Markdown syntax."
+      },
+      {
+        "id": "REQ_A_5",
+        "priority": "MUST",
+        "text": "The system MUST provide a command-line build workflow that generates the site output directory from the input notes.",
+        "rationale": "An assumption is that a CLI build workflow is acceptable, and a success metric is that the build completes successfully."
+      },
+      {
+        "id": "REQ_A_6",
+        "priority": "MUST",
+        "text": "The generated site MUST include client-side full-text search across note titles and body content without requiring any server requests to execute searches.",
+        "rationale": "Goals and assumptions call for full-text search implemented client-side to keep the site fully static."
+      },
+      {
+        "id": "REQ_A_7",
+        "priority": "MUST",
+        "text": "The build process MUST produce a search index artifact that is shipped with the static site and used by the client-side search feature.",
+        "rationale": "To enable static, client-side full-text search, a prebuilt index must be generated and included in the output."
+      },
+      {
+        "id": "REQ_A_8",
+        "priority": "MUST",
+        "text": "The system MUST detect internal links between notes and render them as navigable links in the generated HTML when the link target resolves to a note in the input set.",
+        "rationale": "A key goal is to detect and render internal links between notes to support navigation."
+      },
+      {
+        "id": "REQ_A_9",
+        "priority": "MUST",
+        "text": "For each note, the generated page MUST include a backlinks section listing all other notes that link to it, and each backlink entry MUST link to the source note page.",
+        "rationale": "A stated goal and success metric require backlinks (\"linked from\") sections with clickable links."
+      },
+      {
+        "id": "REQ_A_10",
+        "priority": "MUST",
+        "text": "The system MUST support tag extraction from notes based on at least one configurable tagging convention and expose tags per note in the generated page.",
+        "rationale": "A stated goal is to support tags for browsing/filtering; tag conventions are an explicit open question and should be configurable."
+      },
+      {
+        "id": "REQ_A_11",
+        "priority": "MUST",
+        "text": "The generated site MUST include a tags index page and per-tag pages that list all notes associated with the selected tag.",
+        "rationale": "A success metric requires tag index pages where selecting a tag shows all notes containing that tag."
+      },
+      {
+        "id": "REQ_A_12",
+        "priority": "SHOULD",
+        "text": "The system SHOULD provide configurable rules for internal link parsing to support one or more link syntaxes (e.g., standard Markdown links and/or wiki-style links) as selected by the user.",
+        "rationale": "Linking conventions are a blocking open question; configurability reduces risk and supports different note ecosystems."
+      },
+      {
+        "id": "REQ_A_13",
+        "priority": "SHOULD",
+        "text": "The system SHOULD provide configurable tag normalization rules (e.g., case handling and whitespace handling) applied consistently across tag pages and note tag displays.",
+        "rationale": "Tag parsing and normalization rules are a blocking open question; consistent normalization is necessary for predictable browsing."
+      },
+      {
+        "id": "REQ_A_14",
+        "priority": "SHOULD",
+        "text": "The system SHOULD generate a global navigation entry point that allows users to reach (a) an all-notes listing and (b) the tags index from any note page.",
+        "rationale": "The problem statement calls for discoverability and navigability; information architecture needs include common navigational pages."
+      },
+      {
+        "id": "REQ_A_15",
+        "priority": "SHOULD",
+        "text": "The system SHOULD emit build-time warnings for unresolved internal links (links whose targets do not resolve to an input note) and render them in a clearly non-navigable manner in the output.",
+        "rationale": "Handling broken links is an open question; warnings improve usability while keeping output static and predictable."
+      },
+      {
+        "id": "REQ_A_16",
+        "priority": "COULD",
+        "text": "The system COULD support incremental builds and/or a watch mode that rebuilds the site output when Markdown files change.",
+        "rationale": "Incremental rebuild and watch mode are non-blocking open questions that can improve local authoring workflow."
+      }
+    ]
+  }
+}

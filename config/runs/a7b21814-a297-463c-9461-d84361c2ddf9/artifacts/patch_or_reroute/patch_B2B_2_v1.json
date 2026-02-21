@@ -1,0 +1,16 @@
+{
+  "artifact_type": "patch_or_reroute",
+  "artifact_id": "patch_B2B_2_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:40:40.779516Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B2B_v1"
+  ],
+  "payload": {
+    "action": "reroute",
+    "rationale": "id_integrity failures stem from /plan_package/architecture/options/*/risks containing free-text entries that appear to be treated as ID references. Fixing requires editing locked canonical section /architecture/options (and possibly minting/aligning risk IDs), which is disallowed for this role. Reroute to architecture_canonical owner.",
+    "patch": [],
+    "reroute_target": "architecture_canonical_v1"
+  }
+}

@@ -1,0 +1,549 @@
+{
+  "artifact_type": "candidate_delta",
+  "artifact_id": "candidate_delta_B1B_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:08:10.587739Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "branch_set_v1"
+  ],
+  "payload": {
+    "candidate_id": "B1B",
+    "executive_summary": "This candidate implements a monolithic single-command CLI (O1) that converts a folder of Markdown notes into a fully static website with tags, backlinks, and client-side search. The plan follows a thin-slice milestone strategy across five increments: (M1) core ingestion and HTML rendering, (M2) forward-link and backlink support, (M3) tag extraction and navigation, (M4) client-side search, and (M5) polish including error reporting, cross-browser validation, watch mode, and optional features. Blocking questions Q1 (link syntax) and Q2 (tag format) must be resolved before coding begins. XSS mitigation (K3) is enforced from the first milestone by disabling raw HTML and blocking unsafe URL schemes. High HITL strictness ensures stakeholder sign-off at each milestone gate. COULD-priority features (graph view, themes, advanced search, nested tags) are explicitly deferred to post-M5 to contain scope.",
+    "architecture_choice": {
+      "option_id": "O1",
+      "rationale": "The monolithic CLI architecture (O1) is selected because it minimises upfront design overhead, delivers the fastest path to a working end-to-end prototype, and keeps the user experience simple (one command generates the whole site). The in-memory pipeline avoids intermediate I/O costs and is straightforward to debug. Thin-slice milestones mitigate the main downside of monolithic designs (difficulty extending) by validating each core goal incrementally. The plugin-based approach (O2) was rejected as over-engineering for the initial scope. The SSG-based approach (O3) was rejected to avoid external dependency constraints and upgrade-cycle risks. The multi-tool pipeline (O4) was rejected due to user-experience complexity and orchestration overhead.",
+      "high_level_dataflow": "CLI Entry Point (C1) receives input/output paths and config → Markdown Parser & Metadata Extractor (C2) recursively reads .md files, parses frontmatter/tags/links, produces in-memory note records → Graph Engine (C3) builds forward-link graph and computes backlinks → Tag Index Builder (C4) aggregates tags into per-tag note lists → Search Index Generator (C5) builds a serialised client-side search index → HTML Renderer (C6) consumes note records, backlinks, tag index, and search index path to produce static HTML/CSS/JS pages → Client-Side Search UI (C7) loads the search index in the browser and provides interactive search.",
+      "key_design_decisions": [
+        "DEC1",
+        "DEC2",
+        "DEC3",
+        "DEC4",
+        "DEC5",
+        "DEC6"
+      ]
+    },
+    "milestones": [
+      {
+        "id": "M1",
+        "name": "Core Ingestion & HTML Rendering",
+        "deliverables": [
+          {
+            "id": "DL1",
+            "text": "CLI entry point (C1) accepting input directory, output directory, and optional config file path."
+          },
+          {
+            "id": "DL2",
+            "text": "Markdown Parser & Metadata Extractor (C2) with recursive .md discovery, frontmatter parsing, and Markdown-to-HTML rendering (raw HTML disabled, unsafe URL schemes blocked)."
+          },
+          {
+            "id": "DL3",
+            "text": "HTML Renderer (C6) producing one static HTML page per note with stable deterministic URLs, plus a basic index/home page."
+          },
+          {
+            "id": "DL4",
+            "text": "XSS security test suite covering known payloads (K3 mitigation)."
+          },
+          {
+            "id": "DL5",
+            "text": "Fixture-based acceptance tests for AT1, AT2, AT3, AT4, AT13."
+          }
+        ],
+        "exit_criteria": [
+          "AT1 passes: all .md files recursively discovered, non-.md excluded.",
+          "AT2 passes: output is static files only; site viewable via static file server.",
+          "AT3 passes: headings, lists, code blocks, emphasis, links, images, tables render correctly.",
+          "AT4 passes: each note has a distinct page with a stable, deterministic URL.",
+          "AT13 passes: build completes without errors on representative folder.",
+          "XSS test suite passes: raw HTML disabled, javascript: URLs blocked.",
+          "Blocking questions Q1 and Q2 resolved and documented before milestone work begins."
+        ],
+        "depends_on": []
+      },
+      {
+        "id": "M2",
+        "name": "Forward Links & Backlinks",
+        "deliverables": [
+          {
+            "id": "DL6",
+            "text": "Internal link detection and rendering in C2 using the resolved Q1 link syntax (standard Markdown links and optionally wiki-links)."
+          },
+          {
+            "id": "DL7",
+            "text": "Graph Engine (C3) computing forward-link graph and inverse backlink map."
+          },
+          {
+            "id": "DL8",
+            "text": "Backlinks section rendered on each note page via C6."
+          },
+          {
+            "id": "DL9",
+            "text": "Broken-link warning output with source file/line information."
+          },
+          {
+            "id": "DL10",
+            "text": "Deterministic fixture dataset validating 100% backlink correctness (R21)."
+          }
+        ],
+        "exit_criteria": [
+          "AT8 passes: all internal forward links resolve and are clickable.",
+          "AT9 passes: 100% of expected backlinks appear on target pages.",
+          "Broken-link warnings emitted for unresolvable links with file paths.",
+          "Backlink correctness validated against deterministic fixture dataset."
+        ],
+        "depends_on": [
+          "M1"
+        ]
+      },
+      {
+        "id": "M3",
+        "name": "Tag Extraction & Navigation",
+        "deliverables": [
+          {
+            "id": "DL11",
+            "text": "Tag parser in C2 supporting the resolved Q2 tag convention (frontmatter and/or inline #tags)."
+          },
+          {
+            "id": "DL12",
+            "text": "Tag Index Builder (C4) aggregating tags and producing per-tag note lists."
+          },
+          {
+            "id": "DL13",
+            "text": "Per-tag navigation pages and a tag index page rendered by C6."
+          },
+          {
+            "id": "DL14",
+            "text": "Deterministic fixture dataset validating 100% tag completeness (R20)."
+          }
+        ],
+        "exit_criteria": [
+          "AT6 passes: 100% of tagged notes appear under correct tag pages.",
+          "AT7 passes: each tag has a navigable listing with working links.",
+          "Tag completeness validated against deterministic fixture dataset."
+        ],
+        "depends_on": [
+          "M1"
+        ]
+      },
+      {
+        "id": "M4",
+        "name": "Client-Side Search",
+        "deliverables": [
+          {
+            "id": "DL15",
+            "text": "Search Index Generator (C5) producing a serialised client-side full-text index at build time."
+          },
+          {
+            "id": "DL16",
+            "text": "Client-Side Search UI (C7) with search input, results list (title, snippet), and navigation to result pages."
+          },
+          {
+            "id": "DL17",
+            "text": "Search quality benchmark against representative query set (R19)."
+          },
+          {
+            "id": "DL18",
+            "text": "Performance benchmark for index size and query latency on 100+ note dataset (K4)."
+          }
+        ],
+        "exit_criteria": [
+          "AT5 passes: search operates fully client-side without network access.",
+          "AT12 passes: ≥90% of representative queries return expected note in top 10.",
+          "Search index size and query latency benchmarked; targets documented and met."
+        ],
+        "depends_on": [
+          "M1"
+        ]
+      },
+      {
+        "id": "M5",
+        "name": "Polish & Optional Features",
+        "deliverables": [
+          {
+            "id": "DL19",
+            "text": "Enhanced error reporting for invalid Markdown, unresolvable links, and tag parsing failures with file paths and line numbers (R12)."
+          },
+          {
+            "id": "DL20",
+            "text": "Cross-browser validation across Chrome, Firefox, Safari, Edge (R13)."
+          },
+          {
+            "id": "DL21",
+            "text": "Watch mode for incremental regeneration (R25)."
+          },
+          {
+            "id": "DL22",
+            "text": "Per-note table of contents generation (R24)."
+          },
+          {
+            "id": "DL23",
+            "text": "Documentation of deferred COULD features (R26, R27, R28, R29) as backlog items."
+          }
+        ],
+        "exit_criteria": [
+          "AT10 passes: CLI build completes offline with input/output paths.",
+          "AT11 passes: core features work without runtime errors in all target browsers.",
+          "Watch mode correctly regenerates affected pages on file change, rename, and delete.",
+          "Error reporting includes file path and line/position for parsing failures.",
+          "COULD features documented as deferred backlog items with explicit scope boundaries."
+        ],
+        "depends_on": [
+          "M2",
+          "M3",
+          "M4"
+        ]
+      }
+    ],
+    "decision_log": [
+      {
+        "id": "DEC1",
+        "question": "Which architecture option should be used?",
+        "choice": "O1 — Monolithic single-command CLI with in-memory build pipeline.",
+        "rationale": "Minimises upfront design overhead and delivers the fastest path to a working end-to-end prototype. Simple single-process build is easy to reason about and debug. Thin-slice milestones mitigate extensibility concerns by validating each core goal incrementally.",
+        "alternatives_considered": [
+          "O2 — Custom plugin-based SSG core: rejected as over-engineering for initial scope; plugin API stabilisation would delay delivery.",
+          "O3 — Eleventy-based SSG: rejected to avoid external dependency constraints, upgrade-cycle risks, and reduced control over build internals.",
+          "O4 — Multi-tool pipeline with on-disk intermediates: rejected due to user-experience complexity and orchestration overhead."
+        ],
+        "what_would_change_this_decision": [
+          "If the project scope expanded to require third-party plugin extensibility or theme marketplace, O2 would become preferable.",
+          "If an existing SSG already covered 80%+ of requirements with stable plugins, O3 would reduce implementation effort.",
+          "If the team needed to use different languages for different pipeline stages, O4 would be reconsidered."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "architecture_canonical_v1",
+            "entity_id": "O1",
+            "json_pointer": "/options/0",
+            "note": "Monolithic CLI option definition",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Simple single-process build; easy to reason about and debug"
+          },
+          {
+            "artifact_ref": "branch_set_v1",
+            "entity_id": "B1",
+            "json_pointer": "/branches/0/rationale",
+            "note": "Branch rationale selecting O1",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "The monolithic CLI (O1) minimises upfront design overhead"
+          }
+        ]
+      },
+      {
+        "id": "DEC2",
+        "question": "What milestone strategy should be used?",
+        "choice": "Thin-slice incremental delivery across 5 milestones, each producing a shippable increment.",
+        "rationale": "Thin slices allow each core goal (G1–G5) to be validated independently before proceeding. This reduces integration risk and enables early feedback. Each milestone gates on its mapped acceptance tests, ensuring quality at every increment.",
+        "alternatives_considered": [
+          "Layer-cake approach (all parsing first, then all rendering, then all features): rejected because it delays end-to-end validation and increases integration risk.",
+          "Big-bang single milestone: rejected because it provides no intermediate validation points and increases delivery risk."
+        ],
+        "what_would_change_this_decision": [
+          "If the project had extremely tight deadlines requiring parallel workstreams, a different decomposition might be needed.",
+          "If requirements were highly interdependent with no natural slicing points, a layer-cake approach might be unavoidable."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "branch_set_v1",
+            "entity_id": "B1",
+            "json_pointer": "/branches/0/milestone_strategy",
+            "note": "Thin-slice milestone strategy from branch definition",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Each milestone delivers a shippable increment that can be tested against its acceptance tests"
+          }
+        ]
+      },
+      {
+        "id": "DEC3",
+        "question": "When should blocking questions Q1 (link syntax) and Q2 (tag format) be resolved?",
+        "choice": "Both must be resolved and documented before any coding begins (before M1 work starts).",
+        "rationale": "Q1 and Q2 are blocking questions that affect the core parser (C2), link graph (C3), and tag index (C4). Starting implementation without these decisions would cause rework and risk incorrect extraction logic. The risk posture explicitly prioritises resolving these first, and alignment warnings AL-001/AL-002 flag them.",
+        "alternatives_considered": [
+          "Defer Q1/Q2 and implement a configurable multi-syntax parser: rejected because it increases complexity without clear user need and delays delivery.",
+          "Pick defaults and allow override later: partially acceptable but still requires a documented default before coding."
+        ],
+        "what_would_change_this_decision": [
+          "If the user explicitly requested support for multiple link/tag syntaxes simultaneously from day one.",
+          "If a clear industry standard emerged that eliminated ambiguity."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q1",
+            "json_pointer": "/open_questions/0",
+            "note": "Blocking question on link syntax",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "What Markdown flavor and internal link syntax should be supported"
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q2",
+            "json_pointer": "/open_questions/1",
+            "note": "Blocking question on tag format",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "How are tags represented in the notes"
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K1",
+            "json_pointer": "/risk_register/0",
+            "note": "Risk of link resolution errors due to ambiguous syntax",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Link/backlink resolution errors due to ambiguous or mixed internal link syntax"
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K2",
+            "json_pointer": "/risk_register/1",
+            "note": "Risk of tag extraction inconsistency",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Tag extraction inconsistency due to unspecified or mixed tag formats"
+          }
+        ]
+      },
+      {
+        "id": "DEC4",
+        "question": "How should XSS and content injection risks (K3) be mitigated?",
+        "choice": "Disable raw HTML passthrough and block unsafe URL schemes (e.g., javascript:, data:) in the Markdown renderer from M1 onward. Require explicit opt-in configuration for any raw HTML support.",
+        "rationale": "K3 is rated critical. Readers of the generated static site must be protected from injected scripts. Disabling raw HTML by default is the simplest and most robust mitigation. A security test suite with known XSS payloads is included in M1 deliverables.",
+        "alternatives_considered": [
+          "Allow raw HTML with sanitisation library: more permissive but increases attack surface and dependency risk.",
+          "Allow raw HTML with no sanitisation: unacceptable given critical severity."
+        ],
+        "what_would_change_this_decision": [
+          "If the user explicitly requires raw HTML embedding (e.g., for embedded widgets), a sanitisation-based approach with explicit opt-in would be adopted."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K3",
+            "json_pointer": "/risk_register/2",
+            "note": "Critical XSS risk",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Client-side XSS or content injection vulnerabilities if Markdown/HTML is rendered unsafely"
+          }
+        ]
+      },
+      {
+        "id": "DEC5",
+        "question": "How should path traversal and unintended file inclusion (K9) be mitigated?",
+        "choice": "Constrain ingestion to the declared root directory, reject symlinks by default, and maintain an allowlist of file extensions (.md only). Reject any paths that escape the root.",
+        "rationale": "K9 is rated high severity. The monolithic parser (C2) must enforce filesystem boundaries to prevent leaking local files into the generated site. This is implemented in the file discovery phase of M1.",
+        "alternatives_considered": [
+          "Follow symlinks with user confirmation: adds complexity and risk; deferred unless explicitly requested.",
+          "No restriction: unacceptable given high severity."
+        ],
+        "what_would_change_this_decision": [
+          "If the user's workflow requires symlinked note directories, an explicit opt-in flag with a warning would be added."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K9",
+            "json_pointer": "/risk_register/8",
+            "note": "Path traversal risk",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Path traversal or unintended file inclusion during ingestion"
+          }
+        ]
+      },
+      {
+        "id": "DEC6",
+        "question": "How should COULD-priority features (R26–R29) be handled?",
+        "choice": "Explicitly defer all COULD features to post-M5 backlog. Document them as deferred items with scope boundaries in M5 deliverables.",
+        "rationale": "K20 identifies scope creep as a risk. Deferring COULD features keeps the team focused on MUST and SHOULD requirements through M1–M5 and ensures core goals are met before optional enhancements are considered.",
+        "alternatives_considered": [
+          "Include graph view (R26) in M5: rejected as it adds significant UI complexity and is not required for core goals.",
+          "Include theming (R27) in M5: rejected as it is cosmetic and can be layered on later without architectural changes."
+        ],
+        "what_would_change_this_decision": [
+          "If the user explicitly prioritises a specific COULD feature (e.g., graph view) as essential for their workflow.",
+          "If M1–M4 complete significantly ahead of schedule, COULD features could be pulled into M5."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K20",
+            "json_pointer": "/risk_register/19",
+            "note": "Scope creep risk",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Scope creep from undefined secondary features could divert resources"
+          },
+          {
+            "artifact_ref": "requirements_canonical_v1",
+            "entity_id": "R26",
+            "json_pointer": "/requirements/25",
+            "note": "COULD: graph view",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "The generated site COULD include an interactive graph view"
+          }
+        ]
+      }
+    ],
+    "supplemental_evaluations": [
+      {
+        "title": "Security Posture Assessment",
+        "notes": "K3 (XSS, critical) is mitigated from M1 by disabling raw HTML and blocking unsafe URL schemes, with a dedicated security test suite. K9 (path traversal, high) is mitigated by constraining ingestion to the declared root and rejecting symlinks. K17 (information disclosure) is addressed by ensuring no absolute filesystem paths appear in output and supporting exclude patterns. These mitigations are validated at M1 exit. No critical risks are accepted without mitigation.",
+        "evidence": [
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K3",
+            "json_pointer": "/risk_register/2",
+            "note": "Critical XSS risk with planned mitigation",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Disable raw HTML by default (or sanitize it) in the renderer"
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K9",
+            "json_pointer": "/risk_register/8",
+            "note": "Path traversal mitigation",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Constrain ingestion to a declared root directory; default to not following symlinks"
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K17",
+            "json_pointer": "/risk_register/16",
+            "note": "Information disclosure mitigation",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Ensure generated output never includes absolute source paths"
+          }
+        ]
+      },
+      {
+        "title": "Acceptance Test Coverage Gap: XSS",
+        "notes": "The canonical acceptance tests (AT1–AT13) do not include an explicit XSS/security test. The branch acceptance strategy notes that a security-focused XSS acceptance test covering K3 must be added before M1 exits. This is addressed in M1 deliverable DL4 (XSS security test suite). A formal acceptance test ID should be minted by the appropriate role if needed.",
+        "evidence": [
+          {
+            "artifact_ref": "acceptance_canonical_v1",
+            "entity_id": null,
+            "json_pointer": "/acceptance_tests",
+            "note": "No AT covers XSS explicitly",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K3",
+            "json_pointer": "/risk_register/2",
+            "note": "Critical XSS risk requires test coverage",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Add security tests with known XSS payloads"
+          }
+        ]
+      },
+      {
+        "title": "Performance & Scale Strategy",
+        "notes": "K4 (search index scale) is deferred to M4 where a concrete benchmark step (DL18) validates index size and query latency on a 100+ note dataset. K13 (memory/build time) is monitored throughout but formally benchmarked at M4. Performance targets for R23 should be documented once Q3 (expected scale) is answered. If the note corpus exceeds ~1000 notes, chunked/lazy-loaded search indexes should be evaluated.",
+        "evidence": [
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K4",
+            "json_pointer": "/risk_register/3",
+            "note": "Search index scale risk",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Client-side search index size/quality/performance may degrade at scale"
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K13",
+            "json_pointer": "/risk_register/12",
+            "note": "Build performance risk",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Excessive memory usage or slow build times on large repositories"
+          },
+          {
+            "artifact_ref": "requirements_canonical_v1",
+            "entity_id": "R23",
+            "json_pointer": "/requirements/22",
+            "note": "Performance targets requirement",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "the system SHOULD meet agreed performance targets for generation time"
+          }
+        ]
+      }
+    ],
+    "synthesis_warnings": [
+      {
+        "id": "W1",
+        "severity": "high",
+        "summary": "Blocking questions Q1 (internal link syntax) and Q2 (tag format) must be resolved before M1 implementation can begin. HITL approval is required.",
+        "routing_target": "hitl_gate",
+        "evidence": [
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q1",
+            "json_pointer": "/open_questions/0",
+            "note": "Blocking question on link syntax",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "What Markdown flavor and internal link syntax should be supported"
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q2",
+            "json_pointer": "/open_questions/1",
+            "note": "Blocking question on tag format",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "How are tags represented in the notes"
+          }
+        ]
+      },
+      {
+        "id": "W2",
+        "severity": "medium",
+        "summary": "No canonical acceptance test covers XSS/security validation (K3). A new acceptance test ID (AT#) should be minted by the acceptance test owner to formalise the XSS test suite required at M1 exit.",
+        "routing_target": "acceptance_tests",
+        "evidence": [
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K3",
+            "json_pointer": "/risk_register/2",
+            "note": "Critical XSS risk lacks formal AT coverage",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Add security tests with known XSS payloads"
+          }
+        ]
+      },
+      {
+        "id": "W3",
+        "severity": "low",
+        "summary": "Performance targets for R23 depend on Q3 (expected scale), which is non-blocking but unresolved. Targets should be documented before M4 exit.",
+        "routing_target": "clarification",
+        "evidence": [
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q3",
+            "json_pointer": "/open_questions/2",
+            "note": "Scale and performance targets not yet defined",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "What is the expected scale (number of notes/total size) and performance targets"
+          }
+        ]
+      }
+    ]
+  }
+}

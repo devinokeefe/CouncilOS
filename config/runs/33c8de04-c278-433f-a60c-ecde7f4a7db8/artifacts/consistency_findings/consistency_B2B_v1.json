@@ -1,0 +1,372 @@
+{
+  "artifact_type": "consistency_findings",
+  "artifact_id": "consistency_B2B_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:09:32.914366Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "plan_candidate_B2B_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2B_v1",
+    "findings": [
+      {
+        "id": "CS1",
+        "severity": "high",
+        "summary": "Q1 (link syntax) and Q2 (tag representation) are marked as blocking and governance HITL policy requires interruption when blocking spec decisions are missing, but DEC7 explicitly chooses defaults to proceed without resolving them; this is a semantic mismatch about whether work can continue without stakeholder decisions.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "Q1",
+            "json_pointer": "/plan_package/project_capsule/open_questions/0/blocking",
+            "note": "Q1 is explicitly marked blocking",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "true"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "Q2",
+            "json_pointer": "/plan_package/project_capsule/open_questions/1/blocking",
+            "note": "Q2 is explicitly marked blocking",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "true"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": null,
+            "json_pointer": "/plan_package/governance/hitl_policy/when_to_interrupt/0",
+            "note": "HITL policy says to interrupt when Q1/Q2 not provided",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Blocking specification decisions are required (Q1 internal link syntax; Q2 tag representation) and are not provided."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "DEC7",
+            "json_pointer": "/plan_package/decision_log/6/choice",
+            "note": "DEC7 claims defaults/configurability avoid blocking",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Default to CommonMark with optional GFM extensions. Support both standard Markdown links and wiki-links ([[...]])"
+          }
+        ],
+        "routing_target": "Review"
+      },
+      {
+        "id": "CS2",
+        "severity": "high",
+        "summary": "Lifecycle ordering implies the Search Index Plugin runs in the finalize hook after the Theme/Renderer has already rendered pages, yet rendered pages are expected to reference the generated search index assets; without a stated deterministic filename contract or a two-pass render, this is internally inconsistent.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "IF13",
+            "json_pointer": "/plan_package/architecture/options/1/interfaces/4/contract",
+            "note": "Search index artifacts are written in finalize",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Hook: finalize(context) \u00187 search index artifacts written to output directory (optionally sharded)."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "IF14",
+            "json_pointer": "/plan_package/architecture/options/1/interfaces/5/contract",
+            "note": "Renderer runs in render hook (before finalize in the declared sequence)",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Hook: render(context) \u00187 HTML files and static theme assets written to output directory using context data."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "IF15",
+            "json_pointer": "/plan_package/architecture/options/1/interfaces/6/contract",
+            "note": "Rendered pages must reference search index assets",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Rendered pages reference client-side JS bundle and search index assets via relative static paths."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": null,
+            "json_pointer": "/plan_package/architecture/chosen/high_level_dataflow",
+            "note": "Dataflow explicitly places rendering before search index generation",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Theme/Renderer Plugin renders ... \u00187 [render hook] \u00187 Search Index Plugin builds ... writes index artifacts"
+          }
+        ],
+        "routing_target": "Review"
+      },
+      {
+        "id": "CS3",
+        "severity": "medium",
+        "summary": "The static-site constraint/requirement states the site can be hosted/viewed without a server-side runtime, but multiple places rely on using a local static file server for verification/guidance; this creates ambiguity about whether file:// viewing is expected to work (especially for search index loading).",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "CNS1",
+            "json_pointer": "/plan_package/project_capsule/constraints/0/text",
+            "note": "Constraint implies no required server-side runtime beyond the browser",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Output must be a static site ... with no required server-side runtime ... beyond what can run in the browser."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "AT2",
+            "json_pointer": "/plan_package/acceptance_tests/1/procedure",
+            "note": "AT2 validation suggests using a local static file server",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "attempt to open the site via a local static file server (or static hosting)."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "K11",
+            "json_pointer": "/plan_package/risk_register/10/description",
+            "note": "Risk register anticipates file:// restrictions impacting JS features like search",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Broken offline/local viewing when opened via file:// due to browser restrictions ... especially impacting search"
+          }
+        ],
+        "routing_target": "Review"
+      },
+      {
+        "id": "CS001",
+        "severity": "high",
+        "summary": "Milestone M1 deliverable DL7 (minimal renderer stub) contradicts M1 exit criteria requiring faithful Markdown rendering (AT3 partial). A 'stub' cannot satisfy 'preserving formatting' verification.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "DL7",
+            "json_pointer": "/plan_package/milestones/0/deliverables/6",
+            "note": "M1 deliverable describes minimal stub",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Minimal Theme/Renderer Plugin stub that outputs one HTML page per note with basic formatting (no backlinks/tags/search yet)."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/exit_criteria/2",
+            "note": "M1 exit criterion requires faithful rendering",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Markdown Parser Plugin correctly parses representative Markdown files preserving formatting (AT3 partial)."
+          }
+        ],
+        "routing_target": "Review"
+      },
+      {
+        "id": "CS002",
+        "severity": "medium",
+        "summary": "DEC7 states tags support 'both YAML frontmatter and inline #tag syntax' but R18 (SHOULD) hedges this as 'option to configure which sources are used'. The decision appears more definitive than the requirement allows.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "DEC7",
+            "json_pointer": "/plan_package/decision_log/6/choice",
+            "note": "Decision states both are supported",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Support tags from both YAML frontmatter and inline #tag syntax."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "R18",
+            "json_pointer": "/plan_package/requirements/17",
+            "note": "Requirement allows configuration of which sources",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "SHOULD support extracting tags from both YAML frontmatter and inline #tag syntax, with an option to configure which sources are used"
+          }
+        ],
+        "routing_target": "Review"
+      },
+      {
+        "id": "CS003",
+        "severity": "high",
+        "summary": "M2 exit criteria require '100% of expected backlinks appear' (AT9) but M2 deliverables do not include any test fixtures or definition of 'expected backlinks' for the test link graph referenced in AT9.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/exit_criteria/0",
+            "note": "Exit criterion references test link graph",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "100% of expected backlinks appear on target note pages for the test link graph (AT9 pass criteria)."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "DL14",
+            "json_pointer": "/plan_package/milestones/1/deliverables/5",
+            "note": "Deliverable mentions tests but not fixtures",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Tests for backlink correctness (AT9), tag completeness (AT6), forward link resolution (AT8), and per-tag navigation (AT7)."
+          }
+        ],
+        "routing_target": "Review"
+      },
+      {
+        "id": "CS004",
+        "severity": "medium",
+        "summary": "R23 (performance targets SHOULD be defined) and Q3 (scale/performance targets unknown) are flagged as needing resolution, but no milestone deliverable explicitly produces these targets before M3 search implementation begins (per W3 warning).",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "W3",
+            "json_pointer": "/plan_package/synthesis_warnings/2",
+            "note": "Warning states targets should be agreed before M3",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "concrete targets should be agreed before M3 search implementation begins to avoid rework"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "M3",
+            "json_pointer": "/plan_package/milestones/2/deliverables",
+            "note": "M3 deliverables do not include target definition",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "Review"
+      },
+      {
+        "id": "CS005",
+        "severity": "medium",
+        "summary": "DEC5 selects Lunr.js or MiniSearch for search but does not specify which, yet M3 deliverable DL15 must implement a concrete choice. The decision is incomplete for implementation.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "DEC5",
+            "json_pointer": "/plan_package/decision_log/4/choice",
+            "note": "Decision lists two alternatives without choosing",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "using a lightweight library (e.g., Lunr.js or MiniSearch)"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "DL15",
+            "json_pointer": "/plan_package/milestones/2/deliverables/0",
+            "note": "Deliverable requires concrete implementation",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Search Index Plugin: builds client-side full-text search index from NoteRegistry"
+          }
+        ],
+        "routing_target": "Review"
+      },
+      {
+        "id": "CS006",
+        "severity": "low",
+        "summary": "Executive summary claims M4 'finalises' acceptance but M4 exit criteria state 'All acceptance tests AT1–AT13 pass', implying tests were defined earlier. The summary overstates M4's role in test definition vs execution.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": null,
+            "json_pointer": "/plan_package/executive_summary",
+            "note": "Summary claims M4 finalises acceptance",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Milestone 4 finalises cross-browser testing, performance validation, security hardening, and E2E acceptance."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "M4",
+            "json_pointer": "/plan_package/milestones/3/exit_criteria/6",
+            "note": "Exit criteria reference pre-existing tests",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "All acceptance tests AT1–AT13 pass."
+          }
+        ],
+        "routing_target": "Review"
+      },
+      {
+        "id": "CS007",
+        "severity": "medium",
+        "summary": "K14 (incremental rebuild risk) mitigation states 'If watch mode is offered' but R25 (watch mode SHOULD be provided) and the branch's acceptance strategy do not clarify whether watch mode is in scope for the initial milestones or deferred.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "K14",
+            "json_pointer": "/plan_package/risk_register/13/mitigation/text",
+            "note": "Mitigation is conditional on watch mode",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "If watch mode is offered, implement a dependency graph"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "R25",
+            "json_pointer": "/plan_package/requirements/24",
+            "note": "Requirement is SHOULD priority",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "The CLI SHOULD provide a watch mode that monitors the input directory for changes"
+          }
+        ],
+        "routing_target": "Review"
+      },
+      {
+        "id": "CS008",
+        "severity": "high",
+        "summary": "DEC3 states plugins 'may declare explicit dependencies on other plugins' but no milestone deliverable includes a dependency declaration mechanism or schema, and DL3 (plugin API contract) does not explicitly list this as a required feature.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "DEC3",
+            "json_pointer": "/plan_package/decision_log/2/choice",
+            "note": "Decision requires dependency declaration",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Plugins declare which hooks they participate in and may declare explicit dependencies on other plugins for ordering within a hook."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "DL3",
+            "json_pointer": "/plan_package/milestones/0/deliverables/2",
+            "note": "API contract deliverable does not mention dependency schema",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Plugin API contract specification document with hook signatures, ordering rules, and inter-plugin dependency declaration."
+          }
+        ],
+        "routing_target": "Review"
+      },
+      {
+        "id": "CS009",
+        "severity": "medium",
+        "summary": "Supplemental evaluation 'Coverage of MUST Requirements' claims M3 covers R2 (static output) but R2 verification (AT2) requires inspecting output and attempting to host/open the site, which is more naturally an M4 E2E activity than an M3 exit criterion.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": null,
+            "json_pointer": "/plan_package/supplemental_evaluations/2/notes",
+            "note": "Claims M3 covers R2",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "M3 covers R2 (static output)"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "AT2",
+            "json_pointer": "/plan_package/acceptance_tests/1",
+            "note": "AT2 requires hosting verification",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "attempt to open the site via a local static file server (or static hosting)"
+          }
+        ],
+        "routing_target": "Review"
+      }
+    ]
+  }
+}

@@ -1,0 +1,397 @@
+{
+  "artifact_type": "consistency_findings",
+  "artifact_id": "consistency_B2A_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:08:53.756099Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "plan_candidate_B2A_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2A_v1",
+    "findings": [
+      {
+        "id": "CS1",
+        "severity": "high",
+        "summary": "Lifecycle ordering has a potential dependency mismatch: search index artifacts are produced in finalize after render, but rendered pages are expected to reference search assets/UI. If the search plugin uses sharding/chunking or content-hash filenames, the renderer may not know the correct asset paths at render time unless an explicit manifest/contract is defined.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "DEC2",
+            "json_pointer": "/plan_package/decision_log/1/choice",
+            "note": "Defines lifecycle with render before finalize.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Standardize lifecycle hooks consistent with O2: init → collectFiles → transform → resolve → render → finalize"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "IF14",
+            "json_pointer": "/plan_package/architecture/options/1/interfaces/5",
+            "note": "Render hook writes HTML files.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Hook: render(context) → HTML files and static theme assets written to output directory using context data."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "IF13",
+            "json_pointer": "/plan_package/architecture/options/1/interfaces/4",
+            "note": "Finalize hook writes search artifacts (after render).",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Hook: finalize(context) → search index artifacts written to output directory (optionally sharded)."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "DL14",
+            "json_pointer": "/plan_package/milestones/3/deliverables/0/text",
+            "note": "Search plugin explicitly may evolve to sharding/chunking, which affects filenames/paths.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Search Index plugin (C13) ... can evolve to sharding/chunking if needed."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "O2-high_level_dataflow",
+            "json_pointer": "/plan_package/architecture/chosen/high_level_dataflow",
+            "note": "Narrative expects rendered pages to reference search artifacts/runtime.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Search Index plugin (C13) builds and writes client-side index artifacts ... referenced by rendered pages"
+          }
+        ],
+        "routing_target": "Review:TechLead"
+      },
+      {
+        "id": "CS2",
+        "severity": "medium",
+        "summary": "Milestone M1 exit criteria claims a minimal pipeline can run all lifecycle hooks with “no-op/reference plugins” and still produce a static output folder, but M1 deliverables do not include any concrete reference renderer/theme plugin needed to emit HTML/static files. This creates ambiguity about how the output folder is produced in M1.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/exit_criteria/0",
+            "note": "Claims output produced with no-op/reference plugins.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "A minimal pipeline run executes all lifecycle hooks ... with no-op/reference plugins and produces a static output folder."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "M1-DLs",
+            "json_pointer": "/plan_package/milestones/0/deliverables",
+            "note": "No deliverable explicitly provides a reference renderer/theme implementation in M1.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "IF14",
+            "json_pointer": "/plan_package/architecture/options/1/interfaces/5",
+            "note": "Render hook is the mechanism that would write HTML/static assets, implying a renderer/plugin is necessary.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Hook: render(context) → HTML files and static theme assets written to output directory"
+          }
+        ],
+        "routing_target": "Generate:EngineeringLead"
+      },
+      {
+        "id": "CS3",
+        "severity": "low",
+        "summary": "Versioning fields in plan metadata are internally inconsistent/ambiguous: meta.version is set to \"v1\" while meta.plan_version is null. If both are intended to represent plan versioning, one should not be unset.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "meta",
+            "json_pointer": "/plan_package/meta/version",
+            "note": "Version is set.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "v1"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "meta",
+            "json_pointer": "/plan_package/meta/plan_version",
+            "note": "Plan version is null.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "Review:SchemaOwner"
+      },
+      {
+        "id": "CS4",
+        "severity": "medium",
+        "summary": "Acceptance test AT5 instructs opening the site in a browser with network disabled to validate offline search, but the risk register explicitly notes file:// restrictions can break runtime fetch/XHR. AT5 does not specify a local server/static hosting context, potentially making the test non-deterministic vs the identified risk.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "AT5",
+            "json_pointer": "/plan_package/acceptance_tests/4/procedure",
+            "note": "Test procedure doesn’t specify local server vs file:// context.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Open the site in a browser with network disabled and perform searches via the UI."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "K11",
+            "json_pointer": "/plan_package/risk_register/10/description",
+            "note": "Risk highlights file:// restrictions impacting JS features like search.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Broken offline/local viewing when opened via file:// due to browser restrictions (e.g., fetch/XHR blocked)"
+          }
+        ],
+        "routing_target": "Validate:QA"
+      },
+      {
+        "id": "CS001",
+        "severity": "high",
+        "summary": "Acceptance test AT2 claims to verify R2 (static-only output) but does not explicitly test that search, tags, and backlinks function without server-side runtime, leaving a gap in coverage for the core static constraint.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "AT2",
+            "json_pointer": "/plan_package/acceptance_tests/1",
+            "note": "AT2 pass criteria does not explicitly verify search/tags/backlinks work without backend.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "site functions without any server-side runtime for browsing, search, tags, or backlinks."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "R2",
+            "json_pointer": "/plan_package/requirements/1",
+            "note": "R2 requires static output with no server runtime for browsing/search/tags/backlinks.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "generate a static website output... with no required server-side runtime for browsing, search, tags, or backlinks."
+          }
+        ],
+        "routing_target": "Review:TechLead"
+      },
+      {
+        "id": "CS002",
+        "severity": "medium",
+        "summary": "Milestone M2 exit criteria references AT3 (Markdown render correctness) but AT3 is a human_eval test; the exit criteria does not specify who performs the evaluation or how pass/fail is determined, creating ambiguity in milestone completion.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/exit_criteria/1",
+            "note": "M2 exit criteria references AT3 passing but AT3 is human_eval.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "AT3 (Markdown render correctness) passes for the selected baseline elements on the fixture set."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "AT3",
+            "json_pointer": "/plan_package/acceptance_tests/2",
+            "note": "AT3 is type human_eval with no specified evaluator.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "\"type\": \"human_eval\""
+          }
+        ],
+        "routing_target": "Review:TechLead"
+      },
+      {
+        "id": "CS003",
+        "severity": "high",
+        "summary": "Decision DEC5 mandates disabling raw HTML by default to mitigate K3 (XSS risk), but no requirement, acceptance test, or milestone deliverable explicitly validates that this security default is implemented and enforced.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "DEC5",
+            "json_pointer": "/plan_package/decision_log/4",
+            "note": "DEC5 requires disabling raw HTML by default for security.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Disable raw HTML passthrough by default (or sanitize it) and block unsafe URL schemes"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "K3",
+            "json_pointer": "/plan_package/risk_register/2",
+            "note": "K3 is critical XSS risk requiring mitigation.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Client-side XSS or content injection vulnerabilities if Markdown/HTML is rendered unsafely"
+          }
+        ],
+        "routing_target": "SecurityReview"
+      },
+      {
+        "id": "CS004",
+        "severity": "medium",
+        "summary": "Requirement R12 (clear error reporting for invalid Markdown/links/tags) is a SHOULD, but milestone M3 exit criteria requires build warnings for unresolved links and tag parsing failures, creating a mismatch in priority/enforcement.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "R12",
+            "json_pointer": "/plan_package/requirements/11",
+            "note": "R12 is priority SHOULD for error reporting.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "\"priority\": \"SHOULD\", \"text\": \"The build process SHOULD provide clear error reporting\""
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "M3",
+            "json_pointer": "/plan_package/milestones/2/exit_criteria/1",
+            "note": "M3 exit criteria mandates warnings/errors for unresolved links and tag failures.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Build emits clear warnings/errors for unresolved internal links and tag parsing failures"
+          }
+        ],
+        "routing_target": "Review:ProductOwner"
+      },
+      {
+        "id": "CS005",
+        "severity": "high",
+        "summary": "Milestone M1 deliverable DL5 creates a security-by-default renderer policy stub, but M2 exit criteria requires security defaults enforced in the thin-slice rendering path; there is no explicit handoff or validation that DL5 stub is actually wired and enforced by M2.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "DL5",
+            "json_pointer": "/plan_package/milestones/0/deliverables/4",
+            "note": "DL5 is a stub for security defaults in M1.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Security-by-default renderer policy stub... wired into the context/config"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/exit_criteria/2",
+            "note": "M2 requires security defaults enforced in rendering.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Security defaults are enforced in the thin-slice rendering path"
+          }
+        ],
+        "routing_target": "Review:TechLead+SecurityReviewer"
+      },
+      {
+        "id": "CS006",
+        "severity": "medium",
+        "summary": "Requirement R23 (performance targets for 100+ notes) is a SHOULD with targets to be defined, but milestone M4 exit criteria requires performance targets documented and benchmarked; no earlier milestone or decision establishes who defines these targets or when.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "R23",
+            "json_pointer": "/plan_package/requirements/22",
+            "note": "R23 defers performance target definition.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "these targets SHOULD be defined/documented based on expected scale"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "M4",
+            "json_pointer": "/plan_package/milestones/3/exit_criteria/2",
+            "note": "M4 requires performance targets documented and benchmarked.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Performance/scale targets (R23/Q3) are documented with at least one benchmark run"
+          }
+        ],
+        "routing_target": "Review:ProductOwner+TechLead"
+      },
+      {
+        "id": "CS007",
+        "severity": "medium",
+        "summary": "Acceptance test AT6 maps to R7 and R20 (tag extraction and 100% completeness), but AT6 procedure does not specify how to verify that untagged notes are correctly excluded from tag pages, leaving a gap in the test coverage.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "AT6",
+            "json_pointer": "/plan_package/acceptance_tests/5",
+            "note": "AT6 pass criteria mentions untagged notes but procedure does not detail verification.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "untagged notes are not listed; 100% of notes with tags are included"
+          }
+        ],
+        "routing_target": "Review:TechLead"
+      },
+      {
+        "id": "CS008",
+        "severity": "high",
+        "summary": "Warning W1 flags Q1 and Q2 as blocking and requiring HITL approval, but milestone M3 exit criteria states Q1/Q2 must be resolved and reflected in configuration defaults; there is no explicit HITL gate or approval step in the milestone sequence before M3 completion.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "W1",
+            "json_pointer": "/plan_package/synthesis_warnings/0",
+            "note": "W1 requires HITL approval for Q1/Q2 defaults.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "defaults must not be finalized without HITL approval"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "M3",
+            "json_pointer": "/plan_package/milestones/2/exit_criteria/2",
+            "note": "M3 exit criteria requires Q1/Q2 resolved and reflected in config.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Open questions Q1... and Q2... are resolved and reflected in configuration defaults"
+          }
+        ],
+        "routing_target": "HITL:ProductOwner+TechLead"
+      },
+      {
+        "id": "CS009",
+        "severity": "medium",
+        "summary": "Risk K11 (file:// browsing restrictions) mitigation suggests providing guidance or embedding the index, but no requirement, acceptance test, or deliverable validates that the chosen approach works or that guidance is provided.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "K11",
+            "json_pointer": "/plan_package/risk_register/10",
+            "note": "K11 mitigation proposes guidance or embedding index for file:// browsing.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "provide guidance to run a simple local server. Optionally embed the index"
+          }
+        ],
+        "routing_target": "Review:TechLead"
+      },
+      {
+        "id": "CS010",
+        "severity": "medium",
+        "summary": "Decision DEC7 defers sharding/chunking of search index to mitigate K4 (scale/performance), but milestone M4 deliverable DL14 only requires an implementation strategy that 'can evolve' to sharding; there is no explicit validation that the initial implementation supports evolution without breaking changes.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "DEC7",
+            "json_pointer": "/plan_package/decision_log/6",
+            "note": "DEC7 allows index format to evolve including sharding.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "design the plugin so index format can evolve (including optional sharding/chunking)"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "DL14",
+            "json_pointer": "/plan_package/milestones/3/deliverables/0",
+            "note": "DL14 requires implementation strategy that can evolve to sharding.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "with an implementation strategy that can evolve to sharding/chunking if needed"
+          }
+        ],
+        "routing_target": "Review:TechLead"
+      }
+    ]
+  }
+}

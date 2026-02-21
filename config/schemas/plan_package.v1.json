@@ -736,6 +736,67 @@
       "title": "OpenQuestion",
       "type": "object"
     },
+    "PlanCaps": {
+      "additionalProperties": false,
+      "properties": {
+        "max_files_changed": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Files Changed"
+        },
+        "max_loc_changed": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Loc Changed"
+        },
+        "max_dep_changes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Dep Changes"
+        }
+      },
+      "title": "PlanCaps",
+      "type": "object"
+    },
+    "PlanConstraints": {
+      "additionalProperties": false,
+      "properties": {
+        "caps": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PlanCaps"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "PlanConstraints",
+      "type": "object"
+    },
     "PlanMeta": {
       "additionalProperties": false,
       "properties": {
@@ -748,6 +809,18 @@
           "pattern": "^(v\\d+|vFinal)$",
           "title": "Version",
           "type": "string"
+        },
+        "plan_version": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Plan Version"
         },
         "created_at": {
           "format": "date-time",
@@ -778,6 +851,42 @@
           ],
           "title": "Plan Status",
           "type": "string"
+        },
+        "parent_plan_hash": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parent Plan Hash"
+        },
+        "amendment_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Amendment Id"
+        },
+        "hash_spec_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Hash Spec Version"
         }
       },
       "required": [
@@ -801,6 +910,28 @@
         },
         "project_capsule": {
           "$ref": "#/$defs/ProjectCapsulePayload"
+        },
+        "scope": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PlanScope"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "constraints": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PlanConstraints"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         },
         "executive_summary": {
           "anyOf": [
@@ -893,6 +1024,27 @@
         "decision_log"
       ],
       "title": "PlanPackage",
+      "type": "object"
+    },
+    "PlanScope": {
+      "additionalProperties": false,
+      "properties": {
+        "in_scope_paths": {
+          "items": {
+            "type": "string"
+          },
+          "title": "In Scope Paths",
+          "type": "array"
+        },
+        "out_of_scope_paths": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Out Of Scope Paths",
+          "type": "array"
+        }
+      },
+      "title": "PlanScope",
       "type": "object"
     },
     "ProjectCapsulePayload": {

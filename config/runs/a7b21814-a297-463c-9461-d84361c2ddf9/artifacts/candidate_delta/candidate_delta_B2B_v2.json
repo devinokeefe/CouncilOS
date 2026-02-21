@@ -1,0 +1,627 @@
+{
+  "artifact_type": "candidate_delta",
+  "artifact_id": "candidate_delta_B2B_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:47:04.987185Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "branch_set_v1"
+  ],
+  "payload": {
+    "candidate_id": "B2B",
+    "executive_summary": "Candidate B2B ('Foundation First – Hybrid') adopts the plugin-based architecture (O2) with a hybrid milestone strategy: an initial 'big bang' milestone to design and stabilise the core build engine, plugin API, and shared data model, followed by thin-slice milestones that deliver individual features (link resolution, tagging, search, site generation) as discrete, independently testable plugins. Governance is set to full tooling with high HITL strictness. Architectural risks—plugin API instability, shared mutable state bugs, and the critical data-leakage risk (K8)—are front-loaded into the first milestone. This approach trades slower initial feature delivery for a maintainable, extensible foundation that minimises long-term technical debt.",
+    "architecture_choice": {
+      "option_id": "O2",
+      "rationale": "O2's plugin-based build core with lifecycle hooks (ingest/transform/render/emit) and a shared build context directly supports the branch's goal of long-term extensibility and maintainability. By investing upfront in a stable plugin API and shared data model, each feature (Markdown rendering, link/backlink resolution, tag extraction, search indexing, theming) becomes a swappable, independently testable module. This cleanly separates concerns, reduces coupling, and allows future features (e.g., incremental builds, graph visualisation) to be added as new plugins without modifying the core. The higher initial complexity is justified by the branch's 'Foundation First' philosophy and the risk posture that prioritises mitigating architectural risks before feature delivery.",
+      "high_level_dataflow": "CLI invocation → Core Build Engine (C9) loads config and discovers plugins → Ingest hook: Ingestion Plugin (C11) scans source directory, populates Shared Build Context (C10) with raw note records → Transform hooks: Metadata & Tag Extraction Plugin (C12) parses front matter/inline tags and writes normalised metadata; Link Resolution & Backlink Plugin (C13) detects internal links, resolves targets, computes backlinks, stores link graph → Render hooks: Markdown Render Plugin (C14) converts Markdown to HTML; Theme/Template Plugin (C15) produces final page HTML (note pages, tag index, per-tag pages, home, all-notes); Search Index Plugin (C16) builds client-side search index → Emit hook: Emit Plugin (C17) writes all pages, assets, and search index to the output directory → Static site ready for hosting.",
+      "key_design_decisions": [
+        "DEC1",
+        "DEC2",
+        "DEC3",
+        "DEC4",
+        "DEC5",
+        "DEC6",
+        "DEC7"
+      ]
+    },
+    "milestones": [
+      {
+        "id": "M1",
+        "name": "Core Engine & Plugin API Foundation",
+        "deliverables": [
+          {
+            "id": "DL1",
+            "text": "Core Build Engine (C9) with lifecycle hook execution (ingest, transform, render, emit) and plugin registration/ordering."
+          },
+          {
+            "id": "DL2",
+            "text": "Shared Build Context / Central Data Store (C10) with stable read/write APIs for note records, metadata, tags, and link relationships."
+          },
+          {
+            "id": "DL3",
+            "text": "Plugin API specification document covering hook contracts, data access patterns, ordering constraints, and versioning policy."
+          },
+          {
+            "id": "DL4",
+            "text": "Skeleton Ingestion Plugin (C11) that scans a directory and populates the build context with raw note entries (satisfies R1 partially)."
+          },
+          {
+            "id": "DL5",
+            "text": "CLI entry point (C9 surface) accepting input dir, output dir, and config path (satisfies R5 partially)."
+          },
+          {
+            "id": "DL6",
+            "text": "Build-time privacy check mechanism: mandatory configuration flag and build-time validation to warn/block publication of notes marked as private (mitigates K8)."
+          },
+          {
+            "id": "DL7",
+            "text": "Unit and integration test harness for plugin lifecycle, build context APIs, and privacy check."
+          }
+        ],
+        "exit_criteria": [
+          "Core engine executes a full lifecycle (ingest→transform→render→emit) with the skeleton ingestion plugin and a no-op emit plugin without errors.",
+          "Plugin API specification is reviewed and approved (HITL gate).",
+          "Shared Build Context APIs pass contract tests for CRUD on notes, tags, and links.",
+          "Privacy check blocks build when private-flagged notes are present and no override is set.",
+          "AT5 (CLI accepts input/output paths) passes with the skeleton pipeline.",
+          "AT6 Case B (invalid input produces actionable error) passes."
+        ],
+        "depends_on": []
+      },
+      {
+        "id": "M2",
+        "name": "Markdown Parsing & Rendering Plugin",
+        "deliverables": [
+          {
+            "id": "DL8",
+            "text": "Markdown Render Plugin (C14) with CommonMark-compliant parsing and HTML generation, stored in build context."
+          },
+          {
+            "id": "DL9",
+            "text": "Configurable renderer pipeline supporting GFM extensions (tables, strikethrough, task lists, fenced code with syntax highlighting)."
+          },
+          {
+            "id": "DL10",
+            "text": "HTML sanitisation layer to mitigate XSS (K7): raw HTML disabled by default or sanitised."
+          },
+          {
+            "id": "DL11",
+            "text": "Golden-file render tests for representative Markdown constructs."
+          }
+        ],
+        "exit_criteria": [
+          "AT3 (one-to-one HTML page generation for non-excluded files) passes.",
+          "AT4 (Markdown formatting preserved in HTML) passes.",
+          "Golden-file tests pass for CommonMark and GFM constructs.",
+          "XSS payload test suite passes (no script execution in output)."
+        ],
+        "depends_on": [
+          "M1"
+        ]
+      },
+      {
+        "id": "M3",
+        "name": "Link Resolution & Backlink Plugin",
+        "deliverables": [
+          {
+            "id": "DL12",
+            "text": "Link Resolution & Backlink Plugin (C13) detecting standard Markdown relative links and resolving them to canonical note identifiers."
+          },
+          {
+            "id": "DL13",
+            "text": "Configurable support for wiki-style links ([[Note Title]]) as an optional link syntax."
+          },
+          {
+            "id": "DL14",
+            "text": "Backlink computation storing reverse edges in the shared build context."
+          },
+          {
+            "id": "DL15",
+            "text": "Build-time warnings for unresolved links with source file and link text (R18)."
+          },
+          {
+            "id": "DL16",
+            "text": "Graph consistency checks: cycle detection, duplicate-title collision detection (K9, K10)."
+          }
+        ],
+        "exit_criteria": [
+          "AT9 (standard relative link resolves to correct HTML page) passes.",
+          "AT10 (backlinks section lists all linking notes with clickable links) passes.",
+          "Unresolved link warnings are emitted without failing the build by default.",
+          "Graph consistency checks detect and report cycles and collisions without crashing."
+        ],
+        "depends_on": [
+          "M1"
+        ]
+      },
+      {
+        "id": "M4",
+        "name": "Tag Extraction & Tag Pages Plugin",
+        "deliverables": [
+          {
+            "id": "DL17",
+            "text": "Metadata & Tag Extraction Plugin (C12) supporting configurable tag sources (YAML front matter tags field and/or inline #tag syntax)."
+          },
+          {
+            "id": "DL18",
+            "text": "Tag normalisation pipeline (case-folding, trimming, deduplication) per R16."
+          },
+          {
+            "id": "DL19",
+            "text": "Tag index page and per-tag listing pages generated via Theme/Template Plugin integration."
+          }
+        ],
+        "exit_criteria": [
+          "AT11 (tags extracted per selected convention and associated with correct notes) passes.",
+          "AT12 (tags displayed on note page as navigable links to tag pages) passes.",
+          "AT13 (tag index page and per-tag pages list correct notes) passes.",
+          "Normalisation tests confirm case-insensitive deduplication."
+        ],
+        "depends_on": [
+          "M1",
+          "M2"
+        ]
+      },
+      {
+        "id": "M5",
+        "name": "Search Index & Client-Side Search Plugin",
+        "deliverables": [
+          {
+            "id": "DL20",
+            "text": "Search Index Plugin (C16) building a client-side full-text search index from note titles and body content at build time."
+          },
+          {
+            "id": "DL21",
+            "text": "Client-side search runtime (JS) loaded in the browser, querying the prebuilt index without server requests."
+          },
+          {
+            "id": "DL22",
+            "text": "Performance budget enforcement: build-time report of index size; target <500ms query latency for up to 1,000 notes (R22)."
+          }
+        ],
+        "exit_criteria": [
+          "AT7 (client-side search returns correct results without server requests) passes.",
+          "AT8 (search index artifact generated and loaded from static output) passes.",
+          "Search latency under 500ms for a 1,000-note fixture on a modern consumer device."
+        ],
+        "depends_on": [
+          "M1",
+          "M2"
+        ]
+      },
+      {
+        "id": "M6",
+        "name": "Theme, Navigation & Site Assembly",
+        "deliverables": [
+          {
+            "id": "DL23",
+            "text": "Theme/Template Plugin (C15) rendering per-note pages with tags, backlinks, and search UI."
+          },
+          {
+            "id": "DL24",
+            "text": "Site-level pages: home/landing page, all-notes listing, tags index (R17)."
+          },
+          {
+            "id": "DL25",
+            "text": "Emit Plugin (C17) writing all pages and assets to output directory with configurable base URL/path prefix (R19)."
+          },
+          {
+            "id": "DL26",
+            "text": "Accessible base theme with semantic HTML, keyboard navigation, and responsive layout (K15, K16)."
+          },
+          {
+            "id": "DL27",
+            "text": "File/directory exclusion support via configuration (R20)."
+          }
+        ],
+        "exit_criteria": [
+          "AT1 (recursive Markdown discovery) passes end-to-end.",
+          "AT2 (output is purely static, loads without server runtime) passes.",
+          "AT14 (core functionality works in Chrome, Firefox, Safari, Edge without JS errors) passes.",
+          "Navigation from any note page reaches home, all-notes, tags index, and search.",
+          "Base URL configuration produces correct links when served from a subdirectory."
+        ],
+        "depends_on": [
+          "M2",
+          "M3",
+          "M4",
+          "M5"
+        ]
+      },
+      {
+        "id": "M7",
+        "name": "Integration, Cross-Platform & Hardening",
+        "deliverables": [
+          {
+            "id": "DL28",
+            "text": "End-to-end integration test suite covering the full build pipeline with realistic fixtures."
+          },
+          {
+            "id": "DL29",
+            "text": "Cross-platform test matrix (Windows, macOS, Linux) for path handling, encoding, and CLI behaviour (K11)."
+          },
+          {
+            "id": "DL30",
+            "text": "Deterministic build verification: repeated builds produce identical output (K20)."
+          },
+          {
+            "id": "DL31",
+            "text": "Dependency audit and vulnerability scan (K21)."
+          },
+          {
+            "id": "DL32",
+            "text": "Build summary report: counts of notes, tags, links, warnings, index size."
+          },
+          {
+            "id": "DL33",
+            "text": "Documentation: plugin API reference, CLI usage, configuration guide, deployment guide."
+          }
+        ],
+        "exit_criteria": [
+          "All acceptance tests AT1–AT14 pass on all three target platforms.",
+          "Deterministic build check passes (two consecutive clean builds produce byte-identical output).",
+          "No high/critical vulnerabilities in dependency audit.",
+          "Documentation reviewed and approved (HITL gate)."
+        ],
+        "depends_on": [
+          "M6"
+        ]
+      }
+    ],
+    "decision_log": [
+      {
+        "id": "DEC1",
+        "question": "Which architecture option should be selected?",
+        "choice": "O2 – Plugin-based build core with lifecycle hooks and shared build context.",
+        "rationale": "O2 provides the highest extensibility and separation of concerns, aligning with the branch's 'Foundation First' philosophy. Each feature is a swappable plugin, enabling independent testing and future growth. The upfront complexity cost is acceptable given the risk posture that prioritises architectural soundness over speed.",
+        "alternatives_considered": [
+          "O1 – Monolithic CLI pipeline: simpler but harder to extend safely.",
+          "O3 – Extend existing SSG (Eleventy): faster time-to-value but couples to external SSG upgrade cadence and limits distribution as standalone tool.",
+          "O4 – Multi-stage pipeline with intermediate artifacts: good for incremental builds but adds disk I/O overhead and intermediate schema versioning burden."
+        ],
+        "what_would_change_this_decision": [
+          "If the project scope were confirmed to be very small (<100 notes) with no future extensibility needs, O1 would be simpler.",
+          "If time-to-market were the overriding priority, O3 would deliver faster.",
+          "If incremental build support (R23) were elevated to MUST priority, O4's caching model would become more attractive."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "architecture_canonical_v1",
+            "entity_id": "O2",
+            "json_pointer": "/options/1",
+            "note": "Plugin-based architecture definition.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "branch_set_v1",
+            "entity_id": "B2",
+            "json_pointer": "/branches/1",
+            "note": "Branch B2 selects O2 with Foundation First rationale.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "DEC2",
+        "question": "What milestone strategy should be used?",
+        "choice": "Hybrid: one 'big bang' foundation milestone (M1) followed by thin-slice feature milestones (M2–M6) and a hardening milestone (M7).",
+        "rationale": "The core engine and plugin API must be stable before feature plugins can be built on top. A single foundation milestone ensures the API contract is reviewed and locked. Subsequent thin slices allow independent, parallel-friendly development and per-plugin acceptance testing.",
+        "alternatives_considered": [
+          "Pure thin-slice from the start: risky because plugin API would evolve under feature pressure.",
+          "Pure big-bang: delays all feedback until the end."
+        ],
+        "what_would_change_this_decision": [
+          "If the plugin API were already proven (e.g., forked from an existing project), the foundation milestone could be smaller."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "branch_set_v1",
+            "entity_id": "B2",
+            "json_pointer": "/branches/1/milestone_strategy",
+            "note": "Hybrid strategy specified by branch.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "DEC3",
+        "question": "How should the critical data-leakage risk (K8) be mitigated?",
+        "choice": "Implement a mandatory build-time privacy check in M1 that detects notes marked as private (via front matter flag) and blocks publication unless explicitly overridden.",
+        "rationale": "K8 is critical severity. Since access control is a non-goal, the only viable mitigation is preventing private content from entering the build output. A build-time check is the earliest and most reliable enforcement point. Placing it in M1 ensures it is available before any content-emitting plugin runs.",
+        "alternatives_considered": [
+          "Post-build output scanner: catches leaks but after the fact.",
+          "Documentation-only warning: insufficient for critical severity."
+        ],
+        "what_would_change_this_decision": [
+          "If the user confirms all notes are intended to be public, the check could be downgraded to a warning."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K8",
+            "json_pointer": "/risk_register/7",
+            "note": "Critical data leakage risk.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Sensitive/private information contained within notes is inadvertently published"
+          },
+          {
+            "artifact_ref": "branch_set_v1",
+            "entity_id": "B2",
+            "json_pointer": "/branches/1/risk_posture",
+            "note": "Branch requires formal review of K8 with build-time check.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "DEC4",
+        "question": "How should XSS/content injection (K7) be handled?",
+        "choice": "Default to disabling raw HTML in Markdown output; provide an opt-in configuration to allow it with sanitisation. Implemented in the Markdown Render Plugin (M2).",
+        "rationale": "K7 is high severity. Disabling raw HTML by default is the safest posture for a tool that publishes notes to the web. Users who need raw HTML can opt in, at which point a sanitiser (e.g., DOMPurify equivalent at build time) strips dangerous elements.",
+        "alternatives_considered": [
+          "Allow raw HTML by default with sanitisation: higher risk of bypass.",
+          "Strip all HTML silently: may surprise users."
+        ],
+        "what_would_change_this_decision": [
+          "If the trust model confirms notes are only authored by the site owner and never shared publicly, raw HTML could be enabled by default."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K7",
+            "json_pointer": "/risk_register/6",
+            "note": "XSS risk with sanitisation mitigation.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "DEC5",
+        "question": "How should the plugin API be versioned and stabilised?",
+        "choice": "Define the plugin API specification as a deliverable in M1 with a HITL review gate. Plugins developed in M2–M6 are first-party and validate the API. Semantic versioning is adopted for the API from M1 exit.",
+        "rationale": "The primary risk of O2 is API instability causing ecosystem churn. Locking the API specification early with a formal review, then validating it through first-party plugin development, reduces this risk before any third-party plugins exist.",
+        "alternatives_considered": [
+          "Evolve API organically during feature development: faster but risks breaking changes.",
+          "Defer API stabilisation to a later milestone: delays confidence in the architecture."
+        ],
+        "what_would_change_this_decision": [
+          "If third-party plugin support were not a goal, API versioning could be less formal."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "architecture_canonical_v1",
+            "entity_id": "O2",
+            "json_pointer": "/options/1/risks",
+            "note": "Plugin API evolution causing breaking changes is a stated risk.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Plugin API and data model may evolve, causing breaking changes"
+          }
+        ]
+      },
+      {
+        "id": "DEC6",
+        "question": "What client-side search technology approach should be used?",
+        "choice": "Build a precomputed full-text index at build time (e.g., using lunr.js or similar) shipped as a static JSON asset; client-side JS loads and queries it in the browser.",
+        "rationale": "This satisfies R7 (client-side search without server requests) and R8 (build-time index artifact). A precomputed index is the standard approach for static sites and keeps the output fully static. The Search Index Plugin (C16) encapsulates this, making the search provider swappable.",
+        "alternatives_considered": [
+          "Server-side search (Algolia, Elasticsearch): violates static-only constraint (CNS1).",
+          "No prebuilt index, brute-force client-side search: poor performance at scale."
+        ],
+        "what_would_change_this_decision": [
+          "If the confirmed note scale (Q3) exceeds what a single JSON index can handle performantly, chunked/lazy-loaded indices or a different search library would be needed."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "requirements_canonical_v1",
+            "entity_id": "R7",
+            "json_pointer": "/requirements/6",
+            "note": "Client-side full-text search requirement.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "requirements_canonical_v1",
+            "entity_id": "R8",
+            "json_pointer": "/requirements/7",
+            "note": "Build-time search index generation requirement.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "DEC7",
+        "question": "How should governance and HITL gates be applied?",
+        "choice": "Full tooling with high HITL strictness. Formal HITL review gates at M1 exit (plugin API spec approval), M7 exit (documentation and final acceptance), and any decision touching security boundaries (K7, K8, K19).",
+        "rationale": "The branch governance posture specifies full tooling and high HITL strictness. Placing gates at the foundation milestone and final hardening milestone ensures architectural decisions and security mitigations are human-reviewed before downstream work proceeds.",
+        "alternatives_considered": [
+          "Lower HITL strictness with automated-only gates: faster but risks missing architectural or security issues."
+        ],
+        "what_would_change_this_decision": [
+          "If the project were a low-stakes personal tool with no public exposure, HITL strictness could be reduced."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "branch_set_v1",
+            "entity_id": "B2",
+            "json_pointer": "/branches/1/governance_posture",
+            "note": "Full tooling, high HITL strictness specified.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      }
+    ],
+    "supplemental_evaluations": [
+      {
+        "title": "Blocking Open Questions Impact Assessment",
+        "notes": "Several open questions (Q1, Q2, Q3, Q4, Q10) are marked as blocking. The milestone plan is designed so that M1 (core engine) can proceed without final answers, but M2–M4 depend on Q1 (link conventions), Q2 (tag conventions), and Q6 (Markdown flavor). Q3 (scale) affects search performance targets in M5. Q4 (information architecture) affects M6 navigation design. Q10 (CLI vs GUI) is addressed by the decision to use CLI (R5/DEC1). These questions should be resolved during or before M1 to avoid rework.",
+        "evidence": [
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q1",
+            "json_pointer": "/open_questions/0",
+            "note": "Blocking: link conventions.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q2",
+            "json_pointer": "/open_questions/1",
+            "note": "Blocking: tag conventions.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q3",
+            "json_pointer": "/open_questions/2",
+            "note": "Blocking: scale requirements.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q4",
+            "json_pointer": "/open_questions/3",
+            "note": "Blocking: information architecture.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "title": "Risk Coverage by Milestone",
+        "notes": "M1 addresses K8 (data leakage, critical) and partially K4 (scale, critical via architecture). M2 addresses K1 (Markdown parsing, high) and K7 (XSS, high). M3 addresses K2 (link conventions, high), K9 (backlink correctness, medium), K10 (slug collisions, medium), and K12 (broken links, medium). M4 addresses K3 (tag conventions, high). M5 addresses K5 (search performance, high) and K18 (search relevance, medium). M6 addresses K13 (base URL/paths, medium), K15 (accessibility, medium), K16 (mobile, low), and K17 (IA mismatch, medium). M7 addresses K11 (cross-platform, high), K20 (determinism, medium), K21 (supply chain, medium), and K22 (logging, low). K4 (scale, critical) is partially addressed across M1–M5 via streaming and performance budgets; a dedicated stress test is in M7. K6 (malformed YAML, medium) is addressed in M2/M4 via graceful error handling. K14 (incremental build staleness) and K19 (template injection) are deferred as COULD/future scope unless elevated.",
+        "evidence": [
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K8",
+            "json_pointer": "/risk_register/7",
+            "note": "Critical risk mitigated in M1.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K4",
+            "json_pointer": "/risk_register/3",
+            "note": "Critical risk addressed across milestones.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      }
+    ],
+    "synthesis_warnings": [
+      {
+        "id": "W1",
+        "severity": "high",
+        "summary": "Critical risk K8 (data leakage) has no mitigation defined in the canonical risk register. This candidate adds a build-time privacy check in M1, but the mitigation text should be back-filled into the risk register for traceability.",
+        "routing_target": "risk_gov_canonical",
+        "evidence": [
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K8",
+            "json_pointer": "/risk_register/7/mitigation",
+            "note": "Mitigation is null; needs update.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "W2",
+        "severity": "medium",
+        "summary": "Risk K6 (malformed YAML front matter) has no mitigation defined. The candidate assumes graceful error handling in M2/M4 plugins, but the risk register should be updated.",
+        "routing_target": "risk_gov_canonical",
+        "evidence": [
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K6",
+            "json_pointer": "/risk_register/5/mitigation",
+            "note": "Mitigation is null.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "W3",
+        "severity": "medium",
+        "summary": "Blocking open questions Q1, Q2, Q3, Q4 must be resolved before M2–M6 can finalise their designs. If answers are delayed, milestones M2–M6 may require rework.",
+        "routing_target": "clarification_plan",
+        "evidence": [
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q1",
+            "json_pointer": "/open_questions/0",
+            "note": "Blocking question on link conventions.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q3",
+            "json_pointer": "/open_questions/2",
+            "note": "Blocking question on scale.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "W4",
+        "severity": "low",
+        "summary": "Risks K14 (incremental build staleness) and K19 (template injection) are not directly addressed by any milestone in this candidate. They are deferred as COULD-priority scope. If elevated, new milestones or deliverables would be needed.",
+        "routing_target": "risk_gov_canonical",
+        "evidence": [
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K14",
+            "json_pointer": "/risk_register/13",
+            "note": "Incremental build risk deferred.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K19",
+            "json_pointer": "/risk_register/18",
+            "note": "Template injection risk deferred.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      }
+    ]
+  }
+}

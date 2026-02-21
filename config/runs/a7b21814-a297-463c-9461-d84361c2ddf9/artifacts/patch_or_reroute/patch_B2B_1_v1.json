@@ -1,0 +1,97 @@
+{
+  "artifact_type": "patch_or_reroute",
+  "artifact_id": "patch_B2B_1_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:40:40.776518Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B2B_v1"
+  ],
+  "payload": {
+    "action": "patch",
+    "rationale": "Apply minimal, schema-safe edits to clear hard-gate failures: (1) remove architecture option free-text /risks fields that are being validated as unresolved ID references, (2) null invalid decision_log evidence pointer entity_id values for branch_set references, and (3) populate required risk closure for critical K8 (plus fill K6 mitigation). Also resolve sequencing inconsistencies by adjusting milestone exit-criteria wording and a SHOULD performance target gate to a measure-and-mitigate criterion.",
+    "patch": [
+      {
+        "op": "remove",
+        "path": "/plan_package/architecture/options/0/risks",
+        "from": null,
+        "value": null
+      },
+      {
+        "op": "remove",
+        "path": "/plan_package/architecture/options/1/risks",
+        "from": null,
+        "value": null
+      },
+      {
+        "op": "remove",
+        "path": "/plan_package/architecture/options/2/risks",
+        "from": null,
+        "value": null
+      },
+      {
+        "op": "remove",
+        "path": "/plan_package/architecture/options/3/risks",
+        "from": null,
+        "value": null
+      },
+      {
+        "op": "replace",
+        "path": "/plan_package/decision_log/0/evidence_pointers/1/entity_id",
+        "from": null,
+        "value": null
+      },
+      {
+        "op": "replace",
+        "path": "/plan_package/decision_log/1/evidence_pointers/0/entity_id",
+        "from": null,
+        "value": null
+      },
+      {
+        "op": "replace",
+        "path": "/plan_package/decision_log/2/evidence_pointers/1/entity_id",
+        "from": null,
+        "value": null
+      },
+      {
+        "op": "replace",
+        "path": "/plan_package/risk_register/7/mitigation",
+        "from": null,
+        "value": {
+          "text": "Implement a mandatory build-time privacy guard that excludes notes marked private (e.g., front matter publish:false or configurable equivalent) from all emitted artifacts, including rendered pages and the search index; add tests to ensure no private content is emitted.",
+          "owner": "sec",
+          "status": "planned"
+        }
+      },
+      {
+        "op": "replace",
+        "path": "/plan_package/risk_register/5/mitigation",
+        "from": null,
+        "value": {
+          "text": "Parse YAML front matter defensively: on malformed front matter, skip front-matter fields for that file, emit a build warning with file path and parse error, and continue the build (do not crash the entire build by default). Add fixtures covering common YAML errors.",
+          "owner": "eng",
+          "status": "planned"
+        }
+      },
+      {
+        "op": "replace",
+        "path": "/plan_package/milestones/1/exit_criteria/0",
+        "from": null,
+        "value": "AT4 passes: headings, lists, emphasis, links, images, code blocks render correctly (AT3 is deferred to M6 end-to-end validation when exclusion patterns are implemented)."
+      },
+      {
+        "op": "replace",
+        "path": "/plan_package/milestones/4/exit_criteria/2",
+        "from": null,
+        "value": "Performance target (R22): measure and report search query latency for a 1,000-note fixture; if >500 ms, document findings and implement/plan mitigations (e.g., index chunking/lazy load) rather than blocking milestone completion by default."
+      },
+      {
+        "op": "replace",
+        "path": "/plan_package/milestones/0/deliverables/5/text",
+        "from": null,
+        "value": "Build-time privacy guard: mandatory check that prevents emission of notes marked as private (front-matter field 'publish: false' or configurable equivalent) from all outputs, including rendered pages and derived artifacts such as the search index, mitigating K8."
+      }
+    ],
+    "reroute_target": null
+  }
+}

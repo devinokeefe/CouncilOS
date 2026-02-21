@@ -1,0 +1,345 @@
+{
+  "artifact_type": "consistency_findings",
+  "artifact_id": "consistency_B1A_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:09:05.387662Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "plan_candidate_B1A_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B1A_v1",
+    "findings": [
+      {
+        "id": "CS1",
+        "severity": "medium",
+        "summary": "Static-site constraint/requirement says the site can be viewed without any required server-side runtime, but acceptance/risks imply local viewing may require running a local file server (file:// may break). This is a semantic mismatch that needs a clarified definition of “no server-side runtime” (no dynamic backend vs. no local server).",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "CNS1",
+            "json_pointer": "/plan_package/project_capsule/constraints/0/text",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Output must be a static site (static HTML/CSS/JS/assets), with no required server-side runtime for browsing/search/backlinks beyond what can run in the browser."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "R2",
+            "json_pointer": "/plan_package/requirements/1/text",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "...static files (HTML/CSS/JS/assets) that can be hosted or viewed without any required server-side runtime..."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "AT2",
+            "json_pointer": "/plan_package/acceptance_tests/1/procedure",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "...attempt to open the site via a local static file server (or static hosting)."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "K11",
+            "json_pointer": "/plan_package/risk_register/10/description",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Broken offline/local viewing when opened via file:// due to browser restrictions (e.g., fetch/XHR blocked)..."
+          }
+        ],
+        "routing_target": "Review/Tech Lead"
+      },
+      {
+        "id": "CS2",
+        "severity": "high",
+        "summary": "Milestone M1 exit criteria requires K3/XSS mitigation to be exercised against XSS fixtures, but the acceptance test suite (AT1–AT13) contains no explicit security/XSS test. This creates a gating inconsistency: M1 exit depends on validation that is not represented in the acceptance test set.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/exit_criteria/2",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "K3 baseline mitigation is active ... and exercised against a small set of XSS payload fixtures (note: dedicated acceptance test is currently missing; see warnings)."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": null,
+            "json_pointer": "/plan_package/acceptance_tests",
+            "note": "AT1–AT13 enumerated; none explicitly cover XSS/K3.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "W1",
+            "json_pointer": "/plan_package/synthesis_warnings/0/summary",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "...canonical acceptance test list (AT1-AT13) contains no explicit XSS/security test."
+          }
+        ],
+        "routing_target": "Review/Security Reviewer"
+      },
+      {
+        "id": "CS3",
+        "severity": "medium",
+        "summary": "Client-side search is treated as a fixed approach (requirements/decision), but the capsule still marks client-side search acceptability as needing confirmation and separately asks about restrictions on client-side JavaScript. This is a consistency gap: the plan commits to client-side JS search while the inputs leave it conditional.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "A3",
+            "json_pointer": "/plan_package/project_capsule/assumptions/2",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Search is acceptable as an in-browser (client-side) search index generated at build time... needs_confirmation: true"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "Q6",
+            "json_pointer": "/plan_package/project_capsule/open_questions/5/text",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "...are there any restrictions on client-side JavaScript usage?"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "R5",
+            "json_pointer": "/plan_package/requirements/4/text",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "...build a client-side full-text search index at generation time and provide an in-browser search UI... without a server."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "DEC6",
+            "json_pointer": "/plan_package/decision_log/5/choice",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Generate a build-time client-side search index artifact ... and ship an in-browser JS search UI..."
+          }
+        ],
+        "routing_target": "Intake/Product Owner"
+      },
+      {
+        "id": "CS4",
+        "severity": "low",
+        "summary": "Plan metadata contains both meta.version=\"v1\" and meta.plan_version=null, which is internally ambiguous (two version fields with conflicting completeness). This can cause downstream confusion about which field is authoritative for plan versioning.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": null,
+            "json_pointer": "/plan_package/meta/version",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "v1"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": null,
+            "json_pointer": "/plan_package/meta/plan_version",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "Review/Orchestrator"
+      },
+      {
+        "id": "CS001",
+        "severity": "high",
+        "summary": "Milestone M1 exit criteria references AT13 for build success, but AT13 is a metric test for search quality (R19), not build completion (R22). The correct test for build success is AT13 itself, but its procedure does not match M1's scope (which has no search yet).",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/exit_criteria/1",
+            "note": "M1 exit criteria references AT13 for build success.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "AT1, AT2, AT3, AT4, and AT13 pass on a deterministic fixture dataset."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "AT13",
+            "json_pointer": "/plan_package/acceptance_tests/12",
+            "note": "AT13 is defined as a system test for R22 (build completes without errors), which is correct, but M1 includes it before search is implemented.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "AT13 ... Run the build on a representative notes folder and monitor for errors."
+          }
+        ],
+        "routing_target": "Review/Tech Lead"
+      },
+      {
+        "id": "CS002",
+        "severity": "medium",
+        "summary": "Milestone M1 deliverable DL3 claims to implement Markdown rendering (C2+C6) with security guardrails for K3, but M1 exit criteria only checks AT1-AT4 and AT13; none of these acceptance tests validate XSS mitigation or unsafe URL blocking as required by K3.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/deliverables/2",
+            "note": "DL3 claims K3 security guardrails are implemented.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "security guardrails enabled by default (no raw HTML or sanitization; unsafe URL scheme blocking) aligned to K3"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/exit_criteria/2",
+            "note": "M1 exit criteria mentions K3 mitigation is exercised against XSS payloads, but no corresponding acceptance test exists.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "K3 baseline mitigation is active ... and exercised against a small set of XSS payload fixtures (note: dedicated acceptance test is currently missing"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "W1",
+            "json_pointer": "/plan_package/synthesis_warnings/0",
+            "note": "Warning W1 explicitly flags the missing XSS acceptance test.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "canonical acceptance test list (AT1-AT13) contains no explicit XSS/security test"
+          }
+        ],
+        "routing_target": "Review/Security Reviewer"
+      },
+      {
+        "id": "CS003",
+        "severity": "medium",
+        "summary": "Milestone M2 depends on M1 and implements forward links and backlinks (R9, R10), but M1 does not resolve Q1 (internal link syntax specification), which is a blocking precondition for correct link extraction per DEC3 and K1 mitigation.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/deliverables/0",
+            "note": "M2 DL5 implements internal link extraction per Q1 spec.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Internal link extraction and normalization implemented per the chosen Q1 spec"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/exit_criteria/0",
+            "note": "M1 exit criteria requires Q1 resolution.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Blocking specs resolved with stakeholder approval: Q1 (link syntax) and Q2 (tag format)."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "DEC3",
+            "json_pointer": "/plan_package/decision_log/2",
+            "note": "DEC3 mandates Q1 resolution before implementing link/backlink behavior.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Treat Q1 and Q2 as gating: resolve with HITL approval before implementing link/backlink or tag extraction behavior"
+          }
+        ],
+        "routing_target": "Review/Tech Lead"
+      },
+      {
+        "id": "CS004",
+        "severity": "medium",
+        "summary": "Milestone M3 depends on M2 and implements tag extraction (R7), but M1 exit criteria requires Q2 (tag representation) resolution. However, M3 deliverable DL8 states tags are implemented 'per the chosen Q2 spec', implying Q2 must be resolved by M1 exit, which is consistent. No contradiction found on review; this is actually consistent.",
+        "evidence": [],
+        "routing_target": "Review/Tech Lead"
+      },
+      {
+        "id": "CS005",
+        "severity": "low",
+        "summary": "Architecture option O1 chosen rationale states 'extensibility tradeoffs are accepted for the MVP, with explicit deferral of COULD features', but milestones M1-M5 include SHOULD requirements (R6, R12, R14-R18, R23-R25) and optional features (watch mode R25, TOC R24) without explicit deferral or prioritization logic.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "O1",
+            "json_pointer": "/plan_package/architecture/chosen/rationale",
+            "note": "Chosen rationale accepts extensibility tradeoffs and defers COULD features.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Extensibility tradeoffs are accepted for the MVP, with explicit deferral of COULD features until after the core milestones."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "M5",
+            "json_pointer": "/plan_package/milestones/4/deliverables/2",
+            "note": "M5 includes optional SHOULD features (watch mode R25, TOC R24) as 'if time allows; otherwise explicitly deferred'.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Optional authoring workflow improvements implemented as scoped polish: watch mode (R25) and per-note table of contents (R24) if time allows; otherwise explicitly deferred."
+          }
+        ],
+        "routing_target": "Review/Product Owner"
+      },
+      {
+        "id": "CS006",
+        "severity": "high",
+        "summary": "Risk K3 mitigation states 'disable raw HTML by default (or sanitize it)', but decision DEC4 mandates 'disable raw HTML ... or sanitize it' as a strict default-deny posture. The 'or' creates ambiguity: is raw HTML disabled entirely, or is sanitization the fallback? This inconsistency affects implementation clarity for M1 DL3.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "K3",
+            "json_pointer": "/plan_package/risk_register/2/mitigation/text",
+            "note": "K3 mitigation text uses 'or' between disable and sanitize.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Disable raw HTML by default (or sanitize it) in the renderer"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "DEC4",
+            "json_pointer": "/plan_package/decision_log/3/choice",
+            "note": "DEC4 choice also uses 'or' but emphasizes default-deny.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Default-deny: disable raw HTML in Markdown (or sanitize it), and block unsafe URL schemes"
+          }
+        ],
+        "routing_target": "Review/Security Reviewer"
+      },
+      {
+        "id": "CS007",
+        "severity": "medium",
+        "summary": "Acceptance test AT12 maps to R19 (search quality: 90% of queries return expected note in top 10), but AT12 procedure does not specify the size or representativeness of the query set, making pass criteria unverifiable without additional specification.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "AT12",
+            "json_pointer": "/plan_package/acceptance_tests/11/procedure",
+            "note": "AT12 procedure references 'representative query set' but does not define it.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Define a representative query set with expected target notes."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "R19",
+            "json_pointer": "/plan_package/requirements/18/text",
+            "note": "R19 specifies 90% metric but does not define the query set.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "at least 90% of predefined representative queries return the expected note within the top 10 results"
+          }
+        ],
+        "routing_target": "Review/Tech Lead"
+      }
+    ]
+  }
+}

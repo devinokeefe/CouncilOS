@@ -1,0 +1,130 @@
+{
+  "artifact_type": "project_capsule",
+  "artifact_id": "capsule_draft_a_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T11:54:59.593515Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [],
+  "payload": {
+    "brief": "Create a software to turn my Markdown notes into a searchable static site with tags and backlinks.\n",
+    "problem_statement": "Markdown notes are difficult to navigate and discover at scale; the user needs an automated way to publish notes as a static site with fast search, tag-based browsing, and backlinks between notes.",
+    "goals": [
+      "Ingest a folder (or repository) of Markdown notes and generate a static website from them.",
+      "Provide full-text search across all notes in the generated static site.",
+      "Support tags to categorize notes and enable browsing/filtering by tag.",
+      "Detect and render backlinks (which notes link to the current note) and forward links between notes.",
+      "Produce an output that can be hosted as static files (e.g., any static web host)."
+    ],
+    "non_goals": [
+      "Building a hosted SaaS service or requiring a server-side application at runtime.",
+      "Real-time collaborative editing or multi-user permissions within the notes.",
+      "A WYSIWYG note editor (authoring remains in Markdown).",
+      "Guaranteeing compatibility with every Markdown extension or every wiki-link dialect without explicit specification.",
+      "Mobile apps or desktop clients beyond the generated static site."
+    ],
+    "constraints": [
+      {
+        "id": "CNS1",
+        "type": "tech",
+        "text": "Output must be a static site (no required server-side runtime for browsing/search/backlinks beyond what can run in the browser)."
+      }
+    ],
+    "assumptions": [
+      {
+        "id": "A1",
+        "text": "Notes are available as Markdown files on a local filesystem or in a repository, and the tool can read them as input.",
+        "impact": "high",
+        "confidence": "medium",
+        "needs_confirmation": true
+      },
+      {
+        "id": "A2",
+        "text": "Backlinks can be derived from explicit links in the Markdown (e.g., standard Markdown links and/or a wiki-link format), and the chosen link syntax can be standardized for this project.",
+        "impact": "high",
+        "confidence": "low",
+        "needs_confirmation": true
+      },
+      {
+        "id": "A3",
+        "text": "Search is acceptable as an in-browser static search index (generated at build time and queried client-side).",
+        "impact": "high",
+        "confidence": "medium",
+        "needs_confirmation": true
+      },
+      {
+        "id": "A4",
+        "text": "Tags are expressed in a consistent, parseable way (e.g., frontmatter field, inline #tags, or both), to be defined during implementation.",
+        "impact": "medium",
+        "confidence": "low",
+        "needs_confirmation": true
+      }
+    ],
+    "open_questions": [
+      {
+        "id": "Q1",
+        "text": "What Markdown flavor and link syntax should be supported for internal links/backlinks (standard Markdown links, Obsidian-style [[WikiLinks]], both)?",
+        "impact": "high",
+        "blocking": true
+      },
+      {
+        "id": "Q2",
+        "text": "How are tags represented in your notes (YAML frontmatter, inline #tags, a specific frontmatter key), and should nested tags be supported?",
+        "impact": "high",
+        "blocking": true
+      },
+      {
+        "id": "Q3",
+        "text": "What is the expected scale (number of notes / total size) and performance target for search and page load?",
+        "impact": "high",
+        "blocking": false
+      },
+      {
+        "id": "Q4",
+        "text": "What is the preferred build workflow (CLI tool, git-based build, watch mode during writing), and what OS environments must be supported?",
+        "impact": "medium",
+        "blocking": false
+      },
+      {
+        "id": "Q5",
+        "text": "Do you need additional navigation features such as a graph view, note outline/TOC generation, or automatic index pages per tag?",
+        "impact": "medium",
+        "blocking": false
+      },
+      {
+        "id": "Q6",
+        "text": "Where will the site be hosted (e.g., GitHub Pages, Netlify, local-only), and are there any restrictions on client-side JavaScript usage?",
+        "impact": "medium",
+        "blocking": false
+      }
+    ],
+    "success_metrics": [
+      "SM1: Static site generation succeeds on a representative notes folder and produces a browsable site (manual verification: build completes without errors and output is static files).",
+      "SM2: Search returns relevant results for a test set of queries (measurement: at least 90% of predefined queries return the expected note within top 10 results).",
+      "SM3: Tags are correctly extracted and navigable (measurement: 100% of notes with tags appear under the corresponding tag pages/filters in a test dataset).",
+      "SM4: Backlinks are correctly computed (measurement: for a test set of interlinked notes, 100% of expected backlinks appear on their target pages).",
+      "SM5: Generated site is hostable as static files (measurement: deploy to a chosen static host or open from local file server and verify core features work without a backend)."
+    ],
+    "stakeholders": [
+      "Primary user (note author/maintainer)",
+      "Readers of the published notes site (could be the same as the user)"
+    ],
+    "glossary": [
+      {
+        "term": "Static site",
+        "definition": "A website composed of pre-generated files (HTML/CSS/JS/assets) that can be served without server-side application logic."
+      },
+      {
+        "term": "Backlink",
+        "definition": "A list of notes/pages that link to the current note/page, computed by analyzing links across the note set."
+      },
+      {
+        "term": "Tag",
+        "definition": "A label associated with a note, used for categorization and navigation (representation to be specified)."
+      },
+      {
+        "term": "Full-text search",
+        "definition": "Searching the contents of notes (not just titles), typically via an index generated at build time and queried client-side."
+      }
+    ]
+  }
+}

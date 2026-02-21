@@ -1,0 +1,175 @@
+{
+  "artifact_type": "failure_mode_findings",
+  "artifact_id": "failure_modes_B2A_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:15:24.526408Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "plan_candidate_B2A_v2"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2A_v2",
+    "taxonomy": "CouncilOS Failure-Mode Taxonomy",
+    "critical_findings": [
+      {
+        "id": "FM1",
+        "category": "Security (XSS/Injection/Unsafe URLs)",
+        "severity": "critical",
+        "finding": "Rendered Markdown content may enable stored XSS/content injection in the generated static site if raw HTML passthrough, insufficient sanitization, or unsafe URL schemes (e.g., javascript:) are allowed. This would compromise readers of the site despite a trusted-user build environment.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "[{\"artifact_ref\":\"risk_gov_canonical_v1\",\"entity_id\":\"K3\",\"json_pointer\":\"/risk_register/2\"},{\"artifact_ref\":\"plan_candidate_B2A_v2\",\"entity_id\":\"DEC5\",\"json_pointer\":\"/plan_package/decision_log/4\"},{\"artifact_ref\":\"plan_candidate_B2A_v2\",\"entity_id\":\"W2\",\"json_pointer\":\"/plan_package/synthesis_warnings/1\"},{\"artifact_ref\":\"plan_candidate_B2A_v2\",\"entity_id\":\"M1\",\"json_pointer\":\"/plan_package/milestones/0/deliverables\"},{\"artifact_ref\":\"plan_candidate_B2A_v2\",\"entity_id\":\"M4\",\"json_pointer\":\"/plan_package/milestones/3/exit_criteria\"}]",
+          "closure_target": "Before M4 exit: implement default-safe rendering (sanitize or disable raw HTML), block unsafe URL schemes, and run XSS-oriented fixture verification as an explicit Validate-phase risk check; require HITL security review approval per governance hitl_policy.",
+          "earliest_prevention_stage": "Intake (M1: DL4 security defaults spec) and enforced during Generate (C14 renderer) before Validate (M4 security verification)."
+        }
+      },
+      {
+        "id": "FM2",
+        "category": "Ingestion & Filesystem Safety",
+        "severity": "critical",
+        "finding": "Ingestion may leak unintended local files into the generated site if symlinks are followed, paths escape the declared root, or overly broad include patterns are used (path traversal/unintended inclusion). This is a high-impact privacy/security failure even in a trusted-user environment because the output is publishable.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "[{\"artifact_ref\":\"risk_gov_canonical_v1\",\"entity_id\":\"K9\",\"json_pointer\":\"/risk_register/8\"},{\"artifact_ref\":\"plan_candidate_B2A_v2\",\"entity_id\":\"DEC7\",\"json_pointer\":\"/plan_package/decision_log/6\"},{\"artifact_ref\":\"plan_candidate_B2A_v2\",\"entity_id\":\"M2\",\"json_pointer\":\"/plan_package/milestones/1/deliverables\"}]",
+          "closure_target": "Before M2 exit: implement safe-root constraints (do not follow symlinks by default; reject root-escape; extension allowlist), and produce an inclusion manifest/build summary for review; add tests for symlink/root-escape scenarios.",
+          "earliest_prevention_stage": "Generate (M2 Phase A: File Collector plugin C9 and CLI defaults)."
+        }
+      },
+      {
+        "id": "FM3",
+        "category": "Link Graph (Forward Links, Backlinks, Anchors)",
+        "severity": "high",
+        "finding": "Forward links/backlinks can be incorrect or broken due to unresolved/ambiguous internal link syntax and canonicalization rules (Markdown links vs WikiLinks; relative paths; anchors; URL encoding). This can silently undermine core navigation (R9–R10) and acceptance metrics (SM4/AT8/AT9).",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "[{\"artifact_ref\":\"capsule_canonical_v1\",\"entity_id\":\"Q1\",\"json_pointer\":\"/project_capsule/open_questions/0\"},{\"artifact_ref\":\"risk_gov_canonical_v1\",\"entity_id\":\"K1\",\"json_pointer\":\"/risk_register/0\"},{\"artifact_ref\":\"plan_candidate_B2A_v2\",\"entity_id\":\"W1\",\"json_pointer\":\"/plan_package/synthesis_warnings/0\"},{\"artifact_ref\":\"plan_candidate_B2A_v2\",\"entity_id\":\"M1\",\"json_pointer\":\"/plan_package/milestones/0/exit_criteria\"}]",
+          "closure_target": "Before M1 exit and before Phase A exits: resolve Q1 and publish a single canonical internal link model + deterministic resolution rules; implement fixture tests covering relative paths, anchors, and encoding; emit actionable unresolved-link warnings with locations.",
+          "earliest_prevention_stage": "Intake (M1: DL1) before parallel plugin development (M3)."
+        }
+      },
+      {
+        "id": "FM4",
+        "category": "Tags & Metadata Extraction",
+        "severity": "high",
+        "finding": "Tags may be missing/incorrect if tag representation, precedence, and normalization are not fixed (frontmatter vs inline #tags; nested tags). This can cause incomplete tag navigation and failure of completeness requirement R20/AT6.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "[{\"artifact_ref\":\"capsule_canonical_v1\",\"entity_id\":\"Q2\",\"json_pointer\":\"/project_capsule/open_questions/1\"},{\"artifact_ref\":\"risk_gov_canonical_v1\",\"entity_id\":\"K2\",\"json_pointer\":\"/risk_register/1\"},{\"artifact_ref\":\"plan_candidate_B2A_v2\",\"entity_id\":\"M1\",\"json_pointer\":\"/plan_package/milestones/0/deliverables\"}]",
+          "closure_target": "Before M1 exit: resolve Q2 and define deterministic precedence/validation/normalization rules; implement tests for chosen formats; provide build-time tag inventory and diagnostics for invalid tokens.",
+          "earliest_prevention_stage": "Intake (M1: DL2), enforced in Generate (C12 Tag Aggregator)."
+        }
+      },
+      {
+        "id": "FM5",
+        "category": "Build Determinism & Reproducibility",
+        "severity": "high",
+        "finding": "Non-deterministic output (input iteration ordering, plugin ordering/dependency ambiguity, locale/time-dependent formatting, unpinned dependencies) can produce inconsistent site outputs across machines/CI, causing noisy diffs and difficult debugging; can also break stable URL/link expectations indirectly.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "[{\"artifact_ref\":\"risk_gov_canonical_v1\",\"entity_id\":\"K6\",\"json_pointer\":\"/risk_register/5\"},{\"artifact_ref\":\"plan_candidate_B2A_v2\",\"entity_id\":\"M2\",\"json_pointer\":\"/plan_package/milestones/1/exit_criteria\"},{\"artifact_ref\":\"plan_candidate_B2A_v2\",\"entity_id\":\"M4\",\"json_pointer\":\"/plan_package/milestones/3/deliverables\"},{\"artifact_ref\":\"plan_candidate_B2A_v2\",\"entity_id\":\"DEC2\",\"json_pointer\":\"/plan_package/decision_log/1\"}]",
+          "closure_target": "Before M2 exit: enforce stable sorting and deterministic plugin execution order with schema validation; before M4 exit: run and record a reproducibility check across two clean builds (document procedure/results) and pin dependencies/lockfile policy.",
+          "earliest_prevention_stage": "Generate (M2: orchestrator lifecycle + ordering + deterministic IO)."
+        }
+      },
+      {
+        "id": "FM6",
+        "category": "Deployment & Base Path/Hosting Compatibility",
+        "severity": "high",
+        "finding": "Generated site can work locally but break when deployed under a subpath (e.g., GitHub Pages) if basePath handling is inconsistent across rendered links, assets, and search index references. This can cause total UI failure (missing JS/CSS) or broken navigation.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "[{\"artifact_ref\":\"risk_gov_canonical_v1\",\"entity_id\":\"K12\",\"json_pointer\":\"/risk_register/11\"},{\"artifact_ref\":\"plan_candidate_B2A_v2\",\"entity_id\":\"DEC8\",\"json_pointer\":\"/plan_package/decision_log/7\"},{\"artifact_ref\":\"plan_candidate_B2A_v2\",\"entity_id\":\"M5\",\"json_pointer\":\"/plan_package/milestones/4/deliverables\"}]",
+          "closure_target": "Before M5 exit: validate non-root basePath deployment with fixtures (nested notes, images, tag pages, search page) and fix any absolute/incorrect relative paths; ensure a single shared URL/basePath function is used by parser, graph resolver, renderer, and search asset referencing.",
+          "earliest_prevention_stage": "Intake (M1: DL5 slug/basePath policy) and validated during Validate/Hardening (M5: DL20)."
+        }
+      },
+      {
+        "id": "FM7",
+        "category": "Security (XSS/Injection/Unsafe URLs)",
+        "severity": "high",
+        "finding": "Even if HTML is sanitized, unsafe outbound links or asset URLs (javascript:, data:, vbscript:) embedded in Markdown or frontmatter can still create security and phishing vectors if protocol allowlists are not enforced uniformly across renderer, tag pages, and search snippets/highlights.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "[{\"artifact_ref\":\"risk_gov_canonical_v1\",\"entity_id\":\"K3\",\"json_pointer\":\"/risk_register/2\"},{\"artifact_ref\":\"plan_candidate_B2A_v2\",\"entity_id\":\"DEC5\",\"json_pointer\":\"/plan_package/decision_log/4\"}]",
+          "closure_target": "Implement a centralized URL sanitizer/protocol allowlist applied to all href/src generation paths (note HTML, tag indexes, backlinks lists, and search result rendering/snippets). Add fixtures specifically for protocol bypass attempts.",
+          "earliest_prevention_stage": "Generate (Theme/Renderer plugin C14 + runtime UI C15 implementation) prior to M4 validation."
+        }
+      },
+      {
+        "id": "FM8",
+        "category": "Search Indexing & Query UX",
+        "severity": "high",
+        "finding": "Search may become unusable (slow, large payloads, browser memory pressure) because expected scale/performance targets are undefined (Q3), while the chosen initial approach may not support sharding/lazy loading soon enough. This risks failing SM7/R23 and degrading core goal G2.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "[{\"artifact_ref\":\"capsule_canonical_v1\",\"entity_id\":\"Q3\",\"json_pointer\":\"/project_capsule/open_questions/2\"},{\"artifact_ref\":\"risk_gov_canonical_v1\",\"entity_id\":\"K4\",\"json_pointer\":\"/risk_register/3\"},{\"artifact_ref\":\"plan_candidate_B2A_v2\",\"entity_id\":\"W3\",\"json_pointer\":\"/plan_package/synthesis_warnings/2\"},{\"artifact_ref\":\"plan_candidate_B2A_v2\",\"entity_id\":\"M5\",\"json_pointer\":\"/plan_package/milestones/4/deliverables\"}]",
+          "closure_target": "Before committing Phase D scope: resolve Q3 into explicit performance targets and benchmark plan; if scale is large, implement sharded/chunked index artifacts and lazy loading; add CI performance budgets for build time and in-browser query latency.",
+          "earliest_prevention_stage": "Intake/Validate planning (resolve Q3) before performance-sensitive implementation is frozen (M5)."
+        }
+      },
+      {
+        "id": "FM-001",
+        "category": "Security Vulnerability",
+        "severity": "critical",
+        "finding": "A user, while authoring a note, unknowingly includes content (e.g., from a copy-paste operation) that contains a malicious script. The rendering plugin fails to sanitize this content, embedding the script into the generated static HTML. This results in a cross-site scripting (XSS) vulnerability, compromising all readers of the published note.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {}
+      },
+      {
+        "id": "FM-002",
+        "category": "Privacy & Information Disclosure",
+        "severity": "critical",
+        "finding": "Due to improperly constrained file system traversal (e.g., following symlinks out of the root directory), the file collector plugin includes sensitive files from outside the user's intended notes folder. These private files are then processed and published as part of the static site, leading to a severe, unintentional information disclosure.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {}
+      },
+      {
+        "id": "FM-003",
+        "category": "Security Vulnerability",
+        "severity": "critical",
+        "finding": "A third-party dependency in the build tool's supply chain (e.g., a Markdown parsing library) is compromised by a malicious actor. When the user runs the build CLI, the compromised dependency executes malicious code on the user's machine, leading to a full compromise of their development environment.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {}
+      },
+      {
+        "id": "FM-004",
+        "category": "Build Process Failure",
+        "severity": "high",
+        "finding": "When using the 'watch' mode for incremental builds, a file rename or deletion is not handled correctly by the build orchestrator. This leads to a corrupted output state where stale pages, broken links, and inaccurate backlink lists persist in the generated site. The corruption is silent, eroding user trust and requiring a manual full rebuild to fix.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {}
+      },
+      {
+        "id": "FM-005",
+        "category": "Performance Degradation",
+        "severity": "high",
+        "finding": "As a user's collection of notes grows significantly (e.g., to thousands of files), the build process becomes prohibitively slow and memory-intensive. Concurrently, the client-side search index becomes excessively large, resulting in long page load times and unresponsive in-browser search, rendering the tool unusable for its most dedicated users.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {}
+      },
+      {
+        "id": "FM-006",
+        "category": "Link Graph (Forward Links, Backlinks, Anchors)",
+        "severity": "high",
+        "finding": "Subtle inconsistencies in link parsing and normalization logic cause the forward-link graph and backlink graph to become desynchronized. A user can click a link from Note A to Note B, but the backlink section on Note B's page fails to list Note A. This silent data inconsistency undermines the reliability of the backlink feature.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {}
+      }
+    ],
+    "closure_pass": false
+  }
+}

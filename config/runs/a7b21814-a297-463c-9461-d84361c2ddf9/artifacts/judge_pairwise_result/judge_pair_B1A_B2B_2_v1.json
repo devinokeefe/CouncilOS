@@ -1,0 +1,66 @@
+{
+  "artifact_type": "judge_pairwise_result",
+  "artifact_id": "judge_pair_B1A_B2B_2_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T11:07:05.440533Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B1A_v4",
+    "plan_candidate_B2B_v3"
+  ],
+  "payload": {
+    "comparison": {
+      "a": "More feasible for initial delivery with a simpler monolithic CLI and thin-slice milestones aligned to MUSTs.",
+      "b": "Higher upfront complexity from plugin API and Phase A foundation, reducing near-term delivery certainty."
+    },
+    "judge_id": "pairwise_judge",
+    "judge_model": "gpt-5.2",
+    "winner": "a",
+    "scores": {
+      "feasibility": 8,
+      "testability": 8,
+      "governance": 7,
+      "architecture": 7,
+      "clarity": 8
+    },
+    "evidence": [
+      {
+        "artifact_ref": "plan_candidate_B1A_v4",
+        "entity_id": "O1",
+        "json_pointer": "/plan_package/architecture/chosen",
+        "note": "Selects monolithic CLI pipeline for lowest complexity.",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B1A_v4",
+        "entity_id": "M1",
+        "json_pointer": "/plan_package/milestones/0",
+        "note": "Thin-slice M1 delivers CLI, ingestion, rendering, static output.",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B2B_v3",
+        "entity_id": "O2",
+        "json_pointer": "/plan_package/architecture/chosen",
+        "note": "Chooses plugin-based architecture with higher upfront complexity.",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      },
+      {
+        "artifact_ref": "plan_candidate_B2B_v3",
+        "entity_id": "M1",
+        "json_pointer": "/plan_package/milestones/0",
+        "note": "Phase A focuses on core engine and plugin API before features.",
+        "candidate_id": null,
+        "artifact_id": null,
+        "quote": null
+      }
+    ],
+    "notes": "Winner favors faster path to core requirements with lower architectural risk. Plugin extensibility is valuable but delays MVP."
+  }
+}

@@ -1,0 +1,147 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B1B_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:48:49.152346Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "trace_graph_B1B_primary_v2",
+    "trace_graph_B1B_anchor_v2"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B1B_v2",
+    "findings": [
+      {
+        "id": "F001",
+        "severity": "medium",
+        "summary": "Acceptance Test AT3 provides insufficient coverage for Requirement R3. R3 mandates usage of \"at least CommonMark-compliant syntax,\" but AT3 only verifies the existence/count of generated files, not the syntactic correctness or compliance of the parsing.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "R3",
+            "json_pointer": "/requirements/2",
+            "note": "Requirement mandating CommonMark compliance.",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "The system MUST parse each discovered Markdown file using at least CommonMark-compliant syntax..."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "AT3",
+            "json_pointer": "/acceptance_tests/2",
+            "note": "Test procedure/pass criteria only check file counts, not parsing content.",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "Count generated HTML note pages and verify a one-to-one mapping..."
+          }
+        ],
+        "routing_target": "acceptance_tests"
+      },
+      {
+        "id": "F002",
+        "severity": "low",
+        "summary": "Milestone M2 lacks regression testing for core requirements R1, R2, and R3. Although the audit sample checks link these requirements to M2, the plan's M2 exit criteria do not include execution of the corresponding acceptance tests (AT1, AT2, AT3) to ensure the new tag features do not break ingestion or static output.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "M2",
+            "json_pointer": "/milestones/1/exit_criteria",
+            "note": "Exit criteria list new feature tests but omit regression tests for R1-R3.",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "milestones"
+      },
+      {
+        "id": "TG001",
+        "severity": "medium",
+        "summary": "Sample check for R3 traces only to AT3, but AT3 does not verify the requirement’s CommonMark-compliant parsing aspect; it primarily checks one-to-one HTML page generation and exclusion behavior. This leaves the CommonMark compliance clause in R3 untested in the traced acceptance test set.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "R3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/requirements/2/text",
+            "note": "R3 includes CommonMark-compliant parsing requirement",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "The system MUST parse each discovered Markdown file using at least CommonMark-compliant syntax..."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "R3_sample_check",
+            "json_pointer": "/inputs/deterministic_sample_checks/2",
+            "note": "Deterministic sample check maps R3 only to AT3",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "AT3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/acceptance_tests/2",
+            "note": "AT3 procedure/pass criteria do not assess CommonMark compliance; they assess mapping and exclusion",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Count generated HTML note pages and verify a one-to-one mapping for non-excluded files."
+          }
+        ],
+        "routing_target": "acceptance_tests"
+      },
+      {
+        "id": "TG002",
+        "severity": "low",
+        "summary": "Sample checks list milestones [M1, M2] for R1/R2/R3, but these requirements are delivered in M1 deliverables; M2 deliverables are tag-related. If milestone linkage is intended to denote implementation points, including M2 appears imprecise and may weaken trace clarity.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "R1_sample_check",
+            "json_pointer": "/inputs/deterministic_sample_checks/0/milestones",
+            "note": "R1 sample check milestone list includes M2",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "R2_sample_check",
+            "json_pointer": "/inputs/deterministic_sample_checks/1/milestones",
+            "note": "R2 sample check milestone list includes M2",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "R3_sample_check",
+            "json_pointer": "/inputs/deterministic_sample_checks/2/milestones",
+            "note": "R3 sample check milestone list includes M2",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "M1",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/0/deliverables",
+            "note": "M1 deliverables explicitly cover R1/R2/R3 topics (discovery, static output, CommonMark rendering)",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "M2",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/1/deliverables",
+            "note": "M2 deliverables focus on tags; do not directly implement R1/R2/R3",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "trace_graph"
+      }
+    ]
+  }
+}

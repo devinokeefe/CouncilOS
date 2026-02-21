@@ -1,0 +1,352 @@
+{
+  "artifact_type": "consistency_findings",
+  "artifact_id": "consistency_B1A_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:36:32.766483Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B1A_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B1A_v1",
+    "findings": [
+      {
+        "id": "CS1",
+        "severity": "high",
+        "summary": "Open question Q10 is marked as a blocking uncertainty about CLI vs other integration, but the plan already hard-commits to a CLI as a MUST requirement and as the chosen architecture/executive summary. This creates an internal mismatch between “blocking” and “already decided,” and could cause rework if the user does not want a CLI-first tool.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "Q10",
+            "json_pointer": "/plan_package/project_capsule/open_questions/9",
+            "note": "Q10 is marked blocking.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Should the tool run as a CLI, GUI application, or build script integration?"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "R5",
+            "json_pointer": "/plan_package/requirements/4",
+            "note": "CLI is a MUST requirement.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "The system MUST provide a command-line interface (CLI) build workflow..."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": null,
+            "json_pointer": "/plan_package/executive_summary",
+            "note": "Exec summary frames delivery as a monolithic CLI.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "This candidate delivers a monolithic CLI tool (O1)..."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "O1",
+            "json_pointer": "/plan_package/architecture/chosen/option_id",
+            "note": "Chosen architecture option is a custom monolithic CLI pipeline.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "O1"
+          }
+        ],
+        "routing_target": "hitl.product_owner"
+      },
+      {
+        "id": "CS2",
+        "severity": "medium",
+        "summary": "Decision DEC5 states a default behavior for unresolved internal links (warn, do not fail, render non-navigable), but the implementation for broken-link handling is scheduled only in Milestone 5. Earlier milestones implement link resolution/backlinks (M3) without specifying how unresolved links are handled during that phase, creating an execution-timeline ambiguity relative to the decision.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "DEC5",
+            "json_pointer": "/plan_package/decision_log/4",
+            "note": "Defines default unresolved-link behavior.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Default to build-time warnings (not failure)... render unresolved links as clearly non-navigable output"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "M3",
+            "json_pointer": "/plan_package/milestones/2",
+            "note": "Adds link resolution/backlinks but does not mention unresolved-link rendering/warn behavior.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Links & graph: internal link resolution + backlinks section"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "DL18",
+            "json_pointer": "/plan_package/milestones/4/deliverables/0",
+            "note": "Broken-link handling deliverable appears later in M5.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Broken-link handling: build-time warnings for unresolved internal links..."
+          }
+        ],
+        "routing_target": "hitl.tech_lead"
+      },
+      {
+        "id": "CS3",
+        "severity": "high",
+        "summary": "The chosen-architecture rationale cites a “confirmed near-term target (up to ~1,000 notes per R22)” to justify O1’s in-memory approach, but the plan simultaneously treats scale as an unresolved blocking question (Q3). Also, R22 is a SHOULD performance target rather than confirmation of dataset size, so using it as confirmation is internally inconsistent.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": null,
+            "json_pointer": "/plan_package/architecture/chosen/rationale",
+            "note": "Rationale claims scale is confirmed based on R22.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "...appropriate for the confirmed near-term target (up to ~1,000 notes per R22)..."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "Q3",
+            "json_pointer": "/plan_package/project_capsule/open_questions/2",
+            "note": "Scale is explicitly an open, blocking question.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "What scale is required (approx. number of notes and total size)..."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "R22",
+            "json_pointer": "/plan_package/requirements/21",
+            "note": "R22 is a SHOULD performance target, not confirmation of note count.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "For collections of up to 1,000 notes... search results SHOULD be returned..."
+          }
+        ],
+        "routing_target": "hitl.tech_lead"
+      },
+      {
+        "id": "CS4",
+        "severity": "medium",
+        "summary": "Risk K4 frames performance risk as depending on “the user’s required scale,” but the plan also records scale (Q3) as unknown and blocking. This makes the risk statement underspecified relative to the project’s own uncertainty: it is hard to assess or prioritize K4 without resolving Q3.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "K4",
+            "json_pointer": "/plan_package/risk_register/3",
+            "note": "Risk K4 assumes a known 'required scale'.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "At the user’s required scale, the build process becomes unacceptably slow..."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "Q3",
+            "json_pointer": "/plan_package/project_capsule/open_questions/2",
+            "note": "Scale is not yet specified and is blocking.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "What scale is required (approx. number of notes and total size)..."
+          }
+        ],
+        "routing_target": "hitl.pm"
+      },
+      {
+        "id": "CS1",
+        "severity": "high",
+        "summary": "Acceptance test AT2 does not verify R2 requirement that output must be static HTML/CSS/JS only; it checks file types but does not confirm absence of server-side runtime or database dependency as stated in R2.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "AT2",
+            "json_pointer": "/plan_package/acceptance_tests/1",
+            "note": "AT2 maps to R2 but pass criteria only checks file types, not runtime independence.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "All emitted files are static assets (e.g., .html, .css, .js, images, fonts, .json for search index). No server-side runtime or database dependency is required"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "R2",
+            "json_pointer": "/plan_package/requirements/1",
+            "note": "R2 requires static output with no server-side runtime or database dependency.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "The system MUST generate a static build output consisting only of HTML, CSS, JavaScript, and other static assets that can be hosted/served without any server-side runtime or database"
+          }
+        ],
+        "routing_target": "hitl.tech_lead"
+      },
+      {
+        "id": "CS2",
+        "severity": "medium",
+        "summary": "Milestone M2 deliverable DL10 (tag extraction report) is not mapped to any requirement or acceptance test, creating a gap between planned deliverable and verification.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "DL10",
+            "json_pointer": "/plan_package/milestones/1/deliverables/4",
+            "note": "DL10 has no corresponding requirement or acceptance test.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Tag extraction report (counts, normalization outcomes) to support debugging convention issues (mitigates K3)."
+          }
+        ],
+        "routing_target": "hitl.tech_lead"
+      },
+      {
+        "id": "CS3",
+        "severity": "medium",
+        "summary": "Milestone M3 deliverable DL14 (link-graph diagnostics output) is not mapped to any requirement or acceptance test, creating a gap between planned deliverable and verification.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "DL14",
+            "json_pointer": "/plan_package/milestones/2/deliverables/3",
+            "note": "DL14 has no corresponding requirement or acceptance test.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Link-graph diagnostics output (e.g., counts + unresolved targets list) to support convention debugging (mitigates K2/K9/K12)."
+          }
+        ],
+        "routing_target": "hitl.tech_lead"
+      },
+      {
+        "id": "CS4",
+        "severity": "medium",
+        "summary": "Milestone M4 deliverable DL17 (performance instrumentation/reporting) is not mapped to any requirement or acceptance test, creating a gap between planned deliverable and verification.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "DL17",
+            "json_pointer": "/plan_package/milestones/3/deliverables/2",
+            "note": "DL17 has no corresponding requirement or acceptance test.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Basic performance instrumentation/reporting for index size and query timing on fixture sets to inform R22 (mitigates K5)."
+          }
+        ],
+        "routing_target": "hitl.tech_lead"
+      },
+      {
+        "id": "CS5",
+        "severity": "high",
+        "summary": "Risk K6 (malformed YAML front matter) has no mitigation or acceptance criteria defined, but front matter parsing is a core feature (R11) and failure mode is explicitly identified as medium severity.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "K6",
+            "json_pointer": "/plan_package/risk_register/5",
+            "note": "K6 has null mitigation and null acceptance.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Malformed YAML front matter in Markdown files causes the build process to fail (file-level or site-level)."
+          }
+        ],
+        "routing_target": "hitl.tech_lead"
+      },
+      {
+        "id": "CS6",
+        "severity": "critical",
+        "summary": "Risk K8 (sensitive/private information inadvertently published) is marked critical severity but has no mitigation or acceptance criteria defined, and no corresponding requirement or acceptance test addresses this exposure risk.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "K8",
+            "json_pointer": "/plan_package/risk_register/7",
+            "note": "K8 has null mitigation and null acceptance despite critical severity.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Sensitive/private information contained within notes is inadvertently published to a public host because access control is a non-goal and the user may not fully appreciate the exposure risk"
+          }
+        ],
+        "routing_target": "hitl.security_reviewer"
+      },
+      {
+        "id": "CS7",
+        "severity": "medium",
+        "summary": "Risk K16 (mobile responsiveness) has no mitigation or acceptance criteria defined, but success metrics include 'Generated site loads and functions in modern browsers without errors' which may imply mobile browser support.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "K16",
+            "json_pointer": "/plan_package/risk_register/15",
+            "note": "K16 has null mitigation and null acceptance.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Generated site is not mobile-responsive or has poor usability on small screens, limiting utility for mobile readers."
+          }
+        ],
+        "routing_target": "hitl.tech_lead"
+      },
+      {
+        "id": "CS8",
+        "severity": "medium",
+        "summary": "Risk K23 (CLI installation/UX complexity) has no mitigation or acceptance criteria defined, but Q10 is a blocking open question about CLI vs other integration and relates directly to this risk.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "K23",
+            "json_pointer": "/plan_package/risk_register/22",
+            "note": "K23 has null mitigation and null acceptance.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "CLI has complex installation steps or confusing UX, creating a barrier to entry for less technical users (relates to Q10)."
+          }
+        ],
+        "routing_target": "hitl.product_owner"
+      },
+      {
+        "id": "CS9",
+        "severity": "medium",
+        "summary": "Acceptance test AT14 maps to R14 (cross-browser functionality) but does not verify that search results are responsive within 500ms as required by R22 (SHOULD requirement for search performance).",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "AT14",
+            "json_pointer": "/plan_package/acceptance_tests/13",
+            "note": "AT14 checks cross-browser functionality but not search performance target from R22.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "All core functionality (navigation between notes, search, backlinks display, tag browsing) works in each browser without JavaScript errors that block functionality."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "R22",
+            "json_pointer": "/plan_package/requirements/21",
+            "note": "R22 specifies search performance target of <500ms for up to 1,000 notes.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "For collections of up to 1,000 notes on a modern consumer device, full-text search results SHOULD be returned and rendered in under 500 ms."
+          }
+        ],
+        "routing_target": "hitl.tech_lead"
+      },
+      {
+        "id": "CS10",
+        "severity": "low",
+        "summary": "Decision DEC3 states MVP MUST support standard Markdown relative links (R9) and treats additional syntaxes as configurable extensions (R15), but R15 is a SHOULD requirement; the decision language implies R15 is mandatory for MVP which contradicts its priority.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "DEC3",
+            "json_pointer": "/plan_package/decision_log/2",
+            "note": "DEC3 language implies R15 is required for MVP.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Additional syntaxes (e.g., wiki-links) are treated as configurable extensions (R15) and should not be enabled by default until conventions are confirmed (Q1)."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "R15",
+            "json_pointer": "/plan_package/requirements/14",
+            "note": "R15 is a SHOULD requirement, not MUST.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "The system SHOULD provide configurable rules for internal link parsing and support additional link syntaxes beyond standard Markdown relative links"
+          }
+        ],
+        "routing_target": "hitl.tech_lead"
+      }
+    ]
+  }
+}

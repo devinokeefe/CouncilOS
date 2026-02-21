@@ -1,0 +1,324 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B2A_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:49:13.051653Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "trace_graph_B2A_primary_v2",
+    "trace_graph_B2A_anchor_v2",
+    "trace_graph_B2A_fallback_v2"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2A_v2",
+    "findings": [
+      {
+        "id": "TG-1",
+        "severity": "high",
+        "summary": "Traceability mismatch: Core functional requirements (R1, R2, R3) are mapped to intake and foundation milestones (M1, M2) in the trace graph, but the plan implementation deliverables and acceptance verification are explicitly scheduled for Milestone M3 (Thin-slice plugin set #1).",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "DL11",
+            "json_pointer": "/milestones/2/deliverables/0",
+            "note": "R1 (Ingestion) is implemented by DL11 in M3, not M1/M2.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Ingestion Plugin (C11): recursive discovery of .md files, populating note records (R1)."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "DL12",
+            "json_pointer": "/milestones/2/deliverables/1",
+            "note": "R3 (Markdown Rendering) is implemented by DL12 in M3, not M1/M2.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Markdown Render Plugin (C14): CommonMark-compliant parsing/rendering with preserved structure (R3/R4)."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "DL14",
+            "json_pointer": "/milestones/2/deliverables/3",
+            "note": "R2 (Static Emit) is implemented by DL14 in M3, not M1/M2.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Emit Plugin (C17): write static output assets only (R2)..."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "M3",
+            "json_pointer": "/milestones/2/exit_criteria/0",
+            "note": "Acceptance Tests AT1, AT2, and AT3 are listed as exit criteria for M3, confirming completion in M3.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Acceptance tests AT1–AT6 and AT2 pass for the thin-slice build..."
+          }
+        ],
+        "routing_target": "plan_author"
+      },
+      {
+        "id": "TG1",
+        "severity": "high",
+        "summary": "Deterministic sample checks for R1/R2/R3 list milestones [M1, M2], but the plan’s milestone that actually delivers and gates these requirements via acceptance tests is M3 (thin-slice ingestion/render/template/emit). This creates incorrect traceability from requirements to delivery milestones in the sample checks.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "R1",
+            "json_pointer": "/inputs/deterministic_sample_checks/0/milestones",
+            "note": "Sample check maps R1 to milestones M1, M2 only.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "M3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/2/deliverables/0/text",
+            "note": "M3 deliverable DL11 explicitly covers R1 (recursive discovery of .md files).",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "M3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/2/exit_criteria/0",
+            "note": "M3 exit criteria requires AT1–AT6 and AT2 to pass, which includes coverage for R1/R2/R3 acceptance tests.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "R2",
+            "json_pointer": "/inputs/deterministic_sample_checks/1/milestones",
+            "note": "Sample check maps R2 to milestones M1, M2 only.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "R3",
+            "json_pointer": "/inputs/deterministic_sample_checks/2/milestones",
+            "note": "Sample check maps R3 to milestones M1, M2 only.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "orchestrator.trace_graph_alignment"
+      },
+      {
+        "id": "TG001",
+        "severity": "high",
+        "summary": "R1 milestone mapping includes M1 (Intake) but R1 is a system-level ingestion requirement that cannot be delivered until M3 (Generate: Thin-slice plugin set #1 — ingestion + Markdown render + minimal templates + emit) when the Ingestion Plugin (C11) is implemented.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "R1",
+            "json_pointer": "/inputs/plan_candidate/plan_package/requirements/0",
+            "note": "R1 requirement text and priority.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "The system MUST accept a user-specified local directory path as input and recursively discover Markdown files"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "M1",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/0",
+            "note": "M1 is Intake milestone focused on confirming conventions and blockers, not implementation.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Intake: Confirm conventions, scale, IA, and CLI workflow (blockers) + security trust model"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "M3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/2",
+            "note": "M3 delivers Ingestion Plugin (C11) which implements R1.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Ingestion Plugin (C11): recursive discovery of .md files, populating note records (R1)."
+          }
+        ],
+        "routing_target": "orchestrator.milestone_alignment"
+      },
+      {
+        "id": "TG002",
+        "severity": "high",
+        "summary": "R2 milestone mapping includes M1 (Intake) but R2 is a system-level output requirement that cannot be delivered until M3 (Generate: Thin-slice plugin set #1) when the Emit Plugin (C17) is implemented to write static output assets.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "R2",
+            "json_pointer": "/inputs/plan_candidate/plan_package/requirements/1",
+            "note": "R2 requirement text and priority.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "The system MUST generate a static build output consisting only of HTML, CSS, JavaScript, and other static assets"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "M1",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/0",
+            "note": "M1 is Intake milestone with no implementation deliverables.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Intake: Confirm conventions, scale, IA, and CLI workflow (blockers) + security trust model"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "M3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/2",
+            "note": "M3 delivers Emit Plugin (C17) which implements R2.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Emit Plugin (C17): write static output assets only (R2) and support CLI-driven output directory generation (R5)."
+          }
+        ],
+        "routing_target": "orchestrator.milestone_alignment"
+      },
+      {
+        "id": "TG003",
+        "severity": "high",
+        "summary": "R3 milestone mapping includes M1 (Intake) but R3 is a system-level parsing/rendering requirement that cannot be delivered until M3 (Generate: Thin-slice plugin set #1) when the Markdown Render Plugin (C14) is implemented.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "R3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/requirements/2",
+            "note": "R3 requirement text and priority.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "The system MUST parse each discovered Markdown file using at least CommonMark-compliant syntax and generate a corresponding HTML page"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "M1",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/0",
+            "note": "M1 is Intake milestone with no implementation deliverables.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Intake: Confirm conventions, scale, IA, and CLI workflow (blockers) + security trust model"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "M3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/2",
+            "note": "M3 delivers Markdown Render Plugin (C14) which implements R3.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Markdown Render Plugin (C14): CommonMark-compliant parsing/rendering with preserved structure (R3/R4)."
+          }
+        ],
+        "routing_target": "orchestrator.milestone_alignment"
+      },
+      {
+        "id": "TG004",
+        "severity": "medium",
+        "summary": "AT1 milestone mapping includes M1 (Intake) but AT1 is a system-level acceptance test that requires the Ingestion Plugin (C11) delivered in M3; acceptance tests cannot pass until the corresponding implementation exists.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "AT1",
+            "json_pointer": "/inputs/plan_candidate/plan_package/acceptance_tests/0",
+            "note": "AT1 acceptance test for R1 (file discovery).",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Prepare a test input directory with nested subdirectories containing Markdown files"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "M1",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/0",
+            "note": "M1 is Intake milestone with no implementation deliverables.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Intake: Confirm conventions, scale, IA, and CLI workflow (blockers) + security trust model"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "M3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/2/exit_criteria/0",
+            "note": "M3 exit criteria explicitly references AT1 passing.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Acceptance tests AT1–AT6 and AT2 pass for the thin-slice build"
+          }
+        ],
+        "routing_target": "orchestrator.milestone_alignment"
+      },
+      {
+        "id": "TG005",
+        "severity": "medium",
+        "summary": "AT2 milestone mapping includes M1 (Intake) but AT2 is a system-level acceptance test that requires the Emit Plugin (C17) delivered in M3; acceptance tests cannot pass until the corresponding implementation exists.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "AT2",
+            "json_pointer": "/inputs/plan_candidate/plan_package/acceptance_tests/1",
+            "note": "AT2 acceptance test for R2 (static output).",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Run a build on a fixture directory. Inspect the output directory contents recursively and list file types/extensions."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "M1",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/0",
+            "note": "M1 is Intake milestone with no implementation deliverables.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Intake: Confirm conventions, scale, IA, and CLI workflow (blockers) + security trust model"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "M3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/2/exit_criteria/0",
+            "note": "M3 exit criteria explicitly references AT2 passing.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Acceptance tests AT1–AT6 and AT2 pass for the thin-slice build"
+          }
+        ],
+        "routing_target": "orchestrator.milestone_alignment"
+      },
+      {
+        "id": "TG006",
+        "severity": "medium",
+        "summary": "AT3 milestone mapping includes M1 (Intake) but AT3 is a system-level acceptance test that requires the Ingestion Plugin (C11) and Markdown Render Plugin (C14) delivered in M3; acceptance tests cannot pass until the corresponding implementation exists.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "AT3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/acceptance_tests/2",
+            "note": "AT3 acceptance test for R3 (per-file HTML generation).",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Prepare a fixture with N Markdown files (N>=3) and a configuration that excludes one specific Markdown file."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "M1",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/0",
+            "note": "M1 is Intake milestone with no implementation deliverables.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Intake: Confirm conventions, scale, IA, and CLI workflow (blockers) + security trust model"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "M3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/2/exit_criteria/0",
+            "note": "M3 exit criteria explicitly references AT1–AT6 passing.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Acceptance tests AT1–AT6 and AT2 pass for the thin-slice build"
+          }
+        ],
+        "routing_target": "orchestrator.milestone_alignment"
+      }
+    ]
+  }
+}

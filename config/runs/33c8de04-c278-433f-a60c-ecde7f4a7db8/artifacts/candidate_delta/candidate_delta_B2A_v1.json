@@ -1,0 +1,497 @@
+{
+  "artifact_type": "candidate_delta",
+  "artifact_id": "candidate_delta_B2A_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:08:01.763966Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "branch_set_v1"
+  ],
+  "payload": {
+    "candidate_id": "B2A",
+    "executive_summary": "This candidate implements the static Markdown-notes-to-site generator using a custom plugin-based core (O2). The plan invests upfront in a stable orchestrator, explicit lifecycle hooks, and a versioned shared build-context schema so that core features (collection, Markdown parsing, tags, backlinks, search, and rendering/themes) can evolve independently as plugins. Delivery is staged: first lock down the plugin API contract and determinism/security defaults, then add thin-slice functional plugins (renderable pages), then tags and backlinks, and finally search plus end-to-end and cross-browser validation.",
+    "architecture_choice": {
+      "option_id": "O2",
+      "rationale": "O2 best matches the branch’s long-term extensibility and separation-of-concerns goals by formalizing a build lifecycle and plugin API. This mitigates maintainability/scalability risks by allowing performance-critical or fast-changing areas (search indexing, renderer/theme, link/tag parsing rules) to be swapped or iterated without rewriting the core. The upfront cost and API-stability risk are addressed by dedicating the first milestone to the orchestrator, contracts, and test harnesses that mock the shared context and validate hook ordering and dependency management.",
+      "high_level_dataflow": "CLI invokes the Core Orchestrator (C8), which loads config, registers plugins, and executes a deterministic lifecycle: init → collectFiles → transform → resolve → render → finalize. (1) File Collector plugin (C9) scans the input root and populates context.noteRegistry with file paths and stable slugs. (2) Markdown Parser plugin (C10) parses each note, extracts frontmatter, and normalizes internal links into a canonical representation attached to each note. (3) Resolver plugins run in resolve: Backlink Resolver (C11) builds the corpus link graph and attaches backlinks; Tag Aggregator (C12) builds tag indices and registers tag pages. (4) Renderer/Theme plugin (C14) generates HTML pages and static assets from the enriched context (including backlinks/tags). (5) Search Index plugin (C13) builds and writes client-side index artifacts to the output and the Client-Side Runtime (C15) is referenced by rendered pages to provide in-browser search UX. All outputs are static files only, suitable for static hosting.",
+      "key_design_decisions": [
+        "DEC1",
+        "DEC2",
+        "DEC3",
+        "DEC4",
+        "DEC5",
+        "DEC6",
+        "DEC7"
+      ]
+    },
+    "milestones": [
+      {
+        "id": "M1",
+        "name": "Generate: Core Orchestrator + Plugin API + Shared Context (foundation / “big bang”)",
+        "deliverables": [
+          {
+            "id": "DL1",
+            "text": "Core Orchestrator (C8) skeleton with deterministic lifecycle hook execution (init, collectFiles, transform, resolve, render, finalize) and plugin registration/discovery."
+          },
+          {
+            "id": "DL2",
+            "text": "Versioned shared build-context schema (e.g., noteRegistry, site metadata, output paths, diagnostics collection) with documented invariants and compatibility rules."
+          },
+          {
+            "id": "DL3",
+            "text": "Plugin dependency/ordering mechanism (capability declarations + deterministic ordering/topological sort) with clear failure modes when prerequisites are missing."
+          },
+          {
+            "id": "DL4",
+            "text": "Core test harness: unit tests that mock build context to verify hook order, deterministic behavior (stable sorting), and dependency enforcement (supports acceptance strategy focused on API contract)."
+          },
+          {
+            "id": "DL5",
+            "text": "Security-by-default renderer policy stub (disable raw HTML by default; unsafe URL scheme blocking) wired into the context/config so renderer plugins can comply."
+          }
+        ],
+        "exit_criteria": [
+          "A minimal pipeline run executes all lifecycle hooks in the documented order with no-op/reference plugins and produces a static output folder.",
+          "Plugin registration and dependency resolution is deterministic across runs (stable ordering) and fails fast with actionable diagnostics when requirements aren’t met.",
+          "Core orchestrator and plugin host can be tested in isolation with mocked context; unit tests cover lifecycle ordering and dependency errors."
+        ],
+        "depends_on": []
+      },
+      {
+        "id": "M2",
+        "name": "Generate→Validate: Thin-slice functional site (collector + markdown parse + basic renderer/theme)",
+        "deliverables": [
+          {
+            "id": "DL6",
+            "text": "File Collector plugin (C9) implementing recursive .md discovery with configurable include/exclude patterns and a safe default for symlinks."
+          },
+          {
+            "id": "DL7",
+            "text": "Markdown Parser plugin (C10) implementing baseline Markdown flavor support and frontmatter extraction; emits canonical per-note fields required by later plugins (title, slug, plaintext for indexing, normalized links placeholder)."
+          },
+          {
+            "id": "DL8",
+            "text": "Renderer/Theme plugin (C14) producing one stable URL/page per note plus minimal home/index page; copies static assets (CSS/JS) to output."
+          },
+          {
+            "id": "DL9",
+            "text": "CLI command surface for offline build (input dir, output dir, config path) consistent with R11, with clear error reporting scaffolding (paths and diagnostics collection)."
+          }
+        ],
+        "exit_criteria": [
+          "AT1 (recursive discovery), AT4 (stable URLs), AT10 (offline CLI invocation), and AT13 (build completes and outputs static files) are runnable and pass on a small representative fixture set.",
+          "AT3 (Markdown render correctness) passes for the selected baseline elements on the fixture set.",
+          "Security defaults are enforced in the thin-slice rendering path (raw HTML handling and unsafe URL scheme blocking are not left undefined)."
+        ],
+        "depends_on": [
+          "M1"
+        ]
+      },
+      {
+        "id": "M3",
+        "name": "Validate→Review: Tags + forward links + backlinks as plugins (corpus graph features)",
+        "deliverables": [
+          {
+            "id": "DL10",
+            "text": "Link normalization + forward-link model finalized in code paths (parser emits normalized links; resolver maps to slugs/URLs) with broken-link diagnostics."
+          },
+          {
+            "id": "DL11",
+            "text": "Backlink Resolver plugin (C11) computing backlinks from the normalized forward-link graph and attaching backlinks to each note for rendering."
+          },
+          {
+            "id": "DL12",
+            "text": "Tag Aggregator plugin (C12) extracting tags per the selected convention(s), building tag→notes index, and registering per-tag listing pages plus a tag index page."
+          },
+          {
+            "id": "DL13",
+            "text": "Fixture-based tests covering link and tag edge cases (relative paths, anchors, URL encoding, renamed files; mixed tag sources) aligned to chosen conventions."
+          }
+        ],
+        "exit_criteria": [
+          "AT8 (forward links), AT9 (backlinks correctness), AT7 (per-tag pages), and AT6 (tag completeness/100% inclusion for tagged notes) pass on defined fixtures.",
+          "Build emits clear warnings/errors for unresolved internal links and tag parsing failures including file and (where feasible) location, supporting R12.",
+          "Open questions Q1 (link syntax) and Q2 (tag representation) are resolved and reflected in configuration defaults and documentation (or explicitly gated behind configuration options)."
+        ],
+        "depends_on": [
+          "M2"
+        ]
+      },
+      {
+        "id": "M4",
+        "name": "Review→Freeze: Search indexing + E2E integration + cross-browser validation",
+        "deliverables": [
+          {
+            "id": "DL14",
+            "text": "Search Index plugin (C13) producing client-side search index artifacts at build time, with an implementation strategy that can evolve to sharding/chunking if needed."
+          },
+          {
+            "id": "DL15",
+            "text": "Client-side runtime/search UI integration (C15) wired into rendered pages, operating without network access at runtime; includes snippet/highlight behavior as feasible (R6)."
+          },
+          {
+            "id": "DL16",
+            "text": "End-to-end build/test configuration that runs with all plugins enabled (collector, parser, tags, backlinks, renderer, search) and validates core flows."
+          },
+          {
+            "id": "DL17",
+            "text": "Cross-browser manual validation plan execution for core features (AT11) and search-quality metric harness execution (AT12) on an agreed representative dataset/query set."
+          }
+        ],
+        "exit_criteria": [
+          "AT5 (client-side search offline), AT2 (static hosting behavior), AT11 (modern browsers), and AT12 (≥90% queries in top 10) pass on the representative dataset.",
+          "All MUST requirements R1–R5, R7–R11, R13, R19–R22 are demonstrably covered by the acceptance test suite execution plan.",
+          "Performance/scale targets (R23/Q3) are documented with at least one benchmark run on the representative dataset and any identified bottlenecks are triaged with follow-up actions."
+        ],
+        "depends_on": [
+          "M3"
+        ]
+      }
+    ],
+    "decision_log": [
+      {
+        "id": "DEC1",
+        "question": "Which architecture option will be implemented for the generator core?",
+        "choice": "Adopt the custom plugin-based core with a formal lifecycle and plugin API (O2).",
+        "rationale": "The plugin-host model directly supports long-term extensibility (themes, alternate search implementations, optional features) while keeping concerns testable in isolation. It aligns with the branch strategy of stabilizing the core API first, then implementing features as plugins, mitigating future refactor risk.",
+        "alternatives_considered": [
+          "O1 monolithic single-command pipeline",
+          "O3 existing SSG (Eleventy/11ty + plugins + Pagefind)",
+          "O4 multi-tool pipeline with intermediate artifacts"
+        ],
+        "what_would_change_this_decision": [
+          "If time-to-first-MVP becomes the overriding priority and extensibility is secondary, favor O1 or O3.",
+          "If plugin API complexity/instability causes repeated breaking changes during early milestones, consider pivoting to O1 for a simpler delivery path.",
+          "If the project strongly prefers leveraging mature SSG ecosystems and minimizing custom core code, consider O3."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "architecture_canonical_v1",
+            "entity_id": "O2",
+            "json_pointer": "/options/1",
+            "note": "Selected option details for plugin-based architecture.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Custom plugin-based static site generator core with a formal build lifecycle and plugin API; each concern ... is a plugin."
+          }
+        ]
+      },
+      {
+        "id": "DEC2",
+        "question": "What build lifecycle hooks will the orchestrator standardize for plugin execution?",
+        "choice": "Standardize lifecycle hooks consistent with O2: init → collectFiles → transform → resolve → render → finalize; run hooks deterministically with explicit ordering rules.",
+        "rationale": "A small, stable set of hooks makes plugin contracts testable and minimizes coupling. The chosen phases map cleanly to required capabilities: ingest (R1), parse (R3), graph resolution for links/backlinks (R9/R10), tag aggregation (R7/R8), render (R2/R4), and search artifact generation (R5).",
+        "alternatives_considered": [
+          "Single-pass pipeline with ad-hoc plugin callbacks",
+          "More granular hook breakdown (e.g., preRender/postRender per note)",
+          "Stage-per-feature execution without a shared lifecycle"
+        ],
+        "what_would_change_this_decision": [
+          "If incremental/watch mode (R25) becomes a near-term priority requiring finer-grained invalidation boundaries, introduce additional sub-hooks within the same macro phases rather than changing the top-level lifecycle.",
+          "If search indexing must run strictly after render output (e.g., HTML indexing), shift search generation to a post-render phase but keep the same macro ordering."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "architecture_canonical_v1",
+            "entity_id": "IF9",
+            "json_pointer": "/options/1/interfaces/0",
+            "note": "CollectFiles hook contract.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Hook: collectFiles(context) → context.noteRegistry populated..."
+          },
+          {
+            "artifact_ref": "architecture_canonical_v1",
+            "entity_id": "IF10",
+            "json_pointer": "/options/1/interfaces/1",
+            "note": "Transform hook contract.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Hook: transform(context) → each note enriched..."
+          },
+          {
+            "artifact_ref": "architecture_canonical_v1",
+            "entity_id": "IF11",
+            "json_pointer": "/options/1/interfaces/2",
+            "note": "Resolve hook (backlinks).",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Hook: resolve(context) → backlink map attached..."
+          },
+          {
+            "artifact_ref": "architecture_canonical_v1",
+            "entity_id": "IF14",
+            "json_pointer": "/options/1/interfaces/5",
+            "note": "Render hook contract.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Hook: render(context) → HTML files and static theme assets written..."
+          },
+          {
+            "artifact_ref": "architecture_canonical_v1",
+            "entity_id": "IF13",
+            "json_pointer": "/options/1/interfaces/4",
+            "note": "Finalize hook contract (search artifacts).",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Hook: finalize(context) → search index artifacts written..."
+          }
+        ]
+      },
+      {
+        "id": "DEC3",
+        "question": "How will plugins share data across the build without tight coupling?",
+        "choice": "Use a versioned shared build-context schema owned by the core, with clearly defined per-note records (slug, title, source path relative ID, parsed AST/HTML-safe representation, tags, normalized links, backlinks, indexable plaintext).",
+        "rationale": "A stable context schema is the backbone of plugin isolation and testability. Versioning and documented invariants reduce the risk of brittle cross-plugin dependencies and allow plugins to be tested by mocking the context (as required by the acceptance strategy).",
+        "alternatives_considered": [
+          "Let plugins share arbitrary JSON blobs without schema/versioning",
+          "Have plugins communicate only via events with no shared context",
+          "Persist intermediate artifacts to disk between plugins (O4 style)"
+        ],
+        "what_would_change_this_decision": [
+          "If context object size becomes a major performance/memory issue at scale (K13), introduce streaming/iterative processing for large fields (e.g., store plaintext lazily) while keeping the logical schema stable.",
+          "If multiple independent toolchains are required, reconsider an intermediate-artifact approach (O4) with explicit on-disk schema versioning."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "architecture_canonical_v1",
+            "entity_id": "C8",
+            "json_pointer": "/options/1/components/0",
+            "note": "Core orchestrator is responsible for managing shared build context.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Manage shared build context (note registry, site metadata, output paths)"
+          }
+        ]
+      },
+      {
+        "id": "DEC4",
+        "question": "How will plugin ordering and inter-plugin dependencies be managed?",
+        "choice": "Require plugins to declare required capabilities/outputs and provided capabilities; orchestrator computes a deterministic execution order (topological sort) per hook and fails fast if dependencies are missing or cyclic.",
+        "rationale": "O2’s primary complexity risk is cross-plugin dependency ambiguity. Explicit declarations plus deterministic ordering reduce debugging difficulty and improve reproducibility (K6). Failing fast prevents silent partial builds that would undermine acceptance tests and correctness requirements.",
+        "alternatives_considered": [
+          "Manual hard-coded plugin order in config only",
+          "Best-effort execution with warnings for missing data",
+          "Implicit ordering based on plugin registration sequence"
+        ],
+        "what_would_change_this_decision": [
+          "If user customization of plugin order becomes critical, allow explicit overrides but still validate that declared prerequisites are satisfied.",
+          "If plugins must interleave at a per-note granularity for performance, keep capability validation but extend ordering within a hook to support batching."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "architecture_canonical_v1",
+            "entity_id": "O2",
+            "json_pointer": "/options/1/tradeoffs/cons/1",
+            "note": "O2 calls out plugin ordering/dependency complexity as a con to be addressed.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Plugin ordering and inter-plugin dependencies add complexity"
+          }
+        ]
+      },
+      {
+        "id": "DEC5",
+        "question": "What is the default security posture for Markdown rendering and link handling?",
+        "choice": "Disable raw HTML passthrough by default (or sanitize it) and block unsafe URL schemes (e.g., javascript:) in rendered links; require explicit opt-in configuration to relax these defaults, with clear warnings.",
+        "rationale": "Rendering user-controlled Markdown into HTML creates a critical XSS/injection risk for readers (K3). A secure default is required to safely meet R2/R3/R13 without relying on downstream hosting controls.",
+        "alternatives_considered": [
+          "Allow raw HTML by default for maximum Markdown fidelity",
+          "Warn-only mode without enforcement",
+          "Rely on the browser/hosting platform to mitigate XSS"
+        ],
+        "what_would_change_this_decision": [
+          "If the stakeholder explicitly requires trusted raw HTML (e.g., advanced embeds), allow opt-in with documented risk and additional sanitization controls/tests.",
+          "If the selected Markdown engine cannot adequately sanitize, switch to a renderer pipeline that supports sanitization while preserving required formatting."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K3",
+            "json_pointer": "/risk_register/2",
+            "note": "Critical XSS/content injection risk requiring mitigation.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Client-side XSS or content injection vulnerabilities if Markdown/HTML is rendered unsafely"
+          }
+        ]
+      },
+      {
+        "id": "DEC6",
+        "question": "How will Markdown flavor, internal link syntax, and tag conventions be handled given open questions Q1/Q2?",
+        "choice": "Make Markdown flavor, internal link syntax, and tag conventions explicitly configurable (R14), with a documented baseline (CommonMark + selected GFM extensions) and optional wiki-link support; final defaults for link/tag syntax are gated on resolving Q1/Q2.",
+        "rationale": "Q1 and Q2 are blocking and directly drive correctness for links/backlinks (R9/R10) and tags (R7/R8). Configurability avoids overpromising universal compatibility while enabling explicit, testable conventions. Gating defaults prevents locking into a dialect without stakeholder confirmation.",
+        "alternatives_considered": [
+          "Hard-code a single dialect (e.g., GFM + [[WikiLinks]] + frontmatter tags)",
+          "Attempt to auto-detect dialects from content",
+          "Support “everything” with permissive parsing"
+        ],
+        "what_would_change_this_decision": [
+          "If the stakeholder mandates a single strict convention for simplicity, collapse configuration to that choice and enforce strict validation (with better error reporting).",
+          "If mixed conventions must be supported, add explicit multi-source parsing rules with precedence and increase test coverage accordingly."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "requirements_canonical_v1",
+            "entity_id": "R14",
+            "json_pointer": "/requirements/13",
+            "note": "Requirement to support configuration of flavor/link/tag conventions.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "SHOULD support configuration of the Markdown flavor, internal link syntax, and tag conventions"
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q1",
+            "json_pointer": "/open_questions/0",
+            "note": "Blocking open question for internal link syntax.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "What Markdown flavor and internal link syntax should be supported..."
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q2",
+            "json_pointer": "/open_questions/1",
+            "note": "Blocking open question for tag representation.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "How are tags represented in the notes..."
+          }
+        ]
+      },
+      {
+        "id": "DEC7",
+        "question": "What is the initial approach for client-side search indexing artifacts and runtime loading?",
+        "choice": "Generate search index artifacts at build time as static files referenced by the rendered site; design the plugin so index format can evolve (including optional sharding/chunking) to mitigate scale/performance risk (K4).",
+        "rationale": "R5 requires a client-side search index generated at build time and used offline in-browser. Keeping the index in external static artifacts allows iteration on size/performance strategies without changing the core orchestrator, aligning with O2’s extensibility goals.",
+        "alternatives_considered": [
+          "Embed the entire index into a single JS bundle",
+          "Do not precompute an index; rely on runtime scanning (not feasible offline/performance)",
+          "Adopt a specific third-party indexer immediately (locks implementation early)"
+        ],
+        "what_would_change_this_decision": [
+          "If file:// browsing is a hard requirement (not just static hosting), consider embedding the index to avoid fetch restrictions (K11) or provide a documented local preview server requirement.",
+          "If expected scale is large (Q3) and K4 becomes acute, prioritize sharded/lazy-loaded index artifacts early."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "requirements_canonical_v1",
+            "entity_id": "R5",
+            "json_pointer": "/requirements/4",
+            "note": "Client-side search index requirement.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "MUST build a client-side full-text search index at generation time"
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K4",
+            "json_pointer": "/risk_register/3",
+            "note": "Search index size/quality/performance risk.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Client-side search index size/quality/performance may degrade at scale"
+          }
+        ]
+      }
+    ],
+    "supplemental_evaluations": [
+      {
+        "title": "Risk posture alignment for O2 (plugin core)",
+        "notes": "O2 concentrates early risk in API design/ordering complexity, but creates a maintainable boundary that helps manage long-term evolution (themes, optional graph view, alternate search indexing) without rewrites. The plan explicitly front-loads mitigation for determinism (K6), security (K3), and dialect ambiguity (K1/K2) by: (a) stabilizing lifecycle + context schema + dependency rules first, (b) enforcing safe rendering defaults, and (c) gating link/tag defaults on resolving Q1/Q2 while still supporting configurability per R14.",
+        "evidence": [
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K1",
+            "json_pointer": "/risk_register/0",
+            "note": "Link syntax ambiguity risk tied to Q1.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Link/backlink resolution errors due to ambiguous... syntax (blocking Q1)"
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K2",
+            "json_pointer": "/risk_register/1",
+            "note": "Tag format ambiguity risk tied to Q2.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Tag extraction inconsistency due to unspecified... formats (blocking Q2)"
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K6",
+            "json_pointer": "/risk_register/5",
+            "note": "Determinism/reproducibility risk important in plugin ordering.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Non-deterministic builds... produce noisy diffs"
+          }
+        ]
+      }
+    ],
+    "synthesis_warnings": [
+      {
+        "id": "W1",
+        "severity": "high",
+        "summary": "Blocking decisions remain unresolved for internal link syntax (Q1) and tag representation (Q2); defaults must not be finalized without HITL approval because they directly affect R7–R10 correctness and K1/K2 risks.",
+        "routing_target": "HITL:ProductOwner+TechLead",
+        "evidence": [
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q1",
+            "json_pointer": "/open_questions/0",
+            "note": "Blocking open question for link syntax.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "What Markdown flavor and internal link syntax should be supported..."
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q2",
+            "json_pointer": "/open_questions/1",
+            "note": "Blocking open question for tags.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "How are tags represented in the notes..."
+          }
+        ]
+      },
+      {
+        "id": "W2",
+        "severity": "high",
+        "summary": "O2’s plugin API stability and dependency-ordering complexity is a known delivery risk; if early milestones show repeated breaking changes or unclear contracts, a pivot to a simpler architecture (O1/O3) may be required to protect MVP timelines.",
+        "routing_target": "Review:TechLead+EngineeringLead",
+        "evidence": [
+          {
+            "artifact_ref": "architecture_canonical_v1",
+            "entity_id": "O2",
+            "json_pointer": "/options/1/tradeoffs/cons/0",
+            "note": "Upfront plugin API effort and stability risk called out by O2.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "More upfront design and implementation effort (plugin API...)"
+          }
+        ]
+      },
+      {
+        "id": "W3",
+        "severity": "critical",
+        "summary": "Markdown rendering must not allow unsafe raw HTML or unsafe link protocols by default; explicit sanitization/disablement and tests are required to mitigate critical XSS risk (K3) before broad validation or release.",
+        "routing_target": "SecurityReview",
+        "evidence": [
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K3",
+            "json_pointer": "/risk_register/2",
+            "note": "Critical XSS risk requiring concrete mitigation.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Client-side XSS or content injection vulnerabilities if Markdown/HTML is rendered unsafely"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,634 @@
+{
+  "artifact_type": "triage_report",
+  "artifact_id": "triage_B1A_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:39:07.209059Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B1A_v1",
+    "validator_B1A_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B1A_v1",
+    "critic_id": "MERGED",
+    "verdict": "reject",
+    "defects": [
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "ID integrity hard-gate failure: architecture option risk references are not valid risk IDs in the risk register (options list risks as free-text, causing missing-reference violations).",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "O1",
+            "json_pointer": "/plan_package/architecture/options/0/risks",
+            "note": "O1 risks are free-text strings rather than references to existing risk_register IDs.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "O2",
+            "json_pointer": "/plan_package/architecture/options/1/risks",
+            "note": "O2 risks are free-text strings rather than references to existing risk_register IDs.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "O3",
+            "json_pointer": "/plan_package/architecture/options/2/risks",
+            "note": "O3 risks are free-text strings rather than references to existing risk_register IDs.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "O4",
+            "json_pointer": "/plan_package/architecture/options/3/risks",
+            "note": "O4 risks are free-text strings rather than references to existing risk_register IDs.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": null,
+            "json_pointer": "/inputs/validator_report/checks/1",
+            "note": "Validator id_integrity check failed with multiple missing-risk-reference violations.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/options/0/risks",
+            "value": [
+              "K4",
+              "K5"
+            ]
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/options/1/risks",
+            "value": []
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/options/2/risks",
+            "value": []
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/options/3/risks",
+            "value": []
+          }
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Risk-closure hard-gate failure: critical risk K8 (inadvertent publication of sensitive information) has no mitigation or acceptance/closure criteria.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "K8",
+            "json_pointer": "/plan_package/risk_register/7",
+            "note": "K8 has mitigation=null and acceptance=null despite critical severity.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": null,
+            "json_pointer": "/inputs/validator_report/checks/5",
+            "note": "Validator risk_closure check failed due to K8 missing closure.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "risk_closure",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/risk_register/7/mitigation",
+            "value": {
+              "text": "Add explicit user-facing safety messaging: document that generated outputs may expose private notes when hosted publicly; include a prominent pre-build warning in CLI help/docs; provide and document exclusion/ignore configuration patterns (e.g., ignore private folders/files) and generate a build report listing all included source files so users can review what will be published.",
+              "owner": "pm",
+              "status": "planned"
+            }
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/risk_register/7/acceptance",
+            "value": "Docs/CLI help contain a prominent warning about public hosting exposure; build output includes a human-readable manifest/report enumerating included files and configured excludes, enabling user review before deployment."
+          }
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Product-decision mismatch: Q10 is marked blocking (CLI vs GUI/integration), but the plan already hard-commits to a CLI as a MUST requirement and as the chosen architecture, risking rework if CLI-first is not desired.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "Q10",
+            "json_pointer": "/plan_package/project_capsule/open_questions/9",
+            "note": "Q10 is marked blocking.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "R5",
+            "json_pointer": "/plan_package/requirements/4",
+            "note": "CLI is a MUST requirement.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": null,
+            "json_pointer": "/plan_package/executive_summary",
+            "note": "Executive summary commits to a monolithic CLI tool.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "DEC1",
+            "json_pointer": "/plan_package/decision_log/0",
+            "note": "Architecture decision selects a monolithic CLI pipeline.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "open_questions_blockers",
+        "patch": []
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "Internal inconsistency: chosen-architecture rationale treats scale as 'confirmed' via R22, but scale is a blocking open question (Q3) and R22 is only a SHOULD performance target.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": null,
+            "json_pointer": "/plan_package/architecture/chosen/rationale",
+            "note": "Rationale claims scale is confirmed based on R22.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "Q3",
+            "json_pointer": "/plan_package/project_capsule/open_questions/2",
+            "note": "Scale is explicitly blocking/unknown.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "R22",
+            "json_pointer": "/plan_package/requirements/21",
+            "note": "R22 is a SHOULD performance target, not confirmation of dataset size.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "contradiction_heuristic",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/chosen/rationale",
+            "value": "Choose O1 (custom monolithic CLI pipeline) because it satisfies the static-output constraint and all MUST requirements with the least upfront framework/API design, enabling fast iteration and thin-slice delivery. The single-process in-memory graph is appropriate for an initial target consistent with R22 (up to ~1,000 notes) but actual scale remains to be confirmed via Q3; if Q3 indicates significantly larger datasets, revisit O4 or add chunking/incremental strategies."
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Execution-timeline ambiguity: DEC5 defines default unresolved-link behavior (warn + render non-navigable), but broken-link handling is scheduled in M5; M3 link/backlink work should explicitly include at least the default warning/rendering behavior to match the decision.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "DEC5",
+            "json_pointer": "/plan_package/decision_log/4",
+            "note": "DEC5 defines default unresolved-link behavior.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "DL14",
+            "json_pointer": "/plan_package/milestones/2/deliverables/3",
+            "note": "DL14 currently describes diagnostics but not default unresolved-link handling.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "DL18",
+            "json_pointer": "/plan_package/milestones/4/deliverables/0",
+            "note": "Broken-link handling deliverable appears in M5.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency_heuristic",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/milestones/2/deliverables/3/text",
+            "value": "Link-graph diagnostics output (e.g., counts + unresolved targets list). As part of this milestone’s link work, emit build-time warnings for unresolved internal links with source context and render unresolved links in a clearly non-navigable manner (aligns with DEC5; full R18 polish remains in M5)."
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Risk K6 (malformed YAML front matter) has no mitigation/acceptance defined, despite front matter/tag extraction being part of core tag functionality (R11).",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "K6",
+            "json_pointer": "/plan_package/risk_register/5",
+            "note": "K6 mitigation and acceptance are null.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "R11",
+            "json_pointer": "/plan_package/requirements/10",
+            "note": "R11 expects tag extraction, commonly via YAML front matter.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "risk_completeness",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/risk_register/5/mitigation",
+            "value": {
+              "text": "Implement resilient front-matter parsing: treat malformed YAML front matter as a per-file warning by default (do not crash whole build), surface file path + error details in the build report, and allow a strict mode that fails the build when front matter is malformed.",
+              "owner": "eng",
+              "status": "planned"
+            }
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/risk_register/5/acceptance",
+            "value": "Given a fixture with one note containing malformed YAML front matter, the build completes and emits a clear warning identifying the file and parse error; tags/metadata for that note follow a documented fallback behavior."
+          }
+        ]
+      },
+      {
+        "label": "note",
+        "severity": "low",
+        "summary": "Decision language cleanup: DEC3 references R15 (a SHOULD) in a way that can be read as MVP-mandatory; clarify that additional link syntaxes are optional/post-MVP unless confirmed by Q1.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "DEC3",
+            "json_pointer": "/plan_package/decision_log/2/choice",
+            "note": "DEC3 mentions configurable extensions (R15) adjacent to MVP MUST language.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "R15",
+            "json_pointer": "/plan_package/requirements/14",
+            "note": "R15 is a SHOULD.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "style_consistency",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/2/choice",
+            "value": "MVP MUST support standard Markdown relative links to other Markdown notes (R9). Additional syntaxes (e.g., wiki-links) are optional extensions aligned with R15 (SHOULD) and should remain disabled by default until conventions are confirmed (Q1)."
+          }
+        ]
+      },
+      {
+        "label": "note",
+        "severity": "medium",
+        "summary": "Verification gap (non-hard-gate): several deliverables (e.g., DL10 tag report, DL17 performance reporting) are not reflected in acceptance tests; consider adding explicit exit-criteria checks so these deliverables are actually verified (without adding new test IDs).",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "DL10",
+            "json_pointer": "/plan_package/milestones/1/deliverables/4",
+            "note": "DL10 tag extraction report deliverable.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "DL17",
+            "json_pointer": "/plan_package/milestones/3/deliverables/2",
+            "note": "DL17 performance instrumentation/reporting deliverable.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "measurability_heuristic",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/milestones/1/exit_criteria/1",
+            "value": "Tag pages are generated deterministically (stable tag ordering and stable note ordering per tag), and the tag extraction report (counts/normalization outcomes) is produced in build outputs/logs."
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/milestones/3/exit_criteria/1",
+            "value": "Search works with network disabled and returns results linking to note pages; build outputs include index size and basic query-timing reporting for the fixture set."
+          }
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Validator hard gate failure: id_integrity check failed with 12 violations. Architecture options O1-O4 reference risk descriptions in prose that do not exist as risk_register entries with IDs.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B1A_v1",
+            "entity_id": null,
+            "json_pointer": "/inputs/validator_report/checks/1",
+            "note": "id_integrity check failed with 12 high-severity violations",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Option O1 references missing risk Large collections can lead to high memory usage..."
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Validator hard gate failure: risk_closure check failed. Risk K8 (critical severity: sensitive/private information inadvertently published) has no mitigation or acceptance criteria defined.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B1A_v1",
+            "entity_id": "K8",
+            "json_pointer": "/inputs/validator_report/checks/4/violations/0",
+            "note": "Risk K8 missing closure",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Risk K8 missing closure"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "K8",
+            "json_pointer": "/plan_package/risk_register/7",
+            "note": "K8 has null mitigation and null acceptance despite critical severity",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Sensitive/private information contained within notes is inadvertently published to a public host"
+          }
+        ],
+        "violated_gate": "risk_closure",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Internal contradiction: Q10 is marked as a blocking open question about CLI vs other integration, but the plan already hard-commits to CLI as a MUST requirement (R5) and as the chosen architecture. This creates scope ambiguity and potential rework.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B1A_v1",
+            "entity_id": "CS1",
+            "json_pointer": "/inputs/consistency_findings/findings/0",
+            "note": "Consistency finding CS1 identifies Q10 blocking vs CLI commitment mismatch",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Open question Q10 is marked as a blocking uncertainty about CLI vs other integration, but the plan already hard-commits to a CLI"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "Q10",
+            "json_pointer": "/plan_package/project_capsule/open_questions/9",
+            "note": "Q10 marked blocking",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Should the tool run as a CLI, GUI application, or build script integration?"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "R5",
+            "json_pointer": "/plan_package/requirements/4",
+            "note": "R5 makes CLI a MUST requirement",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "The system MUST provide a command-line interface (CLI) build workflow"
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Internal contradiction: Architecture rationale claims scale is confirmed (up to 1,000 notes per R22) to justify O1 in-memory approach, but Q3 explicitly treats scale as an unresolved blocking question. R22 is a SHOULD performance target, not confirmation of dataset size.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B1A_v1",
+            "entity_id": "CS3",
+            "json_pointer": "/inputs/consistency_findings/findings/2",
+            "note": "Consistency finding CS3 identifies scale confirmation contradiction",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "The chosen-architecture rationale cites a confirmed near-term target (up to ~1,000 notes per R22) but the plan simultaneously treats scale as an unresolved blocking question"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": null,
+            "json_pointer": "/plan_package/architecture/chosen/rationale",
+            "note": "Rationale claims scale is confirmed",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "appropriate for the confirmed near-term target (up to ~1,000 notes per R22)"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "Q3",
+            "json_pointer": "/plan_package/project_capsule/open_questions/2",
+            "note": "Q3 marks scale as blocking and unresolved",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "What scale is required (approx. number of notes and total size)"
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": []
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Milestone M3 implements link resolution/backlinks but does not specify how unresolved links are handled during that phase, creating execution-timeline ambiguity relative to decision DEC5 which defines default unresolved-link behavior. Broken-link handling is deferred to M5.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B1A_v1",
+            "entity_id": "CS2",
+            "json_pointer": "/inputs/consistency_findings/findings/1",
+            "note": "Consistency finding CS2 identifies timeline ambiguity for unresolved link handling",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Decision DEC5 states a default behavior for unresolved internal links... but the implementation for broken-link handling is scheduled only in Milestone 5"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "M3",
+            "json_pointer": "/plan_package/milestones/2",
+            "note": "M3 adds link resolution without mentioning unresolved-link behavior",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Links & graph: internal link resolution + backlinks section"
+          }
+        ],
+        "violated_gate": "milestone_coherence",
+        "patch": []
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Multiple deliverables (DL10, DL14, DL17) are not mapped to any requirement or acceptance test, creating verification gaps for tag extraction report, link-graph diagnostics, and performance instrumentation.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B1A_v1",
+            "entity_id": "CS2",
+            "json_pointer": "/inputs/consistency_findings/findings/5",
+            "note": "DL10 has no corresponding requirement or acceptance test",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Milestone M2 deliverable DL10 (tag extraction report) is not mapped to any requirement or acceptance test"
+          },
+          {
+            "artifact_ref": "candidate_delta_B1A_v1",
+            "entity_id": "CS3",
+            "json_pointer": "/inputs/consistency_findings/findings/6",
+            "note": "DL14 has no corresponding requirement or acceptance test",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Milestone M3 deliverable DL14 (link-graph diagnostics output) is not mapped to any requirement or acceptance test"
+          },
+          {
+            "artifact_ref": "candidate_delta_B1A_v1",
+            "entity_id": "CS4",
+            "json_pointer": "/inputs/consistency_findings/findings/7",
+            "note": "DL17 has no corresponding requirement or acceptance test",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Milestone M4 deliverable DL17 (performance instrumentation/reporting) is not mapped to any requirement or acceptance test"
+          }
+        ],
+        "violated_gate": "coverage",
+        "patch": []
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Multiple risks (K6, K16, K23) have no mitigation or acceptance criteria defined despite being identified failure modes, creating risk management gaps.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B1A_v1",
+            "entity_id": "CS5",
+            "json_pointer": "/inputs/consistency_findings/findings/8",
+            "note": "K6 has null mitigation and null acceptance",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Risk K6 (malformed YAML front matter) has no mitigation or acceptance criteria defined"
+          },
+          {
+            "artifact_ref": "candidate_delta_B1A_v1",
+            "entity_id": "CS7",
+            "json_pointer": "/inputs/consistency_findings/findings/10",
+            "note": "K16 has null mitigation and null acceptance",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Risk K16 (mobile responsiveness) has no mitigation or acceptance criteria defined"
+          },
+          {
+            "artifact_ref": "candidate_delta_B1A_v1",
+            "entity_id": "CS8",
+            "json_pointer": "/inputs/consistency_findings/findings/11",
+            "note": "K23 has null mitigation and null acceptance",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Risk K23 (CLI installation/UX complexity) has no mitigation or acceptance criteria defined"
+          }
+        ],
+        "violated_gate": "risk_closure",
+        "patch": []
+      },
+      {
+        "label": "note",
+        "severity": "low",
+        "summary": "Acceptance test AT2 checks file types but does not explicitly verify absence of server-side runtime or database dependency as stated in R2. Test procedure could be strengthened to confirm static-only constraint.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B1A_v1",
+            "entity_id": "CS1",
+            "json_pointer": "/inputs/consistency_findings/findings/4",
+            "note": "AT2 does not fully verify R2 runtime independence requirement",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Acceptance test AT2 does not verify R2 requirement that output must be static HTML/CSS/JS only"
+          }
+        ],
+        "violated_gate": "acceptance_test_coverage",
+        "patch": []
+      },
+      {
+        "label": "note",
+        "severity": "low",
+        "summary": "Acceptance test AT14 verifies cross-browser functionality but does not verify search performance target (<500ms) specified in R22, creating a gap in performance validation.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B1A_v1",
+            "entity_id": "CS9",
+            "json_pointer": "/inputs/consistency_findings/findings/12",
+            "note": "AT14 does not verify R22 search performance target",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Acceptance test AT14 maps to R14 (cross-browser functionality) but does not verify that search results are responsive within 500ms as required by R22"
+          }
+        ],
+        "violated_gate": "acceptance_test_coverage",
+        "patch": []
+      }
+    ],
+    "reroute_target": "hitl.product_owner",
+    "reroute_reason": "Blocking product decision required: resolve Q10 (CLI vs GUI/build integration). Current plan hard-commits to CLI (R5, executive summary, chosen architecture) while also marking Q10 as blocking, which can cause major rework if CLI-first is not accepted."
+  }
+}

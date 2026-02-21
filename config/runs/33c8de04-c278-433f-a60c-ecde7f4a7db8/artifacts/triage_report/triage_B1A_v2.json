@@ -1,0 +1,597 @@
+{
+  "artifact_type": "triage_report",
+  "artifact_id": "triage_B1A_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:20:30.703271Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "plan_candidate_B1A_v2",
+    "validator_B1A_v2"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B1A_v2",
+    "critic_id": "MERGED",
+    "verdict": "reject",
+    "defects": [
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Hard-gate failure: architecture option risk references are free-text strings that do not match risk_register IDs, causing id_integrity violations.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": null,
+            "json_pointer": "/inputs/validator_report/checks/1",
+            "note": "id_integrity check failed with multiple 'references missing risk' violations under /plan_package/architecture/options.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": "O1",
+            "json_pointer": "/inputs/plan_candidate/plan_package/architecture/options/0/risks",
+            "note": "O1 risks are descriptive strings rather than risk_register IDs.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": "O2",
+            "json_pointer": "/inputs/plan_candidate/plan_package/architecture/options/1/risks",
+            "note": "O2 risks are descriptive strings rather than risk_register IDs.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": "O3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/architecture/options/2/risks",
+            "note": "O3 risks are descriptive strings rather than risk_register IDs.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": "O4",
+            "json_pointer": "/inputs/plan_candidate/plan_package/architecture/options/3/risks",
+            "note": "O4 risks are descriptive strings rather than risk_register IDs.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": null,
+            "json_pointer": "/inputs/plan_candidate/plan_package/risk_register",
+            "note": "Canonical risk IDs present as K1..K20.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/options/0/risks",
+            "value": [
+              "K4",
+              "K13",
+              "K1",
+              "K2"
+            ]
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/options/1/risks",
+            "value": [
+              "K16",
+              "K13"
+            ]
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/options/2/risks",
+            "value": [
+              "K18",
+              "K4",
+              "K1",
+              "K16"
+            ]
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/options/3/risks",
+            "value": [
+              "K19",
+              "K13",
+              "K6",
+              "K16"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "Risk mitigation for critical XSS (K3) calls for explicit security tests, but acceptance_tests contains no dedicated XSS/security acceptance test; adding a new AT requires reroute to the acceptance-test canonical owner (new ID needed).",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": "K3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/risk_register/2/mitigation/text",
+            "note": "Mitigation requires adding security tests with known XSS payloads.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Add security tests with known XSS payloads."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": null,
+            "json_pointer": "/inputs/plan_candidate/plan_package/acceptance_tests",
+            "note": "AT1–AT13 list has no dedicated security/XSS test.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": "W1",
+            "json_pointer": "/inputs/plan_candidate/plan_package/synthesis_warnings/0",
+            "note": "Plan already flags this gap as a synthesis warning.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": []
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Top-level plan_package constraints are null while project_capsule defines explicit constraints (CNS1/CNS2), which can create ambiguity for downstream consumers about authoritative constraints.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": null,
+            "json_pointer": "/inputs/plan_candidate/plan_package/constraints",
+            "note": "plan_package.constraints is null.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": "CNS1",
+            "json_pointer": "/inputs/plan_candidate/plan_package/project_capsule/constraints/0",
+            "note": "Static-site constraint is defined in the capsule.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": "CNS2",
+            "json_pointer": "/inputs/plan_candidate/plan_package/project_capsule/constraints/1",
+            "note": "Markdown processing constraint is defined in the capsule.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "completeness_heuristic",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/constraints",
+            "value": [
+              {
+                "id": "CNS1",
+                "type": "tech",
+                "text": "Output must be a static site (static HTML/CSS/JS/assets), with no required server-side runtime for browsing/search/backlinks beyond what can run in the browser."
+              },
+              {
+                "id": "CNS2",
+                "type": "tech",
+                "text": "Must process standard Markdown files as input (Markdown flavor/extensions to be specified)."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Milestones M3 and M4 depend implicitly on M1’s resolution of blocking Q1/Q2; dependency chain is indirect (via M2→M1) but not explicit in M3/M4, reducing clarity and making gating easy to miss.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": "M3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/2/depends_on",
+            "note": "M3 depends_on lists only M2.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": "DL8",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/2/deliverables/0/text",
+            "note": "M3 deliverable explicitly depends on Q1 spec.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": "M4",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/3/depends_on",
+            "note": "M4 depends_on lists only M3.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": "DL10",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/3/deliverables/0/text",
+            "note": "M4 deliverable explicitly depends on Q2 spec.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": "M1",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/0/exit_criteria/0",
+            "note": "M1 exit criteria gates Q1 and Q2 resolution.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "completeness_heuristic",
+        "patch": [
+          {
+            "op": "add",
+            "path": "/plan_package/milestones/2/depends_on/-",
+            "value": "M1"
+          },
+          {
+            "op": "add",
+            "path": "/plan_package/milestones/3/depends_on/-",
+            "value": "M1"
+          }
+        ]
+      },
+      {
+        "label": "note",
+        "severity": "low",
+        "summary": "Decision-log evidence contains speculative wording ('if present') which weakens traceability; adjust evidence note or reroute to governance/audit traceability owner.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": "DEC1",
+            "json_pointer": "/inputs/plan_candidate/plan_package/decision_log/0/evidence_pointers/1/note",
+            "note": "Contains speculative wording.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Branch B1 selected O1 (if present in branch_set artifact)."
+          }
+        ],
+        "violated_gate": "audit_traceability",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/0/evidence_pointers/1/note",
+            "value": "Intended reference to branch_set artifact for branch selection; verify that this pointer exists and matches the selected option."
+          }
+        ]
+      },
+      {
+        "label": "note",
+        "severity": "medium",
+        "summary": "Several SHOULD requirements and risk mitigations imply behaviors (configurability R14, diagnostics R12, and 'no absolute paths' K17) that are not covered by acceptance tests; adding new acceptance tests requires reroute (new AT IDs).",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": "R14",
+            "json_pointer": "/inputs/plan_candidate/plan_package/requirements/13",
+            "note": "Configurability requirement present but no mapped AT.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": "R12",
+            "json_pointer": "/inputs/plan_candidate/plan_package/requirements/11",
+            "note": "Diagnostics requirement present but no mapped AT.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": "K17",
+            "json_pointer": "/inputs/plan_candidate/plan_package/risk_register/16/mitigation/text",
+            "note": "Mitigation requires output not to contain absolute filesystem paths, but no AT covers it.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": null,
+            "json_pointer": "/inputs/plan_candidate/plan_package/acceptance_tests",
+            "note": "No acceptance tests for R14/R12/K17-specific checks.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "coverage",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Architecture options O1-O4 reference 14 risk IDs in their 'risks' arrays that do not exist in the risk_register, causing hard-gate id_integrity failure and breaking traceability.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B1A_v2",
+            "entity_id": null,
+            "json_pointer": "/validator_report/checks/1/violations",
+            "note": "id_integrity check reports 14 missing risk references across all architecture options",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Option O1 references missing risk Search index asset may become too large..."
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Milestone M1 exit criteria requires security posture definition (DEC2) to mitigate K3, but DEC2 is not listed in M1 key_design_decisions, creating a gap between when the decision is needed and when it is formally recorded.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B1A_v2",
+            "entity_id": "CS001",
+            "json_pointer": "/consistency_findings/findings/4",
+            "note": "CS001 flags missing DEC2 reference in M1",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "M1 exit criteria references 'K3' mitigation but DEC2 (security posture decision) is not listed in M1 key_design_decisions"
+          }
+        ],
+        "violated_gate": "milestone_exit_criteria",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Milestone M3 depends only on M2 but requires Q1 resolution (gated by M1) for link extraction (DL8), creating an unvalidated indirect dependency chain.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B1A_v2",
+            "entity_id": "CS003",
+            "json_pointer": "/consistency_findings/findings/6",
+            "note": "CS003 flags missing M1 dependency in M3",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "M3 depends on M2 but requires link extraction (DL8) which depends on Q1 resolution; however M1 (which gates Q1 resolution) is listed as M3's dependency, not M2"
+          }
+        ],
+        "violated_gate": "milestone_dependency_validation",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Milestone M4 depends only on M3 but requires Q2 resolution (gated by M1) for tag extraction (DL10), creating an unvalidated indirect dependency chain.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B1A_v2",
+            "entity_id": "CS004",
+            "json_pointer": "/consistency_findings/findings/7",
+            "note": "CS004 flags missing M1 dependency in M4",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "M4 depends on M3 but requires tag extraction (DL10) which depends on Q2 resolution; M1 gates Q2 but M4 does not explicitly depend on M1"
+          }
+        ],
+        "violated_gate": "milestone_dependency_validation",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Risk K3 mitigation requires security tests with known XSS payloads, but no acceptance test validates XSS/security posture, creating a test-plan vs. risk-mitigation mismatch and leaving a critical risk unverified.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B1A_v2",
+            "entity_id": "CS2",
+            "json_pointer": "/consistency_findings/findings/1",
+            "note": "CS2 flags missing XSS acceptance test",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Risk K3 mitigation explicitly calls for adding security tests with known XSS payloads, but the acceptance_tests set (AT1–AT13) contains no dedicated security/XSS test"
+          },
+          {
+            "artifact_ref": "candidate_delta_B1A_v2",
+            "entity_id": "W1",
+            "json_pointer": "/inputs/plan_candidate/plan_package/synthesis_warnings/0",
+            "note": "Plan itself flags this gap as W1",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Canonical acceptance test set (AT1–AT13) lacks a dedicated XSS/security acceptance test covering K3"
+          }
+        ],
+        "violated_gate": "risk_closure",
+        "patch": []
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Requirement R1 specifies discovering only .md files, but R3 and architecture C6 reference handling images/assets, creating an implicit gap in ingestion requirements for non-Markdown assets.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B1A_v2",
+            "entity_id": "CS4",
+            "json_pointer": "/consistency_findings/findings/3",
+            "note": "CS4 flags mismatch between R1 (md-only) and R3/C6 (images)",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Requirement R3 implies images are a commonly supported Markdown element, and architecture C6 plans to copy images, but ingestion requirement R1 only specifies discovering .md files"
+          }
+        ],
+        "violated_gate": "coverage",
+        "patch": []
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Requirements R12, R14 are not mapped to any acceptance tests, leaving error reporting and configurability untested despite being key mechanisms for Q1/Q2 resolution and user experience.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B1A_v2",
+            "entity_id": "CS005",
+            "json_pointer": "/consistency_findings/findings/8",
+            "note": "CS005 flags R14 (configurability) has no acceptance test",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Requirement R14 (SHOULD support configuration of Markdown flavor/link/tag conventions) is not mapped to any acceptance test"
+          },
+          {
+            "artifact_ref": "candidate_delta_B1A_v2",
+            "entity_id": "CS006",
+            "json_pointer": "/consistency_findings/findings/9",
+            "note": "CS006 flags R12 (error reporting) has no acceptance test",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Requirement R12 (SHOULD provide clear error reporting) is not mapped to any acceptance test"
+          }
+        ],
+        "violated_gate": "coverage",
+        "patch": []
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Risk K17 mitigation requires no absolute filesystem paths in output, but no acceptance test validates this, leaving a medium-severity information disclosure risk unverified.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B1A_v2",
+            "entity_id": "CS008",
+            "json_pointer": "/consistency_findings/findings/11",
+            "note": "CS008 flags missing acceptance test for K17 mitigation",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Risk K17 (information disclosure via absolute paths) mitigation requires 'relative identifiers only' but no acceptance test validates that generated output excludes absolute filesystem paths"
+          }
+        ],
+        "violated_gate": "risk_closure",
+        "patch": []
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Milestone M2 exit criteria references DEC3 (ingestion constraint for K9) but DEC3 is not listed in M2 key_design_decisions, making the dependency implicit.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B1A_v2",
+            "entity_id": "CS009",
+            "json_pointer": "/consistency_findings/findings/12",
+            "note": "CS009 flags missing DEC3 reference in M2",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Decision DEC3 (constrain ingestion to root, no symlinks) is critical for K9 mitigation but M2 exit criteria references K9 mitigation without explicitly listing DEC3 in M2 key_design_decisions"
+          }
+        ],
+        "violated_gate": "milestone_exit_criteria",
+        "patch": []
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Milestone M2 exit criteria requires AT4 (stable URLs) but DEC6 (URL/slug strategy) is not listed in M2 key_design_decisions, making the dependency implicit.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B1A_v2",
+            "entity_id": "CS002",
+            "json_pointer": "/consistency_findings/findings/5",
+            "note": "CS002 flags missing DEC6 reference in M2",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Milestone M2 exit criteria requires AT4 (stable URLs) to pass, but the URL/slug generation strategy (DEC6) is not listed in M2 key_design_decisions"
+          }
+        ],
+        "violated_gate": "milestone_exit_criteria",
+        "patch": []
+      },
+      {
+        "label": "note",
+        "severity": "low",
+        "summary": "Top-level plan_package fields scope/constraints are null while project_capsule defines constraints CNS1/CNS2, creating ambiguity about authoritative constraint source.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B1A_v2",
+            "entity_id": "CS1",
+            "json_pointer": "/consistency_findings/findings/0",
+            "note": "CS1 flags null top-level constraints vs. capsule constraints",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Top-level plan_package fields for scope/constraints are null even though the embedded project_capsule defines explicit constraints"
+          }
+        ],
+        "violated_gate": "schema_consistency",
+        "patch": []
+      },
+      {
+        "label": "note",
+        "severity": "low",
+        "summary": "Decision DEC1 evidence pointer includes speculative wording ('if present'), weakening traceability and determinism of evidence.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B1A_v2",
+            "entity_id": "CS3",
+            "json_pointer": "/consistency_findings/findings/2",
+            "note": "CS3 flags speculative evidence pointer in DEC1",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Decision-log evidence includes speculative wording ('if present') for a cited artifact location"
+          }
+        ],
+        "violated_gate": "evidence_quality",
+        "patch": []
+      },
+      {
+        "label": "note",
+        "severity": "low",
+        "summary": "Requirement R23 defers performance targets pending Q3 resolution, but M5 exit criteria does not specify fallback validation if Q3 remains unresolved.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B1A_v2",
+            "entity_id": "CS007",
+            "json_pointer": "/consistency_findings/findings/10",
+            "note": "CS007 flags unclear M5 validation for deferred R23 targets",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Requirement R23 (SHOULD meet performance targets for 100+ notes) defers target definition to post-Q3 resolution, but M5 exit criteria references performance targets without specifying how they will be"
+          }
+        ],
+        "violated_gate": "milestone_exit_criteria",
+        "patch": []
+      }
+    ],
+    "reroute_target": "qa.acceptance_canonical_owner",
+    "reroute_reason": "Adding missing acceptance tests (XSS/K3 coverage; R14 configurability; R12 diagnostics; K17 no-absolute-paths) requires minting new AT IDs and updating the canonical acceptance set, which is outside this critic’s safe patch scope."
+  }
+}

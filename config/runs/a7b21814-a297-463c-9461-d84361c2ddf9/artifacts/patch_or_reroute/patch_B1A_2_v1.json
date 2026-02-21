@@ -1,0 +1,16 @@
+{
+  "artifact_type": "patch_or_reroute",
+  "artifact_id": "patch_B1A_2_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:39:37.294571Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B1A_v1"
+  ],
+  "payload": {
+    "action": "reroute",
+    "rationale": "Blockers require edits to locked canonical sections: architecture/options risks must be converted to valid risk_register ID references, and risk_register K8 needs mitigation/acceptance. Patch rules forbid editing /architecture/options and /risk_register; reroute required.",
+    "patch": [],
+    "reroute_target": "hitl.product_owner"
+  }
+}

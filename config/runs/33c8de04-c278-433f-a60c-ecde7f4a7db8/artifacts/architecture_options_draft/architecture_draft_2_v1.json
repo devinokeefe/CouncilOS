@@ -1,0 +1,233 @@
+{
+  "artifact_type": "architecture_options_draft",
+  "artifact_id": "architecture_draft_2_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T11:58:30.538429Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "capsule_canonical_v1"
+  ],
+  "payload": {
+    "options": [
+      {
+        "id": "OPT_B_1",
+        "summary": "A single, self-contained Command Line Interface (CLI) tool that orchestrates the entire process in-memory. It will parse Markdown files, compute backlinks, generate a search index, and render the final static HTML site in a single execution.",
+        "components": [
+          {
+            "id": "CMP_B_1_1",
+            "name": "CLI Application",
+            "responsibilities": [
+              "Handles user input (source/destination folders), orchestrates internal modules, and provides user feedback."
+            ]
+          },
+          {
+            "id": "CMP_B_1_2",
+            "name": "Content Processor",
+            "responsibilities": [
+              "Reads Markdown files from the source directory.",
+              "Parses content, extracts frontmatter, tags, and link information."
+            ]
+          },
+          {
+            "id": "CMP_B_1_3",
+            "name": "Graph & Index Engine",
+            "responsibilities": [
+              "Builds a graph of all notes from parsed link information to compute backlinks.",
+              "Generates a client-side full-text search index from note content."
+            ]
+          },
+          {
+            "id": "CMP_B_1_4",
+            "name": "Site Renderer",
+            "responsibilities": [
+              "Converts processed content into final HTML pages using internal templates.",
+              "Assembles the output directory with all generated HTML, CSS, client-side JS, and the search index."
+            ]
+          }
+        ],
+        "interfaces": [
+          {
+            "id": "IF_B_1_1",
+            "from": "CMP_B_1_2",
+            "to": "CMP_B_1_3",
+            "contract": "In-memory data structure containing all parsed notes, their metadata, and forward links."
+          },
+          {
+            "id": "IF_B_1_2",
+            "from": "CMP_B_1_3",
+            "to": "CMP_B_1_4",
+            "contract": "In-memory data structure enriched with backlink information and the generated search index data."
+          }
+        ],
+        "tradeoffs": {
+          "pros": [
+            "Simple user experience with a single command to run.",
+            "Potentially high performance due to in-memory processing, avoiding I/O overhead between stages.",
+            "Easier dependency management as it's a single, cohesive application."
+          ],
+          "cons": [
+            "Monolithic design can be harder to maintain and extend over time.",
+            "Less flexibility to swap out individual parts like the Markdown parser or search library without code changes.",
+            "All logic is tightly coupled within one codebase."
+          ]
+        },
+        "risks": [
+          "The monolithic codebase could become complex and difficult to refactor as new features are added.",
+          "Performance may suffer at very large scale (e.g., >10,000 notes) if in-memory data structures become too large, leading to high memory consumption."
+        ]
+      },
+      {
+        "id": "OPT_B_2",
+        "summary": "Leverage an existing extensible Static Site Generator (SSG) such as Eleventy. Core functionality like Markdown-to-HTML conversion and templating is handled by the SSG, while custom features like backlink generation and search indexing are implemented as plugins.",
+        "components": [
+          {
+            "id": "CMP_B_2_1",
+            "name": "Core SSG Engine (e.g., Eleventy)",
+            "responsibilities": [
+              "Provides the main build pipeline, including file watching, data loading, templating, and page generation.",
+              "Provides a plugin API to extend its functionality."
+            ]
+          },
+          {
+            "id": "CMP_B_2_2",
+            "name": "Data Preprocessor & Backlink Plugin",
+            "responsibilities": [
+              "Hooks into the SSG's build process to read all content.",
+              "Builds a link graph across all notes and computes backlinks.",
+              "Exposes the backlink data globally to the SSG's templating engine."
+            ]
+          },
+          {
+            "id": "CMP_B_2_3",
+            "name": "Search Indexer Plugin",
+            "responsibilities": [
+              "Generates a client-side search index file (e.g., JSON) during the SSG build process.",
+              "Places the generated index into the final site output directory."
+            ]
+          },
+          {
+            "id": "CMP_B_2_4",
+            "name": "Frontend Search Module",
+            "responsibilities": [
+              "Client-side JavaScript that runs in the browser.",
+              "Fetches the search index file and initializes a search library.",
+              "Implements the search UI and displays results."
+            ]
+          }
+        ],
+        "interfaces": [
+          {
+            "id": "IF_B_2_1",
+            "from": "CMP_B_2_2",
+            "to": "CMP_B_2_1",
+            "contract": "Global data object provided via SSG plugin API, making note graph and backlink information accessible within templates."
+          },
+          {
+            "id": "IF_B_2_2",
+            "from": "CMP_B_2_3",
+            "to": "CMP_B_2_4",
+            "contract": "A static JSON search index file, generated during the build and fetched via an HTTP request by the client-side JavaScript in the browser."
+          }
+        ],
+        "tradeoffs": {
+          "pros": [
+            "Significantly reduces development time by building on a mature, well-documented platform.",
+            "Gains access to a large ecosystem of existing themes and plugins.",
+            "Handles many common SSG problems out-of-the-box (e.g., live reload, asset pipelines)."
+          ],
+          "cons": [
+            "Constrained by the architecture, limitations, and performance of the chosen SSG.",
+            "Requires learning the specific plugin and data model of the SSG, which can have its own complexity.",
+            "Adds a dependency on a large, external open-source project and its release cycle."
+          ]
+        },
+        "risks": [
+          "The chosen SSG may not provide the necessary hooks or flexibility to implement a specific feature, requiring complex workarounds.",
+          "Future updates to the core SSG could introduce breaking changes in the plugin APIs, requiring maintenance work."
+        ]
+      },
+      {
+        "id": "OPT_B_3",
+        "summary": "A pipeline of distinct, single-responsibility CLI tools that communicate via intermediate files in a standard data format (e.g., JSON). Each step (parsing, backlink analysis, indexing, rendering) is a separate, replaceable tool.",
+        "components": [
+          {
+            "id": "CMP_B_3_1",
+            "name": "Content Parser",
+            "responsibilities": [
+              "Scans a directory of Markdown files.",
+              "Outputs a single structured JSON file containing the content, metadata, and extracted forward links for every note."
+            ]
+          },
+          {
+            "id": "CMP_B_3_2",
+            "name": "Data Enricher",
+            "responsibilities": [
+              "Consumes the structured JSON from the Content Parser.",
+              "Analyzes the link graph to compute backlinks for each note.",
+              "Outputs an enriched version of the JSON with this new data."
+            ]
+          },
+          {
+            "id": "CMP_B_3_3",
+            "name": "Search Indexer",
+            "responsibilities": [
+              "Consumes the structured JSON from the Content Parser.",
+              "Generates a static client-side search index file."
+            ]
+          },
+          {
+            "id": "CMP_B_3_4",
+            "name": "Site Renderer",
+            "responsibilities": [
+              "Consumes the enriched JSON from the Data Enricher.",
+              "Applies templates to generate final HTML pages.",
+              "Copies the generated pages, search index, and other static assets to the output directory."
+            ]
+          }
+        ],
+        "interfaces": [
+          {
+            "id": "IF_B_3_1",
+            "from": "CMP_B_3_1",
+            "to": "CMP_B_3_2",
+            "contract": "Primary structured data file (e.g., notes.json) on disk containing parsed content and forward links."
+          },
+          {
+            "id": "IF_B_3_2",
+            "from": "CMP_B_3_1",
+            "to": "CMP_B_3_3",
+            "contract": "Primary structured data file (e.g., notes.json) on disk containing parsed content and forward links."
+          },
+          {
+            "id": "IF_B_3_3",
+            "from": "CMP_B_3_2",
+            "to": "CMP_B_3_4",
+            "contract": "Enriched data file (e.g., enriched-notes.json) on disk containing backlink information."
+          },
+          {
+            "id": "IF_B_3_4",
+            "from": "CMP_B_3_3",
+            "to": "CMP_B_3_4",
+            "contract": "Generated search index file (e.g., search-index.json) on disk."
+          }
+        ],
+        "tradeoffs": {
+          "pros": [
+            "Extremely flexible and modular; each component can be developed, tested, and replaced independently.",
+            "Components are simple, single-purpose, and easier to reason about.",
+            "Allows for mixing technologies (e.g., a parser in Rust, a renderer in Node.js)."
+          ],
+          "cons": [
+            "More complex build orchestration is required (e.g., using a Makefile or shell script).",
+            "Performance can be lower due to the I/O overhead of writing and reading intermediate files between each step.",
+            "Maintaining the consistency of the intermediate JSON format across tools can be challenging."
+          ]
+        },
+        "risks": [
+          "The complexity of managing the multi-step build process could be a burden for the end-user compared to a single command.",
+          "Changes to the intermediate JSON schema require careful coordination and updates across multiple independent tools."
+        ]
+      }
+    ]
+  }
+}

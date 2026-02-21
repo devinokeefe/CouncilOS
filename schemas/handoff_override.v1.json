@@ -1,0 +1,14 @@
+{
+  "title": "HandoffOverride",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"type": "string"},
+    "override_type": {"type": "string"},
+    "expected": {"type": "object", "additionalProperties": true},
+    "actual": {"type": "object", "additionalProperties": true},
+    "rationale": {"type": ["string", "null"]},
+    "new_baseline_snapshot_ref": {"type": ["string", "null"]}
+  },
+  "required": ["schema_version", "override_type", "expected", "actual"]
+}

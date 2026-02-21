@@ -1,0 +1,254 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B1B_v3",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:58:14.923707Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "trace_graph_B1B_primary_v3",
+    "trace_graph_B1B_anchor_v3",
+    "trace_graph_B1B_fallback_v3"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B1B_v3",
+    "findings": [
+      {
+        "id": "TG-001",
+        "severity": "low",
+        "summary": "Requirements R1, R2, and R3 are incorrectly traced to Milestone M2 in the sample checks. The plan artifacts demonstrate that these requirements are fully delivered and verified in Milestone M1.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v3",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/deliverables/1",
+            "note": "Milestone M1 Deliverable DL2 explicitly covers recursive file discovery (R1).",
+            "candidate_id": "B1B",
+            "artifact_id": "plan_candidate_B1B_v3",
+            "quote": "Recursive .md file discovery from input directory (R1)"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v3",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/exit_criteria/0",
+            "note": "Milestone M1 Exit Criteria confirms passing AT1, which verifies R1.",
+            "candidate_id": "B1B",
+            "artifact_id": "plan_candidate_B1B_v3",
+            "quote": "AT1 passes: three nested .md files discovered, non-.md excluded"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v3",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/deliverables",
+            "note": "Milestone M2 deliverables are scoped to tag extraction (R11-R13) and do not include R1-R3.",
+            "candidate_id": "B1B",
+            "artifact_id": "plan_candidate_B1B_v3",
+            "quote": null
+          }
+        ],
+        "routing_target": "trace_graph"
+      },
+      {
+        "id": "TG001",
+        "severity": "high",
+        "summary": "Sample check for R3 (AT3) and Milestone 1 exit criteria require a configuration-based exclusion mechanism, but the plan schedules file/directory exclusion capability (R20 / DL26) in Milestone 5. This creates a trace inconsistency: AT3 cannot be executed as written at M1 without implementing an exclusion feature earlier or revising the test/procedure.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v3",
+            "entity_id": null,
+            "json_pointer": "/inputs/deterministic_sample_checks/2",
+            "note": "Sample check ties R3 to AT3 and milestones M1/M2",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v3",
+            "entity_id": "AT3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/acceptance_tests/2",
+            "note": "AT3 procedure explicitly uses a configuration that excludes a Markdown file",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v3",
+            "entity_id": "M1",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/0/exit_criteria/2",
+            "note": "M1 exit criteria requires AT3 to pass",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v3",
+            "entity_id": "R20",
+            "json_pointer": "/inputs/plan_candidate/plan_package/requirements/19",
+            "note": "R20 defines exclusion as SHOULD (not planned until Milestone 5)",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v3",
+            "entity_id": "DL26",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/4/deliverables/5",
+            "note": "Milestone 5 deliverable DL26 implements file/directory exclusion",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "acceptance_tests"
+      },
+      {
+        "id": "TG002",
+        "severity": "low",
+        "summary": "Deterministic sample checks map R1–R3 to milestones [M1, M2], but the plan’s milestone structure indicates R1–R3 are delivered in M1; M2 is focused on tags (R11–R13). The extra milestone association may dilute trace precision.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v3",
+            "entity_id": "R1",
+            "json_pointer": "/inputs/deterministic_sample_checks/0/milestones",
+            "note": "R1 sample check lists milestones M1 and M2",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v3",
+            "entity_id": "R2",
+            "json_pointer": "/inputs/deterministic_sample_checks/1/milestones",
+            "note": "R2 sample check lists milestones M1 and M2",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v3",
+            "entity_id": "R3",
+            "json_pointer": "/inputs/deterministic_sample_checks/2/milestones",
+            "note": "R3 sample check lists milestones M1 and M2",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v3",
+            "entity_id": "M2",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/1",
+            "note": "M2 scope is tag extraction/pages/navigation rather than ingestion/rendering baseline",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "trace_graph"
+      },
+      {
+        "id": "TG001",
+        "severity": "medium",
+        "summary": "R1 is covered by AT1 and milestones M1/M2, but M2 does not deliver any R1 functionality—M2 focuses on tags (R11-R13). R1 is fully delivered in M1 only.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v3",
+            "entity_id": "R1",
+            "json_pointer": "/plan_package/requirements/0",
+            "note": "R1 requires recursive .md discovery",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "The system MUST accept a user-specified local directory path as input and recursively discover Markdown files"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v3",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0",
+            "note": "M1 delivers DL2: recursive .md file discovery",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "Recursive .md file discovery from input directory (R1)"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v3",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1",
+            "note": "M2 deliverables are tag-focused (DL8-DL12), no R1 functionality",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "Tag Extraction, Tag Pages, and Tag Navigation"
+          }
+        ],
+        "routing_target": "milestone_scoping"
+      },
+      {
+        "id": "TG002",
+        "severity": "medium",
+        "summary": "R2 is covered by AT2 and milestones M1/M2, but M2 does not deliver any R2 functionality—M2 focuses on tags. R2 is fully delivered in M1 only.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v3",
+            "entity_id": "R2",
+            "json_pointer": "/plan_package/requirements/1",
+            "note": "R2 requires static-only output",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "The system MUST generate a static build output consisting only of HTML, CSS, JavaScript"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v3",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0",
+            "note": "M1 delivers DL4: static HTML output",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "One HTML page per input Markdown file written to output directory (R2, R3)"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v3",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1",
+            "note": "M2 deliverables are tag-focused, no R2 functionality",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "Tag Extraction, Tag Pages, and Tag Navigation"
+          }
+        ],
+        "routing_target": "milestone_scoping"
+      },
+      {
+        "id": "TG003",
+        "severity": "medium",
+        "summary": "R3 is covered by AT3 and milestones M1/M2, but M2 does not deliver any R3 functionality—M2 focuses on tags. R3 is fully delivered in M1 only.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v3",
+            "entity_id": "R3",
+            "json_pointer": "/plan_package/requirements/2",
+            "note": "R3 requires one HTML page per Markdown file",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "The system MUST parse each discovered Markdown file using at least CommonMark-compliant syntax and generate a corresponding HTML page"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v3",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0",
+            "note": "M1 delivers DL3 and DL4 for R3",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "CommonMark-compliant Markdown-to-HTML rendering"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v3",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1",
+            "note": "M2 deliverables are tag-focused, no R3 functionality",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "Tag Extraction, Tag Pages, and Tag Navigation"
+          }
+        ],
+        "routing_target": "milestone_scoping"
+      }
+    ]
+  }
+}

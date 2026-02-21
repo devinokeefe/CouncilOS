@@ -1,0 +1,503 @@
+{
+  "artifact_type": "triage_report",
+  "artifact_id": "triage_B2B_v3",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T11:00:07.613722Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B2B_v3",
+    "validator_B2B_v3"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2B_v3",
+    "critic_id": "MERGED",
+    "verdict": "reject",
+    "defects": [
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Hard-gate id_integrity failure: /architecture/options[*]/risks contain free-text strings that are being validated as risk-id references, but they do not exist in /risk_register. This prevents acceptance until the references are made valid (or removed) and/or the missing risks are added canonically (requires reroute if new K-ids are needed).",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "O1",
+            "json_pointer": "/plan_package/architecture/options/0/risks",
+            "note": "O1 risks listed as descriptive strings rather than risk IDs.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Large collections can lead to high memory usage if all notes and derived structures are held in memory"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "O2",
+            "json_pointer": "/plan_package/architecture/options/1/risks",
+            "note": "O2 risks listed as descriptive strings rather than risk IDs.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Plugin API and data model may evolve, causing breaking changes and ecosystem churn"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": null,
+            "json_pointer": "/validator_report/checks/1/violations",
+            "note": "Validator reports multiple 'references missing risk ...' violations under id_integrity.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Option O2 references missing risk Plugin API and data model may evolve, causing breaking changes and ecosystem churn"
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/options/0/risks",
+            "value": [
+              "K4",
+              "K5"
+            ]
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/options/1/risks",
+            "value": []
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/options/2/risks",
+            "value": []
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/options/3/risks",
+            "value": []
+          }
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Hard-gate risk_closure failure: critical risk K8 has no mitigation/closure recorded in /risk_register even though the plan defines a mitigation (DEC3 + M1/DL7). Risk register must be updated to include the mitigation so the plan is internally consistent and passes closure checks.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "K8",
+            "json_pointer": "/plan_package/risk_register/7/mitigation",
+            "note": "K8 mitigation is null in the risk register.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "DEC3",
+            "json_pointer": "/plan_package/decision_log/2/choice",
+            "note": "Decision log specifies a concrete mitigation approach.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Implement a mandatory build-time check that excludes notes marked as private"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "DL7",
+            "json_pointer": "/plan_package/milestones/0/deliverables/6/text",
+            "note": "Milestone deliverable explicitly states K8 mitigation delivery.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Build-time check mechanism to prevent publication of notes marked as private"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": null,
+            "json_pointer": "/validator_report/checks/2/violations/0/message",
+            "note": "Validator reports 'Risk K8 missing closure'.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Risk K8 missing closure"
+          }
+        ],
+        "violated_gate": "risk_closure",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/risk_register/7/mitigation",
+            "value": {
+              "text": "Implement a mandatory build-time check that excludes notes marked as private (e.g., front-matter 'private: true') from all outputs, emitting a build warning listing excluded files.",
+              "owner": "eng",
+              "status": "planned"
+            }
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "Hard-gate id_integrity failure: decision_log evidence pointers reference missing id 'B2' (branch evidence). Since the actual branch-set IDs are not confirmed in the provided inputs, set those evidence pointer entity_id fields to null (or reroute to whoever owns branch_set to correct IDs).",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": null,
+            "json_pointer": "/validator_report/checks/1/violations",
+            "note": "Validator reports multiple 'Evidence pointer references missing id: B2' violations.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Evidence pointer references missing id: B2"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "DEC1",
+            "json_pointer": "/plan_package/decision_log/0/evidence_pointers/1",
+            "note": "Evidence pointer uses entity_id 'B2'.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Branch B2 selects O2 with foundation-first rationale."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "DEC2",
+            "json_pointer": "/plan_package/decision_log/1/evidence_pointers/0",
+            "note": "Evidence pointer uses entity_id 'B2'.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Branch specifies hybrid milestone strategy."
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/0/evidence_pointers/1/entity_id",
+            "value": null
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/1/evidence_pointers/0/entity_id",
+            "value": null
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/2/evidence_pointers/1/entity_id",
+            "value": null
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Internal inconsistency: K6 mitigation is null in /risk_register while M2/DL12 claims it as a K6 mitigation. Align the risk register to the planned mitigation (also aligns with synthesis warning W3).",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "K6",
+            "json_pointer": "/plan_package/risk_register/5/mitigation",
+            "note": "K6 mitigation is null.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "DL12",
+            "json_pointer": "/plan_package/milestones/1/deliverables/3/text",
+            "note": "M2 deliverable explicitly frames itself as K6 mitigation.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Graceful handling of malformed YAML front matter with build warnings rather than build failure (K6 mitigation)."
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/risk_register/5/mitigation",
+            "value": {
+              "text": "Gracefully handle malformed YAML front matter by emitting build warnings (with file context) and continuing the build using best-effort parsing defaults.",
+              "owner": "eng",
+              "status": "planned"
+            }
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "Reroute suggested (clarification/HITL): The plan hard-codes a CLI as MUST (R5) while the capsule treats CLI acceptability as unconfirmed (A5) and lists CLI vs GUI as a blocking open question (Q10). This should be resolved in the clarification plan (or requirement re-scoped) before implementation commitment.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "A5",
+            "json_pointer": "/plan_package/project_capsule/assumptions/4",
+            "note": "CLI acceptability is an assumption needing confirmation.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "A command-line build workflow is acceptable"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "Q10",
+            "json_pointer": "/plan_package/project_capsule/open_questions/9",
+            "note": "Blocking question about CLI vs GUI/build integration.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Should the tool run as a CLI, GUI application, or build script integration?"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "R5",
+            "json_pointer": "/plan_package/requirements/4",
+            "note": "Requirement makes CLI mandatory despite Q10 being unresolved.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "The system MUST provide a command-line interface (CLI) build workflow"
+          }
+        ],
+        "violated_gate": "open_questions_blockers",
+        "patch": []
+      },
+      {
+        "label": "note",
+        "severity": "medium",
+        "summary": "Milestone gate not self-contained: M1 exit criteria references specific alignment warning IDs (AL001, AL008) that are not defined within the plan package content; acceptance would depend on a separate artifact. Consider making the criterion generic (or include resolvable pointers) to keep milestone verification self-contained.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/exit_criteria/6",
+            "note": "Exit criterion references AL001/AL008 by ID.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "No high/critical alignment warnings (AL001, AL008) remain unaddressed."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": null,
+            "json_pointer": "/plan_package/supplemental_evaluations/0/notes",
+            "note": "Plan acknowledges warning details are external to this package.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "their detailed content is in the alignment_warnings artifact"
+          }
+        ],
+        "violated_gate": "milestone_verifiability",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/milestones/0/exit_criteria/6",
+            "value": "No high/critical alignment warnings remain unaddressed (per the alignment_warnings artifact for this run)."
+          }
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Risk K8 (critical data leakage) has null mitigation in risk_register but is simultaneously defined as mitigated in DEC3/DL7/M1. Validator hard-gate 'risk_closure' fails because K8 lacks formal closure in the risk_register array.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "K8",
+            "json_pointer": "/plan_package/risk_register/7/mitigation",
+            "note": "K8 mitigation field is null in risk_register",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "DEC3",
+            "json_pointer": "/plan_package/decision_log/2",
+            "note": "Decision log defines K8 mitigation approach",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Implement a mandatory build-time check that excludes notes marked as private"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": null,
+            "json_pointer": "/validator_report/checks/3/violations/0",
+            "note": "Validator reports K8 missing closure",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Risk K8 missing closure"
+          }
+        ],
+        "violated_gate": "risk_closure",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Validator id_integrity check fails with 15 high-severity violations: architecture options reference 12 missing risk strings, and decision_log evidence pointers reference missing branch entity 'B2' three times.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": null,
+            "json_pointer": "/validator_report/checks/1/violations",
+            "note": "15 id_integrity violations reported",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Option O1 references missing risk Large collections can lead to high memory usage"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": null,
+            "json_pointer": "/plan_package/architecture/options/0/risks",
+            "note": "O1 risks array contains prose strings not risk IDs",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Requirement R5 hard-codes CLI as MUST, but capsule assumption A5 treats CLI acceptability as needing confirmation and Q10 is a blocking open question asking CLI-vs-GUI. Plan proceeds with unresolved blocker as if resolved.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "Q10",
+            "json_pointer": "/plan_package/project_capsule/open_questions/9",
+            "note": "Q10 is blocking and unresolved",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Should the tool run as a CLI, GUI application, or build script integration?"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "R5",
+            "json_pointer": "/plan_package/requirements/4",
+            "note": "R5 assumes CLI despite Q10",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "The system MUST provide a command-line interface (CLI)"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "CS3",
+            "json_pointer": "/consistency_findings/findings/2",
+            "note": "Consistency finding flags this mismatch",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "M1 exit criteria references alignment warnings AL001/AL008 that do not exist in any provided artifact. Exit gate is unverifiable.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/exit_criteria/6",
+            "note": "Exit criterion references undefined AL001/AL008",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "No high/critical alignment warnings (AL001, AL008) remain unaddressed"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "CS001",
+            "json_pointer": "/consistency_findings/findings/5",
+            "note": "Consistency finding confirms IDs do not exist",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "these IDs do not exist in the provided alignment_warnings artifact"
+          }
+        ],
+        "violated_gate": "milestone_exit_criteria",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Risk K6 has null mitigation in risk_register but mitigation is defined in M2/DL12. Inconsistency between risk_register and milestone deliverables.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "K6",
+            "json_pointer": "/plan_package/risk_register/5/mitigation",
+            "note": "K6 mitigation is null",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "DL12",
+            "json_pointer": "/plan_package/milestones/1/deliverables/3",
+            "note": "M2 defines K6 mitigation",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Graceful handling of malformed YAML front matter"
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Performance target R22 specifies 1,000 notes and 500ms latency, but scale is a blocking open question (Q3). Plan bakes in scale assumption before resolution.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "Q3",
+            "json_pointer": "/plan_package/project_capsule/open_questions/2",
+            "note": "Q3 is blocking and asks for scale",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "What scale is required (approx. number of notes and total size)"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "R22",
+            "json_pointer": "/plan_package/requirements/21",
+            "note": "R22 assumes 1,000 notes",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "For collections of up to 1,000 notes"
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "note",
+        "severity": "low",
+        "summary": "M6 exit criteria list contains 30+ items with potential semantic overlap and redundancy, which may complicate acceptance verification.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "M6",
+            "json_pointer": "/plan_package/milestones/5/exit_criteria",
+            "note": "Exit criteria list is very long",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "milestone_exit_criteria",
+        "patch": []
+      }
+    ],
+    "reroute_target": "risk_gov_canonical",
+    "reroute_reason": "Even if repaired locally by removing invalid architecture risk references, the missing/implicit architecture-option risks and the K8/K6 mitigation alignment should be reflected canonically in risk governance (and adding any new risk IDs requires an owner that can mint K* IDs)."
+  }
+}

@@ -1,0 +1,320 @@
+{
+  "artifact_type": "consistency_findings",
+  "artifact_id": "consistency_B2B_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:37:47.221708Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B2B_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2B_v1",
+    "findings": [
+      {
+        "id": "CS1",
+        "severity": "high",
+        "summary": "Exclusion support is treated inconsistently: R3 and AT3 require a configuration-based exclude mechanism (and M2 exit criteria requires AT3 to pass), but exclusion is only specified as a SHOULD (R20) and is scheduled for delivery in M6 (DL28). This creates a sequencing/requirements mismatch (M2 cannot pass AT3 without implementing exclusion earlier or re-scoping AT3/R3/R20).",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "R3",
+            "json_pointer": "/plan_package/requirements/2/text",
+            "note": "R3 implies exclusions exist via configuration.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "...generate a corresponding HTML page for every input Markdown file not explicitly excluded by configuration."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "AT3",
+            "json_pointer": "/plan_package/acceptance_tests/2/procedure",
+            "note": "AT3 explicitly requires an exclusion configuration.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "...a configuration that excludes one specific Markdown file."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/exit_criteria/0",
+            "note": "M2 exit criteria requires AT3 to pass.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "AT3 passes: one HTML page per non-excluded Markdown file."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "R20",
+            "json_pointer": "/plan_package/requirements/19/priority",
+            "note": "Excluding files/dirs is only SHOULD per R20.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "SHOULD"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "DL28",
+            "json_pointer": "/plan_package/milestones/5/deliverables/0/text",
+            "note": "Exclusion patterns are planned for M6, not M2.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Full CLI with ... exclusion patterns ... (R5, R6, R20)."
+          }
+        ],
+        "routing_target": "plan_candidate_B2B_v1"
+      },
+      {
+        "id": "CS2",
+        "severity": "high",
+        "summary": "Critical risk K8 is presented as mitigated (DL6 in M1 and DEC3), but the risk_register entry for K8 still has mitigation=null. This is an internal inconsistency between the plan’s risk tracking and its stated mitigations.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "K8",
+            "json_pointer": "/plan_package/risk_register/7/mitigation",
+            "note": "K8 mitigation field is null.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "DL6",
+            "json_pointer": "/plan_package/milestones/0/deliverables/5/text",
+            "note": "Plan adds a privacy guard deliverable intended to mitigate K8.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Build-time privacy guard: mandatory check that prevents emission of notes marked as private..."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "DEC3",
+            "json_pointer": "/plan_package/decision_log/2/choice",
+            "note": "Decision log states K8 mitigation approach.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Implement a mandatory build-time privacy guard... excludes matching notes from all output, including the search index."
+          }
+        ],
+        "routing_target": "risk_gov_canonical_v1"
+      },
+      {
+        "id": "CS3",
+        "severity": "medium",
+        "summary": "R22 is a SHOULD performance target, but M5 exit criteria makes it effectively mandatory for milestone completion (“< 500 ms for 1,000 notes”). This is a priority/commitment mismatch that may unintentionally elevate scope or cause schedule risk.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "R22",
+            "json_pointer": "/plan_package/requirements/21/priority",
+            "note": "R22 is prioritized as SHOULD.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "SHOULD"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "M5",
+            "json_pointer": "/plan_package/milestones/4/exit_criteria/2",
+            "note": "Exit criteria requires meeting the R22 target.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Search query latency < 500 ms for 1,000-note fixture on reference hardware."
+          }
+        ],
+        "routing_target": "plan_candidate_B2B_v1"
+      },
+      {
+        "id": "CS4",
+        "severity": "low",
+        "summary": "Privacy-guard scope is described more specifically in DEC3 (explicitly excludes private notes from the search index), but DL6 only states “prevents emission” without explicitly enumerating all downstream artifacts (e.g., search index). This is a minor semantic mismatch that could lead to incomplete implementation if interpreted narrowly.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "DEC3",
+            "json_pointer": "/plan_package/decision_log/2/choice",
+            "note": "DEC3 explicitly calls out search index exclusion.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "...excludes matching notes from all output, including the search index."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "DL6",
+            "json_pointer": "/plan_package/milestones/0/deliverables/5/text",
+            "note": "DL6 does not explicitly mention search index or other derived artifacts.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "...prevents emission of notes marked as private..."
+          }
+        ],
+        "routing_target": "plan_candidate_B2B_v1"
+      },
+      {
+        "id": "CS001",
+        "severity": "high",
+        "summary": "Risk K8 mitigation defined in plan (DL6/M1) but canonical risk register shows mitigation as null, creating inconsistency between plan and risk artifact.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "DL6",
+            "json_pointer": "/plan_package/milestones/0/deliverables/5",
+            "note": "M1 deliverable defines privacy guard as K8 mitigation.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Build-time privacy guard: mandatory check that prevents emission of notes marked as private"
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K8",
+            "json_pointer": "/risk_register/7/mitigation",
+            "note": "Canonical risk register shows K8 mitigation as null.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "risk_gov_canonical_v1"
+      },
+      {
+        "id": "CS002",
+        "severity": "medium",
+        "summary": "Decision DEC3 references K8 mitigation but the canonical risk register K8 entry has no mitigation field populated, creating a forward reference to non-existent data.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "DEC3",
+            "json_pointer": "/plan_package/decision_log/2",
+            "note": "Decision claims to mitigate K8 with privacy guard.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Implement a mandatory build-time privacy guard in M1"
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K8",
+            "json_pointer": "/risk_register/7/mitigation",
+            "note": "K8 mitigation is null in canonical artifact.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "risk_gov_canonical_v1"
+      },
+      {
+        "id": "CS003",
+        "severity": "medium",
+        "summary": "Synthesis warning W1 states K8 has no mitigation in canonical risk register and candidate adds DL6, but this creates a plan-vs-canonical inconsistency that should be resolved before plan approval.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "W1",
+            "json_pointer": "/plan_package/synthesis_warnings/0",
+            "note": "Warning acknowledges K8 mitigation gap and candidate's addition of DL6.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Risk K8 (critical data leakage) has no mitigation defined in the canonical risk register"
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K8",
+            "json_pointer": "/risk_register/7",
+            "note": "K8 is critical severity with null mitigation.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "risk_gov_canonical_v1"
+      },
+      {
+        "id": "CS004",
+        "severity": "medium",
+        "summary": "Risk K6 (malformed YAML) has null mitigation in canonical risk register; plan references handling in M3/DL14 but does not formally link DL14 as K6 mitigation, leaving mitigation ownership unclear.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "W2",
+            "json_pointer": "/plan_package/synthesis_warnings/1",
+            "note": "Warning notes K6 has no mitigation and suggests M3/DL14 should handle it.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Risk K6 (malformed YAML front matter) has no mitigation defined"
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K6",
+            "json_pointer": "/risk_register/5/mitigation",
+            "note": "K6 mitigation is null.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "DL14",
+            "json_pointer": "/plan_package/milestones/2/deliverables/3",
+            "note": "DL14 describes tag extraction plugin but does not explicitly claim to mitigate K6.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Metadata & Tag Extraction Plugin (C12) supporting YAML front matter tags"
+          }
+        ],
+        "routing_target": "risk_gov_canonical_v1"
+      },
+      {
+        "id": "CS005",
+        "severity": "low",
+        "summary": "Milestone M1 exit criteria references 'Tech Lead (HITL gate)' approval for plugin API spec, but governance hitl_policy approval_roles list does not explicitly define 'Tech Lead' role responsibilities or authority scope.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/exit_criteria/2",
+            "note": "Exit criterion requires Tech Lead approval.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Plugin API spec reviewed and approved by Tech Lead (HITL gate)"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": null,
+            "json_pointer": "/plan_package/governance/hitl_policy/approval_roles",
+            "note": "Approval roles list includes Tech Lead but no role definition provided.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "plan_candidate_B2B_v1"
+      },
+      {
+        "id": "CS006",
+        "severity": "low",
+        "summary": "Decision DEC7 defers COULD requirements R23-R27 to future backlog milestone, but no backlog milestone is defined in the milestones array, leaving future scope ambiguous.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "DEC7",
+            "json_pointer": "/plan_package/decision_log/6",
+            "note": "Decision defers COULD requirements to future backlog milestone.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Defer to a future backlog milestone"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": null,
+            "json_pointer": "/plan_package/milestones",
+            "note": "Milestones array contains M1-M6 only; no backlog milestone defined.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "plan_candidate_B2B_v1"
+      }
+    ]
+  }
+}

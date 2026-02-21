@@ -11,6 +11,7 @@ from pydantic import BaseModel, ConfigDict
 from council_os.orchestrator.engine import Engine
 from council_os.orchestrator.feedback.gates import NeedsUserInput
 from council_os.orchestrator.hq_pipeline import HQPipeline
+from council_os.utils import storage_root_from_config
 
 
 class RunRequest(BaseModel):
@@ -24,23 +25,6 @@ class InterruptResponseRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     response: dict[str, Any]
-
-
-def _storage_root_from_config(config_path: Path) -> Path:
-    raw = yaml.safe_load(config_path.read_text(encoding="utf-8"))
-    runtime = raw.get("runtime", {}) if isinstance(raw, dict) else {}
-    artifacts = runtime.get("artifacts", {}) if isinstance(runtime, dict) else {}
-    store_dir = artifacts.get("store_dir") if isinstance(artifacts, dict) else None
-    if isinstance(store_dir, str) and store_dir:
-        base = store_dir.replace("{{run_id}}", "").replace("{run_id}", "")
-        base = base.rstrip("/\\")
-        if base.endswith("artifacts"):
-            base = str(Path(base).parent)
-        base_path = Path(base) if base else Path(".")
-        if not base_path.is_absolute():
-            base_path = (config_path.parent / base_path).resolve()
-        return base_path
-    return Path(str(raw.get("storage_root", "CouncilOS/runs")))
 
 
 def _resolve_run_root(run_id: str, storage_root: Path) -> Path:
@@ -64,7 +48,7 @@ def create_app(storage_root: Path = Path("CouncilOS/runs")) -> FastAPI:
         config_path = Path(req.config_path)
         config_raw = config_path.read_text(encoding="utf-8")
         config = yaml.safe_load(config_raw)
-        resolved_root = _storage_root_from_config(config_path)
+        resolved_root = storage_root_from_config(config_path)
         if isinstance(config, dict) and config.get("stages") and config.get("models") and config.get("providers"):
             pipeline = HQPipeline(
                 storage_root=resolved_root,

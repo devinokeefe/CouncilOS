@@ -1,16 +1,11 @@
 from __future__ import annotations
 
-import json
 import shutil
 from pathlib import Path
 from typing import Any
 
 from council_os.handoff.hashing import artifact_hash
-from council_os.orchestrator.feedback.utils import stable_json_dumps
-
-
-def _load_json(path: Path) -> dict[str, Any]:
-    return json.loads(path.read_text(encoding="utf-8"))
+from council_os.utils import load_json, write_json
 
 
 def copy_with_provenance(inputs: dict[str, Path], dest_root: Path) -> dict[str, Path]:
@@ -24,10 +19,10 @@ def copy_with_provenance(inputs: dict[str, Path], dest_root: Path) -> dict[str, 
         shutil.copyfile(src, dest)
         provenance[dest.name] = {
             "source_path": str(src),
-            "source_sha256": artifact_hash(_load_json(src)),
+            "source_sha256": artifact_hash(load_json(src)),
         }
         copied[label] = dest
 
     provenance_path = dest_root / "provenance.json"
-    provenance_path.write_text(stable_json_dumps(provenance), encoding="utf-8")
+    write_json(provenance_path, provenance)
     return copied

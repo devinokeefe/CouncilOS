@@ -1,0 +1,517 @@
+{
+  "artifact_type": "risk_gov_merge",
+  "artifact_id": "risk_gov_merge_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:02:46.417320Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "requirements_draft_1_v1",
+    "requirements_draft_2_v1",
+    "architecture_draft_1_v1",
+    "architecture_draft_2_v1",
+    "qa_templates_draft_1_v1",
+    "qa_templates_draft_2_v1",
+    "risk_gov_draft_1_v1",
+    "risk_gov_draft_2_v1"
+  ],
+  "payload": {
+    "risk_register": [
+      {
+        "id": "RISK_U_1",
+        "severity": "high",
+        "description": "Link/backlink resolution errors due to ambiguous or mixed internal link syntax (e.g., Markdown links vs. WikiLinks), causing broken navigation and incorrect backlink lists (blocking Q1).",
+        "mitigation": {
+          "text": "Resolve and document the supported internal link syntax (Q1). Implement a single canonical internal link model (normalized target IDs) with deterministic resolution rules. Add fixture-based tests for edge cases (relative paths, anchors, URL-encoding, renamed files). Emit build warnings for unresolved links including source locations.",
+          "owner": "Engineering",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_1",
+          "RISK_B_02"
+        ]
+      },
+      {
+        "id": "RISK_U_2",
+        "severity": "high",
+        "description": "Tag extraction inconsistency due to unspecified or mixed tag formats (frontmatter vs inline tags; nested tags), leading to missing/incorrect tag pages and filtering (blocking Q2).",
+        "mitigation": {
+          "text": "Resolve and document the tag specification (Q2). Implement a deterministic tag parser with explicit precedence rules and validation (report invalid tokens). Produce a build-time summary/tag inventory and add tests for the chosen formats (frontmatter, inline, optional nested).",
+          "owner": "Product/Engineering",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_2",
+          "RISK_B_04"
+        ]
+      },
+      {
+        "id": "RISK_U_3",
+        "severity": "critical",
+        "description": "Client-side XSS or content injection vulnerabilities if Markdown/HTML is rendered unsafely (e.g., raw HTML passthrough, unsafe link protocols), compromising readers of the static site.",
+        "mitigation": {
+          "text": "Disable raw HTML by default (or sanitize it) in the renderer; block unsafe URL schemes (e.g., javascript:) and enforce safe attributes. Add security tests with known XSS payloads. If allowing trusted raw HTML, require explicit opt-in configuration and document the risk.",
+          "owner": "Security/Engineering",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_3"
+        ]
+      },
+      {
+        "id": "RISK_U_4",
+        "severity": "high",
+        "description": "Client-side search index size/quality/performance may degrade at scale (large JS payload, slow queries, long build time), causing poor UX or crashes (related to Q3/SM7).",
+        "mitigation": {
+          "text": "Define expected scale and performance targets (Q3). Choose an index approach suitable for in-browser search; apply index-size controls (tokenization choices, compression, lazy loading/chunking where applicable). Add benchmark fixtures and CI performance budgets; validate search quality targets against representative queries.",
+          "owner": "Engineering",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_4",
+          "RISK_B_03"
+        ]
+      },
+      {
+        "id": "RISK_U_5",
+        "severity": "medium",
+        "description": "Slug/URL collisions (e.g., same filename in different folders, case-insensitive filesystems) cause pages to overwrite each other or links to resolve unpredictably.",
+        "mitigation": {
+          "text": "Define a deterministic slug strategy (include path segments and/or stable hashing). Detect collisions during build and fail with actionable errors unless an explicit override map is provided.",
+          "owner": "Engineering",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_5"
+        ]
+      },
+      {
+        "id": "RISK_U_6",
+        "severity": "high",
+        "description": "Non-deterministic builds (ordering differences, locale/time-dependent formatting, unpinned dependencies) produce noisy diffs and inconsistent site output across machines/CI.",
+        "mitigation": {
+          "text": "Enforce determinism: stable sorting of inputs, fixed locale/timezone handling, content-hash-based asset naming, and pinned dependency versions/lockfiles. Add a reproducibility check comparing outputs across two clean runs.",
+          "owner": "Engineering",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_6"
+        ]
+      },
+      {
+        "id": "RISK_U_7",
+        "severity": "high",
+        "description": "Markdown flavor/extension mismatch or unsupported/non-standard syntax yields rendering differences, broken formatting, or build failures relative to user expectations.",
+        "mitigation": {
+          "text": "Select and document a supported Markdown flavor and extensions (e.g., CommonMark baseline with explicit GFM extensions if supported). Add a conformance test pack with representative notes, robust error handling, and a strict mode that flags unsupported syntax.",
+          "owner": "Product/Engineering",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_7",
+          "RISK_B_01"
+        ]
+      },
+      {
+        "id": "RISK_U_8",
+        "severity": "medium",
+        "description": "File encoding and Unicode handling issues (non-UTF8, BOM, mixed line endings) cause build failures or corrupted output text/search results.",
+        "mitigation": {
+          "text": "Assume UTF-8 by default but detect/handle BOM and common encodings where feasible. Normalize line endings internally. Emit clear diagnostics identifying offending files and provide a preflight validation command.",
+          "owner": "Engineering",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_8"
+        ]
+      },
+      {
+        "id": "RISK_U_9",
+        "severity": "high",
+        "description": "Path traversal or unintended file inclusion during ingestion (e.g., following symlinks, reading outside the intended directory) could leak local files into the generated site.",
+        "mitigation": {
+          "text": "Constrain ingestion to a declared root directory; default to not following symlinks; maintain an allowlist of file extensions. Reject paths escaping the root and generate an inclusion manifest for review.",
+          "owner": "Security/Engineering",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_9"
+        ]
+      },
+      {
+        "id": "RISK_U_10",
+        "severity": "medium",
+        "description": "Backlink computation gaps for links with anchors, URL-encoded paths, or inconsistent normalization lead to partially missing backlink lists.",
+        "mitigation": {
+          "text": "Normalize link targets consistently (decode, resolve relative paths, standardize/strip anchors where appropriate) and test anchor links and encoded characters. Ensure link resolution uses the same canonicalization used for URL/slug generation.",
+          "owner": "Engineering",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_10"
+        ]
+      },
+      {
+        "id": "RISK_U_11",
+        "severity": "medium",
+        "description": "Broken offline/local viewing when opened via file:// due to browser restrictions (e.g., fetch/XHR blocked), especially impacting search and other JS features.",
+        "mitigation": {
+          "text": "Design search/runtime to work on static hosts; for local preview, provide guidance to run a simple local server. Optionally embed the index into a JS bundle to avoid runtime fetch, or detect file:// and show instructions.",
+          "owner": "Engineering/Docs",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_11",
+          "RISK_B_10"
+        ]
+      },
+      {
+        "id": "RISK_U_12",
+        "severity": "medium",
+        "description": "Asset/link path resolution issues (broken relative paths, missing CSS/JS, incorrect base URL) can cause the site to work locally but fail when deployed under a subpath (e.g., GitHub Pages), and/or break nested-directory links/images.",
+        "mitigation": {
+          "text": "Support configurable basePath and generate links/assets relative to it. Establish a clear rule for resolving relative paths for notes and assets in nested directories. Add deployment-mode tests (non-root basePath) and nested-content fixtures with link/asset checks over the output.",
+          "owner": "Engineering",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_12",
+          "RISK_B_11"
+        ]
+      },
+      {
+        "id": "RISK_U_13",
+        "severity": "medium",
+        "description": "Excessive memory usage or slow build times on large repositories (including inefficient backlink generation) can cause build failures/timeouts in CI or on user machines.",
+        "mitigation": {
+          "text": "Profile CPU/memory usage; stream where possible; avoid loading all contents at once; optimize link-graph/backlink computation; implement caching/incremental indexing where feasible. Provide configurable limits (max file size, exclude globs) and a performance troubleshooting guide.",
+          "owner": "Engineering",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_13",
+          "RISK_B_06",
+          "RISK_B_08"
+        ]
+      },
+      {
+        "id": "RISK_U_14",
+        "severity": "high",
+        "description": "Incorrect incremental rebuild/watch behavior (if implemented) can lead to stale search index/backlinks after edits, renames, or deletes, confusing users.",
+        "mitigation": {
+          "text": "If watch mode is offered, implement a dependency graph so edits trigger recomputation of affected pages, backlinks, and search index. Provide a 'full rebuild' fallback and add tests for edit/rename/delete scenarios.",
+          "owner": "Engineering",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_14"
+        ]
+      },
+      {
+        "id": "RISK_U_15",
+        "severity": "medium",
+        "description": "Cross-browser compatibility and accessibility issues in generated HTML/CSS/JS (including search UI) may lead to runtime errors or reduced usability for some readers (SM6).",
+        "mitigation": {
+          "text": "Define target browsers and test across them. Adopt baseline accessibility guidelines for templates/components (semantic HTML, focus management, ARIA where needed). Add at least one automated audit step (e.g., Lighthouse/axe) plus manual spot checks.",
+          "owner": "Engineering/Design",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_15",
+          "RISK_B_09"
+        ]
+      },
+      {
+        "id": "RISK_U_16",
+        "severity": "medium",
+        "description": "Overly permissive configuration or plugin/theme extensibility (if added) can introduce instability and make outputs hard to support/reproduce.",
+        "mitigation": {
+          "text": "Keep configuration surface minimal initially; validate configuration schemas; version configurations; gate plugin execution behind explicit allowlists and warnings. Provide a safe default preset and a compatibility policy.",
+          "owner": "Product/Engineering",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_16"
+        ]
+      },
+      {
+        "id": "RISK_U_17",
+        "severity": "medium",
+        "description": "Information disclosure via generated artifacts (e.g., including private notes, embedding absolute filesystem paths in HTML/JS/search index).",
+        "mitigation": {
+          "text": "Support exclude patterns (globs) and a 'private' frontmatter flag. Ensure generated output never includes absolute source paths (use relative identifiers only). Emit a build manifest listing included sources for review.",
+          "owner": "Engineering",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_17"
+        ]
+      },
+      {
+        "id": "RISK_U_18",
+        "severity": "high",
+        "description": "Poorly managed third-party dependencies (e.g., Markdown parser, search indexer/SSG plugins) may introduce breaking changes or security vulnerabilities that destabilize the tool.",
+        "mitigation": {
+          "text": "Pin dependency versions and use a lockfile. Establish a dependency update/vetting process including automated vulnerability scanning and regression testing before upgrades.",
+          "owner": "Engineering",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_B_05"
+        ]
+      },
+      {
+        "id": "RISK_U_19",
+        "severity": "medium",
+        "description": "A complex installation process or system-specific dependencies for the CLI tool can create a high barrier to entry for users.",
+        "mitigation": {
+          "text": "Target a simple installation path (e.g., a single package manager). Document prerequisites clearly; minimize system-specific dependencies; consider producing distributable bundles where feasible.",
+          "owner": "Engineering",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_B_07"
+        ]
+      },
+      {
+        "id": "RISK_U_20",
+        "severity": "low",
+        "description": "Scope creep from undefined secondary features (e.g., graph views, themes) could divert resources from core goals and delay delivery.",
+        "mitigation": {
+          "text": "Prioritize core features for MVP; defer optional features until after MVP and track them as distinct work items with explicit approval before implementation.",
+          "owner": "Product",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_B_12"
+        ]
+      }
+    ],
+    "tool_policy": {
+      "stage_policies": [
+        {
+          "stage": "Intake",
+          "allowlisted_tools": [
+            "artifact_read",
+            "artifact_write"
+          ],
+          "restrictions": [
+            {
+              "tool": "artifact_read",
+              "rule": "provided_artifacts_only",
+              "notes": "Read only the artifacts explicitly provided in inputs/artifact_refs; no external sources."
+            },
+            {
+              "tool": "artifact_write",
+              "rule": "write_required_outputs_only",
+              "allowed_artifacts": [
+                "audit_spine",
+                "intake_notes"
+              ],
+              "notes": "Artifact writes limited to intake governance outputs for traceability."
+            }
+          ],
+          "hitl_triggers": [
+            "Blocking specification decisions are required but missing (Q1 internal link syntax; Q2 tag representation).",
+            "Any request to expand scope beyond the static-site constraint."
+          ]
+        },
+        {
+          "stage": "Generate",
+          "allowlisted_tools": [
+            "artifact_read",
+            "artifact_write"
+          ],
+          "restrictions": [
+            {
+              "tool": "artifact_read",
+              "rule": "provided_artifacts_only",
+              "notes": "Do not use external web browsing or non-provided sources."
+            },
+            {
+              "tool": "artifact_write",
+              "rule": "planning_only_no_execution_claims",
+              "notes": "Drafting/planning only; do not execute code, access network, or claim runtime validation."
+            },
+            {
+              "tool": "artifact_write",
+              "rule": "no_secrets_or_local_paths",
+              "notes": "Do not include credentials/tokens or absolute filesystem paths in outputs."
+            }
+          ],
+          "hitl_triggers": [
+            "Proposed solution requires server-side runtime for browsing/search/tags/backlinks (violates static constraint).",
+            "Proposed Markdown rendering enables raw/unsanitized HTML or unsafe URL schemes without explicit mitigation."
+          ]
+        },
+        {
+          "stage": "Validate",
+          "allowlisted_tools": [
+            "artifact_read",
+            "artifact_write"
+          ],
+          "restrictions": [
+            {
+              "tool": "artifact_write",
+              "rule": "validation_outputs_only",
+              "allowed_artifacts": [
+                "validation_notes",
+                "risk_checks"
+              ],
+              "notes": "Write only checklists/findings; do not introduce major scope changes during validation."
+            }
+          ],
+          "hitl_triggers": [
+            "Security-sensitive findings (e.g., XSS risk) lack a concrete mitigation.",
+            "Performance/scale targets remain undefined while performance-sensitive features are being committed."
+          ]
+        },
+        {
+          "stage": "Review",
+          "allowlisted_tools": [
+            "artifact_read",
+            "artifact_write"
+          ],
+          "restrictions": [
+            {
+              "tool": "artifact_write",
+              "rule": "write_required_outputs_only",
+              "allowed_artifacts": [
+                "review_findings",
+                "audit_spine"
+              ],
+              "notes": "Review must be able to write findings and update the audit spine."
+            },
+            {
+              "tool": "artifact_write",
+              "rule": "no_untracked_decisions",
+              "notes": "Any decision affecting link/tag spec, security posture, or hosting assumptions must be logged in review_findings."
+            }
+          ],
+          "hitl_triggers": [
+            "Any acceptance of high/critical risks without explicit signoff rationale.",
+            "Any change to blocking questions (Q1/Q2) without stakeholder approval."
+          ]
+        },
+        {
+          "stage": "Judge",
+          "allowlisted_tools": [
+            "artifact_read",
+            "artifact_write"
+          ],
+          "restrictions": [
+            {
+              "tool": "artifact_write",
+              "rule": "decision_record_only",
+              "allowed_artifacts": [
+                "governance_decision",
+                "risk_acceptance_log"
+              ],
+              "notes": "Record accept/mitigate decisions only; no new features introduced."
+            }
+          ],
+          "hitl_triggers": [
+            "Any critical risk remains unmitigated.",
+            "Unresolved blocking questions remain (Q1 or Q2)."
+          ]
+        },
+        {
+          "stage": "Freeze",
+          "allowlisted_tools": [
+            "artifact_read",
+            "artifact_write"
+          ],
+          "restrictions": [
+            {
+              "tool": "artifact_write",
+              "rule": "freeze_outputs_only",
+              "allowed_artifacts": [
+                "frozen_risk_register",
+                "frozen_tool_policy"
+              ],
+              "notes": "Freeze produces locked governance artifacts; edits require a new run."
+            }
+          ],
+          "hitl_triggers": [
+            "Any attempt to modify frozen artifacts without a formal change request."
+          ]
+        }
+      ]
+    },
+    "hitl_policy": {
+      "when_to_interrupt": [
+        "Blocking specification decisions are required (Q1 internal link syntax; Q2 tag representation) and are not provided.",
+        "Any proposal that violates the static-site constraint (requires a server/database at runtime).",
+        "Any security-sensitive behavior is proposed (raw HTML passthrough, unsanitized rendering, unsafe URL schemes) without an explicit mitigation and reviewer approval.",
+        "Any high/critical risk is proposed for acceptance rather than mitigation, or is accepted without explicit signoff rationale.",
+        "Any ingestion behavior could read outside the intended directory (symlinks/path traversal) without explicit user confirmation.",
+        "On repeated failures to pass critical path test cases.",
+        "Before making significant architectural changes or adding new major dependencies.",
+        "When a generated solution deviates from the defined project capsule requirements.",
+        "Upon detection of a high-severity security vulnerability in code or dependencies."
+      ],
+      "approval_roles": [
+        "Product Owner",
+        "Product Manager",
+        "Tech Lead",
+        "Engineering Lead",
+        "Security Reviewer",
+        "Security Analyst"
+      ]
+    },
+    "taxonomy_categories": [
+      "Ingestion & Filesystem Safety",
+      "Markdown Parsing & Rendering",
+      "Link Graph (Forward Links, Backlinks, Anchors)",
+      "Tags & Metadata Extraction",
+      "Search Indexing & Query UX",
+      "Build Determinism & Reproducibility",
+      "Deployment & Base Path/Hosting Compatibility",
+      "Performance & Resource Consumption",
+      "Security (XSS/Injection/Unsafe URLs)",
+      "Privacy & Information Disclosure",
+      "Cross-Browser Compatibility",
+      "Accessibility & UI Quality",
+      "Data Processing Error",
+      "Code Generation Error",
+      "Build Process Failure",
+      "Performance Degradation",
+      "Dependency and Environment Issue",
+      "Output Rendering and Formatting Error",
+      "Security Vulnerability",
+      "Usability and Accessibility Failure",
+      "Parsing and Ingestion Error"
+    ],
+    "merge_log": [
+      "Merged link syntax ambiguity risks -> RISK_U_1. evidence: [{\"artifact_ref\":\"risk_gov_draft_1_v1\",\"entity_id\":\"RISK_A_1\",\"json_pointer\":\"/inputs/risk_drafts/0/risk_register/0\"},{\"artifact_ref\":\"risk_gov_draft_2_v1\",\"entity_id\":\"RISK_B_02\",\"json_pointer\":\"/inputs/risk_drafts/1/risk_register/1\"}]",
+      "Merged tag format/spec risks -> RISK_U_2. evidence: [{\"artifact_ref\":\"risk_gov_draft_1_v1\",\"entity_id\":\"RISK_A_2\",\"json_pointer\":\"/inputs/risk_drafts/0/risk_register/1\"},{\"artifact_ref\":\"risk_gov_draft_2_v1\",\"entity_id\":\"RISK_B_04\",\"json_pointer\":\"/inputs/risk_drafts/1/risk_register/3\"}]",
+      "Kept XSS/content injection risk as standalone -> RISK_U_3. evidence: [{\"artifact_ref\":\"risk_gov_draft_1_v1\",\"entity_id\":\"RISK_A_3\",\"json_pointer\":\"/inputs/risk_drafts/0/risk_register/2\"}]",
+      "Merged search index scale/perf risks -> RISK_U_4. evidence: [{\"artifact_ref\":\"risk_gov_draft_1_v1\",\"entity_id\":\"RISK_A_4\",\"json_pointer\":\"/inputs/risk_drafts/0/risk_register/3\"},{\"artifact_ref\":\"risk_gov_draft_2_v1\",\"entity_id\":\"RISK_B_03\",\"json_pointer\":\"/inputs/risk_drafts/1/risk_register/2\"}]",
+      "Merged local file:// runtime restriction risks -> RISK_U_11. evidence: [{\"artifact_ref\":\"risk_gov_draft_1_v1\",\"entity_id\":\"RISK_A_11\",\"json_pointer\":\"/inputs/risk_drafts/0/risk_register/10\"},{\"artifact_ref\":\"risk_gov_draft_2_v1\",\"entity_id\":\"RISK_B_10\",\"json_pointer\":\"/inputs/risk_drafts/1/risk_register/9\"}]",
+      "Merged deployment basePath + nested relative path issues -> RISK_U_12. evidence: [{\"artifact_ref\":\"risk_gov_draft_1_v1\",\"entity_id\":\"RISK_A_12\",\"json_pointer\":\"/inputs/risk_drafts/0/risk_register/11\"},{\"artifact_ref\":\"risk_gov_draft_2_v1\",\"entity_id\":\"RISK_B_11\",\"json_pointer\":\"/inputs/risk_drafts/1/risk_register/10\"}]",
+      "Merged large-repo resource/performance risks (incl. backlink algorithm efficiency) -> RISK_U_13. evidence: [{\"artifact_ref\":\"risk_gov_draft_1_v1\",\"entity_id\":\"RISK_A_13\",\"json_pointer\":\"/inputs/risk_drafts/0/risk_register/12\"},{\"artifact_ref\":\"risk_gov_draft_2_v1\",\"entity_id\":\"RISK_B_06\",\"json_pointer\":\"/inputs/risk_drafts/1/risk_register/5\"},{\"artifact_ref\":\"risk_gov_draft_2_v1\",\"entity_id\":\"RISK_B_08\",\"json_pointer\":\"/inputs/risk_drafts/1/risk_register/7\"}]",
+      "Merged cross-browser + accessibility coverage into single risk -> RISK_U_15. evidence: [{\"artifact_ref\":\"risk_gov_draft_1_v1\",\"entity_id\":\"RISK_A_15\",\"json_pointer\":\"/inputs/risk_drafts/0/risk_register/14\"},{\"artifact_ref\":\"risk_gov_draft_2_v1\",\"entity_id\":\"RISK_B_09\",\"json_pointer\":\"/inputs/risk_drafts/1/risk_register/8\"}]",
+      "Consolidated tool_policy by taking draft_1 as baseline (conservative, artifact-only) and removing draft_2 permissive tool entries (code_interpreter/file_system_access/web_browser). evidence: [{\"artifact_ref\":\"risk_gov_draft_1_v1\",\"entity_id\":null,\"json_pointer\":\"/inputs/risk_drafts/0/tool_policy\"},{\"artifact_ref\":\"risk_gov_draft_2_v1\",\"entity_id\":null,\"json_pointer\":\"/inputs/risk_drafts/1/tool_policy\"}]",
+      "Consolidated HITL policy by unioning interrupt conditions and approval roles, keeping explicit triggers for Q1/Q2, static-site constraint, and security posture. evidence: [{\"artifact_ref\":\"risk_gov_draft_1_v1\",\"entity_id\":null,\"json_pointer\":\"/inputs/risk_drafts/0/hitl_policy\"},{\"artifact_ref\":\"risk_gov_draft_2_v1\",\"entity_id\":null,\"json_pointer\":\"/inputs/risk_drafts/1/hitl_policy\"}]"
+    ]
+  }
+}

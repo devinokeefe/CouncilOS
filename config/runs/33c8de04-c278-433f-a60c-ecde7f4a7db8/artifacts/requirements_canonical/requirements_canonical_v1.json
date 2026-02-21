@@ -1,0 +1,233 @@
+{
+  "artifact_type": "requirements_canonical",
+  "artifact_id": "requirements_canonical_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T11:59:56.311496Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "requirements_merge_v1"
+  ],
+  "payload": {
+    "requirements": [
+      {
+        "id": "R1",
+        "priority": "MUST",
+        "text": "The system MUST accept a user-specified folder (or repository working directory) as input and recursively discover Markdown (.md) files to form the notes corpus.",
+        "rationale": "Core workflow requires ingesting a directory of Markdown notes to generate the site."
+      },
+      {
+        "id": "R2",
+        "priority": "MUST",
+        "text": "The system MUST generate a static website output consisting only of static files (HTML/CSS/JS/assets) that can be hosted or viewed without any required server-side runtime for browsing, search, tags, or backlinks.",
+        "rationale": "Static-only output is a hard constraint and aligns with the non-goal of requiring a backend at runtime."
+      },
+      {
+        "id": "R3",
+        "priority": "MUST",
+        "text": "The system MUST parse and render each input Markdown file into a corresponding static HTML page while preserving Markdown formatting and structure (e.g., headings, lists, code blocks, emphasis, links; and commonly used elements such as images and tables when supported by the selected flavor).",
+        "rationale": "Readable output requires faithful Markdown-to-HTML rendering consistent with the project’s chosen Markdown flavor."
+      },
+      {
+        "id": "R4",
+        "priority": "MUST",
+        "text": "The system MUST produce one distinct, navigable page per input note, with each page having a stable URL derived deterministically from the note’s path/filename and/or a frontmatter-defined slug.",
+        "rationale": "Stable per-note pages are necessary for browsing, deep linking, and consistent forward links/backlinks."
+      },
+      {
+        "id": "R5",
+        "priority": "MUST",
+        "text": "The system MUST build a client-side full-text search index at generation time and provide an in-browser search UI that searches across all note contents (and titles where available) without a server.",
+        "rationale": "Full-text search is a primary goal and must operate entirely in the browser to satisfy the static-site constraint."
+      },
+      {
+        "id": "R6",
+        "priority": "SHOULD",
+        "text": "The search UI SHOULD display a results list including each matching note’s title (or filename) and a snippet and/or highlighted match context; selecting a result SHOULD navigate to the corresponding note page.",
+        "rationale": "Improves search usability and supports practical discoverability at scale."
+      },
+      {
+        "id": "R7",
+        "priority": "MUST",
+        "text": "The system MUST extract tags from notes using a specified, consistent convention and expose tag-based browsing/filtering in the generated site.",
+        "rationale": "Tags are a stated goal; consistent parsing is required for reliable tag navigation."
+      },
+      {
+        "id": "R8",
+        "priority": "MUST",
+        "text": "The generated site MUST provide a per-tag navigation experience such that each tag has a listing of all notes containing that tag (e.g., tag pages and/or tag filters).",
+        "rationale": "Makes tags actionable for navigation and supports the tag browsing goal."
+      },
+      {
+        "id": "R9",
+        "priority": "MUST",
+        "text": "The system MUST detect forward links between notes based on a specified internal link syntax and render those links as clickable navigational elements in output pages.",
+        "rationale": "Forward link rendering is required for cross-note navigation and is prerequisite for backlink computation."
+      },
+      {
+        "id": "R10",
+        "priority": "MUST",
+        "text": "The system MUST compute backlinks for each note by analyzing the corpus link graph and render a backlinks section on each note page listing all notes that link to it.",
+        "rationale": "Backlinks are a core requirement and a key differentiator for navigability."
+      },
+      {
+        "id": "R11",
+        "priority": "MUST",
+        "text": "The system MUST be invocable as an offline build step via a command-line interface (CLI) that accepts at minimum an input directory path and an output directory path, and core generation MUST NOT require network access.",
+        "rationale": "Aligns with the intended workflow (local build) and supports static hosting without backend dependencies."
+      },
+      {
+        "id": "R12",
+        "priority": "SHOULD",
+        "text": "The build process SHOULD provide clear error reporting for invalid Markdown, unresolvable internal links, or tag parsing failures, including file paths and line/position where applicable.",
+        "rationale": "Improves maintainability and reduces friction when scaling to large note corpora."
+      },
+      {
+        "id": "R13",
+        "priority": "MUST",
+        "text": "The generated site MUST function in modern browsers (Chrome, Firefox, Safari, Edge) with core features (navigation, search, tag browsing, backlinks) working without runtime errors.",
+        "rationale": "Cross-browser functionality is an explicit success metric for the generated static site."
+      },
+      {
+        "id": "R14",
+        "priority": "SHOULD",
+        "text": "The system SHOULD support configuration of the Markdown flavor, internal link syntax, and tag conventions used for parsing and site generation.",
+        "rationale": "Key conventions are open questions; configurability helps avoid overpromising universal compatibility while allowing explicit selection."
+      },
+      {
+        "id": "R15",
+        "priority": "SHOULD",
+        "text": "The system SHOULD support CommonMark as a baseline Markdown flavor and SHOULD additionally support GitHub-Flavored Markdown (GFM) extensions such as tables, task lists, and strikethrough, with the exact flavor finalized based on the project’s selected conventions.",
+        "rationale": "Establishes a concrete baseline for Markdown processing while allowing finalization per the project’s link/flavor decisions."
+      },
+      {
+        "id": "R16",
+        "priority": "SHOULD",
+        "text": "The system SHOULD support wiki-link style inter-note links (e.g., [[Note Title]]) in addition to standard Markdown links, with the exact syntax finalized based on the project’s chosen link convention.",
+        "rationale": "Wiki-links are common in note-taking tools and broaden compatibility, but exact syntax is an open question."
+      },
+      {
+        "id": "R17",
+        "priority": "SHOULD",
+        "text": "The system SHOULD include a site-wide navigation structure with at minimum (a) an index/home page listing all notes and (b) a tag index page listing all tags.",
+        "rationale": "Improves discoverability and makes the generated site easier to browse."
+      },
+      {
+        "id": "R18",
+        "priority": "SHOULD",
+        "text": "The system SHOULD support extracting tags from both YAML frontmatter and inline #tag syntax, with an option to configure which sources are used, aligned with the project’s selected tag convention.",
+        "rationale": "Supports compatibility with different tagging styles; details depend on the project’s tag representation decision."
+      },
+      {
+        "id": "R19",
+        "priority": "MUST",
+        "text": "Search results MUST meet the defined search quality target: at least 90% of predefined representative queries return the expected note within the top 10 results.",
+        "rationale": "Codifies the stated search success metric as a verifiable requirement."
+      },
+      {
+        "id": "R20",
+        "priority": "MUST",
+        "text": "Tag navigation MUST be complete: 100% of notes containing tags in the dataset MUST appear under their corresponding tag pages or filters in the generated site.",
+        "rationale": "Codifies the tag correctness success metric as a verifiable requirement."
+      },
+      {
+        "id": "R21",
+        "priority": "MUST",
+        "text": "Backlink rendering MUST be correct: for a test set of interlinked notes, 100% of expected backlinks MUST appear on their target note pages.",
+        "rationale": "Codifies the backlink correctness success metric as a verifiable requirement."
+      },
+      {
+        "id": "R22",
+        "priority": "MUST",
+        "text": "The build process MUST complete without errors on a representative notes folder and produce a valid set of static files.",
+        "rationale": "Codifies the baseline build success metric required before other features can be evaluated."
+      },
+      {
+        "id": "R23",
+        "priority": "SHOULD",
+        "text": "On a representative dataset of 100+ notes, the system SHOULD meet agreed performance targets for generation time and in-browser search responsiveness; these targets SHOULD be defined/documented based on expected scale (e.g., search results within 500ms).",
+        "rationale": "Performance requirements depend on scale, which is not yet fully specified; this ensures explicit targets and validation."
+      },
+      {
+        "id": "R24",
+        "priority": "SHOULD",
+        "text": "The system SHOULD generate a table of contents (outline) for each note page based on its heading structure.",
+        "rationale": "Improves within-note navigation, especially for long notes."
+      },
+      {
+        "id": "R25",
+        "priority": "SHOULD",
+        "text": "The CLI SHOULD provide a watch mode that monitors the input directory for changes and incrementally regenerates affected pages.",
+        "rationale": "Improves the authoring workflow during active note editing and site preview."
+      },
+      {
+        "id": "R26",
+        "priority": "COULD",
+        "text": "The generated site COULD include an interactive graph view visualizing link relationships between notes.",
+        "rationale": "Optional discovery feature; not required for core generation, tags, search, and backlinks."
+      },
+      {
+        "id": "R27",
+        "priority": "COULD",
+        "text": "The system COULD support theming or customizable styling of the generated site via user-provided CSS or theme configuration.",
+        "rationale": "Optional customization feature; not required for core functionality."
+      },
+      {
+        "id": "R28",
+        "priority": "COULD",
+        "text": "Search COULD support advanced features such as fuzzy matching, tag-based filtering, result highlighting, and sorting by relevance.",
+        "rationale": "Optional enhancements to search experience beyond basic full-text search."
+      },
+      {
+        "id": "R29",
+        "priority": "COULD",
+        "text": "The system COULD support nested/hierarchical tags (e.g., #parent/child) and reflect the hierarchy in tag navigation.",
+        "rationale": "Optional capability for complex tag taxonomies; not required for baseline tag browsing."
+      }
+    ],
+    "id_map": {
+      "REQ_U_1": "R1",
+      "REQ_U_2": "R2",
+      "REQ_U_3": "R3",
+      "REQ_U_4": "R4",
+      "REQ_U_5": "R5",
+      "REQ_U_6": "R6",
+      "REQ_U_7": "R7",
+      "REQ_U_8": "R8",
+      "REQ_U_9": "R9",
+      "REQ_U_10": "R10",
+      "REQ_U_11": "R11",
+      "REQ_U_12": "R12",
+      "REQ_U_13": "R13",
+      "REQ_U_14": "R14",
+      "REQ_U_15": "R15",
+      "REQ_U_16": "R16",
+      "REQ_U_17": "R17",
+      "REQ_U_18": "R18",
+      "REQ_U_19": "R19",
+      "REQ_U_20": "R20",
+      "REQ_U_21": "R21",
+      "REQ_U_22": "R22",
+      "REQ_U_23": "R23",
+      "REQ_U_24": "R24",
+      "REQ_U_25": "R25",
+      "REQ_U_26": "R26",
+      "REQ_U_27": "R27",
+      "REQ_U_28": "R28",
+      "REQ_U_29": "R29"
+    },
+    "merge_log": [
+      "Merged overlapping ingest requirements REQ_A_1 + REQ_B_1 into REQ_U_1 (directory input + recursive .md discovery).",
+      "Merged static-output constraints REQ_A_2 + REQ_B_3 into REQ_U_2 (static files only; no server runtime).",
+      "Merged Markdown rendering requirements REQ_A_3 + REQ_B_2 into REQ_U_3 (preserve formatting/structure).",
+      "Kept stable per-note page/URL requirement as REQ_U_4 (from REQ_A_4).",
+      "Merged client-side search index requirements REQ_A_5 + REQ_B_4 into REQ_U_5; kept search results UI detail as REQ_U_6 (from REQ_A_6).",
+      "Merged tag extraction/browsing requirements REQ_A_7 + REQ_B_6 into REQ_U_7; kept per-tag listing requirement as REQ_U_8 (from REQ_A_8).",
+      "Merged forward link detection requirements REQ_A_9 + REQ_B_8 into REQ_U_9; merged backlink computation/display requirements REQ_A_10 + REQ_B_9 into REQ_U_10.",
+      "Merged offline build + CLI invocation requirements REQ_A_11 + REQ_B_11 into REQ_U_11.",
+      "Merged cross-browser requirements REQ_A_13 + REQ_B_13 into REQ_U_13.",
+      "Split configurability vs specific dialect support: REQ_A_14 -> REQ_U_14; REQ_B_14 -> REQ_U_15; REQ_B_15 -> REQ_U_16; REQ_B_19 -> REQ_U_18.",
+      "Preserved success-metric-style MUST statements as testable requirements: REQ_B_5 -> REQ_U_19, REQ_B_7 -> REQ_U_20, REQ_B_10 -> REQ_U_21, REQ_B_12 -> REQ_U_22.",
+      "Merged performance requirements REQ_A_15 + REQ_B_17 into REQ_U_23; kept additional optional features (TOC/watch/graph/themes/advanced search/nested tags) as REQ_U_24..REQ_U_29 with original priorities."
+    ]
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B1A_anchor_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:37:44.552258Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B1A_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B1A_v1",
+    "findings": [
+      {
+        "id": "TG1",
+        "severity": "medium",
+        "summary": "Sample check trace for R3 maps only to AT3, but AT3 does not validate the stated CommonMark-compliance aspect of R3; AT4 is the acceptance test that exercises Markdown structure/formatting and should be included in the R3 trace (or R3 should be split/clarified).",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "R3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/requirements/2",
+            "note": "R3 includes an explicit CommonMark-compliant parsing requirement.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "The system MUST parse each discovered Markdown file using at least CommonMark-compliant syntax and generate a corresponding HTML page..."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": null,
+            "json_pointer": "/inputs/deterministic_sample_checks/2",
+            "note": "Deterministic sample check for R3 maps only to AT3.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "AT3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/acceptance_tests/2",
+            "note": "AT3 verifies one-to-one page generation and exclusions, not CommonMark compliance.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Count generated HTML note pages and verify a one-to-one mapping for non-excluded files."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "AT4",
+            "json_pointer": "/inputs/plan_candidate/plan_package/acceptance_tests/3",
+            "note": "AT4 is the acceptance test that actually checks Markdown element rendering fidelity, which is closer to exercising CommonMark behavior.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Create a fixture Markdown file containing headings (H1/H2), ordered and unordered lists, bold/italic emphasis, links, images, and fenced code blocks..."
+          }
+        ],
+        "routing_target": "hitl.tech_lead"
+      },
+      {
+        "id": "TG2",
+        "severity": "low",
+        "summary": "Deterministic sample checks for R1–R3 list milestone M2 as covering these requirements, but M2 is scoped to tags (R11–R13) and does not introduce new deliverables for R1–R3; this appears to be trace noise/redundancy.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": null,
+            "json_pointer": "/inputs/deterministic_sample_checks",
+            "note": "All three sample checks list milestones [\"M1\",\"M2\"] for R1–R3.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "M2",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/1",
+            "note": "M2 deliverables/exit criteria are about tags and acceptance tests AT11–AT13 (R11–R13), not R1–R3.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Tags: extraction + normalization + tags index/per-tag pages + tag navigation"
+          }
+        ],
+        "routing_target": "hitl.tech_lead"
+      }
+    ]
+  }
+}

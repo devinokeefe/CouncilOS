@@ -1,0 +1,496 @@
+{
+  "artifact_type": "triage_report",
+  "artifact_id": "triage_B1A_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:11:59.776214Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "plan_candidate_B1A_v1",
+    "validator_B1A_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B1A_v1",
+    "critic_id": "MERGED",
+    "verdict": "reject",
+    "defects": [
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Hard-gate failure (id_integrity): architecture option risk lists contain non-existent risk references (free-text instead of K* IDs), and DEC6 evidence pointer uses entity_id=CNS1 but points at a /text field (validator flags missing id).",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": null,
+            "json_pointer": "/inputs/validator_report/checks/1",
+            "note": "Validator id_integrity hard-gate failed with missing-risk references and missing-id evidence pointer.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "pass\": false"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "O1",
+            "json_pointer": "/inputs/plan_candidate/plan_package/architecture/options/0/risks",
+            "note": "O1 risks are free-text items; validator expects references to existing risk IDs.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "DEC6",
+            "json_pointer": "/inputs/plan_candidate/plan_package/decision_log/5/evidence_pointers/1",
+            "note": "Evidence pointer uses entity_id=CNS1 but json_pointer targets a text leaf; validator reports 'missing id: CNS1'.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/options/0/risks",
+            "value": [
+              "K4",
+              "K13",
+              "K1",
+              "K2"
+            ]
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/options/1/risks",
+            "value": [
+              "K16",
+              "K13",
+              "K20"
+            ]
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/options/2/risks",
+            "value": [
+              "K16",
+              "K18",
+              "K19",
+              "K1"
+            ]
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/options/3/risks",
+            "value": [
+              "K19",
+              "K16",
+              "K13"
+            ]
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/5/evidence_pointers/1/entity_id",
+            "value": null
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/5/evidence_pointers/1/json_pointer",
+            "value": "/inputs/project_capsule/constraints/0"
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "M1 exit criteria requires K3/XSS mitigation to be exercised, but no acceptance test explicitly covers XSS/unsafe URL blocking; address by extending an existing AT (e.g., AT3) to include XSS fixtures (no new AT IDs).",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "M1",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/0/exit_criteria/2",
+            "note": "Exit criteria requires XSS fixtures but notes missing dedicated acceptance test.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "dedicated acceptance test is currently missing"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "AT3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/acceptance_tests/2",
+            "note": "AT3 currently checks rendering fidelity but not explicit sanitization/URL-scheme blocking outcomes.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "K3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/risk_register/2/mitigation/text",
+            "note": "K3 mitigation calls for security tests with known XSS payloads.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Add security tests with known XSS payloads."
+          }
+        ],
+        "violated_gate": "consistency_findings",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/acceptance_tests/2/procedure",
+            "value": "Prepare notes covering headings, lists, code blocks, blockquotes, links, images, and tables per the selected Markdown flavor. Include at least: (a) a note containing raw HTML/script-like payloads and event-handler attributes, and (b) links/images using unsafe URL schemes (e.g., javascript:). Build the site and visually compare rendered HTML output to expected formatting and verify unsafe constructs are not rendered/executed (sanitized/removed) and unsafe schemes are blocked."
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/acceptance_tests/2/pass_criteria",
+            "value": "All tested Markdown elements render correctly and preserve structure and formatting; raw HTML is disabled or sanitized per policy; unsafe URL schemes are blocked such that no script executes and rendered output does not contain unsafe links."
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Clarify semantic mismatch: 'no required server-side runtime' (static-site constraint) vs local viewing expectations (file:// may break; AT2 suggests local static file server). Make requirement/AT wording explicit that no *backend app* is required, but local preview may require a static file server due to browser restrictions.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "CNS1",
+            "json_pointer": "/inputs/plan_candidate/plan_package/project_capsule/constraints/0/text",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "no required server-side runtime"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "AT2",
+            "json_pointer": "/inputs/plan_candidate/plan_package/acceptance_tests/1/procedure",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "open the site via a local static file server"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "K11",
+            "json_pointer": "/inputs/plan_candidate/plan_package/risk_register/10/description",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Broken offline/local viewing when opened via file://"
+          }
+        ],
+        "violated_gate": "consistency_findings",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/requirements/1/text",
+            "value": "The system MUST generate a static website output consisting only of static files (HTML/CSS/JS/assets) that can be hosted without any required server-side application/runtime for browsing, search, tags, or backlinks (all features run in the browser). Note: due to browser restrictions, local preview may require a simple local static file server even though no backend application is required."
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/acceptance_tests/1/procedure",
+            "value": "Run the build on a representative notes folder. Inspect the output directory contents and open the site via static hosting or a local static file server (recommended for local preview; file:// may break some JS fetch behavior depending on implementation)."
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Plan commits to client-side JS search (R5/DEC6) while capsule flags client-side search acceptability (A3) and JS restrictions (Q6) as needing confirmation; add an explicit M1 gate to confirm client-side JS is permitted/acceptable.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "A3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/project_capsule/assumptions/2",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "needs_confirmation\": true"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "Q6",
+            "json_pointer": "/inputs/plan_candidate/plan_package/project_capsule/open_questions/5/text",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "restrictions on client-side JavaScript usage"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "DEC6",
+            "json_pointer": "/inputs/plan_candidate/plan_package/decision_log/5/choice",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "ship an in-browser JS search UI"
+          }
+        ],
+        "violated_gate": "consistency_findings",
+        "patch": [
+          {
+            "op": "add",
+            "path": "/plan_package/milestones/0/exit_criteria/3",
+            "value": "Confirm assumption A3 and resolve Q6 as needed: client-side JavaScript is permitted/acceptable in the target hosting environment for implementing in-browser search."
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "AT12/R19 search-quality metric is not fully verifiable because the 'representative query set' is unspecified; minimally define a required minimum query count and fixture rules in AT12 procedure.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "AT12",
+            "json_pointer": "/inputs/plan_candidate/plan_package/acceptance_tests/11/procedure",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Define a representative query set"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "R19",
+            "json_pointer": "/inputs/plan_candidate/plan_package/requirements/18/text",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "predefined representative queries"
+          }
+        ],
+        "violated_gate": "measurability_heuristic",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/acceptance_tests/11/procedure",
+            "value": "Define a representative query set (minimum 20 queries) with expected target notes, covering: exact-title queries, partial-word queries, multi-word queries, and at least 5 content-only (non-title) queries. Build the site and execute each query in the search UI, recording the top 10 results."
+          }
+        ]
+      },
+      {
+        "label": "note",
+        "severity": "low",
+        "summary": "Plan metadata has meta.version='v1' while meta.plan_version is null; set plan_version for downstream clarity if the schema/consumers expect it.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": null,
+            "json_pointer": "/inputs/plan_candidate/plan_package/meta/version",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "v1"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": null,
+            "json_pointer": "/inputs/plan_candidate/plan_package/meta/plan_version",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency_findings",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/meta/plan_version",
+            "value": "v1"
+          }
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Validator hard gate failure: 14 missing risk IDs referenced in architecture options (O1-O4) cannot be resolved. These are prose risk descriptions embedded in option tradeoffs/risks arrays, not canonical risk_register entries with IDs.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B1A_v1",
+            "entity_id": null,
+            "json_pointer": "/inputs/validator_report/checks/1/violations",
+            "note": "id_integrity check lists 14 missing risk references across O1-O4.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Option O1 references missing risk Search index asset may become too large..."
+          }
+        ],
+        "violated_gate": "id_integrity (hard gate)",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Validator hard gate failure: Decision DEC1 evidence pointer references missing entity_id CNS1 in capsule constraints. CNS1 exists in project_capsule.constraints[0] but evidence pointer does not resolve correctly.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B1A_v1",
+            "entity_id": null,
+            "json_pointer": "/inputs/validator_report/checks/1/violations/14",
+            "note": "Evidence pointer references missing id: CNS1",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Evidence pointer references missing id: CNS1"
+          }
+        ],
+        "violated_gate": "id_integrity (hard gate)",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Consistency finding CS2: M1 exit criteria requires K3 XSS mitigation exercised against fixtures, but no acceptance test (AT1-AT13) validates XSS/K3. This creates an unverifiable gate condition. Requires new AT# (outside triage scope).",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B1A_v1",
+            "entity_id": "CS2",
+            "json_pointer": "/inputs/consistency_findings/findings/1",
+            "note": "M1 exit depends on XSS validation not represented in acceptance test set.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "M1 exit criteria requires K3/XSS mitigation to be exercised against XSS fixtures, but the acceptance test suite (AT1–AT13) contains no explicit security/XSS test"
+          }
+        ],
+        "violated_gate": "milestone_exit_criteria verifiability",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Consistency finding CS006: K3 mitigation and DEC4 both use ambiguous 'disable raw HTML (or sanitize it)' phrasing. Implementation cannot proceed without clarifying whether raw HTML is strictly disabled or sanitization is the fallback mechanism.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B1A_v1",
+            "entity_id": "CS006",
+            "json_pointer": "/inputs/consistency_findings/findings/6",
+            "note": "Ambiguity between disable vs sanitize affects M1 DL3 implementation.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "The 'or' creates ambiguity: is raw HTML disabled entirely, or is sanitization the fallback?"
+          }
+        ],
+        "violated_gate": "decision clarity for security-critical implementation",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Consistency finding CS001: M1 exit criteria references AT13 for build success, but AT13 is defined for R22 (build completes without errors) and is correctly scoped. However, M1 includes AT13 before search is implemented (search is M4), creating a scope mismatch if AT13 procedure assumes search artifacts exist.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B1A_v1",
+            "entity_id": "CS001",
+            "json_pointer": "/inputs/consistency_findings/findings/4",
+            "note": "AT13 referenced in M1 but may assume search artifacts from later milestones.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "AT13 is defined as a system test for R22 (build completes without errors), which is correct, but M1 includes it before search is implemented"
+          }
+        ],
+        "violated_gate": "milestone_exit_criteria scope alignment",
+        "patch": []
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Consistency finding CS1: Semantic mismatch between 'no server-side runtime' (CNS1/R2) and K11/AT2 implying local file server may be needed. Requires clarification: does 'no server-side runtime' mean no dynamic backend, or no local server at all?",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B1A_v1",
+            "entity_id": "CS1",
+            "json_pointer": "/inputs/consistency_findings/findings/0",
+            "note": "Static-site constraint vs. local file server requirement inconsistency.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "This is a semantic mismatch that needs a clarified definition of "
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "CNS1",
+            "json_pointer": "/plan_package/project_capsule/constraints/0/text",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "no required server-side runtime for browsing/search/backlinks beyond what can run in the browser"
+          }
+        ],
+        "violated_gate": "constraint clarity",
+        "patch": []
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Consistency finding CS3: Client-side search is committed in requirements/decisions (R5, DEC6) but capsule assumption A3 marks it needs_confirmation and Q6 asks about JS restrictions. Plan commits to approach while inputs leave it conditional.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B1A_v1",
+            "entity_id": "CS3",
+            "json_pointer": "/inputs/consistency_findings/findings/2",
+            "note": "Plan commits to client-side JS search while inputs leave it conditional.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "the plan commits to client-side JS search while the inputs leave it conditional"
+          }
+        ],
+        "violated_gate": "assumption/decision alignment",
+        "patch": []
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Consistency finding CS007: AT12 (search quality R19) procedure references 'representative query set' but does not define size or composition, making pass criteria unverifiable without additional specification.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B1A_v1",
+            "entity_id": "CS007",
+            "json_pointer": "/inputs/consistency_findings/findings/7",
+            "note": "AT12 query set undefined, making 90% metric unverifiable.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "AT12 procedure does not specify the size or representativeness of the query set, making pass criteria unverifiable"
+          }
+        ],
+        "violated_gate": "acceptance test verifiability",
+        "patch": []
+      },
+      {
+        "label": "note",
+        "severity": "low",
+        "summary": "Consistency finding CS4: Plan metadata contains both meta.version='v1' and meta.plan_version=null, creating ambiguity about authoritative version field. Low severity but should be clarified for downstream tooling.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B1A_v1",
+            "entity_id": "CS4",
+            "json_pointer": "/inputs/consistency_findings/findings/3",
+            "note": "Two version fields with conflicting completeness.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "meta.version=\"v1\" and meta.plan_version=null, which is internally ambiguous"
+          }
+        ],
+        "violated_gate": "metadata consistency",
+        "patch": []
+      },
+      {
+        "label": "note",
+        "severity": "low",
+        "summary": "Consistency finding CS005: O1 rationale defers COULD features but milestones include SHOULD requirements (R6, R12, R14-R18, R23-R25) and optional features (R25, R24) without explicit prioritization logic. Noted for scope management but not blocking.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B1A_v1",
+            "entity_id": "CS005",
+            "json_pointer": "/inputs/consistency_findings/findings/5",
+            "note": "SHOULD/COULD feature deferral inconsistency.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "milestones M1-M5 include SHOULD requirements ... without explicit deferral or prioritization logic"
+          }
+        ],
+        "violated_gate": "scope prioritization clarity",
+        "patch": []
+      }
+    ],
+    "reroute_target": "Generate",
+    "reroute_reason": "Critical validator hard gate failures (missing risk IDs in architecture options, missing CNS1 entity_id in decision evidence) and consistency blockers (missing XSS acceptance test for M1 gate, K3 mitigation ambiguity, AT13 scope mismatch) require structural fixes to canonical artifacts (risk_register, acceptance_tests, decision_log evidence pointers) and clarification of security implementation approach. These fixes require new IDs (AT# for XSS test) and edits to locked canonical arrays, which are outside triage patch scope. Reroute to Generate to resolve validator violations, add missing XSS acceptance test, clarify K3 disable-vs-sanitize decision, and align M1 exit criteria with available acceptance tests."
+  }
+}

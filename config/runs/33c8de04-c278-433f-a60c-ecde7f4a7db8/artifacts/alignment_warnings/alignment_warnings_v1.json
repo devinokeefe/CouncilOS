@@ -1,0 +1,462 @@
+{
+  "artifact_type": "alignment_warnings",
+  "artifact_id": "alignment_warnings_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:05:24.573567Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "acceptance_canonical_v1"
+  ],
+  "payload": {
+    "warnings": [
+      {
+        "id": "AL-001",
+        "severity": "critical",
+        "summary": "Requirements and Acceptance Tests depend on 'specified' link and tag syntaxes, but these definitions are listed as unresolved Open Questions (Q1, Q2) in the Project Capsule. Missing specifications explicitly block the project.",
+        "evidence": [
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q1",
+            "json_pointer": "/open_questions/0",
+            "note": "Declared as High Impact and Blocking",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "What Markdown flavor and internal link syntax should be supported...?"
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q2",
+            "json_pointer": "/open_questions/1",
+            "note": "Declared as High Impact and Blocking",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "How are tags represented in the notes...?"
+          },
+          {
+            "artifact_ref": "requirements_canonical_v1",
+            "entity_id": "R9",
+            "json_pointer": "/requirements/8",
+            "note": "Requires a syntax that is currently undefined",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "based on a specified internal link syntax"
+          },
+          {
+            "artifact_ref": "requirements_canonical_v1",
+            "entity_id": "R7",
+            "json_pointer": "/requirements/6",
+            "note": "Requires a convention that is currently undefined",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "using a specified, consistent convention"
+          },
+          {
+            "artifact_ref": "acceptance_canonical_v1",
+            "entity_id": "AT8",
+            "json_pointer": "/acceptance_tests/7",
+            "note": "Test procedure relies on unspecified syntax",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "using the specified link syntax"
+          }
+        ],
+        "routing_target": "clarification_needed"
+      },
+      {
+        "id": "AL-002",
+        "severity": "high",
+        "summary": "Performance requirements (R23) and architectural scalability risks (K4) depend on the 'Expected Scale' of the note corpus (Q3), which remains an unresolved Open Question.",
+        "evidence": [
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q3",
+            "json_pointer": "/open_questions/2",
+            "note": "Scale definition is open",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "What is the expected scale...?"
+          },
+          {
+            "artifact_ref": "requirements_canonical_v1",
+            "entity_id": "R23",
+            "json_pointer": "/requirements/22",
+            "note": "Requirement targets cannot be finalized without Q3",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "targets SHOULD be defined/documented based on expected scale"
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K4",
+            "json_pointer": "/risk_register/3",
+            "note": "Identifies scale as a driver for search index failure",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "related to Q3/SM7"
+          }
+        ],
+        "routing_target": "clarification_needed"
+      },
+      {
+        "id": "AL_1",
+        "severity": "medium",
+        "summary": "A performance success metric (SM7) and high-severity risk (K4) are addressed only by a non-binding 'SHOULD' requirement (R23) and lack a corresponding acceptance test, creating a gap between project goals and defined work.",
+        "evidence": [
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": null,
+            "json_pointer": "/success_metrics/6",
+            "note": "The project capsule defines meeting performance targets as a success metric.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "On a representative dataset (e.g., 100+ notes), generation time and search responsiveness meet agreed performance targets (targets to be defined once scale is known)."
+          },
+          {
+            "artifact_ref": "requirements_canonical_v1",
+            "entity_id": "R23",
+            "json_pointer": "/requirements/22",
+            "note": "The success metric is downgraded to a non-binding 'SHOULD' requirement, with targets noted as undefined.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "On a representative dataset of 100+ notes, the system SHOULD meet agreed performance targets for generation time and in-browser search responsiveness; these targets SHOULD be defined/documented based "
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K4",
+            "json_pointer": "/risk_register/3",
+            "note": "A related risk is rated 'high' severity, suggesting performance is more critical than a 'SHOULD' requirement implies.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Client-side search index size/quality/performance may degrade at scale (large JS payload, slow queries, long build time), causing poor UX or crashes (related to Q3/SM7)."
+          },
+          {
+            "artifact_ref": "acceptance_canonical_v1",
+            "entity_id": null,
+            "json_pointer": "/acceptance_tests",
+            "note": "The acceptance test suite does not include a test to validate this performance requirement, leaving the success metric unverified.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "requirements"
+      },
+      {
+        "id": "AL_2",
+        "severity": "low",
+        "summary": "A mitigation for risk K15 (accessibility issues) requires adopting accessibility guidelines, but this action is not captured as a formal requirement or acceptance test.",
+        "evidence": [
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K15",
+            "json_pointer": "/risk_register/14/mitigation",
+            "note": "The mitigation plan for risk K15 explicitly includes adopting accessibility guidelines.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Adopt baseline accessibility guidelines for templates/components (semantic HTML, focus management, ARIA where needed)."
+          },
+          {
+            "artifact_ref": "requirements_canonical_v1",
+            "entity_id": null,
+            "json_pointer": "/requirements",
+            "note": "The requirements list does not contain any requirement related to accessibility, making the mitigation unenforceable.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "acceptance_canonical_v1",
+            "entity_id": null,
+            "json_pointer": "/acceptance_tests",
+            "note": "No acceptance test exists to verify that accessibility guidelines have been met.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "requirements"
+      },
+      {
+        "id": "AL001",
+        "severity": "high",
+        "summary": "Acceptance tests do not cover critical security requirement R3 XSS/injection mitigation (raw HTML sanitization, unsafe URL blocking) despite risk K3 being critical severity.",
+        "evidence": [
+          {
+            "artifact_ref": "requirements_canonical_v1",
+            "entity_id": "R3",
+            "json_pointer": "/requirements/requirements/2",
+            "note": "R3 requires preserving Markdown formatting but does not explicitly mandate sanitization or unsafe content blocking.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "parse and render each input Markdown file into a corresponding static HTML page while preserving Markdown formatting and structure"
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K3",
+            "json_pointer": "/risk_register/2",
+            "note": "K3 identifies XSS/injection as critical risk requiring sanitization and unsafe URL blocking.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Client-side XSS or content injection vulnerabilities if Markdown/HTML is rendered unsafely"
+          },
+          {
+            "artifact_ref": "acceptance_canonical_v1",
+            "entity_id": null,
+            "json_pointer": "/acceptance_tests",
+            "note": "No acceptance test validates XSS prevention, HTML sanitization, or unsafe URL blocking.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "acceptance_tests"
+      },
+      {
+        "id": "AL002",
+        "severity": "high",
+        "summary": "Requirements R14-R18 defer critical blocking decisions (Q1 link syntax, Q2 tag format) to configuration without mandating resolution, but acceptance tests AT6/AT8 assume these conventions are already specified.",
+        "evidence": [
+          {
+            "artifact_ref": "requirements_canonical_v1",
+            "entity_id": "R14",
+            "json_pointer": "/requirements/requirements/13",
+            "note": "R14 defers link/tag conventions to configuration.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "SHOULD support configuration of the Markdown flavor, internal link syntax, and tag conventions"
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q1",
+            "json_pointer": "/open_questions/0",
+            "note": "Q1 is blocking and unresolved: link syntax not specified.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "What Markdown flavor and internal link syntax should be supported for links/backlinks"
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q2",
+            "json_pointer": "/open_questions/1",
+            "note": "Q2 is blocking and unresolved: tag representation not specified.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "How are tags represented in the notes (YAML frontmatter key, inline #tags, both)"
+          },
+          {
+            "artifact_ref": "acceptance_canonical_v1",
+            "entity_id": "AT8",
+            "json_pointer": "/acceptance_tests/7",
+            "note": "AT8 assumes link syntax is already specified.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Create notes with internal forward links using the specified link syntax"
+          },
+          {
+            "artifact_ref": "acceptance_canonical_v1",
+            "entity_id": "AT6",
+            "json_pointer": "/acceptance_tests/5",
+            "note": "AT6 assumes tag convention is already specified.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Create a dataset with tagged and untagged notes using the specified tag convention"
+          }
+        ],
+        "routing_target": "requirements"
+      },
+      {
+        "id": "AL003",
+        "severity": "medium",
+        "summary": "Architecture options O1-O4 do not explicitly address risk K9 (path traversal/symlink security) mitigation despite it being high severity with security implications.",
+        "evidence": [
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K9",
+            "json_pointer": "/risk_register/8",
+            "note": "K9 requires constraining ingestion to root directory and rejecting symlinks/escaping paths.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Path traversal or unintended file inclusion during ingestion"
+          },
+          {
+            "artifact_ref": "architecture_canonical_v1",
+            "entity_id": "O1",
+            "json_pointer": "/options/0",
+            "note": "O1 Markdown Parser component does not mention path validation or symlink handling.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "architecture_canonical_v1",
+            "entity_id": "O2",
+            "json_pointer": "/options/1",
+            "note": "O2 File Collector Plugin does not mention path validation or symlink handling.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "architecture_canonical_v1",
+            "entity_id": "O3",
+            "json_pointer": "/options/2",
+            "note": "O3 relies on Eleventy but does not specify path security constraints.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "architecture_canonical_v1",
+            "entity_id": "O4",
+            "json_pointer": "/options/3",
+            "note": "O4 Content Parser does not mention path validation or symlink handling.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "architecture"
+      },
+      {
+        "id": "AL004",
+        "severity": "medium",
+        "summary": "Requirement R23 defers performance targets to future definition, but risk K4 and K13 mitigations require defining scale/performance targets, creating circular dependency.",
+        "evidence": [
+          {
+            "artifact_ref": "requirements_canonical_v1",
+            "entity_id": "R23",
+            "json_pointer": "/requirements/requirements/22",
+            "note": "R23 defers performance target definition.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "these targets SHOULD be defined/documented based on expected scale"
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K4",
+            "json_pointer": "/risk_register/3",
+            "note": "K4 mitigation requires defining scale and performance targets.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Define expected scale and performance targets (Q3)"
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K13",
+            "json_pointer": "/risk_register/12",
+            "note": "K13 mitigation requires profiling and performance optimization.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Profile CPU/memory usage"
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q3",
+            "json_pointer": "/open_questions/2",
+            "note": "Q3 asks for scale/performance targets but is not blocking.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "What is the expected scale (number of notes/total size) and performance targets"
+          }
+        ],
+        "routing_target": "requirements"
+      },
+      {
+        "id": "AL005",
+        "severity": "high",
+        "summary": "Risk K17 (information disclosure via private notes or absolute paths) has no corresponding requirement mandating exclude patterns or private-flag support.",
+        "evidence": [
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K17",
+            "json_pointer": "/risk_register/16",
+            "note": "K17 mitigation requires exclude patterns and private frontmatter flag.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Support exclude patterns (globs) and a 'private' frontmatter flag"
+          },
+          {
+            "artifact_ref": "requirements_canonical_v1",
+            "entity_id": null,
+            "json_pointer": "/requirements/requirements",
+            "note": "No requirement mandates exclude patterns or private-note filtering.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "requirements"
+      },
+      {
+        "id": "AL006",
+        "severity": "medium",
+        "summary": "Acceptance test AT12 validates search quality metric (R19: 90% top-10 accuracy) but no acceptance test validates tag completeness metric (R20: 100% tag coverage) or backlink correctness metric (R21: 100% backlink accuracy) despite being MUST requirements.",
+        "evidence": [
+          {
+            "artifact_ref": "requirements_canonical_v1",
+            "entity_id": "R20",
+            "json_pointer": "/requirements/requirements/19",
+            "note": "R20 mandates 100% tag coverage as MUST requirement.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "100% of notes containing tags in the dataset MUST appear under their corresponding tag pages"
+          },
+          {
+            "artifact_ref": "requirements_canonical_v1",
+            "entity_id": "R21",
+            "json_pointer": "/requirements/requirements/20",
+            "note": "R21 mandates 100% backlink correctness as MUST requirement.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "100% of expected backlinks MUST appear on their target note pages"
+          },
+          {
+            "artifact_ref": "acceptance_canonical_v1",
+            "entity_id": "AT6",
+            "json_pointer": "/acceptance_tests/5",
+            "note": "AT6 validates tag coverage but is mapped to R7 and R20; procedure does not explicitly measure 100% metric.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "100% of notes with tags are included under the correct tag pages/filters"
+          },
+          {
+            "artifact_ref": "acceptance_canonical_v1",
+            "entity_id": "AT9",
+            "json_pointer": "/acceptance_tests/8",
+            "note": "AT9 validates backlinks but procedure uses small test set, not comprehensive validation of R21 metric.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "for the test set, 100% of expected backlinks appear"
+          }
+        ],
+        "routing_target": "acceptance_tests"
+      },
+      {
+        "id": "AL007",
+        "severity": "low",
+        "summary": "Architecture option O3 (Eleventy-based) introduces dependency on external SSG and Pagefind but risk K18 (dependency management) mitigation does not specify vetting process for these specific dependencies.",
+        "evidence": [
+          {
+            "artifact_ref": "architecture_canonical_v1",
+            "entity_id": "O3",
+            "json_pointer": "/options/2",
+            "note": "O3 relies on Eleventy and Pagefind as core dependencies.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Use an existing static site generator (SSG), specifically Eleventy/11ty"
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K18",
+            "json_pointer": "/risk_register/17",
+            "note": "K18 mitigation is generic; does not address specific SSG/Pagefind vetting.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Establish a dependency update/vetting process including automated vulnerability scanning"
+          }
+        ],
+        "routing_target": "architecture"
+      }
+    ]
+  }
+}

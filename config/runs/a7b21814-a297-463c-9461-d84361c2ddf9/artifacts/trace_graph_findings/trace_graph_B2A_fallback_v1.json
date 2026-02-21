@@ -1,0 +1,120 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B2A_fallback_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:38:00.528358Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B2A_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2A_v1",
+    "findings": [
+      {
+        "id": "TG001",
+        "severity": "high",
+        "summary": "R1 milestone mapping incomplete: M3 missing despite delivering ingestion plugin (DL7) that implements R1",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "R1",
+            "json_pointer": "/inputs/deterministic_sample_checks/0/milestones",
+            "note": "R1 maps to M1, M2 only",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "M3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/2/deliverables/0",
+            "note": "DL7 delivers Ingestion Plugin implementing R1 directory input and recursive discovery",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Ingestion Plugin (C11) implementing directory input, recursive discovery, default .md inclusion"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "AT1",
+            "json_pointer": "/inputs/plan_candidate/plan_package/acceptance_tests/0",
+            "note": "AT1 validates R1 and is exit criteria for M3",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "HITL: Tech Lead (confirm M3 should be added to R1 milestone mapping or clarify why foundation-only milestones are listed)"
+      },
+      {
+        "id": "TG002",
+        "severity": "high",
+        "summary": "R2 milestone mapping incomplete: M3 missing despite M3 exit criteria requiring AT2 pass (static-only output validation)",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "R2",
+            "json_pointer": "/inputs/deterministic_sample_checks/1/milestones",
+            "note": "R2 maps to M1, M2 only",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "M3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/2/exit_criteria/1",
+            "note": "M3 exit criteria requires AT2 pass for static-only artifacts",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Generated site artifacts remain static-only (HTML/CSS/JS/assets) satisfying R2/AT2."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "AT2",
+            "json_pointer": "/inputs/plan_candidate/plan_package/acceptance_tests/1",
+            "note": "AT2 validates R2 static-only constraint",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "HITL: Tech Lead (confirm M3 should be added to R2 milestone mapping)"
+      },
+      {
+        "id": "TG003",
+        "severity": "high",
+        "summary": "R3 milestone mapping incomplete: M3 missing despite M3 delivering Markdown render plugin (DL8) implementing R3 and AT3 validation",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "R3",
+            "json_pointer": "/inputs/deterministic_sample_checks/2/milestones",
+            "note": "R3 maps to M1, M2 only",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "M3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/2/deliverables/1",
+            "note": "DL8 delivers Markdown Render Plugin implementing R3 CommonMark parsing",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Markdown Render Plugin (C14) implementing CommonMark-compliant parsing/rendering and formatting fidelity (R3, R4)"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "M3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/2/exit_criteria/0",
+            "note": "M3 exit criteria requires AT3 pass",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "AT1, AT3, AT4, AT5, and AT6 pass for the ingestion/render path"
+          }
+        ],
+        "routing_target": "HITL: Tech Lead (confirm M3 should be added to R3 milestone mapping)"
+      }
+    ]
+  }
+}

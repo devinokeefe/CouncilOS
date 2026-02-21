@@ -1,0 +1,66 @@
+{
+  "artifact_type": "judge_pairwise_result",
+  "artifact_id": "judge_pair_B1A_B2B_1_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T11:07:05.436033Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B1A_v4",
+    "plan_candidate_B2B_v3"
+  ],
+  "payload": {
+    "comparison": {
+      "a": "Candidate A selects a monolithic architecture with a simple, feature-driven milestone plan. This approach is straightforward, delivers value incrementally from the first milestone, and directly addresses the core requirements with minimal overhead.",
+      "b": "Candidate B chooses a more complex, plugin-based architecture, which requires significant upfront investment in building the core engine before delivering user-facing features. While more extensible for the long term, it adds complexity and delays initial value delivery."
+    },
+    "judge_id": "council-os-hq",
+    "judge_model": "anthropic/claude-3.5-sonnet",
+    "winner": "a",
+    "scores": {
+      "feasibility": 10,
+      "testability": 9,
+      "governance": 8,
+      "architecture": 9,
+      "clarity": 10
+    },
+    "evidence": [
+      {
+        "artifact_ref": "plan_candidate_B1A_v4",
+        "entity_id": "O1",
+        "json_pointer": "/architecture/chosen",
+        "note": "Candidate A chose the monolithic CLI pipeline (O1) for its simplicity and directness in satisfying requirements.",
+        "candidate_id": "B1A",
+        "artifact_id": null,
+        "quote": "O1 is the lowest-complexity architecture that directly satisfies the core MUST requirements... without introducing plugin API surface area or external SSG coupling."
+      },
+      {
+        "artifact_ref": "plan_candidate_B1A_v4",
+        "entity_id": "M1",
+        "json_pointer": "/milestones/0",
+        "note": "Candidate A's first milestone delivers a working, albeit basic, site, demonstrating immediate value delivery.",
+        "candidate_id": "B1A",
+        "artifact_id": null,
+        "quote": "Intake→Generate: CLI skeleton, Markdown ingestion, per-note HTML rendering, and static output emission"
+      },
+      {
+        "artifact_ref": "plan_candidate_B2B_v3",
+        "entity_id": "O2",
+        "json_pointer": "/architecture/chosen",
+        "note": "Candidate B chose the plugin-based architecture (O2), which has higher upfront complexity.",
+        "candidate_id": "B2B",
+        "artifact_id": null,
+        "quote": "The upfront cost of designing a stable plugin API and shared build context is justified by the branch's expectation that the project will evolve beyond its initial scope."
+      },
+      {
+        "artifact_ref": "plan_candidate_B2B_v3",
+        "entity_id": "M1",
+        "json_pointer": "/milestones/0",
+        "note": "Candidate B's first milestone is purely foundational, delivering the plugin infrastructure with no user-facing features.",
+        "candidate_id": "B2B",
+        "artifact_id": null,
+        "quote": "Phase A — Core Engine & Plugin Infrastructure"
+      }
+    ],
+    "notes": "Candidate A provides a more pragmatic and direct plan for the specified scope. It prioritizes delivering a working product that meets all core user needs quickly and efficiently. Candidate B's choice of a plugin-based architecture represents over-engineering for the initial problem, introducing significant upfront complexity and delaying tangible results."
+  }
+}

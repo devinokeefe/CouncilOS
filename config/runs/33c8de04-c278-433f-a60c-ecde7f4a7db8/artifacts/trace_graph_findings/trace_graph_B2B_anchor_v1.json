@@ -1,0 +1,68 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B2B_anchor_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:09:38.144983Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "plan_candidate_B2B_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2B_v1",
+    "findings": [
+      {
+        "id": "TG1",
+        "severity": "high",
+        "summary": "Deterministic sample check for R2 misattributes coverage to milestones M1/M2, but the plan schedules AT2 (static-only output verification including search/tags/backlinks) in M3 (and again in M4 E2E). This makes the trace graph sample check semantically inconsistent with the plan’s milestone/test placement.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": null,
+            "json_pointer": "/inputs/deterministic_sample_checks/1",
+            "note": "Sample check for R2 lists milestones M1/M2 and AT2",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "\"requirement_id\": \"R2\"... \"acceptance_tests\": [\"AT2\"], \"milestones\": [\"M1\", \"M2\"]"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "DL19",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/2/deliverables/4/text",
+            "note": "M3 explicitly plans AT2 testing/verification",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Tests for client-side search functionality (AT5), search quality (AT12), and static-only output verification (AT2)."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": null,
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/2/exit_criteria/2",
+            "note": "M3 exit criteria requires AT2 pass criteria",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Generated output contains only static files; site functions without server-side runtime (AT2 pass criteria)."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "DL24",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/3/deliverables/4/text",
+            "note": "M4 also references AT2 in E2E acceptance",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "E2E acceptance test with all plugins enabled on representative dataset (AT13, AT2)."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "AT2",
+            "json_pointer": "/inputs/plan_candidate/plan_package/acceptance_tests/1/procedure",
+            "note": "AT2 checks static-only output with all core features functioning without server-side runtime",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Inspect the output directory contents and attempt to open the site..."
+          }
+        ],
+        "routing_target": "Review"
+      }
+    ]
+  }
+}

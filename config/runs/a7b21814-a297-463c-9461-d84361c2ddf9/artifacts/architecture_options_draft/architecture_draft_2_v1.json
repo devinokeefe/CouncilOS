@@ -1,0 +1,255 @@
+{
+  "artifact_type": "architecture_options_draft",
+  "artifact_id": "architecture_draft_2_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:26:10.270348Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "capsule_canonical_v1"
+  ],
+  "payload": {
+    "options": [
+      {
+        "id": "OPT_B_1",
+        "summary": "A single, self-contained command-line executable that processes notes in a single, in-memory pass. It reads all files, builds a content graph, and renders the static site directly.",
+        "components": [
+          {
+            "id": "CMP_B_101",
+            "name": "File System Scanner",
+            "responsibilities": [
+              "Scans the source directory for all Markdown files to be processed."
+            ]
+          },
+          {
+            "id": "CMP_B_102",
+            "name": "Content Parser & Analyzer",
+            "responsibilities": [
+              "Parses Markdown content from files.",
+              "Extracts metadata such as tags from front matter or inline syntax.",
+              "Identifies internal links between notes.",
+              "Builds a single, in-memory graph of all notes, tags, and their relationships."
+            ]
+          },
+          {
+            "id": "CMP_B_103",
+            "name": "HTML & Asset Generator",
+            "responsibilities": [
+              "Renders the in-memory content graph into final HTML pages for each note.",
+              "Generates index pages, such as a list of all tags and pages per tag.",
+              "Injects backlink information into note pages.",
+              "Creates a client-side search index from the note content.",
+              "Copies static assets like CSS and JS to the output directory."
+            ]
+          },
+          {
+            "id": "CMP_B_104",
+            "name": "Output Writer",
+            "responsibilities": [
+              "Writes all generated files (HTML, JSON index, CSS, JS) to the specified output directory."
+            ]
+          }
+        ],
+        "interfaces": [
+          {
+            "id": "IF_B_101",
+            "from": "CMP_B_101",
+            "to": "CMP_B_102",
+            "contract": "Passes a list of Markdown file paths."
+          },
+          {
+            "id": "IF_B_102",
+            "from": "CMP_B_102",
+            "to": "CMP_B_103",
+            "contract": "Provides a complete in-memory content graph object containing all notes, tags, links, and calculated backlinks."
+          },
+          {
+            "id": "IF_B_103",
+            "from": "CMP_B_103",
+            "to": "CMP_B_104",
+            "contract": "Streams generated file contents (HTML, JSON, CSS) along with their destination paths."
+          }
+        ],
+        "tradeoffs": {
+          "pros": [
+            "Simple architecture that is straightforward to implement and maintain.",
+            "Fast for small to medium-sized sites due to minimal I/O and all-in-memory operations.",
+            "A single executable is easy for users to distribute and run."
+          ],
+          "cons": [
+            "Not scalable for very large sites as the entire content graph must fit into memory.",
+            "Difficult to implement incremental builds; the entire site is rebuilt on every run, which can be slow.",
+            "Functionality is hardcoded, making it difficult to extend or customize without modifying the core application."
+          ]
+        },
+        "risks": [
+          "Performance may degrade significantly with a very large number of notes, leading to high memory consumption and slow build times.",
+          "The tightly coupled design makes it difficult to swap out specific implementations, such as the Markdown renderer or the search indexing algorithm."
+        ]
+      },
+      {
+        "id": "OPT_B_2",
+        "summary": "A multi-stage build pipeline where each stage communicates via intermediate files (e.g., JSON). This enables caching, incremental builds, and better separation of concerns.",
+        "components": [
+          {
+            "id": "CMP_B_201",
+            "name": "Ingestion Stage",
+            "responsibilities": [
+              "Reads source Markdown files and converts each into a standardized intermediate data file (e.g., JSON) containing raw content and file metadata."
+            ]
+          },
+          {
+            "id": "CMP_B_202",
+            "name": "Analysis Stage",
+            "responsibilities": [
+              "Processes the intermediate data files to parse content, extract tags, and identify links, enriching the data files with this structured metadata."
+            ]
+          },
+          {
+            "id": "CMP_B_203",
+            "name": "Graph Build Stage",
+            "responsibilities": [
+              "Aggregates metadata from all enriched data files to build a global site graph (links, backlinks, tag relationships) and saves it as a manifest file."
+            ]
+          },
+          {
+            "id": "CMP_B_204",
+            "name": "Render Stage",
+            "responsibilities": [
+              "Uses the enriched data files and the global graph manifest to render final HTML pages for notes, tag pages, and the search index."
+            ]
+          },
+          {
+            "id": "CMP_B_205",
+            "name": "Site Assembler",
+            "responsibilities": [
+              "Collects all rendered files and static assets (CSS, JS) into the final output directory."
+            ]
+          }
+        ],
+        "interfaces": [
+          {
+            "id": "IF_B_201",
+            "from": "CMP_B_201",
+            "to": "CMP_B_202",
+            "contract": "Writes and reads intermediate structured data files (one per note) to and from a cache directory on disk."
+          },
+          {
+            "id": "IF_B_202",
+            "from": "CMP_B_202",
+            "to": "CMP_B_203",
+            "contract": "Writes enriched structured data files that are then read by the graph builder."
+          },
+          {
+            "id": "IF_B_203",
+            "from": "CMP_B_203",
+            "to": "CMP_B_204",
+            "contract": "Writes a single site-wide graph manifest file (e.g., JSON) that is consumed by the render stage."
+          },
+          {
+            "id": "IF_B_204",
+            "from": "CMP_B_204",
+            "to": "CMP_B_205",
+            "contract": "Outputs generated files to a temporary build directory for final assembly."
+          }
+        ],
+        "tradeoffs": {
+          "pros": [
+            "Enables efficient incremental builds by allowing the pipeline to only re-run stages for changed files.",
+            "Decoupled stages are easier to test, debug, and maintain independently.",
+            "Scales better for large sites as not all data needs to be held in memory simultaneously."
+          ],
+          "cons": [
+            "More complex architecture with multiple data handoffs and potential failure points.",
+            "Increased disk I/O from reading/writing intermediate files might slow down clean builds compared to an in-memory approach.",
+            "Requires a build orchestrator or sophisticated scripting to manage the pipeline stages and dependencies."
+          ]
+        },
+        "risks": [
+          "The format of the intermediate representation becomes a critical and potentially rigid internal API that is hard to change.",
+          "Correctly managing the cache state and dependencies for incremental builds can be complex and error-prone."
+        ]
+      },
+      {
+        "id": "OPT_B_3",
+        "summary": "A core engine that orchestrates a pipeline of configurable plugins. Functionality for parsing, transforming, and rendering content is provided by swappable plugins, allowing maximum customizability.",
+        "components": [
+          {
+            "id": "CMP_B_301",
+            "name": "Core Build Engine",
+            "responsibilities": [
+              "Manages the overall build lifecycle and pipeline execution.",
+              "Loads and configures plugins based on user settings.",
+              "Provides a stable API for plugins to interact with the build process."
+            ]
+          },
+          {
+            "id": "CMP_B_302",
+            "name": "Central Data Store",
+            "responsibilities": [
+              "Provides an in-memory collection of all content nodes (notes, assets, tags).",
+              "Exposes a formal API for plugins to create, read, update, and query nodes."
+            ]
+          },
+          {
+            "id": "CMP_B_303",
+            "name": "Parser Plugins",
+            "responsibilities": [
+              "Read source files (e.g., Markdown with specific flavors) and add corresponding nodes to the Central Data Store."
+            ]
+          },
+          {
+            "id": "CMP_B_304",
+            "name": "Transformer Plugins",
+            "responsibilities": [
+              "Manipulate the data store by adding new information, such as resolving links, adding backlinks, or creating tag indexes."
+            ]
+          },
+          {
+            "id": "CMP_B_305",
+            "name": "Renderer Plugins",
+            "responsibilities": [
+              "Generate final output files (e.g., HTML, search index, RSS feeds) based on the final state of the Central Data Store."
+            ]
+          }
+        ],
+        "interfaces": [
+          {
+            "id": "IF_B_301",
+            "from": "CMP_B_301",
+            "to": "CMP_B_303",
+            "contract": "The engine invokes parser plugins, providing file system access and an API to add nodes to the Central Data Store."
+          },
+          {
+            "id": "IF_B_302",
+            "from": "CMP_B_301",
+            "to": "CMP_B_304",
+            "contract": "The engine invokes transformer plugins in a defined order, providing read/write API access to the Central Data Store."
+          },
+          {
+            "id": "IF_B_303",
+            "from": "CMP_B_301",
+            "to": "CMP_B_305",
+            "contract": "The engine invokes renderer plugins, providing read-only API access to the Central Data Store and an API for writing output files."
+          }
+        ],
+        "tradeoffs": {
+          "pros": [
+            "Extremely flexible, allowing users to support new features or syntaxes (e.g., custom Markdown extensions, different search providers) by adding plugins.",
+            "Enforces a clean separation of concerns, leading to a more maintainable core codebase.",
+            "A rich plugin ecosystem can be developed and shared by the community."
+          ],
+          "cons": [
+            "Significantly more complex to design and implement the core engine and a stable plugin API.",
+            "Potential for performance overhead from plugin loading, API calls, and coordination.",
+            "Poorly written or conflicting plugins can introduce instability, security vulnerabilities, or hard-to-debug behavior."
+          ]
+        },
+        "risks": [
+          "Defining a stable, powerful, and easy-to-use plugin API is a major technical challenge.",
+          "Managing dependencies and ensuring compatibility between different third-party plugins can be difficult for end-users.",
+          "The execution order of transformer plugins can have subtle and complex effects, making a build's behavior difficult to predict or reason about."
+        ]
+      }
+    ]
+  }
+}

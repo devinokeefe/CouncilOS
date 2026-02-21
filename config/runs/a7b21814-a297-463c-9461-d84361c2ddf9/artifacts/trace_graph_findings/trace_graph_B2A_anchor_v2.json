@@ -1,0 +1,68 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B2A_anchor_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:48:48.975547Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B2A_v2"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2A_v2",
+    "findings": [
+      {
+        "id": "TG1",
+        "severity": "high",
+        "summary": "Deterministic sample checks for R1/R2/R3 list milestones [M1, M2], but the plan’s milestone that actually delivers and gates these requirements via acceptance tests is M3 (thin-slice ingestion/render/template/emit). This creates incorrect traceability from requirements to delivery milestones in the sample checks.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "R1",
+            "json_pointer": "/inputs/deterministic_sample_checks/0/milestones",
+            "note": "Sample check maps R1 to milestones M1, M2 only.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "M3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/2/deliverables/0/text",
+            "note": "M3 deliverable DL11 explicitly covers R1 (recursive discovery of .md files).",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "M3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/2/exit_criteria/0",
+            "note": "M3 exit criteria requires AT1–AT6 and AT2 to pass, which includes coverage for R1/R2/R3 acceptance tests.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "R2",
+            "json_pointer": "/inputs/deterministic_sample_checks/1/milestones",
+            "note": "Sample check maps R2 to milestones M1, M2 only.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v2",
+            "entity_id": "R3",
+            "json_pointer": "/inputs/deterministic_sample_checks/2/milestones",
+            "note": "Sample check maps R3 to milestones M1, M2 only.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "orchestrator.trace_graph_alignment"
+      }
+    ]
+  }
+}

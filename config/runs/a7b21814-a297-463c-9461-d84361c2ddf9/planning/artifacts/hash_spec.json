@@ -1,0 +1,1 @@
+{"canonical_json":"JCS-like-v1","excluded_fields_by_pointer":["/meta/plan_status","/meta/plan_version","/meta/created_at","/meta/source_run_id","/meta/run_id","/meta/last_updated","/meta/hash_spec_version","/meta/*timestamp*","/meta/*nonce*"],"hash_alg":"sha256","hash_spec_version":"1","schema_version":"hash_spec.v1"}

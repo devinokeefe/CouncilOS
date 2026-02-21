@@ -13,6 +13,9 @@ class AnchorRef(StrictFeedbackModel):
     kind: Literal[
         "requirement",
         "acceptance_test",
+        "work_item",
+        "check",
+        "milestone",
         "assumption",
         "open_question",
         "architecture_option",
@@ -69,10 +72,22 @@ class PrePlanUncertainty(StrictFeedbackModel):
     impact: Literal["low", "medium", "high"]
 
 
+class PrePlanDecision(StrictFeedbackModel):
+    id: str
+    summary: str
+    impact: list[str] = Field(default_factory=list)
+
+
 class PrePlanTriage(StrictFeedbackModel):
     schema_version: str = "1.0"
     avenues_considered: list[PrePlanAvenue] = Field(default_factory=list)
     uncertainties: list[PrePlanUncertainty] = Field(default_factory=list)
+    ambiguities: list[str] = Field(default_factory=list)
+    default_assumptions: list[str] = Field(default_factory=list)
+    candidate_approaches: list[str] = Field(default_factory=list)
+    key_decisions: list[PrePlanDecision] = Field(default_factory=list)
+    complexity_band: Literal["low", "medium", "high", "unknown"] = "unknown"
+    recommended_defaults: list[str] = Field(default_factory=list)
 
 
 class ClarificationDefault(StrictFeedbackModel):
@@ -114,6 +129,7 @@ class ClarificationResolution(StrictFeedbackModel):
     resolved_value: Any
     source: Literal["default", "user"]
     raw_response: str
+    impact_assessment: str | None = None
 
 
 class ClarificationResolutions(StrictFeedbackModel):
@@ -204,6 +220,57 @@ class RemoveAcceptanceTestOp(StrictFeedbackModel):
     id: str
 
 
+class UpdateWorkItemOp(StrictFeedbackModel):
+    op: Literal["update_work_item"]
+    id: str
+    set: dict[str, Any]
+
+
+class AddWorkItemOp(StrictFeedbackModel):
+    op: Literal["add_work_item"]
+    value: dict[str, Any]
+    after_id: str | None = None
+
+
+class RemoveWorkItemOp(StrictFeedbackModel):
+    op: Literal["remove_work_item"]
+    id: str
+
+
+class UpdateCheckOp(StrictFeedbackModel):
+    op: Literal["update_check"]
+    id: str
+    set: dict[str, Any]
+
+
+class AddCheckOp(StrictFeedbackModel):
+    op: Literal["add_check"]
+    value: dict[str, Any]
+    after_id: str | None = None
+
+
+class RemoveCheckOp(StrictFeedbackModel):
+    op: Literal["remove_check"]
+    id: str
+
+
+class UpdateMilestoneOp(StrictFeedbackModel):
+    op: Literal["update_milestone"]
+    id: str
+    set: dict[str, Any]
+
+
+class AddMilestoneOp(StrictFeedbackModel):
+    op: Literal["add_milestone"]
+    value: dict[str, Any]
+    after_id: str | None = None
+
+
+class RemoveMilestoneOp(StrictFeedbackModel):
+    op: Literal["remove_milestone"]
+    id: str
+
+
 class SetAssumptionOp(StrictFeedbackModel):
     op: Literal["set_assumption"]
     id: str
@@ -238,6 +305,15 @@ PlanEditOperation = Annotated[
         | UpdateAcceptanceTestOp
         | AddAcceptanceTestOp
         | RemoveAcceptanceTestOp
+        | UpdateWorkItemOp
+        | AddWorkItemOp
+        | RemoveWorkItemOp
+        | UpdateCheckOp
+        | AddCheckOp
+        | RemoveCheckOp
+        | UpdateMilestoneOp
+        | AddMilestoneOp
+        | RemoveMilestoneOp
         | SetAssumptionOp
         | ResolveOpenQuestionOp
         | ChooseArchitectureOptionOp

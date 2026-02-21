@@ -1,0 +1,111 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B2B_fallback_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:09:54.668703Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "plan_candidate_B2B_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2B_v1",
+    "findings": [
+      {
+        "id": "TG001",
+        "severity": "high",
+        "summary": "R1 (recursive Markdown discovery) is not fully traced to M1 exit criteria. M1 exit criteria reference AT1 partial but do not explicitly verify recursive discovery of .md files across nested directories.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "R1",
+            "json_pointer": "/plan_package/requirements/0",
+            "note": "R1 requires recursive discovery of .md files",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "recursively discover Markdown (.md) files"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/exit_criteria/1",
+            "note": "M1 exit criteria references AT1 partial but does not explicitly state recursive discovery verification",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "File Collector Plugin discovers all .md files recursively and ignores non-.md files (AT1 partial)."
+          }
+        ],
+        "routing_target": "Review"
+      },
+      {
+        "id": "TG002",
+        "severity": "medium",
+        "summary": "R2 (static-only output) is mapped to AT2 and milestones M1 and M2, but M1 deliverables include only a minimal renderer stub (DL7) that does not yet implement tags, backlinks, or search. The sample check claims M1 satisfies R2, but R2 requires all features (browsing, search, tags, backlinks) to work statically, which is not delivered until M3.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "R2",
+            "json_pointer": "/plan_package/requirements/1",
+            "note": "R2 requires static output for browsing, search, tags, and backlinks",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "without any required server-side runtime for browsing, search, tags, or backlinks"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/deliverables/6",
+            "note": "M1 delivers minimal renderer without backlinks/tags/search",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Minimal Theme/Renderer Plugin stub that outputs one HTML page per note with basic formatting (no backlinks/tags/search yet)."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "M3",
+            "json_pointer": "/plan_package/milestones/2",
+            "note": "M3 is when search is delivered",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Search & Full Rendering (Thin Slice)"
+          }
+        ],
+        "routing_target": "Review"
+      },
+      {
+        "id": "TG003",
+        "severity": "medium",
+        "summary": "R3 (Markdown rendering with formatting preservation) is mapped to AT3 and milestones M1 and M2. M1 exit criteria state 'Markdown Parser Plugin correctly parses representative Markdown files preserving formatting (AT3 partial)', but AT3 is a human_eval test requiring visual comparison. M1 exit criteria do not specify how AT3 partial is verified (automated fixture tests vs. manual inspection).",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "R3",
+            "json_pointer": "/plan_package/requirements/2",
+            "note": "R3 requires preserving Markdown formatting and structure",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "preserving Markdown formatting and structure"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "AT3",
+            "json_pointer": "/plan_package/acceptance_tests/2",
+            "note": "AT3 is human_eval requiring visual comparison",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "type: human_eval, visually compare rendered HTML output to expected formatting"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/exit_criteria/2",
+            "note": "M1 exit criteria reference AT3 partial without specifying verification method",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Markdown Parser Plugin correctly parses representative Markdown files preserving formatting (AT3 partial)."
+          }
+        ],
+        "routing_target": "Review"
+      }
+    ]
+  }
+}

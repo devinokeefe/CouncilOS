@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import hashlib
 import shutil
 import re
@@ -11,7 +10,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from council_os.handoff.hashing import artifact_hash, default_hash_spec, plan_content_hash
+from council_os.handoff.hashing import artifact_hash, canonical_json_dumps, default_hash_spec, plan_content_hash
 from council_os.handoff.schemas import (
     ApprovalRef,
     ClarificationsRef,
@@ -20,6 +19,8 @@ from council_os.handoff.schemas import (
     HumanFeedbackBundle,
     ManifestArtifactRef,
     ManifestPointers,
+    PlanFreezeRef,
+    PlanFreezeRefs,
     PlanFreezeRecord,
     PlanningHandoffBundle,
     RepoAcquisitionSpec,
@@ -33,7 +34,6 @@ from council_os.orchestrator.feedback.schemas import (
     PlanApproval,
 )
 from council_os.orchestrator.feedback.store import PlanningArtifactStore
-from council_os.orchestrator.feedback.utils import stable_json_dumps
 from council_os.orchestrator.handoff.bundle import compute_handoff_digest
 from council_os.orchestrator.handoff.repo_snapshot import (
     capture_repo_snapshot,
@@ -41,6 +41,7 @@ from council_os.orchestrator.handoff.repo_snapshot import (
     resolve_repo_url,
 )
 from council_os.vnext.events import append_vnext_event
+from council_os.utils import load_json
 
 
 def _planning_ref(name: str) -> str:
@@ -69,20 +70,64 @@ def build_config_snapshot(config: dict[str, Any], feedback_cfg: FeedbackConfig) 
     return snapshot
 
 
-def _load_json(path: Path) -> dict[str, Any]:
-    return json.loads(path.read_text(encoding="utf-8"))
-
-
 def _write_json(path: Path, payload: dict[str, Any], *, force: bool) -> None:
-    encoded = stable_json_dumps(payload)
+    encoded = canonical_json_dumps(payload)
     if path.exists():
-        existing = json.loads(path.read_text(encoding="utf-8"))
+        existing = load_json(path)
         if existing == payload:
             return
         if not force:
             raise RuntimeError(f"Handoff artifact already exists with different content: {path}")
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(encoded, encoding="utf-8")
+
+
+def _derive_amendment_id(change_request: dict[str, Any]) -> str:
+    digest = artifact_hash(change_request)
+    _, _, hex_digest = digest.partition(":")
+    return f"CR-{hex_digest[:8]}"
+
+
+def _resolve_change_request_path(run_root: Path, config_snapshot: dict[str, Any]) -> Path | None:
+    lineage_cfg = config_snapshot.get("plan_lineage") if isinstance(config_snapshot, dict) else None
+    candidate_ref = None
+    if isinstance(lineage_cfg, dict):
+        candidate_ref = lineage_cfg.get("change_request_ref") or lineage_cfg.get("change_request_path")
+    if not candidate_ref and isinstance(config_snapshot, dict):
+        candidate_ref = config_snapshot.get("change_request_ref") or config_snapshot.get("change_request_path")
+    if candidate_ref:
+        path = Path(str(candidate_ref))
+        if not path.is_absolute():
+            path = (run_root / path).resolve()
+        if path.exists():
+            return path
+    default_candidates = [
+        run_root / "implementation" / "artifacts" / "change_request_v1.json",
+        run_root / "implementation" / "change_request_v1.json",
+        run_root / "change_request_v1.json",
+    ]
+    for path in default_candidates:
+        if path.exists():
+            return path
+    return None
+
+
+def _load_change_request(
+    run_root: Path,
+    config_snapshot: dict[str, Any],
+) -> tuple[dict[str, Any] | None, Path | None]:
+    path = _resolve_change_request_path(run_root, config_snapshot)
+    if path is None:
+        return None, None
+    try:
+        payload = load_json(path)
+    except Exception:
+        return None, None
+    if not isinstance(payload, dict):
+        return None, None
+    if payload.get("schema_version") != "change_request.v1":
+        return None, None
+    return payload, path
 
 
 def _write_hash_spec(*, run_root: Path, force: bool) -> tuple[HashSpec, HandoffArtifactRef]:
@@ -95,20 +140,32 @@ def _write_hash_spec(*, run_root: Path, force: bool) -> tuple[HashSpec, HandoffA
     return spec, HandoffArtifactRef(path=_artifact_ref("hash_spec.json"), sha256=artifact_hash(spec.model_dump()))
 
 
-def _find_latest_draft(store: PlanningArtifactStore) -> tuple[dict[str, Any], int]:
-    versions: list[int] = []
+def _available_drafts(store: PlanningArtifactStore) -> list[tuple[int, str]]:
+    drafts: list[tuple[int, str]] = []
     for path in store.root.glob("plan_package_draft_v*.json"):
         name = path.name
         if name.startswith("plan_package_draft_v") and name.endswith(".json"):
             try:
-                versions.append(int(name[len("plan_package_draft_v") : -len(".json")]))
+                version = int(name[len("plan_package_draft_v") : -len(".json")])
             except ValueError:
                 continue
-    if not versions:
-        raise FileNotFoundError("No plan_package_draft_v*.json found")
-    versions.sort()
-    latest = versions[-1]
-    return store.read_json(f"plan_package_draft_v{latest}.json"), latest
+            drafts.append((version, name))
+    drafts.sort(key=lambda item: item[0])
+    return drafts
+
+
+def _is_vnext_plan(plan: dict[str, Any]) -> bool:
+    if not isinstance(plan, dict):
+        return False
+    schema_version = plan.get("schema_version")
+    meta = plan.get("meta", {})
+    if not schema_version and isinstance(meta, dict):
+        schema_version = meta.get("schema_version")
+    if isinstance(schema_version, str) and schema_version.startswith("plan_package.vNext"):
+        return True
+    if plan.get("work_items") or plan.get("checks"):
+        return True
+    return False
 
 
 def _load_selected_draft(
@@ -125,8 +182,13 @@ def _load_selected_draft(
         except ValueError as exc:
             raise ValueError(f"Invalid draft version in {selected_draft_name}") from exc
         return store.read_json(name), version, name
-    draft_plan, draft_version = _find_latest_draft(store)
-    return draft_plan, draft_version, f"plan_package_draft_v{draft_version}.json"
+    drafts = _available_drafts(store)
+    if not drafts:
+        raise FileNotFoundError("No plan_package_draft_v*.json found")
+    if len(drafts) > 1:
+        raise ValueError("selected_draft_name is required when multiple draft plans exist")
+    draft_version, draft_name = drafts[0]
+    return store.read_json(draft_name), draft_version, draft_name
 
 
 def _ensure_context_snapshot(
@@ -286,12 +348,12 @@ def _build_human_feedback_bundle(
             round_idx = int(suffix)
         except ValueError:
             continue
-        feedback_ref = HandoffArtifactRef(path=_planning_ref(name), sha256=artifact_hash(_load_json(path)))
+        feedback_ref = HandoffArtifactRef(path=_planning_ref(name), sha256=artifact_hash(load_json(path)))
         diff_path = store.path(f"plan_diff_summary_v{round_idx}.json")
         diff_ref = None
         if diff_path.exists():
             diff_ref = HandoffArtifactRef(
-                path=_planning_ref(diff_path.name), sha256=artifact_hash(_load_json(diff_path))
+                    path=_planning_ref(diff_path.name), sha256=artifact_hash(load_json(diff_path))
             )
         rounds.append(
             {
@@ -326,7 +388,7 @@ def _build_traceability_matrix(plan: dict[str, Any]) -> dict[str, Any]:
     work_items = plan.get("work_items", []) if isinstance(plan, dict) else []
     checks = plan.get("checks") or plan.get("expectations") or []
 
-    use_vnext = bool(work_items or checks or plan.get("scope") or plan.get("constraints"))
+    use_vnext = _is_vnext_plan(plan)
     if use_vnext:
         req_ids = {req.get("id") for req in requirements if isinstance(req, dict) and req.get("id")}
         work_item_map: dict[str, set[str]] = {}
@@ -403,7 +465,7 @@ def _build_plan_lint_report(plan: dict[str, Any]) -> dict[str, Any]:
     checks = plan.get("checks") or plan.get("expectations") or []
     milestones = plan.get("milestones", []) if isinstance(plan, dict) else []
 
-    is_vnext = bool(work_items or checks or plan.get("scope") or plan.get("constraints"))
+    is_vnext = _is_vnext_plan(plan)
 
     requirement_ids = {req.get("id") for req in requirements if isinstance(req, dict) and req.get("id")}
     covered: dict[str, int] = {req_id: 0 for req_id in requirement_ids if req_id}
@@ -413,10 +475,18 @@ def _build_plan_lint_report(plan: dict[str, Any]) -> dict[str, Any]:
             if not isinstance(item, dict):
                 continue
             item_id = item.get("id")
-            if item_id and not re.match(r"^WI-", str(item_id)):
+            if not item_id:
                 issues.append(
                     {
-                        "severity": "warning",
+                        "severity": "error" if is_vnext else "warning",
+                        "message": "Work item missing id",
+                        "json_pointer": f"/work_items/{idx}/id",
+                    }
+                )
+            elif not re.match(r"^WI-", str(item_id)):
+                issues.append(
+                    {
+                        "severity": "error" if is_vnext else "warning",
                         "message": f"Work item id {item_id} does not match WI-### convention",
                         "json_pointer": f"/work_items/{idx}/id",
                     }
@@ -463,10 +533,18 @@ def _build_plan_lint_report(plan: dict[str, Any]) -> dict[str, Any]:
         if not isinstance(req, dict):
             continue
         req_id = req.get("id")
-        if req_id and not re.match(r"^REQ-", str(req_id)):
+        if not req_id:
             issues.append(
                 {
-                    "severity": "warning",
+                    "severity": "error" if is_vnext else "warning",
+                    "message": "Requirement missing id",
+                    "json_pointer": f"/requirements/{req_idx}/id",
+                }
+            )
+        elif not re.match(r"^REQ-", str(req_id)):
+            issues.append(
+                {
+                    "severity": "error" if is_vnext else "warning",
                     "message": f"Requirement id {req_id} does not match REQ-### convention",
                     "json_pointer": f"/requirements/{req_idx}/id",
                 }
@@ -474,7 +552,7 @@ def _build_plan_lint_report(plan: dict[str, Any]) -> dict[str, Any]:
         if req_id and covered.get(req_id, 0) == 0:
             issues.append(
                 {
-                    "severity": "error",
+                    "severity": "error" if is_vnext else "warning",
                     "message": f"Requirement {req_id} has no mapped work items or acceptance tests",
                     "json_pointer": f"/requirements/{req_idx}",
                 }
@@ -484,10 +562,18 @@ def _build_plan_lint_report(plan: dict[str, Any]) -> dict[str, Any]:
         if not isinstance(check, dict):
             continue
         check_id = check.get("id")
-        if check_id and not re.match(r"^(CHK|EXP)-", str(check_id)):
+        if not check_id:
             issues.append(
                 {
-                    "severity": "warning",
+                    "severity": "error" if is_vnext else "warning",
+                    "message": "Check missing id",
+                    "json_pointer": f"/checks/{idx}/id",
+                }
+            )
+        elif not re.match(r"^(CHK|EXP)-", str(check_id)):
+            issues.append(
+                {
+                    "severity": "error" if is_vnext else "warning",
                     "message": f"Check id {check_id} does not match CHK/EXP convention",
                     "json_pointer": f"/checks/{idx}/id",
                 }
@@ -524,10 +610,18 @@ def _build_plan_lint_report(plan: dict[str, Any]) -> dict[str, Any]:
         if not isinstance(milestone, dict):
             continue
         milestone_id = milestone.get("id")
-        if milestone_id and not re.match(r"^MS-", str(milestone_id)):
+        if not milestone_id:
             issues.append(
                 {
-                    "severity": "warning",
+                    "severity": "error" if is_vnext else "warning",
+                    "message": "Milestone missing id",
+                    "json_pointer": f"/milestones/{idx}/id",
+                }
+            )
+        elif not re.match(r"^MS-", str(milestone_id)):
+            issues.append(
+                {
+                    "severity": "error" if is_vnext else "warning",
                     "message": f"Milestone id {milestone_id} does not match MS-### convention",
                     "json_pointer": f"/milestones/{idx}/id",
                 }
@@ -612,6 +706,16 @@ def finalize_and_write_handoff(
         ),
     )
 
+    if selected_draft_name is None and feedback_cfg.plan_review and store.exists("plan_approval.json"):
+        try:
+            approved = PlanApproval.model_validate_json(
+                store.path("plan_approval.json").read_text(encoding="utf-8")
+            )
+            if approved.approved_plan_ref:
+                selected_draft_name = Path(approved.approved_plan_ref).name
+        except Exception:
+            pass
+
     try:
         draft_plan, draft_version, draft_name = _load_selected_draft(store, selected_draft_name)
     except FileNotFoundError:
@@ -624,6 +728,20 @@ def finalize_and_write_handoff(
     _write_json(artifacts_root / draft_name, draft_plan, force=force)
 
     hash_spec, hash_spec_ref = _write_hash_spec(run_root=run_root, force=force)
+    draft_meta = draft_plan.get("meta", {}) if isinstance(draft_plan, dict) else {}
+    draft_changed = False
+    if isinstance(draft_meta, dict):
+        if "plan_version" not in draft_meta:
+            draft_meta["plan_version"] = draft_version
+            draft_changed = True
+        if "hash_spec_version" not in draft_meta:
+            draft_meta["hash_spec_version"] = hash_spec.hash_spec_version
+            draft_changed = True
+        if draft_changed:
+            draft_plan["meta"] = draft_meta
+    if draft_changed:
+        _write_json(store.path(draft_name), draft_plan, force=True)
+        _write_json(artifacts_root / draft_name, draft_plan, force=True)
     selected_draft_ref = _artifact_ref(draft_name)
     selected_draft_hash = plan_content_hash(draft_plan, hash_spec=hash_spec)
 
@@ -653,20 +771,55 @@ def finalize_and_write_handoff(
             store.path("clarification_resolutions.json").read_text(encoding="utf-8")
         )
 
+    change_request_payload: dict[str, Any] | None = None
+    change_request_ref: HandoffArtifactRef | None = None
+    change_request_ref_artifact: HandoffArtifactRef | None = None
+    change_request_notes: list[str] = []
+    loaded_change_request, change_request_path = _load_change_request(run_root, config_snapshot)
+    if loaded_change_request is not None:
+        change_request_payload = loaded_change_request
+        change_request_name = "change_request_v1.json"
+        _write_json(store.path(change_request_name), change_request_payload, force=force)
+        _write_json(artifacts_root / change_request_name, change_request_payload, force=force)
+        change_request_ref = HandoffArtifactRef(
+            path=_planning_ref(change_request_name),
+            sha256=artifact_hash(change_request_payload),
+        )
+        change_request_ref_artifact = HandoffArtifactRef(
+            path=_artifact_ref(change_request_name),
+            sha256=artifact_hash(change_request_payload),
+        )
+        reason = change_request_payload.get("reason") if isinstance(change_request_payload, dict) else None
+        if isinstance(reason, dict):
+            code = reason.get("code")
+            summary = reason.get("summary")
+            if code or summary:
+                change_request_notes.append(f"ChangeRequest {code or 'UNKNOWN'}: {summary or ''}".strip())
+
     plan_final = deepcopy(draft_plan)
     meta = plan_final.get("meta", {})
     if isinstance(meta, dict):
         meta["plan_status"] = "FROZEN"
+        if "plan_version" not in meta:
+            meta["plan_version"] = draft_version
         if "hash_spec_version" not in meta:
             meta["hash_spec_version"] = hash_spec.hash_spec_version
         lineage_cfg = config_snapshot.get("plan_lineage") if isinstance(config_snapshot, dict) else None
-        if isinstance(lineage_cfg, dict) and not feedback_cfg.plan_review:
+        if isinstance(lineage_cfg, dict):
             parent_hash = lineage_cfg.get("parent_plan_hash")
             amendment_id = lineage_cfg.get("amendment_id")
             if parent_hash and "parent_plan_hash" not in meta:
                 meta["parent_plan_hash"] = parent_hash
             if amendment_id and "amendment_id" not in meta:
                 meta["amendment_id"] = amendment_id
+        if change_request_payload is not None:
+            cr_meta = change_request_payload.get("meta") if isinstance(change_request_payload, dict) else None
+            if isinstance(cr_meta, dict):
+                parent_hash = cr_meta.get("source_plan_hash")
+                if parent_hash and "parent_plan_hash" not in meta:
+                    meta["parent_plan_hash"] = parent_hash
+            if "amendment_id" not in meta:
+                meta["amendment_id"] = _derive_amendment_id(change_request_payload)
         plan_final["meta"] = meta
     plan_hash = plan_content_hash(plan_final, hash_spec=hash_spec)
     append_vnext_event(
@@ -700,7 +853,7 @@ def finalize_and_write_handoff(
 
     env_snapshot_path = store.path("env_snapshot.json")
     if env_snapshot_path.exists():
-        env_snapshot_payload = _load_json(env_snapshot_path)
+        env_snapshot_payload = load_json(env_snapshot_path)
     else:
         env_snapshot_payload = _build_env_snapshot()
         _write_json(env_snapshot_path, env_snapshot_payload, force=force)
@@ -741,17 +894,22 @@ def finalize_and_write_handoff(
     traceability = _build_traceability_matrix(plan_final)
     _write_json(store.path("traceability_matrix.json"), traceability, force=force)
     _write_json(artifacts_root / "traceability_matrix.json", traceability, force=force)
+    if _is_vnext_plan(plan_final) and not lint_report.get("passed", False):
+        raise RuntimeError("Plan lint failed; see plan_lint_report.json for details")
 
     plan_migration_record: dict[str, Any] | None = None
     plan_migration_ref: HandoffArtifactRef | None = None
     parent_plan_hash = meta.get("parent_plan_hash") if isinstance(meta, dict) else None
     if parent_plan_hash:
+        notes = list(change_request_notes)
+        if change_request_ref is not None:
+            notes.append(f"change_request_ref: {change_request_ref.path}")
         plan_migration_record = {
             "schema_version": "plan_migration_record.v1",
             "parent_plan_hash": parent_plan_hash,
             "child_plan_hash": plan_hash,
             "amendment_id": meta.get("amendment_id") if isinstance(meta, dict) else None,
-            "notes": [],
+            "notes": notes,
         }
         _write_json(store.path("plan_migration_record.json"), plan_migration_record, force=force)
         _write_json(artifacts_root / "plan_migration_record.json", plan_migration_record, force=force)
@@ -823,14 +981,14 @@ def finalize_and_write_handoff(
     shutil.copyfile(repo_context, artifacts_root / "repo_context.json")
     shutil.copyfile(workspace_context, artifacts_root / "workspace_context.json")
 
-    repo_context_payload = _load_json(repo_context)
+    repo_context_payload = load_json(repo_context)
     repo_context_ref = HandoffArtifactRef(
         path="repo_context.json",
         sha256=artifact_hash(repo_context_payload),
     )
     workspace_context_ref = HandoffArtifactRef(
         path="workspace_context.json",
-        sha256=artifact_hash(_load_json(workspace_context)),
+        sha256=artifact_hash(load_json(workspace_context)),
     )
     repo_context_ref_artifact = HandoffArtifactRef(
         path=_artifact_ref("repo_context.json"),
@@ -838,7 +996,7 @@ def finalize_and_write_handoff(
     )
     workspace_context_ref_artifact = HandoffArtifactRef(
         path=_artifact_ref("workspace_context.json"),
-        sha256=artifact_hash(_load_json(workspace_context)),
+        sha256=artifact_hash(load_json(workspace_context)),
     )
 
     repo_root_value = repo_context_payload.get("repo_root") if isinstance(repo_context_payload, dict) else None
@@ -855,7 +1013,7 @@ def finalize_and_write_handoff(
         plan_id=str(plan_final.get("meta", {}).get("plan_id", "")),
         planning_run_id=run_id,
         frozen_at=datetime.now(UTC).isoformat(),
-        plan_package_final_ref=plan_ref,
+        plan_package_final_ref=plan_ref_artifact,
         plan_content_hash=plan_hash,
         hash_spec_version=hash_spec.hash_spec_version,
         selected_draft_ref=selected_draft_ref,
@@ -868,10 +1026,41 @@ def finalize_and_write_handoff(
         plan_approval_ref=approval_ref,
         approved_plan_hash=approval.approved_plan_hash if approval is not None else None,
         repo_snapshot_ref=repo_snapshot_ref,
-        env_snapshot_ref=env_snapshot_ref,
+        env_snapshot_ref=env_snapshot_ref_artifact,
         hash_spec_ref=hash_spec_ref,
         config_snapshot_ref=config_ref,
         human_feedback_bundle_ref=human_feedback_ref,
+        refs=PlanFreezeRefs(
+            config_snapshot=PlanFreezeRef(ref=config_ref_artifact.path, hash=config_ref_artifact.sha256),
+            clarifications=(
+                PlanFreezeRef(
+                    ref=_artifact_ref("clarification_resolutions.json"),
+                    hash=clarification_ref.sha256,
+                )
+                if clarification_ref is not None
+                else None
+            ),
+            approval=(
+                PlanFreezeRef(ref=_artifact_ref("plan_approval.json"), hash=approval_ref.sha256)
+                if approval_ref is not None
+                else None
+            ),
+            repo_snapshot=(
+                PlanFreezeRef(ref=repo_snapshot_ref.path, hash=repo_snapshot_ref.sha256)
+                if repo_snapshot_ref is not None
+                else None
+            ),
+            env_snapshot=(
+                PlanFreezeRef(ref=env_snapshot_ref_artifact.path, hash=env_snapshot_ref_artifact.sha256)
+                if env_snapshot_ref_artifact is not None
+                else None
+            ),
+            hash_spec=(
+                PlanFreezeRef(ref=hash_spec_ref.path, hash=hash_spec_ref.sha256)
+                if hash_spec_ref is not None
+                else None
+            ),
+        ),
         notes=f"Frozen after review round {draft_version}" if feedback_cfg.plan_review else "Frozen without review",
     )
     _write_json(store.path("plan_freeze_record.json"), plan_freeze.model_dump(), force=force)
@@ -977,6 +1166,15 @@ def finalize_and_write_handoff(
                 role="OPTIONAL",
             )
         )
+    if change_request_ref_artifact is not None:
+        manifest_artifacts.append(
+            ManifestArtifactRef(
+                ref=change_request_ref_artifact.path,
+                digest=change_request_ref_artifact.sha256,
+                schema_version="change_request.v1",
+                role="OPTIONAL",
+            )
+        )
     if human_feedback_ref_artifact:
         manifest_artifacts.append(
             ManifestArtifactRef(
@@ -1069,12 +1267,16 @@ def finalize_and_write_handoff(
         freeze_ref,
         config_ref,
         env_snapshot_ref,
+        hash_spec_ref,
+        repo_snapshot_ref,
         repo_context_ref,
         workspace_context_ref,
     ]
     optional_artifacts = [human_feedback_ref]
     if plan_migration_ref is not None:
         optional_artifacts.append(plan_migration_ref)
+    if change_request_ref is not None:
+        optional_artifacts.append(change_request_ref)
 
     bundle = PlanningHandoffBundle(
         handoff_bundle_id=f"HB-{run_id}",

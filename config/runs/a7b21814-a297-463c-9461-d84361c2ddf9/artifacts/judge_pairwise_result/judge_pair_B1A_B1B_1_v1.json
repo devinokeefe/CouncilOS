@@ -1,0 +1,66 @@
+{
+  "artifact_type": "judge_pairwise_result",
+  "artifact_id": "judge_pair_B1A_B1B_1_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T11:05:59.481175Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B1A_v4",
+    "plan_candidate_B1B_v3"
+  ],
+  "payload": {
+    "comparison": {
+      "a": "Candidate A provides an exceptionally well-structured plan with a highly detailed decision log, including specific criteria that would change each decision. The milestone plan is clear, and its synthesis warnings are more actionable.",
+      "b": "Candidate B produces a very strong and viable plan that is fundamentally similar to A's. It correctly identifies the core architecture and uses a logical thin-slice approach, though its decision log and warnings are slightly less detailed."
+    },
+    "judge_id": "council-os",
+    "judge_model": "gemini-1.5-pro",
+    "winner": "a",
+    "scores": {
+      "feasibility": 10,
+      "testability": 10,
+      "governance": 10,
+      "architecture": 10,
+      "clarity": 10
+    },
+    "evidence": [
+      {
+        "artifact_ref": "plan_candidate_B1A_v4",
+        "entity_id": "DEC1",
+        "json_pointer": "/decision_log/0/what_would_change_this_decision",
+        "note": "Candidate A includes a 'what_would_change_this_decision' field in its decision log, demonstrating superior foresight and robustness.",
+        "candidate_id": "B1A",
+        "artifact_id": "plan_candidate_B1A_v4",
+        "quote": "A confirmed need for a stable third-party plugin ecosystem or multiple interchangeable feature implementations (push toward O2)."
+      },
+      {
+        "artifact_ref": "plan_candidate_B1A_v4",
+        "entity_id": "W1",
+        "json_pointer": "/synthesis_warnings/0",
+        "note": "The synthesis warnings are specific and actionable, suggesting routing targets for unresolved blocking questions, which shows better integration with the governance process.",
+        "candidate_id": "B1A",
+        "artifact_id": "plan_candidate_B1A_v4",
+        "quote": "Open questions Q1 (link conventions) and Q2 (tag conventions/normalization) are marked blocking and will materially affect M2–M3 scope... require confirmation/config decisions before implementing tags"
+      },
+      {
+        "artifact_ref": "plan_candidate_B1B_v3",
+        "entity_id": "DEC1",
+        "json_pointer": "/decision_log/0",
+        "note": "Candidate B also provides a well-reasoned decision log for its choice of architecture, which aligns with the winning candidate.",
+        "candidate_id": "B1B",
+        "artifact_id": "plan_candidate_B1B_v3",
+        "quote": "O1 is the simplest architecture satisfying all MUST requirements. At ≤1,000 notes, in-memory processing is performant. The focused scope and single-user orientation make extensibility trade-offs accep"
+      },
+      {
+        "artifact_ref": "plan_candidate_B1B_v3",
+        "entity_id": "W1",
+        "json_pointer": "/synthesis_warnings/0",
+        "note": "Candidate B correctly identifies a gap in the provided acceptance tests, noting that SHOULD requirements are not covered.",
+        "candidate_id": "B1B",
+        "artifact_id": "plan_candidate_B1B_v3",
+        "quote": "Canonical acceptance tests do not cover SHOULD requirements (R15–R22). Additional tests for wiki-link parsing, tag normalization, navigation structure... should be authored before freeze..."
+      }
+    ],
+    "notes": "Both candidates are excellent and nearly identical, but Candidate A is slightly superior due to its more detailed and rigorous decision log and more actionable warnings. This demonstrates a higher degree of planning maturity."
+  }
+}

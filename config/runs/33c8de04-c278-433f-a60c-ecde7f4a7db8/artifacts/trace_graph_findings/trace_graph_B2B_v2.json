@@ -1,0 +1,104 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B2B_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:18:30.765265Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "trace_graph_B2B_primary_v2",
+    "trace_graph_B2B_anchor_v2"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2B_v2",
+    "findings": [
+      {
+        "id": "TG-1",
+        "severity": "low",
+        "summary": "Sample trace checks for Requirements R1, R2, and R3 incorrectly map to Milestone M2 (Phase B) in addition to M1. The candidate plan defines these requirements as foundational capabilities fully satisfied and verified in Milestone M1 (Phase A) via acceptance tests AT1, AT2, and AT3.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/executive_summary",
+            "note": "Executive summary confirms Phase A satisfies R1-R4.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Phase A delivers a thin-slice... satisfying R1–R4."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "M1",
+            "json_pointer": "/milestones/0/exit_criteria",
+            "note": "M1 exit criteria explicitly requires passing AT1, AT2, and AT3, fully covering R1-R3.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "M2",
+            "json_pointer": "/milestones/1/deliverables",
+            "note": "M2 deliverables focus on Backlinks (C11, R10), not the foundational discovery (R1) or parsing (R3) completed in M1.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "plan_refinement"
+      },
+      {
+        "id": "TG1",
+        "severity": "medium",
+        "summary": "Deterministic sample checks map R1/R2/R3 to milestone M2, but M2 is the backlinks phase and does not deliver or gate these baseline ingestion/static-output/markdown-rendering requirements; these requirements are already delivered and exit-gated in M1. This appears to be an incorrect or noisy trace edge in the sample checks (milestones list should likely be M1 only for R1–R3).",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "R1",
+            "json_pointer": "/deterministic_sample_checks/0/milestones",
+            "note": "R1 sample check includes M2 in milestone mapping.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "R2",
+            "json_pointer": "/deterministic_sample_checks/1/milestones",
+            "note": "R2 sample check includes M2 in milestone mapping.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "R3",
+            "json_pointer": "/deterministic_sample_checks/2/milestones",
+            "note": "R3 sample check includes M2 in milestone mapping.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "M1",
+            "json_pointer": "/plan_candidate/plan_package/milestones/0/exit_criteria",
+            "note": "M1 exit criteria explicitly gates AT1/AT2/AT3/AT4/AT13, covering R1/R2/R3.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "M2",
+            "json_pointer": "/plan_candidate/plan_package/milestones/1",
+            "note": "M2 scope is backlinks (AT8/AT9) and does not gate AT1/AT2/AT3; mapping baseline requirements to M2 is not supported by the milestone definition.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "trace_graph_correction"
+      }
+    ]
+  }
+}

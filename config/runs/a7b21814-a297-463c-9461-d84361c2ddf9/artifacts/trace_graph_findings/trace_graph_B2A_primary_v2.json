@@ -1,0 +1,76 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B2A_primary_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:48:29.490625Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B2A_v2"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2A_v2",
+    "findings": [
+      {
+        "id": "TG-001",
+        "severity": "medium",
+        "summary": "Requirement R2 (Static Output) is claimed implemented in Milestone M2, but its corresponding acceptance test AT2 is deferred to Milestone M3, failing to close the verification loop within the expected window (M1/M2).",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/deliverables/3",
+            "note": "Milestone M2 claims implementation of R2 via the Emit plugin.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Emit plugin that writes static artifacts... (R2, R6)."
+          },
+          {
+            "artifact_ref": "plan_candidate",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/exit_criteria/0",
+            "note": "Milestone M2 exit criteria includes AT1, AT5, AT6 but omits AT2.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "AT1, AT5, and AT6 pass..."
+          },
+          {
+            "artifact_ref": "plan_candidate",
+            "entity_id": "M3",
+            "json_pointer": "/plan_package/milestones/2/exit_criteria/0",
+            "note": "AT2 is explicitly deferred to Milestone M3 verification.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "AT2, AT3, and AT4 pass..."
+          }
+        ],
+        "routing_target": "plan_author"
+      },
+      {
+        "id": "TG-002",
+        "severity": "high",
+        "summary": "Requirement R3 (Markdown Parsing) is deferred to Milestone M3 for both implementation and verification, violating the trace graph expectation that this core capability be available by Milestone M2.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate",
+            "entity_id": "M3",
+            "json_pointer": "/plan_package/milestones/2/deliverables/0",
+            "note": "Plan schedules Markdown rendering (R3) for Milestone M3, not M2.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Markdown Render plugin producing CommonMark-compliant HTML... (R3, R4)..."
+          },
+          {
+            "artifact_ref": "plan_candidate",
+            "entity_id": "M3",
+            "json_pointer": "/plan_package/milestones/2/exit_criteria/0",
+            "note": "Verification (AT3) is also delayed to Milestone M3.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "AT2, AT3, and AT4 pass..."
+          }
+        ],
+        "routing_target": "plan_author"
+      }
+    ]
+  }
+}

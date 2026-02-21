@@ -1,0 +1,429 @@
+{
+  "artifact_type": "architecture_options_draft",
+  "artifact_id": "architecture_draft_1_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T11:58:30.535428Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "capsule_canonical_v1"
+  ],
+  "payload": {
+    "options": [
+      {
+        "id": "OPT_A1",
+        "summary": "Monolithic CLI pipeline in Node.js – a single CLI tool orchestrates all stages (parse, link-resolve, index-build, render) in one sequential build process, outputting a complete static site. Uses unified/remark for Markdown, Lunr.js for client-side search index generation, and a built-in template engine (e.g., Nunjucks) for HTML rendering.",
+        "components": [
+          {
+            "id": "CMP_A1",
+            "name": "CLI Entry Point",
+            "responsibilities": [
+              "Parse command-line arguments (input folder, output folder, config file path)",
+              "Orchestrate the build pipeline stages in sequence",
+              "Report build progress and errors to stdout/stderr"
+            ]
+          },
+          {
+            "id": "CMP_A2",
+            "name": "Markdown Parser & Frontmatter Extractor",
+            "responsibilities": [
+              "Read all .md files from the input directory tree",
+              "Parse YAML frontmatter to extract tags and metadata",
+              "Parse Markdown AST using unified/remark",
+              "Detect and normalize internal links (standard Markdown links and wiki-links)"
+            ]
+          },
+          {
+            "id": "CMP_A3",
+            "name": "Link & Backlink Resolver",
+            "responsibilities": [
+              "Build a forward-link graph from parsed internal links",
+              "Compute the inverse graph to derive backlinks for every note",
+              "Resolve link targets to output URLs",
+              "Report broken/unresolvable links as warnings"
+            ]
+          },
+          {
+            "id": "CMP_A4",
+            "name": "Tag Index Builder",
+            "responsibilities": [
+              "Aggregate tags across all notes",
+              "Generate per-tag note lists",
+              "Produce a global tag index data structure for tag browsing pages"
+            ]
+          },
+          {
+            "id": "CMP_A5",
+            "name": "Search Index Generator",
+            "responsibilities": [
+              "Build a Lunr.js (or FlexSearch) index from note titles, content, and tags at build time",
+              "Serialize the index to a JSON file included in the static output",
+              "Keep index size manageable via stop-word removal and stemming"
+            ]
+          },
+          {
+            "id": "CMP_A6",
+            "name": "HTML Renderer / Templating Engine",
+            "responsibilities": [
+              "Convert Markdown AST to HTML",
+              "Inject backlinks, tag lists, and navigation into page templates",
+              "Render tag index pages, home page, and search page",
+              "Copy static assets (CSS, JS, images) to output directory"
+            ]
+          },
+          {
+            "id": "CMP_A7",
+            "name": "Client-Side Search UI",
+            "responsibilities": [
+              "Load the pre-built search index in the browser",
+              "Provide a search input with real-time results",
+              "Highlight matched terms in result snippets"
+            ]
+          }
+        ],
+        "interfaces": [
+          {
+            "id": "IF_A1",
+            "from": "CMP_A1",
+            "to": "CMP_A2",
+            "contract": "Passes resolved input directory path and config object (Markdown flavor, link syntax options) to the parser."
+          },
+          {
+            "id": "IF_A2",
+            "from": "CMP_A2",
+            "to": "CMP_A3",
+            "contract": "Emits an array of NoteRecord objects: {slug, title, frontmatter, markdownAST, rawLinks[{target, anchor, type}]}."
+          },
+          {
+            "id": "IF_A3",
+            "from": "CMP_A2",
+            "to": "CMP_A4",
+            "contract": "Emits an array of NoteRecord objects with extracted tags: {slug, tags[]}."
+          },
+          {
+            "id": "IF_A4",
+            "from": "CMP_A3",
+            "to": "CMP_A6",
+            "contract": "Provides a Map<slug, BacklinkEntry[]> where BacklinkEntry = {sourceSlug, sourceTitle, context}."
+          },
+          {
+            "id": "IF_A5",
+            "from": "CMP_A4",
+            "to": "CMP_A6",
+            "contract": "Provides a Map<tag, slug[]> for tag index pages and per-note tag links."
+          },
+          {
+            "id": "IF_A6",
+            "from": "CMP_A2",
+            "to": "CMP_A5",
+            "contract": "Provides an array of {slug, title, plainTextContent, tags[]} for indexing."
+          },
+          {
+            "id": "IF_A7",
+            "from": "CMP_A5",
+            "to": "CMP_A6",
+            "contract": "Outputs a serialized search index JSON file path to be included in site assets."
+          },
+          {
+            "id": "IF_A8",
+            "from": "CMP_A6",
+            "to": "CMP_A7",
+            "contract": "The rendered search page loads the search index JSON and the client-side JS bundle via <script> tags."
+          }
+        ],
+        "tradeoffs": {
+          "pros": [
+            "Simple single-process build; easy to reason about and debug",
+            "Minimal external dependencies; one npm install",
+            "Fast for small-to-medium note sets (hundreds of notes)",
+            "Straightforward deployment: run CLI, upload output folder"
+          ],
+          "cons": [
+            "Monolithic codebase may become hard to extend with new features (graph view, themes)",
+            "Full rebuild required on any change (no incremental builds)",
+            "Lunr.js index can become large for thousands of notes, increasing page load time",
+            "Tightly coupled components make it harder to swap individual parts (e.g., replace search engine)"
+          ]
+        },
+        "risks": [
+          "Search index JSON may exceed acceptable download size for very large note sets (1000+ notes), degrading first-load performance",
+          "Wiki-link syntax ambiguity (e.g., Obsidian vs. other dialects) may cause incorrect link resolution without clear spec",
+          "Single-threaded sequential build may become slow for very large repositories"
+        ]
+      },
+      {
+        "id": "OPT_A2",
+        "summary": "Plugin-based static site generator architecture – a lightweight core orchestrator with a formal plugin API. Each concern (Markdown parsing, backlinks, tags, search) is a separate plugin conforming to a shared hook contract. Enables swapping or extending functionality (e.g., different search backends, theme plugins) without modifying core.",
+        "components": [
+          {
+            "id": "CMP_A10",
+            "name": "Core Orchestrator & Plugin Host",
+            "responsibilities": [
+              "Load configuration and discover/register plugins",
+              "Define build lifecycle hooks (init, collectFiles, transform, resolve, render, finalize)",
+              "Execute plugins in defined hook order",
+              "Manage shared build context (note registry, site metadata)"
+            ]
+          },
+          {
+            "id": "CMP_A11",
+            "name": "File Collector Plugin",
+            "responsibilities": [
+              "Recursively scan input directory for Markdown files",
+              "Emit file metadata into the shared note registry",
+              "Support configurable file include/exclude patterns"
+            ]
+          },
+          {
+            "id": "CMP_A12",
+            "name": "Markdown Parser Plugin",
+            "responsibilities": [
+              "Parse each Markdown file into an AST (using unified/remark or markdown-it)",
+              "Extract YAML frontmatter",
+              "Normalize internal link references into a canonical format"
+            ]
+          },
+          {
+            "id": "CMP_A13",
+            "name": "Backlink Resolver Plugin",
+            "responsibilities": [
+              "Subscribe to the resolve hook",
+              "Build forward-link and backlink graphs from parsed link data",
+              "Attach backlink metadata to each note in the registry"
+            ]
+          },
+          {
+            "id": "CMP_A14",
+            "name": "Tag Aggregator Plugin",
+            "responsibilities": [
+              "Collect tags from frontmatter and/or inline #tag syntax",
+              "Build tag-to-notes index",
+              "Register tag index pages for rendering"
+            ]
+          },
+          {
+            "id": "CMP_A15",
+            "name": "Search Index Plugin",
+            "responsibilities": [
+              "Build a client-side search index (Lunr, FlexSearch, or Pagefind)",
+              "Serialize index artifacts to the output directory",
+              "Optionally support chunked/sharded indexes for large sites"
+            ]
+          },
+          {
+            "id": "CMP_A16",
+            "name": "Theme / Renderer Plugin",
+            "responsibilities": [
+              "Provide HTML templates and CSS/JS assets",
+              "Render each note, tag page, index page, and search page using the build context",
+              "Support theme switching via configuration"
+            ]
+          },
+          {
+            "id": "CMP_A17",
+            "name": "Client-Side Runtime",
+            "responsibilities": [
+              "Load and query the search index in the browser",
+              "Render interactive search results",
+              "Provide tag filter UI and backlink navigation"
+            ]
+          }
+        ],
+        "interfaces": [
+          {
+            "id": "IF_A10",
+            "from": "CMP_A10",
+            "to": "CMP_A11",
+            "contract": "Hook: collectFiles(context) → context.noteRegistry populated with {filePath, slug} entries."
+          },
+          {
+            "id": "IF_A11",
+            "from": "CMP_A10",
+            "to": "CMP_A12",
+            "contract": "Hook: transform(context) → each noteRegistry entry enriched with {ast, frontmatter, rawLinks[]}."
+          },
+          {
+            "id": "IF_A12",
+            "from": "CMP_A10",
+            "to": "CMP_A13",
+            "contract": "Hook: resolve(context) → context.backlinkMap: Map<slug, BacklinkEntry[]> attached."
+          },
+          {
+            "id": "IF_A13",
+            "from": "CMP_A10",
+            "to": "CMP_A14",
+            "contract": "Hook: resolve(context) → context.tagIndex: Map<tag, slug[]> attached."
+          },
+          {
+            "id": "IF_A14",
+            "from": "CMP_A10",
+            "to": "CMP_A15",
+            "contract": "Hook: finalize(context) → search index files written to context.outputDir/search/."
+          },
+          {
+            "id": "IF_A15",
+            "from": "CMP_A10",
+            "to": "CMP_A16",
+            "contract": "Hook: render(context) → HTML files written to context.outputDir using templates + context data."
+          },
+          {
+            "id": "IF_A16",
+            "from": "CMP_A16",
+            "to": "CMP_A17",
+            "contract": "Rendered HTML pages reference client-side JS bundle and search index assets via relative paths."
+          }
+        ],
+        "tradeoffs": {
+          "pros": [
+            "Highly extensible: new features added as plugins without touching core",
+            "Themes are swappable; community can contribute plugins",
+            "Concerns are cleanly separated, improving testability",
+            "Search backend can be swapped (Lunr vs. Pagefind) via plugin config"
+          ],
+          "cons": [
+            "More upfront design and implementation effort for the plugin API",
+            "Plugin ordering and hook dependencies add complexity",
+            "Debugging cross-plugin issues can be harder than a monolith",
+            "Over-engineering risk for a small-scope project"
+          ]
+        },
+        "risks": [
+          "Plugin API design may need multiple iterations to stabilize, delaying initial delivery",
+          "Poorly documented plugin contracts could lead to brittle third-party plugins",
+          "Performance overhead from plugin hook dispatch may matter at scale"
+        ]
+      },
+      {
+        "id": "OPT_A3",
+        "summary": "Leverage an existing static site generator (e.g., Eleventy/11ty) as the build engine with custom plugins/filters for backlinks, tags, and search. Reduces custom code by reusing a mature SSG's file handling, templating, and incremental build capabilities.",
+        "components": [
+          {
+            "id": "CMP_A20",
+            "name": "Eleventy (11ty) Core Engine",
+            "responsibilities": [
+              "Handle file discovery, templating, and static output generation",
+              "Provide data cascade and collections API for structured data",
+              "Support incremental builds and watch mode out of the box"
+            ]
+          },
+          {
+            "id": "CMP_A21",
+            "name": "Markdown Processing Configuration",
+            "responsibilities": [
+              "Configure markdown-it (or remark via plugin) with desired Markdown flavor",
+              "Add wiki-link syntax support via markdown-it plugin",
+              "Extract frontmatter automatically via Eleventy data cascade"
+            ]
+          },
+          {
+            "id": "CMP_A22",
+            "name": "Backlink Data Plugin (Eleventy Plugin)",
+            "responsibilities": [
+              "Run as an Eleventy addCollection or computed data step",
+              "Scan all note collections for internal links",
+              "Compute and inject backlink data into each note's template data"
+            ]
+          },
+          {
+            "id": "CMP_A23",
+            "name": "Tag Collection & Pages",
+            "responsibilities": [
+              "Use Eleventy's built-in tag collection mechanism",
+              "Generate per-tag index pages via pagination templates",
+              "Provide tag cloud / tag list data to templates"
+            ]
+          },
+          {
+            "id": "CMP_A24",
+            "name": "Search Index Build Step",
+            "responsibilities": [
+              "Use eleventy-plugin-pagefind or a custom afterBuild event to generate a search index",
+              "Pagefind indexes the rendered HTML output for accurate full-text search",
+              "Output search UI assets alongside the site"
+            ]
+          },
+          {
+            "id": "CMP_A25",
+            "name": "Theme / Layout Templates",
+            "responsibilities": [
+              "Provide Nunjucks/Liquid templates for note pages, tag pages, home, and search",
+              "Include CSS framework or custom styles",
+              "Render backlink sections and tag links within templates"
+            ]
+          },
+          {
+            "id": "CMP_A26",
+            "name": "Pagefind Client-Side Search",
+            "responsibilities": [
+              "Provide a lightweight JS widget that loads chunked search index on demand",
+              "Support instant search with highlighting",
+              "No custom search UI code needed beyond configuration"
+            ]
+          }
+        ],
+        "interfaces": [
+          {
+            "id": "IF_A20",
+            "from": "CMP_A20",
+            "to": "CMP_A21",
+            "contract": "Eleventy config registers markdown-it library with wiki-link plugin; .md files processed automatically."
+          },
+          {
+            "id": "IF_A21",
+            "from": "CMP_A20",
+            "to": "CMP_A22",
+            "contract": "Eleventy addCollection('backlinks', ...) callback receives all note collection items with their template content and parsed links."
+          },
+          {
+            "id": "IF_A22",
+            "from": "CMP_A22",
+            "to": "CMP_A25",
+            "contract": "Each note's data object includes a backlinks[] array: {slug, title, excerpt} available in templates."
+          },
+          {
+            "id": "IF_A23",
+            "from": "CMP_A20",
+            "to": "CMP_A23",
+            "contract": "Eleventy collections.tagList and collections[tagName] auto-populated from frontmatter tags field."
+          },
+          {
+            "id": "IF_A24",
+            "from": "CMP_A20",
+            "to": "CMP_A24",
+            "contract": "Eleventy afterBuild event triggers Pagefind indexing on the _site output directory."
+          },
+          {
+            "id": "IF_A25",
+            "from": "CMP_A24",
+            "to": "CMP_A26",
+            "contract": "Pagefind outputs chunked index files and a pagefind-ui.js bundle into _site/pagefind/; search page includes <link> and <script> references."
+          },
+          {
+            "id": "IF_A26",
+            "from": "CMP_A25",
+            "to": "CMP_A20",
+            "contract": "Templates registered in Eleventy config via addLayoutAlias and directory data files."
+          }
+        ],
+        "tradeoffs": {
+          "pros": [
+            "Dramatically less custom code; leverages battle-tested SSG",
+            "Incremental builds and watch mode available out of the box",
+            "Pagefind provides chunked search indexes that scale to thousands of pages",
+            "Large Eleventy ecosystem and community for support and extensions"
+          ],
+          "cons": [
+            "Tied to Eleventy's conventions and release cycle",
+            "Backlink computation requires custom plugin code that must integrate with Eleventy's data model",
+            "Less control over build pipeline internals compared to a fully custom solution",
+            "Eleventy upgrade or breaking changes could require migration effort"
+          ]
+        },
+        "risks": [
+          "Eleventy's data cascade may introduce unexpected behavior for large or deeply nested note structures",
+          "Pagefind dependency adds an external binary (Rust-based); may complicate CI/CD on some platforms",
+          "Wiki-link resolution in markdown-it plugin may not cover all edge cases without significant customization"
+        ]
+      }
+    ]
+  }
+}

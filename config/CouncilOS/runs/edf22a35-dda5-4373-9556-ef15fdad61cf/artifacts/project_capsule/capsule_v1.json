@@ -1,0 +1,49 @@
+{
+  "artifact_type": "project_capsule",
+  "artifact_id": "capsule_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:19:41.012134Z",
+  "source_run_id": "edf22a35-dda5-4373-9556-ef15fdad61cf",
+  "parents": [],
+  "payload": {
+    "brief": "Turn my Markdown notes into a searchable static site with tags and backlinks.\n",
+    "problem_statement": "Build a planning system that turns vague briefs into frozen plans.",
+    "goals": [
+      "Produce deterministic frozen plans",
+      "Preserve strong auditability"
+    ],
+    "non_goals": [
+      "Autonomous code execution in v1"
+    ],
+    "constraints": [
+      {
+        "id": "CNS1",
+        "type": "tech",
+        "text": "Python 3.12"
+      }
+    ],
+    "assumptions": [
+      {
+        "id": "A1",
+        "text": "Users provide trusted prompts",
+        "impact": "medium",
+        "confidence": "high",
+        "needs_confirmation": false
+      }
+    ],
+    "open_questions": [
+      {
+        "id": "Q1",
+        "text": "Need tools layer in v2?",
+        "impact": "medium",
+        "blocking": false
+      }
+    ],
+    "success_metrics": [
+      "At least one candidate frozen",
+      "Checkpoint resume works"
+    ],
+    "stakeholders": [],
+    "glossary": []
+  }
+}

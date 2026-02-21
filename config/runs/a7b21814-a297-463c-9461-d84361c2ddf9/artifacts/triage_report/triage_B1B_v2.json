@@ -1,0 +1,491 @@
+{
+  "artifact_type": "triage_report",
+  "artifact_id": "triage_B1B_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:50:16.517557Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B1B_v2",
+    "validator_B1B_v2"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B1B_v2",
+    "critic_id": "MERGED",
+    "verdict": "reject",
+    "defects": [
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Hard-gate id_integrity failure: architecture option risk lists reference non-existent risk IDs (strings not present in risk_register).",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "O1",
+            "json_pointer": "/plan_package/architecture/options/0/risks",
+            "note": "O1 risks are free-text strings that do not correspond to risk_register IDs; validator flags these as missing risks.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "O2",
+            "json_pointer": "/plan_package/architecture/options/1/risks",
+            "note": "O2 risks likewise reference non-existent IDs.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "O3",
+            "json_pointer": "/plan_package/architecture/options/2/risks",
+            "note": "O3 risks likewise reference non-existent IDs.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "O4",
+            "json_pointer": "/plan_package/architecture/options/3/risks",
+            "note": "O4 risks likewise reference non-existent IDs.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/options/0/risks",
+            "value": [
+              "K4",
+              "K5"
+            ]
+          },
+          {
+            "op": "remove",
+            "path": "/plan_package/architecture/options/1/risks"
+          },
+          {
+            "op": "remove",
+            "path": "/plan_package/architecture/options/2/risks"
+          },
+          {
+            "op": "remove",
+            "path": "/plan_package/architecture/options/3/risks"
+          }
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Hard-gate id_integrity failure: decision_log evidence pointers reference missing id 'B1' (entity_id) in branch_set evidence pointers.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "DEC1",
+            "json_pointer": "/plan_package/decision_log/0/evidence_pointers/1/entity_id",
+            "note": "Validator reports missing id: B1.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "B1"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "DEC2",
+            "json_pointer": "/plan_package/decision_log/1/evidence_pointers/0/entity_id",
+            "note": "Validator reports missing id: B1.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "B1"
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/0/evidence_pointers/1/entity_id",
+            "value": null
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/1/evidence_pointers/0/entity_id",
+            "value": null
+          }
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Hard-gate risk_closure failure: critical risk K8 (privacy leakage) has null mitigation/closure fields in risk_register.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "K8",
+            "json_pointer": "/plan_package/risk_register/7/mitigation",
+            "note": "K8 mitigation is null.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "DEC6",
+            "json_pointer": "/plan_package/decision_log/5/choice",
+            "note": "Plan elsewhere claims a documentation-only mitigation.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Documentation-only mitigation: build-time warning banner and README disclaimer"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "DL26",
+            "json_pointer": "/plan_package/milestones/4/deliverables/6/text",
+            "note": "Milestone deliverable specifies the same mitigation intent.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Privacy disclaimer banner and README warning for public hosting (K8 documentation-only mitigation)"
+          }
+        ],
+        "violated_gate": "risk_closure",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/risk_register/7/mitigation",
+            "value": {
+              "text": "Documentation-only mitigation: add a prominent build-time warning and README disclaimer that publishing notes to a public host may expose sensitive information; recommend using exclusion configuration (R20) for sensitive files/directories before running builds or deploying output.",
+              "owner": "pm",
+              "status": "planned"
+            }
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "Internal consistency issue: plan text treats ~1,000-note scale as “confirmed” even though Q3 (scale) is an unconfirmed blocking open question; this weakens DEC1/DEC5 rationale and performance posture.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "Q3",
+            "json_pointer": "/plan_package/project_capsule/open_questions/2",
+            "note": "Scale is explicitly a blocking open question.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "What scale is required (approx. number of notes and total size), to choose an indexing/search approach and performance targets?"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "DEC1",
+            "json_pointer": "/plan_package/decision_log/0/rationale",
+            "note": "Claims scale is confirmed.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "The confirmed ~1,000-note scale fits in-memory processing."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "DEC5",
+            "json_pointer": "/plan_package/decision_log/4/choice",
+            "note": "Also claims confirmed 1,000-note target.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Defer active mitigation; accept in-memory processing as sufficient for confirmed 1,000-note target"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": null,
+            "json_pointer": "/plan_package/executive_summary",
+            "note": "Executive summary also treats 1,000-note target as confirmed.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Scale risks (K4/K5) are deferred as acceptable at the confirmed 1,000-note target."
+          }
+        ],
+        "violated_gate": "consistency_findings",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/0/rationale",
+            "value": "O1 is the simplest architecture satisfying all MUST requirements. The plan assumes an initial target scale of ~1,000 notes (pending Q3 confirmation) which is typically compatible with in-memory processing. A single-process pipeline is easiest to debug, package, and deliver incrementally. Limited extensibility is an acceptable trade-off for the project's focused scope."
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/4/choice",
+            "value": "Defer active mitigation until Q3 confirms scale; proceed assuming in-memory processing is sufficient for an initial ~1,000-note target, with a checkpoint to revisit if Q3 indicates larger scale."
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/executive_summary",
+            "value": "Candidate B1B delivers a Markdown-to-static-site generator using a monolithic CLI pipeline (O1). The plan follows a thin-slice milestone strategy: Milestone 1 produces a minimal but deployable static site (CLI skeleton, Markdown ingestion, single-note HTML rendering), and each subsequent milestone layers on tags, internal links/backlinks, full-text search, and polish. This architecture minimises upfront design overhead and yields a working artifact from the first milestone, de-risking integration. Key risks around link conventions (K2) and tag conventions (K3) are addressed by requiring explicit configuration before the milestones that depend on them. Scale risks (K4/K5) are deferred pending confirmation of Q3 (expected note scale) and will be validated against R22 during M4. Privacy risk (K8) is accepted with documentation-only mitigation. The candidate targets all 14 MUST requirements and covers SHOULD requirements progressively in later milestones."
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "Milestone gating inconsistency: plan states M2/M3 cannot start without answers to Q1/Q2, but milestone exit criteria/dependencies do not encode that prerequisite.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "W1",
+            "json_pointer": "/plan_package/synthesis_warnings/0/summary",
+            "note": "Explicitly states M2/M3 cannot start without Q1/Q2.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Milestones M2 and M3 cannot start without Q1/Q2 answers."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/depends_on",
+            "note": "M2 depends only on M1.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "M3",
+            "json_pointer": "/plan_package/milestones/2/depends_on",
+            "note": "M3 depends only on M1.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency_findings",
+        "patch": [
+          {
+            "op": "add",
+            "path": "/plan_package/milestones/0/exit_criteria/-",
+            "value": "Clarifications completed: Q1 (link conventions) and Q2 (tag conventions) are answered/decided and recorded before starting M2 and M3."
+          },
+          {
+            "op": "add",
+            "path": "/plan_package/milestones/1/exit_criteria/-",
+            "value": "Precondition validated: Q2 (tag conventions and normalization rules) is answered/decided and reflected in configuration before implementation."
+          },
+          {
+            "op": "add",
+            "path": "/plan_package/milestones/2/exit_criteria/-",
+            "value": "Precondition validated: Q1 (internal link conventions and resolver rules) is answered/decided and reflected in configuration before implementation."
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Risk register documentation inconsistency: K6 mitigation is null even though M1 deliverable DL6 is explicitly framed as the mitigation for malformed YAML front matter.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "K6",
+            "json_pointer": "/plan_package/risk_register/5/mitigation",
+            "note": "K6 mitigation is null.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "DL6",
+            "json_pointer": "/plan_package/milestones/0/deliverables/5/text",
+            "note": "DL6 describes the mitigation behavior for malformed front matter.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Graceful handling of malformed YAML front matter (per-file skip with warning, not build failure) (K6)"
+          }
+        ],
+        "violated_gate": "consistency_findings",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/risk_register/5/mitigation",
+            "value": {
+              "text": "Implement tolerant front-matter parsing: on malformed YAML front matter, skip only the affected file and emit a clear warning with file path/context; do not fail the entire build by default.",
+              "owner": "eng",
+              "status": "planned"
+            }
+          }
+        ]
+      },
+      {
+        "label": "note",
+        "severity": "medium",
+        "summary": "SHOULD-requirement acceptance tests are missing (R15–R22). Adding them likely requires minting new AT* IDs, which is out of scope for this role and requires reroute to acceptance test authoring.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "W2",
+            "json_pointer": "/plan_package/synthesis_warnings/1/summary",
+            "note": "Plan acknowledges missing SHOULD acceptance tests and that new IDs would be needed.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "New acceptance test IDs (AT15+) would need to be minted, which is outside the allowed ID prefixes for this role."
+          }
+        ],
+        "violated_gate": "alignment_warnings",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Risk K8 (critical privacy leakage) has null mitigation in risk_register despite being addressed in DEC6 and M5 DL26. Validator hard gate 'risk_closure' fails for K8.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "K8",
+            "json_pointer": "/plan_package/risk_register/7/mitigation",
+            "note": "K8 mitigation field is null",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "DEC6",
+            "json_pointer": "/plan_package/decision_log/5/choice",
+            "note": "DEC6 defines documentation-only mitigation for K8",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Documentation-only mitigation: build-time warning banner and README disclaimer"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "DL26",
+            "json_pointer": "/plan_package/milestones/4/deliverables/5/text",
+            "note": "M5 DL26 implements K8 mitigation",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Privacy disclaimer banner and README warning for public hosting (K8 documentation-only mitigation)"
+          }
+        ],
+        "violated_gate": "risk_closure",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Validator id_integrity gate fails: 12 architecture option risks referenced in O1-O4 are not present in risk_register (e.g., 'Large collections can lead to high memory usage').",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "O1",
+            "json_pointer": "/plan_package/architecture/options/0/risks",
+            "note": "O1 lists risks not in risk_register",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Large collections can lead to high memory usage if all notes and derived structures are held in memory"
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Validator id_integrity gate fails: Evidence pointers in decision_log reference missing entity 'B1' in branch_set artifact.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "DEC1",
+            "json_pointer": "/plan_package/decision_log/0/evidence_pointers/1",
+            "note": "Evidence pointer references branch B1 not found in branch_set_v1",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Consistency finding CS1: Plan treats ~1,000-note scale as 'confirmed' in DEC1/DEC5 rationale, but Q3 (scale) is an unconfirmed blocking open question and A4 is marked needs_confirmation=true.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "Q3",
+            "json_pointer": "/plan_package/project_capsule/open_questions/2",
+            "note": "Q3 is blocking and unconfirmed",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "What scale is required (approx. number of notes and total size)"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "DEC1",
+            "json_pointer": "/plan_package/decision_log/0/rationale",
+            "note": "DEC1 claims confirmed scale",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "The confirmed ~1,000-note scale fits in-memory processing"
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Consistency findings CS001/CS002: M2 and M3 depend only on M1, but cannot start without Q2/Q1 confirmation per W1. Missing explicit dependency or exit criterion gating M2/M3 on Q1/Q2 resolution.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/depends_on",
+            "note": "M2 depends_on lists only M1",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "W1",
+            "json_pointer": "/plan_package/synthesis_warnings/0/summary",
+            "note": "W1 states M2/M3 cannot start without Q1/Q2",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Milestones M2 and M3 cannot start without Q1/Q2 answers"
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": []
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Risk K6 has null mitigation field but M1 DL6 implements graceful YAML error handling. Mitigation text should be populated in K6 risk_register entry.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "K6",
+            "json_pointer": "/plan_package/risk_register/5/mitigation",
+            "note": "K6 mitigation is null",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "DL6",
+            "json_pointer": "/plan_package/milestones/0/deliverables/5/text",
+            "note": "DL6 provides mitigation behavior",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Graceful handling of malformed YAML front matter"
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": []
+      }
+    ],
+    "reroute_target": "acceptance_tests",
+    "reroute_reason": "To add missing SHOULD-requirement acceptance tests (R15–R22), new AT* IDs must be minted and inserted; this role is restricted to allowed_id_prefixes ['T'] and cannot create AT IDs."
+  }
+}

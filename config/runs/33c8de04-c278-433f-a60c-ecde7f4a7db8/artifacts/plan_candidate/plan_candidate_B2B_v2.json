@@ -1,0 +1,1983 @@
+{
+  "artifact_type": "plan_candidate",
+  "artifact_id": "plan_candidate_B2B_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:17:17.047911Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "candidate_delta_B2B_v2"
+  ],
+  "payload": {
+    "candidate_id": "B2B",
+    "branch_id": "B2",
+    "synthesizer_id": "candidate_b_anthropic",
+    "inputs": {
+      "capsule_ref": "capsule_canonical_v1",
+      "draft_refs": [
+        "capsule_draft_a_v1",
+        "capsule_draft_b_v1",
+        "requirements_draft_1_v1",
+        "requirements_draft_2_v1",
+        "architecture_draft_1_v1",
+        "architecture_draft_2_v1",
+        "qa_templates_draft_1_v1",
+        "qa_templates_draft_2_v1",
+        "risk_gov_draft_1_v1",
+        "risk_gov_draft_2_v1",
+        "acceptance_draft_v1"
+      ],
+      "branch_ref": "B2"
+    },
+    "plan_package": {
+      "meta": {
+        "plan_id": "a0845f52-a149-4c41-89eb-bec0e19db4c6",
+        "version": "v2",
+        "plan_version": null,
+        "created_at": "2026-02-21T12:17:17.047911Z",
+        "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+        "schema_version": "1.0.0",
+        "candidate_id": "B2B",
+        "branch_id": "B2",
+        "plan_status": "CANDIDATE",
+        "parent_plan_hash": null,
+        "amendment_id": null,
+        "hash_spec_version": null
+      },
+      "project_capsule": {
+        "brief": "Create a software to turn my Markdown notes into a searchable static site with tags and backlinks.\n",
+        "problem_statement": "Markdown notes become difficult to navigate and discover at scale; the user needs an automated way to convert a set of Markdown files into a browsable static website with fast full-text search, tag-based browsing, and bidirectional linking/backlinks between notes.",
+        "goals": [
+          "G1: Ingest a folder (or repository) of Markdown notes and generate a static website from them.",
+          "G2: Provide full-text search across all notes in the generated static site.",
+          "G3: Support tags to categorize notes and enable browsing/filtering by tag.",
+          "G4: Detect and render forward links and backlinks between notes.",
+          "G5: Preserve Markdown formatting and structure in the generated site output."
+        ],
+        "non_goals": [
+          "NG1: Building a hosted SaaS service or requiring a server-side application/database at runtime.",
+          "NG2: Real-time collaborative editing or multi-user permissions within the notes.",
+          "NG3: A WYSIWYG note editor (authoring remains in Markdown).",
+          "NG4: Mobile native applications or desktop clients beyond the generated static site.",
+          "NG5: Authentication or access control features.",
+          "NG6: Version control or history tracking of note changes.",
+          "NG7: Guaranteeing compatibility with every Markdown extension or every wiki-link dialect without explicit specification."
+        ],
+        "constraints": [
+          {
+            "id": "CNS1",
+            "type": "tech",
+            "text": "Output must be a static site (static HTML/CSS/JS/assets), with no required server-side runtime for browsing/search/backlinks beyond what can run in the browser."
+          },
+          {
+            "id": "CNS2",
+            "type": "tech",
+            "text": "Must process standard Markdown files as input (Markdown flavor/extensions to be specified)."
+          }
+        ],
+        "assumptions": [
+          {
+            "id": "A1",
+            "text": "Notes are available as Markdown files on a local filesystem or in a repository, and the tool can read them as input.",
+            "impact": "high",
+            "confidence": "medium",
+            "needs_confirmation": true
+          },
+          {
+            "id": "A2",
+            "text": "Backlinks can be derived from explicit links in the Markdown (e.g., standard Markdown links and/or a wiki-link format), and the link syntax can be standardized/specified for this project.",
+            "impact": "high",
+            "confidence": "low",
+            "needs_confirmation": true
+          },
+          {
+            "id": "A3",
+            "text": "Search is acceptable as an in-browser (client-side) search index generated at build time and queried in the static site.",
+            "impact": "high",
+            "confidence": "high",
+            "needs_confirmation": true
+          },
+          {
+            "id": "A4",
+            "text": "Tags are expressed in a consistent, parseable way (e.g., YAML frontmatter field and/or inline #tags) that will be specified for the project.",
+            "impact": "high",
+            "confidence": "medium",
+            "needs_confirmation": true
+          },
+          {
+            "id": "A5",
+            "text": "The generated site will be hosted via static hosting (e.g., GitHub Pages/Netlify) or self-hosted without backend requirements.",
+            "impact": "medium",
+            "confidence": "medium",
+            "needs_confirmation": true
+          },
+          {
+            "id": "A6",
+            "text": "The user can run a CLI/build tool to generate the site.",
+            "impact": "low",
+            "confidence": "medium",
+            "needs_confirmation": true
+          }
+        ],
+        "open_questions": [
+          {
+            "id": "Q1",
+            "text": "What Markdown flavor and internal link syntax should be supported for links/backlinks (CommonMark/GFM; standard Markdown links, Obsidian-style [[WikiLinks]], both)?",
+            "impact": "high",
+            "blocking": true
+          },
+          {
+            "id": "Q2",
+            "text": "How are tags represented in the notes (YAML frontmatter key, inline #tags, both), and should nested tags be supported?",
+            "impact": "high",
+            "blocking": true
+          },
+          {
+            "id": "Q3",
+            "text": "What is the expected scale (number of notes/total size) and performance targets for search and page load?",
+            "impact": "high",
+            "blocking": false
+          },
+          {
+            "id": "Q4",
+            "text": "What is the preferred build workflow (CLI, git-based build, watch mode) and what OS environments must be supported?",
+            "impact": "medium",
+            "blocking": false
+          },
+          {
+            "id": "Q5",
+            "text": "Do you need additional navigation features such as a graph view, note outline/TOC generation, or automatic index pages per tag?",
+            "impact": "medium",
+            "blocking": false
+          },
+          {
+            "id": "Q6",
+            "text": "Where will the site be hosted (e.g., GitHub Pages, Netlify, local-only), and are there any restrictions on client-side JavaScript usage?",
+            "impact": "medium",
+            "blocking": false
+          },
+          {
+            "id": "Q7",
+            "text": "Should the site support themes or customizable styling?",
+            "impact": "low",
+            "blocking": false
+          },
+          {
+            "id": "Q8",
+            "text": "Are there any specific search features required (e.g., fuzzy search, tag filters, sorting, highlighting)?",
+            "impact": "medium",
+            "blocking": false
+          }
+        ],
+        "success_metrics": [
+          "SM1: Static site generation succeeds on a representative notes folder and produces a browsable site (manual verification: build completes without errors and output is static files).",
+          "SM2: Search returns relevant results for a test set of queries (measurement: at least 90% of predefined queries return the expected note within top 10 results).",
+          "SM3: Tags are correctly extracted and navigable (measurement: 100% of notes with tags appear under the corresponding tag pages/filters in a test dataset).",
+          "SM4: Backlinks are correctly computed (measurement: for a test set of interlinked notes, 100% of expected backlinks appear on their target pages).",
+          "SM5: Generated site is hostable as static files (measurement: deploy to a chosen static host or open from a local file server and verify core features work without a backend).",
+          "SM6: Generated site loads and functions in modern browsers (Chrome, Firefox, Safari, Edge) without errors on a representative dataset.",
+          "SM7: On a representative dataset (e.g., 100+ notes), generation time and search responsiveness meet agreed performance targets (targets to be defined once scale is known)."
+        ],
+        "stakeholders": [
+          "Primary user (note author/maintainer)",
+          "Readers of the published notes site (could be the same as the user)",
+          "Potential future users with similar note-taking workflows"
+        ],
+        "glossary": [
+          {
+            "term": "Static site",
+            "definition": "A website composed of pre-generated files (HTML/CSS/JS/assets) that can be served without server-side application logic."
+          },
+          {
+            "term": "Markdown",
+            "definition": "A lightweight markup language used to format plain text documents."
+          },
+          {
+            "term": "Backlink",
+            "definition": "A list of notes/pages that link to the current note/page, computed by analyzing links across the note set."
+          },
+          {
+            "term": "Tag",
+            "definition": "A label associated with a note, used for categorization and navigation (representation to be specified)."
+          },
+          {
+            "term": "Full-text search",
+            "definition": "Searching the contents of notes (not just titles), typically via an index generated at build time and queried client-side."
+          }
+        ]
+      },
+      "scope": null,
+      "constraints": null,
+      "executive_summary": "Candidate B2B implements the plugin-based static site generator architecture (O2) with a hybrid milestone strategy. Phase A delivers a thin-slice proving the core orchestrator (C8), file-collector plugin (C9), and Markdown parser plugin (C10) to produce basic HTML output — validating the plugin lifecycle and satisfying R1–R4. Phase B parallelises development of the backlink resolver (C11), tag aggregator (C12), and search index (C13) plugins, each gated independently. Phase C integrates all plugins with the theme/renderer (C14) and client-side runtime (C15), running the full acceptance suite AT1–AT13. Phase D hardens the system with watch mode, performance benchmarks, and optional features. The approach trades higher upfront design cost for long-term extensibility: features like graph views (R26), themes (R27), and advanced search (R28) can be added as plugins without modifying the core. Risk posture prioritises early stabilisation of the plugin API (K16) and resolution of link/tag ambiguity (K1, K2) before Phase B begins, with XSS mitigation (K3) required before Phase C exit. Governance is sandboxed tooling with high HITL strictness.",
+      "requirements": [
+        {
+          "id": "R1",
+          "priority": "MUST",
+          "text": "The system MUST accept a user-specified folder (or repository working directory) as input and recursively discover Markdown (.md) files to form the notes corpus.",
+          "rationale": "Core workflow requires ingesting a directory of Markdown notes to generate the site."
+        },
+        {
+          "id": "R2",
+          "priority": "MUST",
+          "text": "The system MUST generate a static website output consisting only of static files (HTML/CSS/JS/assets) that can be hosted or viewed without any required server-side runtime for browsing, search, tags, or backlinks.",
+          "rationale": "Static-only output is a hard constraint and aligns with the non-goal of requiring a backend at runtime."
+        },
+        {
+          "id": "R3",
+          "priority": "MUST",
+          "text": "The system MUST parse and render each input Markdown file into a corresponding static HTML page while preserving Markdown formatting and structure (e.g., headings, lists, code blocks, emphasis, links; and commonly used elements such as images and tables when supported by the selected flavor).",
+          "rationale": "Readable output requires faithful Markdown-to-HTML rendering consistent with the project’s chosen Markdown flavor."
+        },
+        {
+          "id": "R4",
+          "priority": "MUST",
+          "text": "The system MUST produce one distinct, navigable page per input note, with each page having a stable URL derived deterministically from the note’s path/filename and/or a frontmatter-defined slug.",
+          "rationale": "Stable per-note pages are necessary for browsing, deep linking, and consistent forward links/backlinks."
+        },
+        {
+          "id": "R5",
+          "priority": "MUST",
+          "text": "The system MUST build a client-side full-text search index at generation time and provide an in-browser search UI that searches across all note contents (and titles where available) without a server.",
+          "rationale": "Full-text search is a primary goal and must operate entirely in the browser to satisfy the static-site constraint."
+        },
+        {
+          "id": "R6",
+          "priority": "SHOULD",
+          "text": "The search UI SHOULD display a results list including each matching note’s title (or filename) and a snippet and/or highlighted match context; selecting a result SHOULD navigate to the corresponding note page.",
+          "rationale": "Improves search usability and supports practical discoverability at scale."
+        },
+        {
+          "id": "R7",
+          "priority": "MUST",
+          "text": "The system MUST extract tags from notes using a specified, consistent convention and expose tag-based browsing/filtering in the generated site.",
+          "rationale": "Tags are a stated goal; consistent parsing is required for reliable tag navigation."
+        },
+        {
+          "id": "R8",
+          "priority": "MUST",
+          "text": "The generated site MUST provide a per-tag navigation experience such that each tag has a listing of all notes containing that tag (e.g., tag pages and/or tag filters).",
+          "rationale": "Makes tags actionable for navigation and supports the tag browsing goal."
+        },
+        {
+          "id": "R9",
+          "priority": "MUST",
+          "text": "The system MUST detect forward links between notes based on a specified internal link syntax and render those links as clickable navigational elements in output pages.",
+          "rationale": "Forward link rendering is required for cross-note navigation and is prerequisite for backlink computation."
+        },
+        {
+          "id": "R10",
+          "priority": "MUST",
+          "text": "The system MUST compute backlinks for each note by analyzing the corpus link graph and render a backlinks section on each note page listing all notes that link to it.",
+          "rationale": "Backlinks are a core requirement and a key differentiator for navigability."
+        },
+        {
+          "id": "R11",
+          "priority": "MUST",
+          "text": "The system MUST be invocable as an offline build step via a command-line interface (CLI) that accepts at minimum an input directory path and an output directory path, and core generation MUST NOT require network access.",
+          "rationale": "Aligns with the intended workflow (local build) and supports static hosting without backend dependencies."
+        },
+        {
+          "id": "R12",
+          "priority": "SHOULD",
+          "text": "The build process SHOULD provide clear error reporting for invalid Markdown, unresolvable internal links, or tag parsing failures, including file paths and line/position where applicable.",
+          "rationale": "Improves maintainability and reduces friction when scaling to large note corpora."
+        },
+        {
+          "id": "R13",
+          "priority": "MUST",
+          "text": "The generated site MUST function in modern browsers (Chrome, Firefox, Safari, Edge) with core features (navigation, search, tag browsing, backlinks) working without runtime errors.",
+          "rationale": "Cross-browser functionality is an explicit success metric for the generated static site."
+        },
+        {
+          "id": "R14",
+          "priority": "SHOULD",
+          "text": "The system SHOULD support configuration of the Markdown flavor, internal link syntax, and tag conventions used for parsing and site generation.",
+          "rationale": "Key conventions are open questions; configurability helps avoid overpromising universal compatibility while allowing explicit selection."
+        },
+        {
+          "id": "R15",
+          "priority": "SHOULD",
+          "text": "The system SHOULD support CommonMark as a baseline Markdown flavor and SHOULD additionally support GitHub-Flavored Markdown (GFM) extensions such as tables, task lists, and strikethrough, with the exact flavor finalized based on the project’s selected conventions.",
+          "rationale": "Establishes a concrete baseline for Markdown processing while allowing finalization per the project’s link/flavor decisions."
+        },
+        {
+          "id": "R16",
+          "priority": "SHOULD",
+          "text": "The system SHOULD support wiki-link style inter-note links (e.g., [[Note Title]]) in addition to standard Markdown links, with the exact syntax finalized based on the project’s chosen link convention.",
+          "rationale": "Wiki-links are common in note-taking tools and broaden compatibility, but exact syntax is an open question."
+        },
+        {
+          "id": "R17",
+          "priority": "SHOULD",
+          "text": "The system SHOULD include a site-wide navigation structure with at minimum (a) an index/home page listing all notes and (b) a tag index page listing all tags.",
+          "rationale": "Improves discoverability and makes the generated site easier to browse."
+        },
+        {
+          "id": "R18",
+          "priority": "SHOULD",
+          "text": "The system SHOULD support extracting tags from both YAML frontmatter and inline #tag syntax, with an option to configure which sources are used, aligned with the project’s selected tag convention.",
+          "rationale": "Supports compatibility with different tagging styles; details depend on the project’s tag representation decision."
+        },
+        {
+          "id": "R19",
+          "priority": "MUST",
+          "text": "Search results MUST meet the defined search quality target: at least 90% of predefined representative queries return the expected note within the top 10 results.",
+          "rationale": "Codifies the stated search success metric as a verifiable requirement."
+        },
+        {
+          "id": "R20",
+          "priority": "MUST",
+          "text": "Tag navigation MUST be complete: 100% of notes containing tags in the dataset MUST appear under their corresponding tag pages or filters in the generated site.",
+          "rationale": "Codifies the tag correctness success metric as a verifiable requirement."
+        },
+        {
+          "id": "R21",
+          "priority": "MUST",
+          "text": "Backlink rendering MUST be correct: for a test set of interlinked notes, 100% of expected backlinks MUST appear on their target note pages.",
+          "rationale": "Codifies the backlink correctness success metric as a verifiable requirement."
+        },
+        {
+          "id": "R22",
+          "priority": "MUST",
+          "text": "The build process MUST complete without errors on a representative notes folder and produce a valid set of static files.",
+          "rationale": "Codifies the baseline build success metric required before other features can be evaluated."
+        },
+        {
+          "id": "R23",
+          "priority": "SHOULD",
+          "text": "On a representative dataset of 100+ notes, the system SHOULD meet agreed performance targets for generation time and in-browser search responsiveness; these targets SHOULD be defined/documented based on expected scale (e.g., search results within 500ms).",
+          "rationale": "Performance requirements depend on scale, which is not yet fully specified; this ensures explicit targets and validation."
+        },
+        {
+          "id": "R24",
+          "priority": "SHOULD",
+          "text": "The system SHOULD generate a table of contents (outline) for each note page based on its heading structure.",
+          "rationale": "Improves within-note navigation, especially for long notes."
+        },
+        {
+          "id": "R25",
+          "priority": "SHOULD",
+          "text": "The CLI SHOULD provide a watch mode that monitors the input directory for changes and incrementally regenerates affected pages.",
+          "rationale": "Improves the authoring workflow during active note editing and site preview."
+        },
+        {
+          "id": "R26",
+          "priority": "COULD",
+          "text": "The generated site COULD include an interactive graph view visualizing link relationships between notes.",
+          "rationale": "Optional discovery feature; not required for core generation, tags, search, and backlinks."
+        },
+        {
+          "id": "R27",
+          "priority": "COULD",
+          "text": "The system COULD support theming or customizable styling of the generated site via user-provided CSS or theme configuration.",
+          "rationale": "Optional customization feature; not required for core functionality."
+        },
+        {
+          "id": "R28",
+          "priority": "COULD",
+          "text": "Search COULD support advanced features such as fuzzy matching, tag-based filtering, result highlighting, and sorting by relevance.",
+          "rationale": "Optional enhancements to search experience beyond basic full-text search."
+        },
+        {
+          "id": "R29",
+          "priority": "COULD",
+          "text": "The system COULD support nested/hierarchical tags (e.g., #parent/child) and reflect the hierarchy in tag navigation.",
+          "rationale": "Optional capability for complex tag taxonomies; not required for baseline tag browsing."
+        }
+      ],
+      "acceptance_tests": [
+        {
+          "id": "AT1",
+          "maps_to_requirements": [
+            "R1"
+          ],
+          "type": "system",
+          "procedure": "Create a test input directory with nested subfolders containing .md files and non-.md files. Run the CLI build specifying the root input directory and an output directory. Inspect the discovered notes list (build log or generated site pages) to confirm recursive discovery.",
+          "pass_criteria": "All .md files in all subfolders are included as notes; non-.md files are excluded."
+        },
+        {
+          "id": "AT2",
+          "maps_to_requirements": [
+            "R2"
+          ],
+          "type": "system",
+          "procedure": "Run the build on a representative notes folder. Inspect the output directory contents and attempt to open the site via a local static file server (or static hosting).",
+          "pass_criteria": "Build completes successfully; output contains only static assets (HTML/CSS/JS/media); site functions without any server-side runtime for browsing, search, tags, or backlinks."
+        },
+        {
+          "id": "AT3",
+          "maps_to_requirements": [
+            "R3"
+          ],
+          "type": "human_eval",
+          "procedure": "Prepare notes covering headings, lists, code blocks, blockquotes, links, images, and tables per the selected Markdown flavor. Build the site and visually compare rendered HTML output to expected formatting.",
+          "pass_criteria": "All tested Markdown elements render correctly and preserve structure and formatting."
+        },
+        {
+          "id": "AT4",
+          "maps_to_requirements": [
+            "R4"
+          ],
+          "type": "system",
+          "procedure": "Create notes with known filenames/paths and optional frontmatter slugs. Build the site and record the generated URLs for each note. Rebuild without changes and compare URLs.",
+          "pass_criteria": "Each note has a distinct page; URLs are deterministically derived from path/filename or frontmatter slug and remain stable across rebuilds."
+        },
+        {
+          "id": "AT5",
+          "maps_to_requirements": [
+            "R5"
+          ],
+          "type": "system",
+          "procedure": "Build the site and verify that a search index artifact is generated. Open the site in a browser with network disabled and perform searches via the UI.",
+          "pass_criteria": "Search operates fully client-side without network access; search returns results across note contents/titles."
+        },
+        {
+          "id": "AT6",
+          "maps_to_requirements": [
+            "R7",
+            "R20"
+          ],
+          "type": "system",
+          "procedure": "Create a dataset with tagged and untagged notes using the specified tag convention. Build the site and navigate tag pages/filters. Count notes per tag and compare with source data.",
+          "pass_criteria": "All tagged notes appear under each corresponding tag; untagged notes are not listed; 100% of notes with tags are included under the correct tag pages/filters."
+        },
+        {
+          "id": "AT7",
+          "maps_to_requirements": [
+            "R8"
+          ],
+          "type": "system",
+          "procedure": "Build a dataset with multiple tags across notes. Build the site and navigate to each tag’s listing page or filter UI.",
+          "pass_criteria": "Each tag has a navigable listing showing all notes containing that tag, with working links to note pages."
+        },
+        {
+          "id": "AT8",
+          "maps_to_requirements": [
+            "R9"
+          ],
+          "type": "system",
+          "procedure": "Create notes with internal forward links using the specified link syntax. Build the site and click each internal link in rendered pages.",
+          "pass_criteria": "All internal links resolve to the correct target note pages and are rendered as clickable elements."
+        },
+        {
+          "id": "AT9",
+          "maps_to_requirements": [
+            "R10",
+            "R21"
+          ],
+          "type": "system",
+          "procedure": "Create a known link graph (e.g., A→B, C→B, B→D). Build the site and inspect backlinks sections on each note page.",
+          "pass_criteria": "Each note’s backlinks list includes all and only notes that link to it; for the test set, 100% of expected backlinks appear."
+        },
+        {
+          "id": "AT10",
+          "maps_to_requirements": [
+            "R11"
+          ],
+          "type": "system",
+          "procedure": "Run the CLI build specifying input and output directories while offline (no network).",
+          "pass_criteria": "CLI accepts input/output paths; build completes without network access and produces the static site output."
+        },
+        {
+          "id": "AT11",
+          "maps_to_requirements": [
+            "R13"
+          ],
+          "type": "human_eval",
+          "procedure": "Open the generated site in latest Chrome, Firefox, Safari, and Edge. Test navigation, search, tag browsing, and backlinks in each browser.",
+          "pass_criteria": "Core features function without runtime errors in all listed browsers."
+        },
+        {
+          "id": "AT12",
+          "maps_to_requirements": [
+            "R19"
+          ],
+          "type": "metric",
+          "procedure": "Define a representative query set with expected target notes. Build the site and execute each query in the search UI, recording the top 10 results.",
+          "pass_criteria": "At least 90% of queries return the expected note within the top 10 results."
+        },
+        {
+          "id": "AT13",
+          "maps_to_requirements": [
+            "R22"
+          ],
+          "type": "system",
+          "procedure": "Run the build on a representative notes folder and monitor for errors. Verify output directory contains generated static files.",
+          "pass_criteria": "Build completes without errors and produces a valid set of static files."
+        }
+      ],
+      "architecture": {
+        "options": [
+          {
+            "id": "O1",
+            "summary": "Monolithic single-command CLI that runs an in-memory build pipeline end-to-end: read Markdown notes, extract metadata/tags/links, compute backlinks, build a client-side search index, and render a complete static HTML/CSS/JS site in one execution.",
+            "components": [
+              {
+                "id": "C1",
+                "name": "CLI Entry Point / Orchestrator",
+                "responsibilities": [
+                  "Parse command-line arguments (input folder, output folder, config file path)",
+                  "Orchestrate the build pipeline stages in sequence in a single run",
+                  "Report build progress and errors to stdout/stderr"
+                ]
+              },
+              {
+                "id": "C2",
+                "name": "Markdown Parser & Metadata Extractor",
+                "responsibilities": [
+                  "Read all .md files from the input directory tree",
+                  "Parse YAML frontmatter to extract tags and metadata",
+                  "Parse Markdown into an AST and/or HTML-ready representation",
+                  "Detect and normalize internal links (standard Markdown links and optional wiki-links)"
+                ]
+              },
+              {
+                "id": "C3",
+                "name": "Graph (Links/Backlinks) Engine",
+                "responsibilities": [
+                  "Build a forward-link graph from parsed internal links",
+                  "Compute backlinks for every note from the inverse graph",
+                  "Resolve link targets to output URLs",
+                  "Report broken/unresolvable links as warnings"
+                ]
+              },
+              {
+                "id": "C4",
+                "name": "Tag Index Builder",
+                "responsibilities": [
+                  "Aggregate tags across all notes",
+                  "Generate per-tag note lists",
+                  "Produce a tag index structure for tag browsing pages"
+                ]
+              },
+              {
+                "id": "C5",
+                "name": "Search Index Generator",
+                "responsibilities": [
+                  "Build a client-side full-text search index from note titles/content/tags at build time",
+                  "Serialize the index to a JSON (or equivalent) file included in the static output",
+                  "Apply basic index-size controls (e.g., stemming/stop words) as needed"
+                ]
+              },
+              {
+                "id": "C6",
+                "name": "HTML Renderer / Templating",
+                "responsibilities": [
+                  "Convert Markdown/AST to HTML",
+                  "Inject backlinks, tag lists, and navigation into page templates",
+                  "Render tag index pages, home page, and search page",
+                  "Copy static assets (CSS, JS, images) to the output directory"
+                ]
+              },
+              {
+                "id": "C7",
+                "name": "Client-Side Search UI",
+                "responsibilities": [
+                  "Load the pre-built search index in the browser",
+                  "Provide a search input with results rendering",
+                  "Optionally highlight matched terms in result snippets"
+                ]
+              }
+            ],
+            "interfaces": [
+              {
+                "id": "IF1",
+                "from": "C1",
+                "to": "C2",
+                "contract": "Pass input directory path and config (Markdown flavor, link/tag syntax options) to the parser/extractor."
+              },
+              {
+                "id": "IF2",
+                "from": "C2",
+                "to": "C3",
+                "contract": "Emit in-memory note records including slugs/titles/metadata and extracted forward links for link graph + backlink computation."
+              },
+              {
+                "id": "IF3",
+                "from": "C2",
+                "to": "C4",
+                "contract": "Provide extracted tags per note (from frontmatter and/or inline tag syntax) for aggregation and tag page generation."
+              },
+              {
+                "id": "IF4",
+                "from": "C2",
+                "to": "C5",
+                "contract": "Provide per-note indexable fields (slug, title, plain text content, tags) to build the search index artifact."
+              },
+              {
+                "id": "IF5",
+                "from": "C3",
+                "to": "C6",
+                "contract": "Provide backlinks per note (e.g., Map<slug, BacklinkEntry[]>) for rendering on note pages."
+              },
+              {
+                "id": "IF6",
+                "from": "C4",
+                "to": "C6",
+                "contract": "Provide tag index (e.g., Map<tag, slug[]>) for rendering tag pages and per-note tag navigation."
+              },
+              {
+                "id": "IF7",
+                "from": "C5",
+                "to": "C6",
+                "contract": "Output a serialized search index file into the output assets and return its relative path for inclusion in the rendered site."
+              },
+              {
+                "id": "IF8",
+                "from": "C6",
+                "to": "C7",
+                "contract": "Rendered search page references the search index asset and client-side JS bundle via static <script>/<link> tags."
+              }
+            ],
+            "tradeoffs": {
+              "pros": [
+                "Simple single-process build; easy to reason about and debug",
+                "Simple user experience: one command generates the whole site",
+                "Potentially fast for small-to-medium note sets due to in-memory stage handoff",
+                "Straightforward deployment: run CLI, upload output folder"
+              ],
+              "cons": [
+                "Monolithic codebase can become harder to extend (themes, graph view, alternative search backends)",
+                "Less flexibility to swap individual parts without code changes",
+                "Often implies full rebuild on any change unless incremental build is explicitly implemented",
+                "Client-side search index size can grow and impact first-load performance for large note sets"
+              ]
+            },
+            "risks": [
+              "Search index asset may become too large for very large note sets, degrading initial load time",
+              "Memory usage can grow substantially at very large scale (e.g., many thousands of notes) due to in-memory representations",
+              "Wiki-link and tag syntax ambiguity can cause incorrect extraction/resolution without a clear specification",
+              "Single-threaded sequential build may become slow on very large repositories"
+            ]
+          },
+          {
+            "id": "O2",
+            "summary": "Custom plugin-based static site generator core with a formal build lifecycle and plugin API; each concern (file collection, Markdown parsing, backlinks, tags, search, theming) is a plugin, enabling swapping/extending behavior without modifying the core.",
+            "components": [
+              {
+                "id": "C8",
+                "name": "Core Orchestrator & Plugin Host",
+                "responsibilities": [
+                  "Load configuration and discover/register plugins",
+                  "Define and execute build lifecycle hooks (init, collectFiles, transform, resolve, render, finalize)",
+                  "Manage shared build context (note registry, site metadata, output paths)"
+                ]
+              },
+              {
+                "id": "C9",
+                "name": "File Collector Plugin",
+                "responsibilities": [
+                  "Recursively scan input directory for Markdown files",
+                  "Emit file metadata into the shared note registry",
+                  "Support configurable file include/exclude patterns"
+                ]
+              },
+              {
+                "id": "C10",
+                "name": "Markdown Parser Plugin",
+                "responsibilities": [
+                  "Parse each Markdown file into an AST (or equivalent)",
+                  "Extract YAML frontmatter",
+                  "Normalize internal link references into a canonical format"
+                ]
+              },
+              {
+                "id": "C11",
+                "name": "Backlink Resolver Plugin",
+                "responsibilities": [
+                  "Build forward-link and backlink graphs from parsed link data",
+                  "Attach backlink metadata to each note in the shared registry"
+                ]
+              },
+              {
+                "id": "C12",
+                "name": "Tag Aggregator Plugin",
+                "responsibilities": [
+                  "Collect tags from frontmatter and/or inline tag syntax",
+                  "Build tag-to-notes index",
+                  "Register tag index pages for rendering"
+                ]
+              },
+              {
+                "id": "C13",
+                "name": "Search Index Plugin",
+                "responsibilities": [
+                  "Build a client-side search index and write index artifacts to the output directory",
+                  "Optionally support chunked/sharded index artifacts for larger sites"
+                ]
+              },
+              {
+                "id": "C14",
+                "name": "Theme / Renderer Plugin",
+                "responsibilities": [
+                  "Provide HTML templates and CSS/JS assets",
+                  "Render note pages and index/tag/search pages using the shared build context",
+                  "Support theme switching via configuration"
+                ]
+              },
+              {
+                "id": "C15",
+                "name": "Client-Side Runtime",
+                "responsibilities": [
+                  "Load and query the generated search index assets in the browser",
+                  "Render interactive search results and navigation UI elements",
+                  "Provide tag filter UI and backlink navigation"
+                ]
+              }
+            ],
+            "interfaces": [
+              {
+                "id": "IF9",
+                "from": "C8",
+                "to": "C9",
+                "contract": "Hook: collectFiles(context) → context.noteRegistry populated with entries (filePath, slug)."
+              },
+              {
+                "id": "IF10",
+                "from": "C8",
+                "to": "C10",
+                "contract": "Hook: transform(context) → each note enriched with (ast, frontmatter, rawLinks[])."
+              },
+              {
+                "id": "IF11",
+                "from": "C8",
+                "to": "C11",
+                "contract": "Hook: resolve(context) → backlink map attached to context and/or notes."
+              },
+              {
+                "id": "IF12",
+                "from": "C8",
+                "to": "C12",
+                "contract": "Hook: resolve(context) → tag index attached to context and tag pages registered for render."
+              },
+              {
+                "id": "IF13",
+                "from": "C8",
+                "to": "C13",
+                "contract": "Hook: finalize(context) → search index artifacts written to output directory (optionally sharded)."
+              },
+              {
+                "id": "IF14",
+                "from": "C8",
+                "to": "C14",
+                "contract": "Hook: render(context) → HTML files and static theme assets written to output directory using context data."
+              },
+              {
+                "id": "IF15",
+                "from": "C14",
+                "to": "C15",
+                "contract": "Rendered pages reference client-side JS bundle and search index assets via relative static paths."
+              }
+            ],
+            "tradeoffs": {
+              "pros": [
+                "Highly extensible: new features can be added as plugins without changing the core",
+                "Clean separation of concerns, improving testability and maintainability",
+                "Themes and search backends can be swapped via plugin selection/configuration",
+                "Can evolve toward large-site needs (e.g., sharded search indexes) within a consistent lifecycle"
+              ],
+              "cons": [
+                "More upfront design and implementation effort (plugin API, hook semantics, shared context schema)",
+                "Plugin ordering and inter-plugin dependencies add complexity",
+                "Debugging cross-plugin issues can be harder than a monolith",
+                "Over-engineering risk for a small-scope initial release"
+              ]
+            },
+            "risks": [
+              "Plugin API may need multiple iterations to stabilize, delaying initial delivery",
+              "Poorly specified plugin contracts can lead to brittle plugins and breaking changes",
+              "Performance overhead or complexity from hook dispatch and large shared context objects may emerge at scale"
+            ]
+          },
+          {
+            "id": "O3",
+            "summary": "Use an existing static site generator (SSG), specifically Eleventy/11ty, as the build engine; implement backlinks, tags, and search as Eleventy plugins/config, leveraging its templating, collections/data model, and watch/incremental build capabilities (with Pagefind for scalable client-side search).",
+            "components": [
+              {
+                "id": "C16",
+                "name": "Eleventy (11ty) Core Engine",
+                "responsibilities": [
+                  "Handle file discovery, templating, and static output generation",
+                  "Provide data cascade and collections APIs for structured content data",
+                  "Support watch mode and incremental rebuilds"
+                ]
+              },
+              {
+                "id": "C17",
+                "name": "Markdown Processing Configuration",
+                "responsibilities": [
+                  "Configure Markdown library/flavor and parsing options",
+                  "Add wiki-link syntax support via Markdown plugin (if required)",
+                  "Extract frontmatter into Eleventy’s data model"
+                ]
+              },
+              {
+                "id": "C18",
+                "name": "Backlink Data Plugin (Eleventy Plugin)",
+                "responsibilities": [
+                  "Scan collections/content for internal links",
+                  "Compute backlinks and inject backlink data into each note’s template data"
+                ]
+              },
+              {
+                "id": "C19",
+                "name": "Tag Collections & Tag Pages",
+                "responsibilities": [
+                  "Use Eleventy’s tags/collections mechanisms to aggregate tags",
+                  "Generate per-tag index pages (e.g., via pagination templates)",
+                  "Provide tag lists/tag cloud data to templates"
+                ]
+              },
+              {
+                "id": "C20",
+                "name": "Search Index Build Step (Pagefind or equivalent)",
+                "responsibilities": [
+                  "Generate a client-side full-text search index during/after the Eleventy build",
+                  "Index the rendered HTML output for accurate search over final content",
+                  "Write search assets into the output directory"
+                ]
+              },
+              {
+                "id": "C21",
+                "name": "Theme / Layout Templates",
+                "responsibilities": [
+                  "Provide templates for note pages, tag pages, home, and search",
+                  "Include CSS and any client-side JS needed for navigation/backlinks/search integration",
+                  "Render backlink sections and tag links within templates"
+                ]
+              },
+              {
+                "id": "C22",
+                "name": "Client-Side Search UI (Pagefind UI or custom)",
+                "responsibilities": [
+                  "Load chunked search index assets on demand",
+                  "Provide interactive search UI with highlighting",
+                  "Operate entirely client-side in the static site"
+                ]
+              }
+            ],
+            "interfaces": [
+              {
+                "id": "IF16",
+                "from": "C16",
+                "to": "C17",
+                "contract": "Eleventy config registers Markdown processing (including wiki-link plugin if needed); .md files are processed through this configuration."
+              },
+              {
+                "id": "IF17",
+                "from": "C16",
+                "to": "C18",
+                "contract": "Eleventy plugin hook/collection step receives all notes/collection items and can compute backlinks to inject into template data."
+              },
+              {
+                "id": "IF18",
+                "from": "C18",
+                "to": "C21",
+                "contract": "Each note’s data object includes backlinks[] (e.g., {slug, title, excerpt/context}) available to templates."
+              },
+              {
+                "id": "IF19",
+                "from": "C16",
+                "to": "C19",
+                "contract": "Tags/collections are populated from frontmatter tags (and/or derived tags) and made available to templates and pagination."
+              },
+              {
+                "id": "IF20",
+                "from": "C16",
+                "to": "C20",
+                "contract": "AfterBuild (or equivalent) triggers search indexing against the built output directory."
+              },
+              {
+                "id": "IF21",
+                "from": "C20",
+                "to": "C22",
+                "contract": "Search build step outputs static (often chunked) search assets; the search page includes references to these assets and UI JS."
+              },
+              {
+                "id": "IF22",
+                "from": "C21",
+                "to": "C16",
+                "contract": "Templates are registered/configured in Eleventy and used to produce final static output files."
+              }
+            ],
+            "tradeoffs": {
+              "pros": [
+                "Reduces custom code by leveraging a mature SSG for file handling and templating",
+                "Watch mode and incremental builds available out of the box",
+                "Pagefind-style search produces chunked indexes that scale better to thousands of pages",
+                "Access to ecosystem of plugins/themes and community support"
+              ],
+              "cons": [
+                "Constrained by the chosen SSG’s conventions, APIs, and upgrade cycle",
+                "Backlink computation still requires custom integration with the SSG data model",
+                "Less control over build pipeline internals than a fully custom generator",
+                "Additional dependencies (SSG + plugins), and potentially a non-JS binary for search indexing"
+              ]
+            },
+            "risks": [
+              "SSG plugin/data model limitations may force workarounds for specific features",
+              "Upgrades to the SSG or plugin APIs may introduce breaking changes requiring maintenance",
+              "Search indexing toolchain (e.g., Pagefind) may add CI/CD complexity on some platforms",
+              "Wiki-link resolution plugin may not cover all desired dialects/edge cases without customization"
+            ]
+          },
+          {
+            "id": "O4",
+            "summary": "Composable multi-tool pipeline: separate single-responsibility CLI tools (parser, backlink enricher, search indexer, renderer) communicate via intermediate on-disk artifacts (e.g., JSON), allowing independent development and replacement of stages while still producing a static site output.",
+            "components": [
+              {
+                "id": "C23",
+                "name": "Content Parser (CLI)",
+                "responsibilities": [
+                  "Scan a directory of Markdown files",
+                  "Output a structured data file (e.g., notes.json) containing content, metadata, tags, and extracted forward links for every note"
+                ]
+              },
+              {
+                "id": "C24",
+                "name": "Data Enricher (Backlinks) (CLI)",
+                "responsibilities": [
+                  "Consume structured notes data from the parser",
+                  "Analyze the link graph to compute backlinks for each note",
+                  "Output an enriched structured data file including backlink information"
+                ]
+              },
+              {
+                "id": "C25",
+                "name": "Search Indexer (CLI)",
+                "responsibilities": [
+                  "Consume structured notes data from the parser (or enriched data if desired)",
+                  "Generate a static client-side search index artifact (e.g., JSON files)"
+                ]
+              },
+              {
+                "id": "C26",
+                "name": "Site Renderer (CLI)",
+                "responsibilities": [
+                  "Consume enriched structured data to generate final HTML pages using templates",
+                  "Copy generated pages, search index artifacts, and other static assets to the output directory"
+                ]
+              }
+            ],
+            "interfaces": [
+              {
+                "id": "IF23",
+                "from": "C23",
+                "to": "C24",
+                "contract": "On-disk structured data file (e.g., notes.json) containing parsed note content/metadata and extracted forward links."
+              },
+              {
+                "id": "IF24",
+                "from": "C23",
+                "to": "C25",
+                "contract": "On-disk structured data file (e.g., notes.json) containing parsed note content/metadata and extracted forward links."
+              },
+              {
+                "id": "IF25",
+                "from": "C24",
+                "to": "C26",
+                "contract": "On-disk enriched data file (e.g., enriched-notes.json) containing backlink information per note."
+              },
+              {
+                "id": "IF26",
+                "from": "C25",
+                "to": "C26",
+                "contract": "On-disk search index artifact(s) (e.g., search-index.json and related files) to be copied/embedded into the final site output."
+              }
+            ],
+            "tradeoffs": {
+              "pros": [
+                "High modularity: each stage can be developed, tested, and replaced independently",
+                "Easier to mix technologies across stages (e.g., parser in one language, renderer in another)",
+                "Clear intermediate artifact(s) can aid debugging and reproducibility"
+              ],
+              "cons": [
+                "More complex build orchestration for the end-user compared to a single command",
+                "I/O overhead from writing/reading intermediate files can reduce performance",
+                "Intermediate schema/versioning must be maintained carefully across tools"
+              ]
+            },
+            "risks": [
+              "User experience may suffer if orchestration is cumbersome (multiple commands, ordering, cleanup)",
+              "Intermediate JSON/schema changes require coordinated updates across multiple tools",
+              "Disk usage can increase due to large intermediate artifacts on big note sets"
+            ]
+          }
+        ],
+        "chosen": {
+          "option_id": "O2",
+          "rationale": "O2's plugin-based architecture cleanly separates each concern (file collection, parsing, backlinks, tags, search, theming) into independently testable plugins communicating through a formal build lifecycle. The hybrid milestone strategy mitigates the over-engineering risk noted in O2's cons by delivering a working thin-slice in Phase A before parallelising plugin development. This architecture is best suited when the project anticipates growth beyond MVP scope — R26 (graph view), R27 (themes), and R28 (advanced search) can each be added as a plugin without core changes. Compared to O1 (monolith), O2 offers better long-term maintainability and testability. Compared to O3 (Eleventy-based), O2 avoids coupling to a third-party SSG's conventions and upgrade cycle (K18). Compared to O4 (multi-tool pipeline), O2 keeps a single-command UX (R11) while retaining modularity.",
+          "high_level_dataflow": "CLI invocation → C8 (Core Orchestrator) loads config and discovers plugins → Hook: collectFiles — C9 (File Collector Plugin) recursively scans input directory, populates shared note registry → Hook: transform — C10 (Markdown Parser Plugin) parses each note into AST, extracts frontmatter, normalises internal links → Hook: resolve — C11 (Backlink Resolver Plugin) builds forward/backlink graph and attaches backlink metadata; C12 (Tag Aggregator Plugin) collects tags and builds tag index → Hook: render — C14 (Theme/Renderer Plugin) generates HTML pages (note pages, tag pages, home, search) using shared context → Hook: finalize — C13 (Search Index Plugin) builds and writes client-side search index artifacts → Static output directory contains HTML/CSS/JS/search-index assets → C15 (Client-Side Runtime) loads in browser to power search UI, tag filters, and backlink navigation.",
+          "key_design_decisions": [
+            "DEC1",
+            "DEC2",
+            "DEC3",
+            "DEC4",
+            "DEC5",
+            "DEC6",
+            "DEC7"
+          ]
+        }
+      },
+      "milestones": [
+        {
+          "id": "M1",
+          "name": "Phase A — Thin-Slice: Core Orchestrator + Basic Pipeline",
+          "deliverables": [
+            {
+              "id": "DL1",
+              "text": "Core Orchestrator (C8) with plugin discovery, registration, and build lifecycle hook execution (init → collectFiles → transform → resolve → render → finalize)."
+            },
+            {
+              "id": "DL2",
+              "text": "File Collector Plugin (C9) implementing recursive .md file discovery with configurable include/exclude patterns."
+            },
+            {
+              "id": "DL3",
+              "text": "Markdown Parser Plugin (C10) parsing CommonMark + GFM extensions, extracting frontmatter, and normalising internal links (standard Markdown links + wiki-links)."
+            },
+            {
+              "id": "DL4",
+              "text": "Minimal Theme/Renderer Plugin (C14 stub) producing basic HTML pages — one per note with stable URLs."
+            },
+            {
+              "id": "DL5",
+              "text": "Plugin API specification document (versioned, with schema validation for shared context)."
+            },
+            {
+              "id": "DL6",
+              "text": "Documented canonical link model and tag specification (resolving Q1 and Q2)."
+            }
+          ],
+          "exit_criteria": [
+            "AT1 passes: all .md files recursively discovered, non-.md excluded.",
+            "AT2 passes: output is static files only, no server runtime required.",
+            "AT3 passes: Markdown formatting preserved in rendered HTML.",
+            "AT4 passes: one distinct page per note with stable, deterministic URLs.",
+            "AT13 passes: build completes without errors on representative folder.",
+            "Plugin-contract smoke test passes: a no-op plugin can register, receive all lifecycle hooks, and access shared context without errors.",
+            "K1 mitigated: canonical link model documented and tested with edge-case fixtures.",
+            "K2 mitigated: tag specification documented and parser validated."
+          ],
+          "depends_on": []
+        },
+        {
+          "id": "M2",
+          "name": "Phase B — Parallel Plugin Development: Backlinks",
+          "deliverables": [
+            {
+              "id": "DL7",
+              "text": "Backlink Resolver Plugin (C11) computing forward-link and backlink graphs from parsed link data and attaching backlink metadata to shared registry."
+            },
+            {
+              "id": "DL8",
+              "text": "Backlink rendering in note page templates (backlinks section listing all linking notes)."
+            }
+          ],
+          "exit_criteria": [
+            "AT8 passes: all internal forward links resolve to correct target pages.",
+            "AT9 passes: 100% of expected backlinks appear on target note pages for the test link graph.",
+            "K10 mitigated: anchor links and URL-encoded paths normalised correctly in backlink computation."
+          ],
+          "depends_on": [
+            "M1"
+          ]
+        },
+        {
+          "id": "M3",
+          "name": "Phase B — Parallel Plugin Development: Tags",
+          "deliverables": [
+            {
+              "id": "DL9",
+              "text": "Tag Aggregator Plugin (C12) collecting tags from frontmatter and inline #tag syntax, building tag-to-notes index, and registering tag pages for rendering."
+            },
+            {
+              "id": "DL10",
+              "text": "Per-tag listing pages and tag index page in rendered output."
+            }
+          ],
+          "exit_criteria": [
+            "AT6 passes: 100% of tagged notes appear under correct tag pages/filters.",
+            "AT7 passes: each tag has a navigable listing with working links to note pages."
+          ],
+          "depends_on": [
+            "M1"
+          ]
+        },
+        {
+          "id": "M4",
+          "name": "Phase B — Parallel Plugin Development: Search",
+          "deliverables": [
+            {
+              "id": "DL11",
+              "text": "Search Index Plugin (C13) building a client-side full-text search index at build time and writing index artifacts to output directory."
+            },
+            {
+              "id": "DL12",
+              "text": "Client-Side Search UI (C15 search component) loading the index and providing in-browser search with results list."
+            }
+          ],
+          "exit_criteria": [
+            "AT5 passes: search operates fully client-side without network access.",
+            "AT12 passes: ≥90% of representative queries return expected note in top 10 results."
+          ],
+          "depends_on": [
+            "M1"
+          ]
+        },
+        {
+          "id": "M5",
+          "name": "Phase C — Integration & Security Hardening",
+          "deliverables": [
+            {
+              "id": "DL13",
+              "text": "Full Theme/Renderer Plugin (C14) with complete HTML templates for note pages, tag pages, home page, search page, and site-wide navigation (index + tag index)."
+            },
+            {
+              "id": "DL14",
+              "text": "Client-Side Runtime (C15) integrated: search UI, tag filter UI, backlink navigation all functional."
+            },
+            {
+              "id": "DL15",
+              "text": "XSS security test suite with known payloads validating sanitisation in renderer plugin (K3 mitigation)."
+            },
+            {
+              "id": "DL16",
+              "text": "CLI entry point accepting input directory, output directory, and config file path (R11)."
+            }
+          ],
+          "exit_criteria": [
+            "Full acceptance suite AT1–AT13 passes end-to-end.",
+            "K3 mitigated: XSS payload test suite passes; raw HTML disabled by default; unsafe URL schemes blocked.",
+            "K9 mitigated: path traversal tests pass; symlinks not followed by default; paths constrained to declared root.",
+            "K5 mitigated: slug collision detection implemented and tested.",
+            "K6 mitigated: reproducibility check (two clean builds produce identical output) passes.",
+            "AT10 passes: CLI build completes offline.",
+            "AT11 passes: core features work in Chrome, Firefox, Safari, Edge without runtime errors."
+          ],
+          "depends_on": [
+            "M2",
+            "M3",
+            "M4"
+          ]
+        },
+        {
+          "id": "M6",
+          "name": "Phase D — Harden: Watch Mode, Performance & Optional Features",
+          "deliverables": [
+            {
+              "id": "DL17",
+              "text": "Watch mode (R25) monitoring input directory for changes and incrementally regenerating affected pages, backlinks, and search index."
+            },
+            {
+              "id": "DL18",
+              "text": "Performance benchmark suite for build time and in-browser search responsiveness on 100+ note dataset (R23)."
+            },
+            {
+              "id": "DL19",
+              "text": "Per-note table of contents generation from heading structure (R24)."
+            },
+            {
+              "id": "DL20",
+              "text": "Configurable basePath support for deployment under subpaths (K12 mitigation)."
+            }
+          ],
+          "exit_criteria": [
+            "R25 watch mode functional: edit/rename/delete scenarios trigger correct incremental rebuild (K14 tested).",
+            "R23 performance targets documented and met on 100+ note benchmark dataset.",
+            "R24 TOC renders correctly for notes with nested headings.",
+            "K12 mitigated: deployment-mode tests pass with non-root basePath.",
+            "K13 mitigated: memory/CPU profiling shows acceptable resource usage on benchmark dataset."
+          ],
+          "depends_on": [
+            "M5"
+          ]
+        }
+      ],
+      "risk_register": [
+        {
+          "id": "K1",
+          "severity": "high",
+          "description": "Link/backlink resolution errors due to ambiguous or mixed internal link syntax (e.g., Markdown links vs. WikiLinks), causing broken navigation and incorrect backlink lists (blocking Q1).",
+          "mitigation": {
+            "text": "Resolve and document the supported internal link syntax (Q1). Implement a single canonical internal link model (normalized target IDs) with deterministic resolution rules. Add fixture-based tests for edge cases (relative paths, anchors, URL-encoding, renamed files). Emit build warnings for unresolved links including source locations.",
+            "owner": "Engineering",
+            "status": "planned"
+          },
+          "acceptance": null
+        },
+        {
+          "id": "K2",
+          "severity": "high",
+          "description": "Tag extraction inconsistency due to unspecified or mixed tag formats (frontmatter vs inline tags; nested tags), leading to missing/incorrect tag pages and filtering (blocking Q2).",
+          "mitigation": {
+            "text": "Resolve and document the tag specification (Q2). Implement a deterministic tag parser with explicit precedence rules and validation (report invalid tokens). Produce a build-time summary/tag inventory and add tests for the chosen formats (frontmatter, inline, optional nested).",
+            "owner": "Product/Engineering",
+            "status": "planned"
+          },
+          "acceptance": null
+        },
+        {
+          "id": "K3",
+          "severity": "critical",
+          "description": "Client-side XSS or content injection vulnerabilities if Markdown/HTML is rendered unsafely (e.g., raw HTML passthrough, unsafe link protocols), compromising readers of the static site.",
+          "mitigation": {
+            "text": "Disable raw HTML by default (or sanitize it) in the renderer; block unsafe URL schemes (e.g., javascript:) and enforce safe attributes. Add security tests with known XSS payloads. If allowing trusted raw HTML, require explicit opt-in configuration and document the risk.",
+            "owner": "Security/Engineering",
+            "status": "planned"
+          },
+          "acceptance": null
+        },
+        {
+          "id": "K4",
+          "severity": "high",
+          "description": "Client-side search index size/quality/performance may degrade at scale (large JS payload, slow queries, long build time), causing poor UX or crashes (related to Q3/SM7).",
+          "mitigation": {
+            "text": "Define expected scale and performance targets (Q3). Choose an index approach suitable for in-browser search; apply index-size controls (tokenization choices, compression, lazy loading/chunking where applicable). Add benchmark fixtures and CI performance budgets; validate search quality targets against representative queries.",
+            "owner": "Engineering",
+            "status": "planned"
+          },
+          "acceptance": null
+        },
+        {
+          "id": "K5",
+          "severity": "medium",
+          "description": "Slug/URL collisions (e.g., same filename in different folders, case-insensitive filesystems) cause pages to overwrite each other or links to resolve unpredictably.",
+          "mitigation": {
+            "text": "Define a deterministic slug strategy (include path segments and/or stable hashing). Detect collisions during build and fail with actionable errors unless an explicit override map is provided.",
+            "owner": "Engineering",
+            "status": "planned"
+          },
+          "acceptance": null
+        },
+        {
+          "id": "K6",
+          "severity": "high",
+          "description": "Non-deterministic builds (ordering differences, locale/time-dependent formatting, unpinned dependencies) produce noisy diffs and inconsistent site output across machines/CI.",
+          "mitigation": {
+            "text": "Enforce determinism: stable sorting of inputs, fixed locale/timezone handling, content-hash-based asset naming, and pinned dependency versions/lockfiles. Add a reproducibility check comparing outputs across two clean runs.",
+            "owner": "Engineering",
+            "status": "planned"
+          },
+          "acceptance": null
+        },
+        {
+          "id": "K7",
+          "severity": "high",
+          "description": "Markdown flavor/extension mismatch or unsupported/non-standard syntax yields rendering differences, broken formatting, or build failures relative to user expectations.",
+          "mitigation": {
+            "text": "Select and document a supported Markdown flavor and extensions (e.g., CommonMark baseline with explicit GFM extensions if supported). Add a conformance test pack with representative notes, robust error handling, and a strict mode that flags unsupported syntax.",
+            "owner": "Product/Engineering",
+            "status": "planned"
+          },
+          "acceptance": null
+        },
+        {
+          "id": "K8",
+          "severity": "medium",
+          "description": "File encoding and Unicode handling issues (non-UTF8, BOM, mixed line endings) cause build failures or corrupted output text/search results.",
+          "mitigation": {
+            "text": "Assume UTF-8 by default but detect/handle BOM and common encodings where feasible. Normalize line endings internally. Emit clear diagnostics identifying offending files and provide a preflight validation command.",
+            "owner": "Engineering",
+            "status": "planned"
+          },
+          "acceptance": null
+        },
+        {
+          "id": "K9",
+          "severity": "high",
+          "description": "Path traversal or unintended file inclusion during ingestion (e.g., following symlinks, reading outside the intended directory) could leak local files into the generated site.",
+          "mitigation": {
+            "text": "Constrain ingestion to a declared root directory; default to not following symlinks; maintain an allowlist of file extensions. Reject paths escaping the root and generate an inclusion manifest for review.",
+            "owner": "Security/Engineering",
+            "status": "planned"
+          },
+          "acceptance": null
+        },
+        {
+          "id": "K10",
+          "severity": "medium",
+          "description": "Backlink computation gaps for links with anchors, URL-encoded paths, or inconsistent normalization lead to partially missing backlink lists.",
+          "mitigation": {
+            "text": "Normalize link targets consistently (decode, resolve relative paths, standardize/strip anchors where appropriate) and test anchor links and encoded characters. Ensure link resolution uses the same canonicalization used for URL/slug generation.",
+            "owner": "Engineering",
+            "status": "planned"
+          },
+          "acceptance": null
+        },
+        {
+          "id": "K11",
+          "severity": "medium",
+          "description": "Broken offline/local viewing when opened via file:// due to browser restrictions (e.g., fetch/XHR blocked), especially impacting search and other JS features.",
+          "mitigation": {
+            "text": "Design search/runtime to work on static hosts; for local preview, provide guidance to run a simple local server. Optionally embed the index into a JS bundle to avoid runtime fetch, or detect file:// and show instructions.",
+            "owner": "Engineering/Docs",
+            "status": "planned"
+          },
+          "acceptance": null
+        },
+        {
+          "id": "K12",
+          "severity": "medium",
+          "description": "Asset/link path resolution issues (broken relative paths, missing CSS/JS, incorrect base URL) can cause the site to work locally but fail when deployed under a subpath (e.g., GitHub Pages), and/or break nested-directory links/images.",
+          "mitigation": {
+            "text": "Support configurable basePath and generate links/assets relative to it. Establish a clear rule for resolving relative paths for notes and assets in nested directories. Add deployment-mode tests (non-root basePath) and nested-content fixtures with link/asset checks over the output.",
+            "owner": "Engineering",
+            "status": "planned"
+          },
+          "acceptance": null
+        },
+        {
+          "id": "K13",
+          "severity": "medium",
+          "description": "Excessive memory usage or slow build times on large repositories (including inefficient backlink generation) can cause build failures/timeouts in CI or on user machines.",
+          "mitigation": {
+            "text": "Profile CPU/memory usage; stream where possible; avoid loading all contents at once; optimize link-graph/backlink computation; implement caching/incremental indexing where feasible. Provide configurable limits (max file size, exclude globs) and a performance troubleshooting guide.",
+            "owner": "Engineering",
+            "status": "planned"
+          },
+          "acceptance": null
+        },
+        {
+          "id": "K14",
+          "severity": "high",
+          "description": "Incorrect incremental rebuild/watch behavior (if implemented) can lead to stale search index/backlinks after edits, renames, or deletes, confusing users.",
+          "mitigation": {
+            "text": "If watch mode is offered, implement a dependency graph so edits trigger recomputation of affected pages, backlinks, and search index. Provide a 'full rebuild' fallback and add tests for edit/rename/delete scenarios.",
+            "owner": "Engineering",
+            "status": "planned"
+          },
+          "acceptance": null
+        },
+        {
+          "id": "K15",
+          "severity": "medium",
+          "description": "Cross-browser compatibility and accessibility issues in generated HTML/CSS/JS (including search UI) may lead to runtime errors or reduced usability for some readers (SM6).",
+          "mitigation": {
+            "text": "Define target browsers and test across them. Adopt baseline accessibility guidelines for templates/components (semantic HTML, focus management, ARIA where needed). Add at least one automated audit step (e.g., Lighthouse/axe) plus manual spot checks.",
+            "owner": "Engineering/Design",
+            "status": "planned"
+          },
+          "acceptance": null
+        },
+        {
+          "id": "K16",
+          "severity": "medium",
+          "description": "Overly permissive configuration or plugin/theme extensibility (if added) can introduce instability and make outputs hard to support/reproduce.",
+          "mitigation": {
+            "text": "Keep configuration surface minimal initially; validate configuration schemas; version configurations; gate plugin execution behind explicit allowlists and warnings. Provide a safe default preset and a compatibility policy.",
+            "owner": "Product/Engineering",
+            "status": "planned"
+          },
+          "acceptance": null
+        },
+        {
+          "id": "K17",
+          "severity": "medium",
+          "description": "Information disclosure via generated artifacts (e.g., including private notes, embedding absolute filesystem paths in HTML/JS/search index).",
+          "mitigation": {
+            "text": "Support exclude patterns (globs) and a 'private' frontmatter flag. Ensure generated output never includes absolute source paths (use relative identifiers only). Emit a build manifest listing included sources for review.",
+            "owner": "Engineering",
+            "status": "planned"
+          },
+          "acceptance": null
+        },
+        {
+          "id": "K18",
+          "severity": "high",
+          "description": "Poorly managed third-party dependencies (e.g., Markdown parser, search indexer/SSG plugins) may introduce breaking changes or security vulnerabilities that destabilize the tool.",
+          "mitigation": {
+            "text": "Pin dependency versions and use a lockfile. Establish a dependency update/vetting process including automated vulnerability scanning and regression testing before upgrades.",
+            "owner": "Engineering",
+            "status": "planned"
+          },
+          "acceptance": null
+        },
+        {
+          "id": "K19",
+          "severity": "medium",
+          "description": "A complex installation process or system-specific dependencies for the CLI tool can create a high barrier to entry for users.",
+          "mitigation": {
+            "text": "Target a simple installation path (e.g., a single package manager). Document prerequisites clearly; minimize system-specific dependencies; consider producing distributable bundles where feasible.",
+            "owner": "Engineering",
+            "status": "planned"
+          },
+          "acceptance": null
+        },
+        {
+          "id": "K20",
+          "severity": "low",
+          "description": "Scope creep from undefined secondary features (e.g., graph views, themes) could divert resources from core goals and delay delivery.",
+          "mitigation": {
+            "text": "Prioritize core features for MVP; defer optional features until after MVP and track them as distinct work items with explicit approval before implementation.",
+            "owner": "Product",
+            "status": "planned"
+          },
+          "acceptance": null
+        }
+      ],
+      "governance": {
+        "failure_modes": [],
+        "tool_policy": {
+          "stage_policies": [
+            {
+              "stage": "Intake",
+              "allowlisted_tools": [
+                "artifact_read",
+                "artifact_write"
+              ],
+              "restrictions": [
+                {
+                  "tool": "artifact_read",
+                  "rule": "provided_artifacts_only",
+                  "notes": "Read only the artifacts explicitly provided in inputs/artifact_refs; no external sources."
+                },
+                {
+                  "tool": "artifact_write",
+                  "rule": "write_required_outputs_only",
+                  "allowed_artifacts": [
+                    "audit_spine",
+                    "intake_notes"
+                  ],
+                  "notes": "Artifact writes limited to intake governance outputs for traceability."
+                },
+                {
+                  "artifact_write": "canonical_allowed_only_for_declared_types",
+                  "notes": "Allow canonical audit-spine artifacts (run_manifest, event_log, stage_handoff)."
+                }
+              ],
+              "hitl_triggers": [
+                "Blocking specification decisions are required but missing (Q1 internal link syntax; Q2 tag representation).",
+                "Any request to expand scope beyond the static-site constraint."
+              ]
+            },
+            {
+              "stage": "Generate",
+              "allowlisted_tools": [
+                "artifact_read",
+                "artifact_write"
+              ],
+              "restrictions": [
+                {
+                  "tool": "artifact_read",
+                  "rule": "provided_artifacts_only",
+                  "notes": "Do not use external web browsing or non-provided sources."
+                },
+                {
+                  "tool": "artifact_write",
+                  "rule": "planning_only_no_execution_claims",
+                  "notes": "Drafting/planning only; do not execute code, access network, or claim runtime validation."
+                },
+                {
+                  "tool": "artifact_write",
+                  "rule": "no_secrets_or_local_paths",
+                  "notes": "Do not include credentials/tokens or absolute filesystem paths in outputs."
+                }
+              ],
+              "hitl_triggers": [
+                "Proposed solution requires server-side runtime for browsing/search/tags/backlinks (violates static constraint).",
+                "Proposed Markdown rendering enables raw/unsanitized HTML or unsafe URL schemes without explicit mitigation."
+              ]
+            },
+            {
+              "stage": "Validate",
+              "allowlisted_tools": [
+                "artifact_read",
+                "artifact_write"
+              ],
+              "restrictions": [
+                {
+                  "tool": "artifact_write",
+                  "rule": "validation_outputs_only",
+                  "allowed_artifacts": [
+                    "validation_notes",
+                    "risk_checks"
+                  ],
+                  "notes": "Write only checklists/findings; do not introduce major scope changes during validation."
+                }
+              ],
+              "hitl_triggers": [
+                "Security-sensitive findings (e.g., XSS risk) lack a concrete mitigation.",
+                "Performance/scale targets remain undefined while performance-sensitive features are being committed."
+              ]
+            },
+            {
+              "stage": "Review",
+              "allowlisted_tools": [
+                "artifact_read",
+                "artifact_write"
+              ],
+              "restrictions": [
+                {
+                  "tool": "artifact_write",
+                  "rule": "write_required_outputs_only",
+                  "allowed_artifacts": [
+                    "review_findings",
+                    "audit_spine"
+                  ],
+                  "notes": "Review must be able to write findings and update the audit spine."
+                },
+                {
+                  "tool": "artifact_write",
+                  "rule": "no_untracked_decisions",
+                  "notes": "Any decision affecting link/tag spec, security posture, or hosting assumptions must be logged in review_findings."
+                },
+                {
+                  "artifact_write": "canonical_allowed_only_for_declared_types",
+                  "notes": "Allow findings-only canonical artifacts (review_findings.json)."
+                }
+              ],
+              "hitl_triggers": [
+                "Any acceptance of high/critical risks without explicit signoff rationale.",
+                "Any change to blocking questions (Q1/Q2) without stakeholder approval."
+              ]
+            },
+            {
+              "stage": "Judge",
+              "allowlisted_tools": [
+                "artifact_read",
+                "artifact_write"
+              ],
+              "restrictions": [
+                {
+                  "tool": "artifact_write",
+                  "rule": "decision_record_only",
+                  "allowed_artifacts": [
+                    "governance_decision",
+                    "risk_acceptance_log"
+                  ],
+                  "notes": "Record accept/mitigate decisions only; no new features introduced."
+                }
+              ],
+              "hitl_triggers": [
+                "Any critical risk remains unmitigated.",
+                "Unresolved blocking questions remain (Q1 or Q2)."
+              ]
+            },
+            {
+              "stage": "Freeze",
+              "allowlisted_tools": [
+                "artifact_read",
+                "artifact_write"
+              ],
+              "restrictions": [
+                {
+                  "tool": "artifact_write",
+                  "rule": "freeze_outputs_only",
+                  "allowed_artifacts": [
+                    "frozen_risk_register",
+                    "frozen_tool_policy"
+                  ],
+                  "notes": "Freeze produces locked governance artifacts; edits require a new run."
+                }
+              ],
+              "hitl_triggers": [
+                "Any attempt to modify frozen artifacts without a formal change request."
+              ]
+            }
+          ]
+        },
+        "hitl_policy": {
+          "when_to_interrupt": [
+            "Blocking specification decisions are required (Q1 internal link syntax; Q2 tag representation) and are not provided.",
+            "Any proposal that violates the static-site constraint (requires a server/database at runtime).",
+            "Any security-sensitive behavior is proposed (raw HTML passthrough, unsanitized rendering, unsafe URL schemes) without an explicit mitigation and reviewer approval.",
+            "Any high/critical risk is proposed for acceptance rather than mitigation, or is accepted without explicit signoff rationale.",
+            "Any ingestion behavior could read outside the intended directory (symlinks/path traversal) without explicit user confirmation.",
+            "On repeated failures to pass critical path test cases.",
+            "Before making significant architectural changes or adding new major dependencies.",
+            "When a generated solution deviates from the defined project capsule requirements.",
+            "Upon detection of a high-severity security vulnerability in code or dependencies."
+          ],
+          "approval_roles": [
+            "Product Owner",
+            "Product Manager",
+            "Tech Lead",
+            "Engineering Lead",
+            "Security Reviewer",
+            "Security Analyst"
+          ]
+        }
+      },
+      "decision_log": [
+        {
+          "id": "DEC1",
+          "question": "Which architecture option to select?",
+          "choice": "O2 — Plugin-based static site generator with formal build lifecycle and plugin API.",
+          "rationale": "O2 provides the best balance of modularity, testability, and extensibility. The hybrid milestone strategy mitigates the over-engineering risk by delivering a working thin-slice first. O2 avoids coupling to a third-party SSG (O3) and avoids the multi-command UX complexity of O4, while offering better long-term maintainability than the monolith (O1). The project anticipates growth beyond MVP (R26, R27, R28), making plugin extensibility valuable.",
+          "alternatives_considered": [
+            "O1 — Monolithic CLI: simpler initially but harder to extend and swap components.",
+            "O3 — Eleventy-based: reduces custom code but couples to SSG conventions and upgrade cycle (K18).",
+            "O4 — Multi-tool pipeline: high modularity but poor single-command UX and orchestration complexity."
+          ],
+          "what_would_change_this_decision": [
+            "If the project scope is confirmed to be strictly MVP-only with no anticipated growth, O1 would be simpler.",
+            "If the team has deep Eleventy expertise and values ecosystem plugins, O3 could reduce time-to-market.",
+            "If the project requires mixing multiple programming languages per stage, O4 becomes more attractive."
+          ],
+          "evidence_pointers": [
+            {
+              "artifact_ref": "architecture_canonical_v1",
+              "entity_id": "O2",
+              "json_pointer": "/options/1",
+              "note": "Plugin-based architecture definition",
+              "candidate_id": null,
+              "artifact_id": null,
+              "quote": null
+            },
+            {
+              "artifact_ref": "branch_set_v1",
+              "entity_id": "B2",
+              "json_pointer": "/branches/1",
+              "note": "Branch B2 selects O2 with hybrid milestone strategy",
+              "candidate_id": null,
+              "artifact_id": null,
+              "quote": null
+            }
+          ]
+        },
+        {
+          "id": "DEC2",
+          "question": "What milestone strategy to use?",
+          "choice": "Hybrid: thin-slice first (Phase A), then parallel plugin development (Phase B), integration (Phase C), hardening (Phase D).",
+          "rationale": "The thin-slice in Phase A validates the plugin lifecycle and core pipeline end-to-end before investing in parallel plugin development. This de-risks the plugin API design (K16) early. Parallel Phase B accelerates feature delivery for backlinks, tags, and search. Phase C integrates and hardens security. Phase D adds polish and optional features.",
+          "alternatives_considered": [
+            "Fully sequential: lower risk but slower delivery.",
+            "Fully parallel from start: faster but higher risk of plugin API instability."
+          ],
+          "what_would_change_this_decision": [
+            "If the team is very small (1 developer), sequential may be more practical than parallel Phase B.",
+            "If plugin API design proves trivial, Phase A could be shortened."
+          ],
+          "evidence_pointers": [
+            {
+              "artifact_ref": "branch_set_v1",
+              "entity_id": "B2",
+              "json_pointer": "/branches/1/milestone_strategy",
+              "note": "Hybrid milestone strategy specified in branch",
+              "candidate_id": null,
+              "artifact_id": null,
+              "quote": null
+            }
+          ]
+        },
+        {
+          "id": "DEC3",
+          "question": "When to resolve blocking questions Q1 (link syntax) and Q2 (tag format)?",
+          "choice": "Resolve Q1 and Q2 during Phase A, before Phase B begins.",
+          "rationale": "Plugin contracts for backlinks (C11) and tags (C12) depend on canonical link and tag models. Resolving Q1 and Q2 in Phase A ensures stable plugin interfaces and avoids rework. K1 and K2 are both high-severity risks that block correct backlink and tag functionality.",
+          "alternatives_considered": [
+            "Defer to Phase B: would risk plugin API instability and rework.",
+            "Resolve before project start: ideal but may not be feasible if stakeholder input is needed."
+          ],
+          "what_would_change_this_decision": [
+            "If stakeholders provide link/tag specifications before project start, this becomes a non-issue."
+          ],
+          "evidence_pointers": [
+            {
+              "artifact_ref": "risk_gov_canonical_v1",
+              "entity_id": "K1",
+              "json_pointer": "/risk_register/0",
+              "note": "Link syntax ambiguity risk",
+              "candidate_id": null,
+              "artifact_id": null,
+              "quote": null
+            },
+            {
+              "artifact_ref": "risk_gov_canonical_v1",
+              "entity_id": "K2",
+              "json_pointer": "/risk_register/1",
+              "note": "Tag format ambiguity risk",
+              "candidate_id": null,
+              "artifact_id": null,
+              "quote": null
+            }
+          ]
+        },
+        {
+          "id": "DEC4",
+          "question": "How to mitigate plugin API instability risk (K16)?",
+          "choice": "Design a minimal, versioned plugin API with schema validation for the shared build context before Phase B begins. Gate plugin execution behind explicit allowlists.",
+          "rationale": "K16 is the primary additional risk for O2. A minimal API surface reduces the chance of breaking changes. Schema validation catches contract violations early. Versioning allows backward-compatible evolution. The thin-slice in Phase A serves as the proving ground for the API.",
+          "alternatives_considered": [
+            "No formal API versioning: faster initially but brittle.",
+            "Full plugin marketplace design: over-engineering for current scope."
+          ],
+          "what_would_change_this_decision": [
+            "If the project never intends to support third-party plugins, API versioning can be simplified."
+          ],
+          "evidence_pointers": [
+            {
+              "artifact_ref": "risk_gov_canonical_v1",
+              "entity_id": "K16",
+              "json_pointer": "/risk_register/15",
+              "note": "Config/plugin instability risk",
+              "candidate_id": null,
+              "artifact_id": null,
+              "quote": null
+            },
+            {
+              "artifact_ref": "architecture_canonical_v1",
+              "entity_id": "O2",
+              "json_pointer": "/options/1/risks",
+              "note": "Plugin API iteration risk noted in O2",
+              "candidate_id": null,
+              "artifact_id": null,
+              "quote": "Plugin API may need multiple iterations to stabilize, delaying initial delivery"
+            }
+          ]
+        },
+        {
+          "id": "DEC5",
+          "question": "When to address XSS/content injection risk (K3)?",
+          "choice": "Implement sanitisation in the renderer plugin (C14) and require a dedicated XSS security test suite to pass before Phase C exit.",
+          "rationale": "K3 is critical severity. The renderer plugin is the single point where HTML output is produced, making it the natural place for sanitisation. Requiring the security test suite before Phase C exit ensures no unsafe output reaches integration. Raw HTML is disabled by default; unsafe URL schemes are blocked.",
+          "alternatives_considered": [
+            "Address in Phase A: possible but renderer is only a stub in Phase A.",
+            "Address in Phase D: too late for a critical security risk."
+          ],
+          "what_would_change_this_decision": [
+            "If the project explicitly requires raw HTML passthrough, an opt-in mechanism with documented risk would be needed."
+          ],
+          "evidence_pointers": [
+            {
+              "artifact_ref": "risk_gov_canonical_v1",
+              "entity_id": "K3",
+              "json_pointer": "/risk_register/2",
+              "note": "XSS/content injection risk",
+              "candidate_id": null,
+              "artifact_id": null,
+              "quote": null
+            }
+          ]
+        },
+        {
+          "id": "DEC6",
+          "question": "How to handle search index scalability (K4)?",
+          "choice": "Build the search index plugin (C13) with support for index-size controls (stemming, stop words) and optional chunked/sharded index artifacts. Validate against performance targets in Phase D.",
+          "rationale": "K4 is high severity. The plugin architecture allows the search index strategy to be swapped without core changes. Chunking/sharding support in C13 addresses large-site scenarios. Performance benchmarks in Phase D (M6) validate that targets are met on 100+ note datasets.",
+          "alternatives_considered": [
+            "Single monolithic index only: simpler but may not scale.",
+            "Pagefind integration: possible as a plugin but adds external binary dependency (K18)."
+          ],
+          "what_would_change_this_decision": [
+            "If scale requirements exceed thousands of notes, a Pagefind-style chunked approach may become mandatory.",
+            "If the project confirms a small corpus (<100 notes), a simple index suffices."
+          ],
+          "evidence_pointers": [
+            {
+              "artifact_ref": "risk_gov_canonical_v1",
+              "entity_id": "K4",
+              "json_pointer": "/risk_register/3",
+              "note": "Search index scale/performance risk",
+              "candidate_id": null,
+              "artifact_id": null,
+              "quote": null
+            },
+            {
+              "artifact_ref": "architecture_canonical_v1",
+              "entity_id": "C13",
+              "json_pointer": "/options/1/components/5",
+              "note": "Search Index Plugin supports optional chunked/sharded artifacts",
+              "candidate_id": null,
+              "artifact_id": null,
+              "quote": null
+            }
+          ]
+        },
+        {
+          "id": "DEC7",
+          "question": "What governance posture to apply?",
+          "choice": "Sandboxed tooling with high HITL strictness.",
+          "rationale": "The branch specifies sandboxed tooling and high HITL strictness. This ensures that plugin execution is constrained, security-sensitive decisions require human approval, and blocking questions (Q1, Q2) cannot be bypassed without stakeholder sign-off. Aligns with the risk governance tool policy and HITL policy.",
+          "alternatives_considered": [
+            "Lower HITL strictness: faster iteration but higher risk of unreviewed security decisions.",
+            "No sandboxing: inappropriate given plugin extensibility model."
+          ],
+          "what_would_change_this_decision": [
+            "If the team gains high confidence in automated security testing, HITL strictness could be relaxed for non-security decisions."
+          ],
+          "evidence_pointers": [
+            {
+              "artifact_ref": "branch_set_v1",
+              "entity_id": "B2",
+              "json_pointer": "/branches/1/governance_posture",
+              "note": "Governance posture specified in branch",
+              "candidate_id": null,
+              "artifact_id": null,
+              "quote": null
+            },
+            {
+              "artifact_ref": "risk_gov_canonical_v1",
+              "entity_id": null,
+              "json_pointer": "/hitl_policy",
+              "note": "HITL policy defines interrupt conditions and approval roles",
+              "candidate_id": null,
+              "artifact_id": null,
+              "quote": null
+            }
+          ]
+        }
+      ],
+      "supplemental_evaluations": [
+        {
+          "title": "Plugin API Design Risk Assessment",
+          "notes": "The plugin-based architecture (O2) introduces K16 (config/plugin instability) as the primary additional risk compared to O1. Mitigation strategy: (1) Phase A delivers a minimal plugin API with schema-validated shared context before any parallel plugin work begins; (2) the plugin API is versioned from v1 with a compatibility policy; (3) plugin execution is gated behind explicit allowlists per the governance posture. The thin-slice approach in Phase A serves as the proving ground — if the API requires significant iteration, this is discovered before Phase B investment. The risk is accepted at medium severity with active mitigation.",
+          "evidence": [
+            {
+              "artifact_ref": "risk_gov_canonical_v1",
+              "entity_id": "K16",
+              "json_pointer": "/risk_register/15",
+              "note": "Plugin instability risk definition and mitigation",
+              "candidate_id": null,
+              "artifact_id": null,
+              "quote": null
+            },
+            {
+              "artifact_ref": "architecture_canonical_v1",
+              "entity_id": "O2",
+              "json_pointer": "/options/1/tradeoffs/cons",
+              "note": "Over-engineering risk acknowledged in O2 cons",
+              "candidate_id": null,
+              "artifact_id": null,
+              "quote": "More upfront design and implementation effort (plugin API, hook semantics, shared context schema)"
+            }
+          ]
+        },
+        {
+          "title": "Dependency Management Comparison (O2 vs O3)",
+          "notes": "O2 requires fewer external dependencies than O3 (Eleventy + Pagefind + ecosystem plugins). The core orchestrator and plugins are custom-built, reducing exposure to third-party breaking changes (K18). The primary dependencies are a Markdown parser library and a search indexing library, both of which can be pinned and vetted. K18 is assessed as lower risk for O2 than for O3.",
+          "evidence": [
+            {
+              "artifact_ref": "risk_gov_canonical_v1",
+              "entity_id": "K18",
+              "json_pointer": "/risk_register/17",
+              "note": "Dependency management risk",
+              "candidate_id": null,
+              "artifact_id": null,
+              "quote": null
+            },
+            {
+              "artifact_ref": "architecture_canonical_v1",
+              "entity_id": "O3",
+              "json_pointer": "/options/2/risks",
+              "note": "O3 risks include SSG upgrade breaking changes",
+              "candidate_id": null,
+              "artifact_id": null,
+              "quote": "Upgrades to the SSG or plugin APIs may introduce breaking changes requiring maintenance"
+            }
+          ]
+        },
+        {
+          "title": "Acceptance Strategy Alignment",
+          "notes": "Phase A gates on AT1/AT2/AT3/AT4/AT13 plus a plugin-contract smoke test. Phase B gates each plugin independently: AT8/AT9 for backlinks (M2), AT6/AT7 for tags (M3), AT5/AT12 for search (M4). Phase C runs the full suite AT1–AT13 end-to-end with XSS security tests. Phase D adds performance benchmarks (R23) and cross-browser tests (AT10/AT11). All 13 acceptance tests are covered across the milestone plan.",
+          "evidence": [
+            {
+              "artifact_ref": "acceptance_canonical_v1",
+              "entity_id": null,
+              "json_pointer": "/acceptance_tests",
+              "note": "Full acceptance test suite AT1–AT13",
+              "candidate_id": null,
+              "artifact_id": null,
+              "quote": null
+            }
+          ]
+        }
+      ],
+      "synthesis_warnings": [
+        {
+          "id": "W1",
+          "severity": "high",
+          "summary": "Blocking questions Q1 (internal link syntax) and Q2 (tag representation) must be resolved before Phase A exit. If stakeholder input is unavailable, Phase B cannot begin and the project timeline is at risk.",
+          "routing_target": "hitl_escalation",
+          "evidence": [
+            {
+              "artifact_ref": "capsule_canonical_v1",
+              "entity_id": "Q1",
+              "json_pointer": "/open_questions/0",
+              "note": "Blocking question on link syntax",
+              "candidate_id": null,
+              "artifact_id": null,
+              "quote": null
+            },
+            {
+              "artifact_ref": "capsule_canonical_v1",
+              "entity_id": "Q2",
+              "json_pointer": "/open_questions/1",
+              "note": "Blocking question on tag representation",
+              "candidate_id": null,
+              "artifact_id": null,
+              "quote": null
+            }
+          ]
+        },
+        {
+          "id": "W2",
+          "severity": "medium",
+          "summary": "K16 (plugin API instability) is the primary additional risk for O2. If the plugin API requires more than one iteration cycle in Phase A, Phase B start will be delayed. Monitor API design progress closely during Phase A.",
+          "routing_target": "risk_review",
+          "evidence": [
+            {
+              "artifact_ref": "risk_gov_canonical_v1",
+              "entity_id": "K16",
+              "json_pointer": "/risk_register/15",
+              "note": "Plugin instability risk",
+              "candidate_id": null,
+              "artifact_id": null,
+              "quote": null
+            }
+          ]
+        },
+        {
+          "id": "W3",
+          "severity": "medium",
+          "summary": "Performance targets for R23 (build time and search responsiveness) are not yet defined. These must be established before Phase D benchmarking can be validated. Depends on Q3 (expected scale).",
+          "routing_target": "hitl_escalation",
+          "evidence": [
+            {
+              "artifact_ref": "requirements_canonical_v1",
+              "entity_id": "R23",
+              "json_pointer": "/requirements/22",
+              "note": "Performance targets depend on scale definition",
+              "candidate_id": null,
+              "artifact_id": null,
+              "quote": null
+            },
+            {
+              "artifact_ref": "capsule_canonical_v1",
+              "entity_id": "Q3",
+              "json_pointer": "/open_questions/2",
+              "note": "Scale and performance targets not yet defined",
+              "candidate_id": null,
+              "artifact_id": null,
+              "quote": null
+            }
+          ]
+        }
+      ],
+      "appendix": {
+        "glossary": [
+          {
+            "term": "Static site",
+            "definition": "A website composed of pre-generated files (HTML/CSS/JS/assets) that can be served without server-side application logic."
+          },
+          {
+            "term": "Markdown",
+            "definition": "A lightweight markup language used to format plain text documents."
+          },
+          {
+            "term": "Backlink",
+            "definition": "A list of notes/pages that link to the current note/page, computed by analyzing links across the note set."
+          },
+          {
+            "term": "Tag",
+            "definition": "A label associated with a note, used for categorization and navigation (representation to be specified)."
+          },
+          {
+            "term": "Full-text search",
+            "definition": "Searching the contents of notes (not just titles), typically via an index generated at build time and queried client-side."
+          }
+        ]
+      }
+    }
+  }
+}

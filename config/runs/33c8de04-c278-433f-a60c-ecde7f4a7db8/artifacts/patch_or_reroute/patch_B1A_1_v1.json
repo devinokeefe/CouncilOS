@@ -1,0 +1,95 @@
+{
+  "artifact_type": "patch_or_reroute",
+  "artifact_id": "patch_B1A_1_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:12:46.310096Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "plan_candidate_B1A_v1"
+  ],
+  "payload": {
+    "action": "patch",
+    "rationale": "Fix hard-gate id_integrity failures by (1) replacing architecture option risk free-text with existing K* risk IDs from the risk_register and (2) correcting DEC6 evidence pointer so entity_id=CNS1 points to the constraint object (not a /text leaf). Additionally, resolve key consistency blockers without adding new IDs by updating AT2/AT3 to align with milestone scope and to explicitly exercise K3/XSS mitigations, and clarifying DEC4’s disable-vs-sanitize security posture wording.",
+    "patch": [
+      {
+        "op": "replace",
+        "path": "/plan_package/architecture/options/0/risks",
+        "from": null,
+        "value": [
+          "K4",
+          "K13",
+          "K1",
+          "K2"
+        ]
+      },
+      {
+        "op": "replace",
+        "path": "/plan_package/architecture/options/1/risks",
+        "from": null,
+        "value": [
+          "K16",
+          "K13",
+          "K20"
+        ]
+      },
+      {
+        "op": "replace",
+        "path": "/plan_package/architecture/options/2/risks",
+        "from": null,
+        "value": [
+          "K16",
+          "K18",
+          "K19",
+          "K1"
+        ]
+      },
+      {
+        "op": "replace",
+        "path": "/plan_package/architecture/options/3/risks",
+        "from": null,
+        "value": [
+          "K19",
+          "K16",
+          "K13"
+        ]
+      },
+      {
+        "op": "replace",
+        "path": "/plan_package/decision_log/5/evidence_pointers/1/json_pointer",
+        "from": null,
+        "value": "/inputs/project_capsule/constraints/0"
+      },
+      {
+        "op": "replace",
+        "path": "/plan_package/acceptance_tests/1/procedure",
+        "from": null,
+        "value": "Run the build on a representative notes folder. Inspect the output directory contents and open the site via static hosting or a local static file server (recommended for local preview; file:// may break some JS behavior depending on implementation)."
+      },
+      {
+        "op": "replace",
+        "path": "/plan_package/acceptance_tests/1/pass_criteria",
+        "from": null,
+        "value": "Build completes successfully; output contains only static assets (HTML/CSS/JS/media); the generated pages are browsable without any server-side application/runtime (i.e., no backend)."
+      },
+      {
+        "op": "replace",
+        "path": "/plan_package/acceptance_tests/2/procedure",
+        "from": null,
+        "value": "Prepare notes covering headings, lists, code blocks, blockquotes, links, images, and tables per the selected Markdown flavor. Include at least: (a) a note containing raw HTML/script-like payloads and event-handler attributes, and (b) links/images using unsafe URL schemes (e.g., javascript:). Build the site and visually compare rendered HTML output to expected formatting and verify unsafe constructs are not rendered/executed (sanitized/removed) and unsafe schemes are blocked."
+      },
+      {
+        "op": "replace",
+        "path": "/plan_package/acceptance_tests/2/pass_criteria",
+        "from": null,
+        "value": "All tested Markdown elements render correctly and preserve structure and formatting; raw HTML is disabled or sanitized per policy; unsafe URL schemes are blocked such that no script executes and rendered output does not contain unsafe links."
+      },
+      {
+        "op": "replace",
+        "path": "/plan_package/decision_log/3/choice",
+        "from": null,
+        "value": "Default-deny: disable raw HTML in Markdown by default, and block unsafe URL schemes (e.g., javascript:) in links/images. If HTML support is required, allow only via explicit opt-in with sanitization enabled and documented risk."
+      }
+    ],
+    "reroute_target": null
+  }
+}

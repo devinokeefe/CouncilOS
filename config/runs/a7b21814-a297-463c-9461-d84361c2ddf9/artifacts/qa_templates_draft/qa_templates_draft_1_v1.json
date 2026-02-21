@@ -1,0 +1,112 @@
+{
+  "artifact_type": "qa_templates_draft",
+  "artifact_id": "qa_templates_draft_1_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:24:53.516039Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "capsule_canonical_v1"
+  ],
+  "payload": {
+    "templates": [
+      {
+        "id": "ATT-INGEST-RENDER-001",
+        "name": "Markdown ingestion and HTML rendering",
+        "description": "Given a test fixture directory with multiple .md files (including headings, lists, code blocks, links, and emphasized text), when the build command runs, then (a) build exits with code 0, (b) output directory contains one HTML file per input note (excluding configured ignores), and (c) rendered HTML preserves expected structure and formatting for each Markdown element as defined by the supported subset.",
+        "applies_to": [
+          "markdown rendering",
+          "build pipeline"
+        ]
+      },
+      {
+        "id": "ATT-STATIC-OUTPUT-002",
+        "name": "Static site output constraints",
+        "description": "Given a successful build, verify the output contains only static assets (HTML/CSS/JS and static files), and no server-side runtime requirements are present. Validate that opening the site via a static file server (or file:// if supported) loads pages without runtime errors in a modern browser.",
+        "applies_to": [
+          "static output",
+          "deployment"
+        ]
+      },
+      {
+        "id": "ATT-SEARCH-INDEX-003",
+        "name": "Full-text search accuracy and responsiveness",
+        "description": "Given a dataset with known terms in titles and bodies, when searching for a term, then results include the correct notes with highlighted matches (if supported) and exclude notes without the term. Measure response time for search interactions and verify it remains within the target threshold at the confirmed scale.",
+        "applies_to": [
+          "search",
+          "performance"
+        ]
+      },
+      {
+        "id": "ATT-TAGS-004",
+        "name": "Tag extraction and tag browsing",
+        "description": "Given notes containing tags per the agreed convention, when the site is built, then (a) each note page displays its tags, (b) a tag index page is generated, and (c) each per-tag page lists all and only the notes containing that tag. Validate normalization rules (case/spacing) per spec.",
+        "applies_to": [
+          "tags",
+          "navigation"
+        ]
+      },
+      {
+        "id": "ATT-LINKS-BACKLINKS-005",
+        "name": "Internal links and backlinks generation",
+        "description": "Given notes with internal links per the agreed convention, when the site is built, then (a) internal links resolve to the correct destination pages, (b) each destination page includes a backlinks section listing all source notes, and (c) backlinks are clickable and navigate correctly. Verify handling of broken links per spec (warn/fail/render).",
+        "applies_to": [
+          "links",
+          "backlinks"
+        ]
+      },
+      {
+        "id": "ATT-NAV-IA-006",
+        "name": "Information architecture and navigation",
+        "description": "Given the required pages (home, all notes, tags index, per-note pages), verify all pages are generated and linked from navigation elements. Check that each page has correct titles, breadcrumbs (if required), and consistent layout per spec.",
+        "applies_to": [
+          "navigation",
+          "information architecture"
+        ]
+      },
+      {
+        "id": "ATT-ASSET-PATHS-007",
+        "name": "Relative paths and hosting compatibility",
+        "description": "Given a configured base URL or relative path strategy, verify that internal links, asset references (CSS/JS/images), and search index loading work when hosted on the target static host (e.g., GitHub Pages).",
+        "applies_to": [
+          "hosting",
+          "paths"
+        ]
+      },
+      {
+        "id": "ATT-ERROR-HANDLING-008",
+        "name": "Build error handling and reporting",
+        "description": "Given malformed Markdown or invalid internal links per spec, when the build runs, then the tool reports clear, actionable errors or warnings, and build success/failure aligns with configured policy (fail on errors vs warn).",
+        "applies_to": [
+          "build pipeline",
+          "error handling"
+        ]
+      },
+      {
+        "id": "ATT-CLI-UX-009",
+        "name": "CLI build workflow",
+        "description": "Given a standard CLI invocation with input and output directories, verify help output, exit codes, and argument validation. Ensure builds can be run non-interactively and produce deterministic output.",
+        "applies_to": [
+          "cli",
+          "build pipeline"
+        ]
+      }
+    ],
+    "coverage_guidance": [
+      "Create a golden test fixture set that covers supported Markdown subset (headings, lists, code, links, images) and any extensions explicitly in scope.",
+      "Define and test the exact conventions for internal links and tags (including normalization rules); include edge cases such as spaces, casing, and nested paths.",
+      "Include at least one dataset sized to the confirmed target scale to validate search responsiveness and build time bounds.",
+      "Validate both correct backlink generation and broken-link behavior per the agreed policy.",
+      "Test output under the primary hosting target (e.g., GitHub Pages) with base URL configuration to catch path issues.",
+      "Verify accessibility/basic UX: page loads without console errors; navigation is consistent across pages.",
+      "If incremental builds/watch mode are later added, include regression coverage for changed-only rebuilds."
+    ],
+    "definition_of_done": [
+      "All acceptance templates executed with passing results against the agreed conventions for links, tags, and Markdown subset.",
+      "Search accuracy and responsiveness meet the confirmed scale targets and thresholds.",
+      "Generated output is fully static and deployable to the target host without runtime dependencies.",
+      "Backlinks, tags, and navigation pages are present and correct for the fixture datasets.",
+      "Build errors/warnings align with specified policy and are clearly reported.",
+      "No critical browser console errors on modern browsers for the built site."
+    ]
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "artifact_type": "patch_or_reroute",
+  "artifact_id": "patch_B2A_1_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:11:37.161285Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "plan_candidate_B2A_v1"
+  ],
+  "payload": {
+    "action": "reroute",
+    "rationale": "Cannot repair the hard-gate id_integrity failure within Patch Generator constraints. The architecture options (O1–O4) list free-text risks that the validator expects to map to existing risk_register IDs (K1–K20), and several risks mentioned in options are absent from the risk_register. Fixing this requires either (a) editing the locked canonical section /plan_package/architecture/options to replace free-text risks with existing K* references (semantics/signoff impact), or (b) adding new risk_register entries with new K* IDs—both disallowed here (no locked section edits; no new ID-bearing entities). Requires reroute to schema/risk-governance owner to align representation rules and update canonical artifacts accordingly.",
+    "patch": [],
+    "reroute_target": "Review:SchemaOwner+TechLead"
+  }
+}

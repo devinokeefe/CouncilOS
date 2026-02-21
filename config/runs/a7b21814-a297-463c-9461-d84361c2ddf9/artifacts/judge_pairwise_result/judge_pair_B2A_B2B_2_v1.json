@@ -1,0 +1,66 @@
+{
+  "artifact_type": "judge_pairwise_result",
+  "artifact_id": "judge_pair_B2A_B2B_2_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T11:06:03.479159Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B2A_v3",
+    "plan_candidate_B2B_v3"
+  ],
+  "payload": {
+    "comparison": {
+      "a": "A provides a comprehensive plugin-based plan with detailed design decisions and end-to-end acceptance test mapping.",
+      "b": "B offers a phased plugin strategy with strong governance additions but adds extra scope like sandboxing and extended plugins."
+    },
+    "judge_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+    "judge_model": "council-os-hq",
+    "winner": "a",
+    "scores": {
+      "feasibility": 7,
+      "testability": 8,
+      "governance": 8,
+      "architecture": 8,
+      "clarity": 7
+    },
+    "evidence": [
+      {
+        "artifact_ref": "plan_candidate_B2A_v3",
+        "entity_id": null,
+        "json_pointer": "/plan_package/executive_summary",
+        "note": "Summarizes chosen O2 architecture and acceptance test alignment.",
+        "candidate_id": "B2A",
+        "artifact_id": null,
+        "quote": "plugin-based build architecture (O2) ... acceptance tests AT1–AT14 used to validate each MUST requirement"
+      },
+      {
+        "artifact_ref": "plan_candidate_B2A_v3",
+        "entity_id": "M3",
+        "json_pointer": "/plan_package/milestones/2",
+        "note": "Thin-slice delivery with mapped acceptance tests and regression gates.",
+        "candidate_id": "B2A",
+        "artifact_id": null,
+        "quote": "After each plugin is added, the mapped acceptance tests (AT1–AT14 for MUSTs) are runnable and passing"
+      },
+      {
+        "artifact_ref": "plan_candidate_B2B_v3",
+        "entity_id": "M1",
+        "json_pointer": "/plan_package/milestones/0",
+        "note": "Front-loads plugin API and HITL review before feature delivery.",
+        "candidate_id": "B2B",
+        "artifact_id": null,
+        "quote": "Phase A — Core Engine & Plugin Infrastructure ... HITL review of plugin API contract completed"
+      },
+      {
+        "artifact_ref": "plan_candidate_B2B_v3",
+        "entity_id": "DEC6",
+        "json_pointer": "/plan_package/decision_log/5",
+        "note": "Adds sandboxing and template constraints beyond core requirements.",
+        "candidate_id": "B2B",
+        "artifact_id": null,
+        "quote": "Sandbox user-provided plugins; limit template customization to safe configuration"
+      }
+    ],
+    "notes": "A is slightly more closure-ready with explicit acceptance gates and decision coverage. B adds security scope that may increase complexity without confirmed need."
+  }
+}

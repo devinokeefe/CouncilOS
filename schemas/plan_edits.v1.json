@@ -1,0 +1,12 @@
+{
+  "title": "PlanEdits",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"type": "string"},
+    "round": {"type": "integer"},
+    "plan_hash": {"type": "string"},
+    "ops": {"type": "array", "items": {"type": "object"}}
+  },
+  "required": ["schema_version", "round", "plan_hash", "ops"]
+}

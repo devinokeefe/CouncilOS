@@ -1,0 +1,156 @@
+{
+  "artifact_type": "acceptance_canonical",
+  "artifact_id": "acceptance_canonical_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:32:35.211892Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "acceptance_draft_v1"
+  ],
+  "payload": {
+    "acceptance_tests": [
+      {
+        "id": "AT1",
+        "maps_to_requirements": [
+          "R1"
+        ],
+        "type": "system",
+        "procedure": "Prepare a test input directory with nested subdirectories containing Markdown files: root/a.md, root/sub/b.md, root/sub/deeper/c.md, and a non-Markdown file root/sub/d.txt. Run the CLI build with the input directory path and a valid output directory path.",
+        "pass_criteria": "Build completes successfully and the build log (or output manifest) shows discovery of exactly the three .md files (a.md, b.md, c.md) and does not include d.txt."
+      },
+      {
+        "id": "AT2",
+        "maps_to_requirements": [
+          "R2"
+        ],
+        "type": "system",
+        "procedure": "Run a build on a fixture directory. Inspect the output directory contents recursively and list file types/extensions. Serve the output with a simple static file server and open the site in a browser.",
+        "pass_criteria": "All emitted files are static assets (e.g., .html, .css, .js, images, fonts, .json for search index). No server-side runtime or database dependency is required to view pages; the site loads and renders pages when served statically."
+      },
+      {
+        "id": "AT3",
+        "maps_to_requirements": [
+          "R3"
+        ],
+        "type": "system",
+        "procedure": "Prepare a fixture with N Markdown files (N>=3) and a configuration that excludes one specific Markdown file. Run the build. Count generated HTML note pages and verify a one-to-one mapping for non-excluded files.",
+        "pass_criteria": "For each non-excluded input Markdown file, exactly one corresponding HTML page exists in output; excluded Markdown files do not have generated HTML pages."
+      },
+      {
+        "id": "AT4",
+        "maps_to_requirements": [
+          "R4"
+        ],
+        "type": "system",
+        "procedure": "Create a fixture Markdown file containing headings (H1/H2), ordered and unordered lists, bold/italic emphasis, links, images, and fenced code blocks. Build the site and open the generated HTML for that note. Inspect the HTML DOM or rendered page for each element type.",
+        "pass_criteria": "Rendered HTML preserves the structure and formatting for all specified elements: headings map to appropriate <h1>/<h2>, lists to <ol>/<ul>, emphasis to <em>/<strong>, links to <a>, images to <img>, and code blocks to <pre><code> with content intact."
+      },
+      {
+        "id": "AT5",
+        "maps_to_requirements": [
+          "R5"
+        ],
+        "type": "system",
+        "procedure": "Invoke the CLI with required arguments: input directory path and output directory path. Record exit code and presence of output directory contents.",
+        "pass_criteria": "CLI accepts the input and output paths, completes a full build pipeline, exits with code 0, and creates the output directory with generated site files."
+      },
+      {
+        "id": "AT6",
+        "maps_to_requirements": [
+          "R6"
+        ],
+        "type": "system",
+        "procedure": "Case A: Run build with a valid fixture input. Case B: Run build with an invalid input directory path (non-existent) or a malformed configuration file. Capture exit codes and stderr/stdout messages.",
+        "pass_criteria": "Case A: build completes successfully with exit code 0. Case B: build exits with non-zero code and emits a clear, actionable error message indicating the cause (e.g., missing directory or invalid configuration) and how to fix it."
+      },
+      {
+        "id": "AT7",
+        "maps_to_requirements": [
+          "R7"
+        ],
+        "type": "system",
+        "procedure": "Build the site for a fixture dataset with known terms in note titles and bodies. Open the site in a browser with network disabled or using a static file server that blocks outbound requests. Use the search UI to query a term that exists in a note body and another that exists only in a title.",
+        "pass_criteria": "Search returns correct results for both queries entirely in-browser without any server requests, and results link to the corresponding note pages."
+      },
+      {
+        "id": "AT8",
+        "maps_to_requirements": [
+          "R8"
+        ],
+        "type": "system",
+        "procedure": "Run a build and inspect the output directory for the search index artifact(s) (e.g., search-index.json or equivalent). Open the site and verify the search UI loads the index file from the output directory (via local static server).",
+        "pass_criteria": "A search index artifact is generated at build time and present in the output directory, and the client-side search loads it from the static output to perform queries."
+      },
+      {
+        "id": "AT9",
+        "maps_to_requirements": [
+          "R9"
+        ],
+        "type": "system",
+        "procedure": "Prepare two notes: note-a.md containing a standard Markdown relative link to note-b.md. Build the site and open the rendered page for note-a. Click the link to note-b.",
+        "pass_criteria": "The link in note-a navigates to the generated HTML page for note-b without errors, and the URL corresponds to the output path for note-b."
+      },
+      {
+        "id": "AT10",
+        "maps_to_requirements": [
+          "R10"
+        ],
+        "type": "system",
+        "procedure": "Prepare three notes: note-a links to note-c; note-b links to note-c; note-c has no outgoing links. Build the site and open note-c page. Inspect backlinks section and click each backlink.",
+        "pass_criteria": "Note-c page includes a backlinks section listing note-a and note-b, and each backlink is a clickable link that navigates to the corresponding source note page."
+      },
+      {
+        "id": "AT11",
+        "maps_to_requirements": [
+          "R11"
+        ],
+        "type": "system",
+        "procedure": "Configure one supported tag convention (e.g., YAML front matter tags or inline #tag) per configuration. Create notes with tags following that convention. Build the site and inspect the generated metadata for each note (as rendered on page).",
+        "pass_criteria": "Tags are extracted according to the selected convention and associated with the correct notes in the generated site (each note shows the expected tag set)."
+      },
+      {
+        "id": "AT12",
+        "maps_to_requirements": [
+          "R12"
+        ],
+        "type": "system",
+        "procedure": "Using a fixture with at least two tags, build the site and open a note page. Inspect the tags section and click each tag link.",
+        "pass_criteria": "Each tag is displayed on the note page and each tag is a navigable link that routes to the corresponding tag page."
+      },
+      {
+        "id": "AT13",
+        "maps_to_requirements": [
+          "R13"
+        ],
+        "type": "system",
+        "procedure": "Build the site with notes containing tags. Locate the tags index page and at least one per-tag page. Verify listed notes for each tag.",
+        "pass_criteria": "A tags index page exists and lists available tags. For each tag, a per-tag page exists that lists all and only the notes containing that tag."
+      },
+      {
+        "id": "AT14",
+        "maps_to_requirements": [
+          "R14"
+        ],
+        "type": "system",
+        "procedure": "Build the site and open it in the latest stable versions of Chrome, Firefox, Safari, and Edge. Navigate between notes, run a search query, and open a tag page. Monitor the browser console for errors.",
+        "pass_criteria": "All core functionality (navigation between notes, search, backlinks display, tag browsing) works in each browser without JavaScript errors that block functionality."
+      }
+    ],
+    "id_map": {
+      "AT_U_1": "AT1",
+      "AT_U_2": "AT2",
+      "AT_U_3": "AT3",
+      "AT_U_4": "AT4",
+      "AT_U_5": "AT5",
+      "AT_U_6": "AT6",
+      "AT_U_7": "AT7",
+      "AT_U_8": "AT8",
+      "AT_U_9": "AT9",
+      "AT_U_10": "AT10",
+      "AT_U_11": "AT11",
+      "AT_U_12": "AT12",
+      "AT_U_13": "AT13",
+      "AT_U_14": "AT14"
+    }
+  }
+}

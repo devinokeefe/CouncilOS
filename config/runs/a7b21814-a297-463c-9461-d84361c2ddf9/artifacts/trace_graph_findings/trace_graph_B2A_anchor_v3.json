@@ -1,0 +1,102 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B2A_anchor_v3",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:57:52.555328Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B2A_v3"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2A_v3",
+    "findings": [
+      {
+        "id": "TG1",
+        "severity": "medium",
+        "summary": "Deterministic sample check for R1 lists milestones [M1, M2] but omits M3, where AT1 (the cited acceptance test) is integrated into CI; this creates an incomplete trace between the sample check and where the requirement is validated.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": null,
+            "json_pointer": "/inputs/deterministic_sample_checks/0",
+            "note": "Sample check for R1 references AT1 and milestones M1,M2.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "{\"requirement_id\":\"R1\",\"acceptance_tests\":[\"AT1\"],\"milestones\":[\"M1\",\"M2\"]}"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "M3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/2/deliverables/2/text",
+            "note": "M3 deliverable DL10 explicitly includes automated runs of AT1–AT6 integrated into CI.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Automated runs of AT1, AT2, AT3, AT4, AT5, AT6 integrated into CI for the core pipeline."
+          }
+        ],
+        "routing_target": "orchestrator.trace_graph_corrections"
+      },
+      {
+        "id": "TG2",
+        "severity": "medium",
+        "summary": "Deterministic sample check for R2 lists milestones [M1, M2] but omits M3, where AT2 (the cited acceptance test) is integrated into CI; this creates an incomplete trace between the sample check and where the requirement is validated.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": null,
+            "json_pointer": "/inputs/deterministic_sample_checks/1",
+            "note": "Sample check for R2 references AT2 and milestones M1,M2.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "{\"requirement_id\":\"R2\",\"acceptance_tests\":[\"AT2\"],\"milestones\":[\"M1\",\"M2\"]}"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "M3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/2/deliverables/2/text",
+            "note": "M3 deliverable DL10 explicitly includes automated runs of AT1–AT6 integrated into CI, including AT2.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Automated runs of AT1, AT2, AT3, AT4, AT5, AT6 integrated into CI for the core pipeline."
+          }
+        ],
+        "routing_target": "orchestrator.trace_graph_corrections"
+      },
+      {
+        "id": "TG3",
+        "severity": "high",
+        "summary": "Deterministic sample check for R3 lists milestones [M1, M2], but the plan locates implementation of R3 (and R4) in M3 via the Markdown render plugin (DL9); this is a milestone misattribution that can mislead dependency/verification tracking for R3.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": null,
+            "json_pointer": "/inputs/deterministic_sample_checks/2",
+            "note": "Sample check for R3 references AT3 and milestones M1,M2.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "{\"requirement_id\":\"R3\",\"acceptance_tests\":[\"AT3\"],\"milestones\":[\"M1\",\"M2\"]}"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "M3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/2/deliverables/1/text",
+            "note": "M3 deliverable DL9 explicitly targets R3/R4 per-note HTML generation via Markdown render plugin.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Markdown render plugin producing per-note HTML pages for all non-excluded notes (R3/R4)."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "M3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/2/deliverables/2/text",
+            "note": "M3 deliverable DL10 includes automated runs of AT3 integrated into CI.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Automated runs of AT1, AT2, AT3, AT4, AT5, AT6 integrated into CI for the core pipeline."
+          }
+        ],
+        "routing_target": "orchestrator.trace_graph_corrections"
+      }
+    ]
+  }
+}

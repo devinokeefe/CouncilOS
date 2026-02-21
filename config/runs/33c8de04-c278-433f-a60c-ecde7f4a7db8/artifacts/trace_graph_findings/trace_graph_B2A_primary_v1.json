@@ -1,0 +1,50 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B2A_primary_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:09:13.343829Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "plan_candidate_B2A_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2A_v1",
+    "findings": [
+      {
+        "id": "TG-1",
+        "severity": "medium",
+        "summary": "Validation of Requirement R2 (Static Site Output) via Acceptance Test AT2 is delayed to Milestone M4, leaving the core static-site constraint unverified in Milestone M2 where the renderer is delivered.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/exit_criteria/0",
+            "note": "Milestone M2 exit criteria validates AT13 (build success) but omits AT2 (static hosting functional verification).",
+            "candidate_id": "B2A",
+            "artifact_id": "0c048aa4-831a-4fde-b450-818544f67fb9",
+            "quote": "AT1 (recursive discovery), AT4 (stable URLs), AT10 (offline CLI invocation), and AT13 (build completes and outputs static files) are runnable and pass on a small representative fixture set."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "M4",
+            "json_pointer": "/plan_package/milestones/3/exit_criteria/0",
+            "note": "AT2 is explicitly deferred to Milestone M4.",
+            "candidate_id": "B2A",
+            "artifact_id": "0c048aa4-831a-4fde-b450-818544f67fb9",
+            "quote": "AT5 (client-side search offline), AT2 (static hosting behavior), AT11 (modern browsers), and AT12 (≥90% queries in top 10) pass on the representative dataset."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "DL8",
+            "json_pointer": "/plan_package/milestones/1/deliverables/2",
+            "note": "Rendering capability (R2 implementation) is delivered in M2 (DL8), creating a gap between delivery and validation.",
+            "candidate_id": "B2A",
+            "artifact_id": "0c048aa4-831a-4fde-b450-818544f67fb9",
+            "quote": "Renderer/Theme plugin (C14) producing one stable URL/page per note plus minimal home/index page; copies static assets (CSS/JS) to output."
+          }
+        ],
+        "routing_target": "Plan_Author"
+      }
+    ]
+  }
+}

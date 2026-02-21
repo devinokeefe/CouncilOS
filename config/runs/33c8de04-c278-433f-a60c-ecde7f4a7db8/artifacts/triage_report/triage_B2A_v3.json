@@ -1,0 +1,586 @@
+{
+  "artifact_type": "triage_report",
+  "artifact_id": "triage_B2A_v3",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:20:10.579934Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "plan_candidate_B2A_v3",
+    "validator_B2A_v3"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2A_v3",
+    "critic_id": "MERGED",
+    "verdict": "reject",
+    "defects": [
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Hard-gate id_integrity failure: architecture options 'risks' fields are free-text entries that do not resolve to risk_register IDs, causing referential integrity violations.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "O1",
+            "json_pointer": "/plan_package/architecture/options/0/risks",
+            "note": "O1 risks are free-text strings rather than references to risk_register IDs.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "O2",
+            "json_pointer": "/plan_package/architecture/options/1/risks",
+            "note": "O2 risks are free-text strings rather than references to risk_register IDs.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "O3",
+            "json_pointer": "/plan_package/architecture/options/2/risks",
+            "note": "O3 risks are free-text strings rather than references to risk_register IDs.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "O4",
+            "json_pointer": "/plan_package/architecture/options/3/risks",
+            "note": "O4 risks are free-text strings rather than references to risk_register IDs.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/options/0/risks",
+            "value": [
+              "K4",
+              "K13",
+              "K1"
+            ]
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/options/1/risks",
+            "value": [
+              "K16",
+              "K13"
+            ]
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/options/2/risks",
+            "value": [
+              "K16",
+              "K18",
+              "K19",
+              "K1"
+            ]
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/options/3/risks",
+            "value": [
+              "K19",
+              "K16",
+              "K13"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Build lifecycle ordering is internally inconsistent: multiple places define init→collectFiles→transform→resolve→render→finalize, but the chosen high_level_dataflow executes finalize before render for search indexing, creating an ambiguous plugin contract.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/deliverables/0/text",
+            "note": "Milestone deliverable defines lifecycle order with render before finalize.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Core Orchestrator (C8) with deterministic lifecycle hook ordering (init/collectFiles/transform/resolve/render/finalize) and plugin registration/enablement config."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "DEC2",
+            "json_pointer": "/plan_package/decision_log/1/choice",
+            "note": "Decision log repeats lifecycle order with render before finalize.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Define a fixed macro lifecycle (init/collectFiles/transform/resolve/render/finalize) plus explicit plugin dependency declarations (requires/provides capabilities) validated by the orchestrator; within"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "O2",
+            "json_pointer": "/plan_package/architecture/options/1/components/0/responsibilities/1",
+            "note": "O2 orchestrator responsibilities list lifecycle hooks including render then finalize.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Define and execute build lifecycle hooks (init, collectFiles, transform, resolve, render, finalize)"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "O2",
+            "json_pointer": "/plan_package/architecture/chosen/high_level_dataflow",
+            "note": "Chosen dataflow runs finalize (search indexing) before render.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "1) CLI invokes Core Orchestrator (C8) with config (input/output/basePath, Markdown flavor, tag/link conventions, enabled plugins). 2) Orchestrator initializes a versioned BuildContext (note registry, "
+          }
+        ],
+        "violated_gate": "internal_consistency",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/chosen/high_level_dataflow",
+            "value": "1) CLI invokes Core Orchestrator (C8) with config (input/output/basePath, Markdown flavor, tag/link conventions, enabled plugins). 2) Orchestrator initializes a versioned BuildContext (note registry, page registry, asset registry, diagnostics). 3) collectFiles hook: File Collector plugin (C9) discovers .md files and populates note registry (R1). 4) transform hook: Markdown Parser plugin (C10) parses frontmatter + Markdown AST, extracts outbound links and candidate tags into canonical fields (R3/R7/R9). 5) resolve hook(s): Backlink Resolver (C11) builds link graph, resolves targets, attaches backlinks; Tag Aggregator (C12) builds tag index and registers tag pages (R8/R10). 6) render hook: Theme/Renderer plugin (C14) renders note pages, home/index, tag index, tag pages, and search page; copies static assets; pages reference client-side runtime (C15) and search assets (R2/R17). 7) finalize hook: Search Index plugin (C13) generates client-side index artifacts into output and registers their paths (R5). 8) Orchestrator writes build manifest + diagnostics summary and exits with non-zero status on configured fatal errors (R12/R22)."
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "Milestones require link/tag implementation and tests (M3 exit criteria) but the plan also defers the key specs (Q1/Q2) without explicitly gating M3 on HITL resolution, creating a practical sequencing conflict.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "W1",
+            "json_pointer": "/plan_package/synthesis_warnings/0/summary",
+            "note": "Plan acknowledges Q1/Q2 are blocking but does not gate milestone progression accordingly.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "DEC4",
+            "json_pointer": "/plan_package/decision_log/3/choice",
+            "note": "DEC4 defers selecting default internal link dialect pending Q1.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "DEC5",
+            "json_pointer": "/plan_package/decision_log/4/choice",
+            "note": "DEC5 defers final tag convention pending Q2.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "M3",
+            "json_pointer": "/plan_package/milestones/2/exit_criteria",
+            "note": "M3 exit criteria require link and tag acceptance tests to pass.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "plan_feasibility",
+        "patch": [
+          {
+            "op": "add",
+            "path": "/plan_package/milestones/0/exit_criteria/-",
+            "value": "HITL gating: capture decisions for Q1 (internal link syntax) and Q2 (tag convention) OR explicitly declare the build-time config mode and fixtures to be used for M2/M3 acceptance tests before starting M3."
+          },
+          {
+            "op": "add",
+            "path": "/plan_package/milestones/2/exit_criteria/-",
+            "value": "M3 acceptance tests (AT6/AT7/AT8/AT9) MUST run against an explicitly selected and documented link/tag convention configuration (resolving Q1/Q2 for the test fixtures), to avoid ambiguous or moving targets."
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Search quality acceptance test AT12 requires defining a 'representative query set', but no milestone deliverable explicitly schedules creation of that query set (making R19 gating hard to execute).",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "AT12",
+            "json_pointer": "/plan_package/acceptance_tests/11/procedure",
+            "note": "AT12 depends on a representative query set being defined.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Define a representative query set with expected target notes."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "M4",
+            "json_pointer": "/plan_package/milestones/3/deliverables",
+            "note": "M4 deliverables do not explicitly include defining the representative query set.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "acceptance_planning",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/milestones/3/deliverables/2/text",
+            "value": "Offline-first validation notes and build output checks to ensure no runtime backend dependency is introduced (R2/R11), plus definition of the representative search query set + expected targets used for AT12/R19."
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "low",
+        "summary": "BasePath/non-root hosting is called out as a risk and deliverable (K12, DL15), but acceptance tests do not explicitly validate hosting under a non-root basePath scenario.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "K12",
+            "json_pointer": "/plan_package/risk_register/11/mitigation",
+            "note": "K12 mitigation explicitly calls for non-root basePath deployment-mode tests.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "DL15",
+            "json_pointer": "/plan_package/milestones/4/deliverables/1/text",
+            "note": "DL15 promises basePath support and tests, but no AT explicitly covers it.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "AT2",
+            "json_pointer": "/plan_package/acceptance_tests/1/procedure",
+            "note": "AT2 does not mention non-root basePath deployment validation.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "acceptance_coverage",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/acceptance_tests/1/procedure",
+            "value": "Run the build on a representative notes folder. Inspect the output directory contents and attempt to open the site via a local static file server (or static hosting), including a deployment under a non-root basePath (e.g., /notes/) to validate link/asset correctness."
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/acceptance_tests/1/pass_criteria",
+            "value": "Build completes successfully; output contains only static assets (HTML/CSS/JS/media); site functions without any server-side runtime for browsing, search, tags, or backlinks, including when hosted under a non-root basePath."
+          }
+        ]
+      },
+      {
+        "label": "note",
+        "severity": "medium",
+        "summary": "Decision log evidence_pointers reference external artifacts not embedded in the plan_candidate payload, reducing self-contained auditability (may be acceptable if the review process has those artifacts available by reference).",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "DEC1",
+            "json_pointer": "/plan_package/decision_log/0/evidence_pointers",
+            "note": "Evidence pointers cite artifacts not included within this payload.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "evidence_traceability",
+        "patch": []
+      },
+      {
+        "label": "note",
+        "severity": "low",
+        "summary": "Consistency finding CS001 appears to be a false positive: AT6 already maps to both R7 and R20 in the candidate payload.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "AT6",
+            "json_pointer": "/plan_package/acceptance_tests/5/maps_to_requirements",
+            "note": "AT6 maps to both R7 and R20.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "n/a",
+        "patch": []
+      },
+      {
+        "label": "note",
+        "severity": "medium",
+        "summary": "Watch mode is a SHOULD requirement (R25) and has a dedicated risk (K14), but there is no acceptance test covering watch/edit/rename/delete scenarios; may be acceptable for MVP if deferred explicitly.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "R25",
+            "json_pointer": "/plan_package/requirements/24",
+            "note": "R25 defines watch mode as SHOULD.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "K14",
+            "json_pointer": "/plan_package/risk_register/13",
+            "note": "K14 covers watch/incremental rebuild risk but no AT validates it.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "acceptance_coverage",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Build lifecycle ordering is internally inconsistent: multiple sections define lifecycle as init→collectFiles→transform→resolve→render→finalize, but chosen dataflow executes finalize (search indexing) before render. This breaks the plugin contract and makes the orchestrator specification ambiguous and unimplementable.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": null,
+            "json_pointer": "/plan_package/milestones/0/deliverables/0/text",
+            "note": "M1 DL1 defines lifecycle order with render before finalize",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "lifecycle hook ordering (init/collectFiles/transform/resolve/render/finalize)"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": null,
+            "json_pointer": "/plan_package/architecture/chosen/high_level_dataflow",
+            "note": "Chosen dataflow runs finalize before render",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "6) finalize hook: Search Index plugin (C13) generates... 7) render hook: Theme/Renderer plugin (C14) renders"
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Milestone M3 requires link resolution and backlink computation (DL8, AT8, AT9) but Decision DEC4 defers wiki-link dialect selection to HITL resolution of Q1. M3 cannot be completed without Q1 resolution, creating a sequencing deadlock.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "DEC4",
+            "json_pointer": "/plan_package/decision_log/3/choice",
+            "note": "DEC4 defers wiki-link dialect pending HITL Q1",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Defer selecting the default supported wiki-link dialect pending HITL resolution of Q1"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "M3",
+            "json_pointer": "/plan_package/milestones/2/exit_criteria",
+            "note": "M3 exit criteria require AT8/AT9 passing",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "milestone_exit_criteria",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Milestone M3 requires tag extraction and navigation (DL9, AT6, AT7) but Decision DEC5 defers tag convention to HITL resolution of Q2. M3 cannot be completed without Q2 resolution, creating a sequencing deadlock.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "DEC5",
+            "json_pointer": "/plan_package/decision_log/4/choice",
+            "note": "DEC5 defers tag convention pending HITL Q2",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "defer final default convention and nested-tag support until HITL resolves Q2"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "M3",
+            "json_pointer": "/plan_package/milestones/2/exit_criteria",
+            "note": "M3 exit criteria require AT6/AT7 passing",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "milestone_exit_criteria",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Architecture option O1, O2, O3, O4 risk arrays reference 14 risk IDs that do not exist in the risk_register, violating id_integrity. These missing risks are cited as tradeoff justifications but cannot be traced or mitigated.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "O1",
+            "json_pointer": "/plan_package/architecture/options/0/risks",
+            "note": "O1 references 4 missing risks",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Search index asset may become too large for very large note sets"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "O2",
+            "json_pointer": "/plan_package/architecture/options/1/risks",
+            "note": "O2 references 3 missing risks",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Plugin API may need multiple iterations to stabilize"
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": []
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Decision log evidence pointers reference external artifacts (architecture_canonical_v1, branch_set_v1, requirements_canonical_v1, risk_gov_canonical_v1) not present in the candidate payload, breaking internal auditability.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "DEC1",
+            "json_pointer": "/plan_package/decision_log/0/evidence_pointers/0/artifact_ref",
+            "note": "DEC1 references external artifact",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "architecture_canonical_v1"
+          }
+        ],
+        "violated_gate": "coverage",
+        "patch": []
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Acceptance test AT12 (search quality R19) requires a representative query set to be defined, but no milestone deliverable schedules its creation before M4 exit criteria require AT12 to pass.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "AT12",
+            "json_pointer": "/plan_package/acceptance_tests/11/procedure",
+            "note": "AT12 requires query set definition",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Define a representative query set with expected target notes"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "M4",
+            "json_pointer": "/plan_package/milestones/3/deliverables",
+            "note": "M4 does not include query set creation",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "milestone_exit_criteria",
+        "patch": []
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Executive summary claims 'routing blocking spec decisions to HITL early' but milestone sequence does not gate M3 on Q1/Q2 resolution, contradicting the claim and creating execution ambiguity.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": null,
+            "json_pointer": "/plan_package/executive_summary",
+            "note": "Executive summary claims early HITL routing",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "routing blocking spec decisions (link syntax and tag conventions) to HITL early"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "M3",
+            "json_pointer": "/plan_package/milestones/2/depends_on",
+            "note": "M3 depends only on M2, not on Q1/Q2 resolution",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "milestone_exit_criteria",
+        "patch": []
+      },
+      {
+        "label": "note",
+        "severity": "low",
+        "summary": "Risk K14 (incremental rebuild/watch) has planned mitigation but R25 (watch mode SHOULD requirement) has no corresponding acceptance test or milestone deliverable, leaving validation gap.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "K14",
+            "json_pointer": "/plan_package/risk_register/13",
+            "note": "K14 addresses watch mode risks",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "R25",
+            "json_pointer": "/plan_package/requirements/24",
+            "note": "R25 is SHOULD requirement for watch mode",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "coverage",
+        "patch": []
+      },
+      {
+        "label": "note",
+        "severity": "low",
+        "summary": "Milestone M5 DL15 addresses basePath support (K12 mitigation) but no acceptance test explicitly validates non-root basePath deployment scenarios as described in risk mitigation.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "DL15",
+            "json_pointer": "/plan_package/milestones/4/deliverables/1/text",
+            "note": "DL15 includes basePath support",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Deployment/basePath support and nested path/link correctness tests"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "K12",
+            "json_pointer": "/plan_package/risk_register/11/mitigation/text",
+            "note": "K12 mitigation includes deployment-mode tests",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Add deployment-mode tests (non-root basePath)"
+          }
+        ],
+        "violated_gate": "coverage",
+        "patch": []
+      }
+    ],
+    "reroute_target": "generate.synthesizer_a",
+    "reroute_reason": "Critical blockers require architectural redesign: (1) lifecycle ordering contradiction makes orchestrator unimplementable; (2) milestone sequencing deadlock on Q1/Q2 resolution blocks M3 execution; (3) missing risk IDs break traceability. These are not patchable via triage edits—they require synthesizer rework to resolve lifecycle contract, insert explicit HITL gates before M3, and either add missing risks or remove invalid references."
+  }
+}

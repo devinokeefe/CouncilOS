@@ -3,69 +3,45 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "schema_version": {
-      "type": "string"
-    },
+    "schema_version": {"type": "string"},
     "meta": {
-      "type": "object"
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "source_plan_hash": {"type": "string"},
+        "compiler_version": {"type": "string"},
+        "compiler_inputs_hashes": {"type": "array", "items": {"type": "string"}}
+      },
+      "required": ["source_plan_hash", "compiler_version", "compiler_inputs_hashes"]
     },
     "tasks": {
       "type": "array",
       "items": {
         "type": "object",
+        "additionalProperties": false,
         "properties": {
-          "task_id": {
-            "type": "string"
-          },
-          "title": {
-            "type": "string"
-          },
-          "source_plan_ids": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "depends_on": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "target_paths": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "acceptance_check_ids": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "inputs": {
-            "type": "array"
-          },
-          "expected_outputs": {
-            "type": "array"
-          },
-          "budgets": {
-            "type": [
-              "object",
-              "null"
-            ]
-          }
+          "task_id": {"type": "string"},
+          "title": {"type": "string"},
+          "source_plan_ids": {"type": "array", "items": {"type": "string"}},
+          "depends_on": {"type": "array", "items": {"type": "string"}},
+          "target_paths": {"type": "array", "items": {"type": "string"}},
+          "acceptance_check_ids": {"type": "array", "items": {"type": "string"}},
+          "inputs": {"type": "array"},
+          "expected_outputs": {"type": "array"},
+          "budgets": {"type": ["object", "null"]}
         },
         "required": [
-          "task_id"
-        ],
-        "additionalProperties": true
+          "task_id",
+          "title",
+          "source_plan_ids",
+          "depends_on",
+          "target_paths",
+          "acceptance_check_ids",
+          "inputs",
+          "expected_outputs"
+        ]
       }
     }
   },
-  "required": [
-    "schema_version",
-    "tasks"
-  ]
+  "required": ["schema_version", "meta", "tasks"]
 }

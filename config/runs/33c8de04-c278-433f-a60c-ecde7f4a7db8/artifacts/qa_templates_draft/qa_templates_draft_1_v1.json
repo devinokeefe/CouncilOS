@@ -1,0 +1,102 @@
+{
+  "artifact_type": "qa_templates_draft",
+  "artifact_id": "qa_templates_draft_1_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T11:57:48.807599Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "capsule_canonical_v1"
+  ],
+  "payload": {
+    "templates": [
+      {
+        "id": "ATT-STATIC-BUILD-001",
+        "name": "Static site build output verification",
+        "description": "Procedure: Run the build on a representative notes folder. Verify build completes without errors. Confirm output directory contains only static assets (HTML/CSS/JS/media) and can be opened from a local file server without backend services. Pass criteria: Build exits successfully; output contains no server-side executables/configs; site pages render in browser from static hosting.",
+        "applies_to": [
+          "G1",
+          "CNS1",
+          "SM1",
+          "SM5"
+        ]
+      },
+      {
+        "id": "ATT-MD-RENDER-002",
+        "name": "Markdown fidelity rendering check",
+        "description": "Procedure: Prepare a test note set covering headings, lists, code blocks, blockquotes, links, images, and tables per selected Markdown flavor. Build site and compare rendered HTML against expected structure. Pass criteria: All elements render correctly and consistently across notes with no loss of formatting.",
+        "applies_to": [
+          "G5",
+          "CNS2"
+        ]
+      },
+      {
+        "id": "ATT-SEARCH-003",
+        "name": "Full-text search relevance",
+        "description": "Procedure: Define a query set with expected target notes. Build site and execute queries via UI. Capture top 10 results for each. Pass criteria: ≥90% of queries return expected note within top 10 results; zero client-side errors during search.",
+        "applies_to": [
+          "G2",
+          "SM2"
+        ]
+      },
+      {
+        "id": "ATT-TAGS-004",
+        "name": "Tag extraction and navigation",
+        "description": "Procedure: Create dataset with tagged and untagged notes using the specified tag syntax. Build site and open tag index/filters. Pass criteria: 100% of tagged notes appear under each corresponding tag; untagged notes do not appear under any tag; tag links are navigable.",
+        "applies_to": [
+          "G3",
+          "SM3"
+        ]
+      },
+      {
+        "id": "ATT-BACKLINKS-005",
+        "name": "Backlinks computation and display",
+        "description": "Procedure: Prepare notes with known link graph (A→B, C→B, B→D). Build site. On each note page, verify backlinks list contains all and only notes that link to it. Pass criteria: 100% expected backlinks appear; no false backlinks.",
+        "applies_to": [
+          "G4",
+          "SM4"
+        ]
+      },
+      {
+        "id": "ATT-LINKS-006",
+        "name": "Forward link resolution",
+        "description": "Procedure: Create notes with internal links using specified syntax. Build site and click through internal links. Pass criteria: All internal links resolve to correct target pages; broken links are reported or handled per spec.",
+        "applies_to": [
+          "G4"
+        ]
+      },
+      {
+        "id": "ATT-BROWSER-007",
+        "name": "Cross-browser static functionality",
+        "description": "Procedure: Open generated site in latest Chrome, Firefox, Safari, Edge. Validate navigation, search, tags, backlinks. Pass criteria: No console errors; core features function consistently.",
+        "applies_to": [
+          "SM6",
+          "CNS1"
+        ]
+      },
+      {
+        "id": "ATT-PERF-008",
+        "name": "Build and search performance targets",
+        "description": "Procedure: Use representative dataset size. Measure build time and client-side search response time for agreed targets. Pass criteria: Metrics meet agreed thresholds.",
+        "applies_to": [
+          "SM7"
+        ]
+      }
+    ],
+    "coverage_guidance": [
+      "Ensure test datasets include edge cases: empty notes folder, single note, large note set, and notes with special characters/Unicode.",
+      "Include notes with duplicate titles and file names to verify unique URL/slug handling per spec.",
+      "Verify behavior for missing or malformed frontmatter/tag syntax per chosen standard.",
+      "Include mixed internal link formats if multiple syntaxes are supported; otherwise ensure unsupported syntax is documented and handled.",
+      "Validate that search index and assets are referenced with relative paths that work on static hosts and local file servers.",
+      "Check that generated site does not depend on network access for core features unless explicitly allowed.",
+      "Confirm that backlinks and tags update correctly when notes are added/removed between builds."
+    ],
+    "definition_of_done": [
+      "All QA templates executed with passing results on representative dataset.",
+      "Blocking open questions (Markdown flavor, link syntax, tag syntax) resolved and tests updated accordingly.",
+      "Success metrics SM1–SM6 met; SM7 met once performance targets are defined.",
+      "No critical or high severity defects remain; medium defects have documented remediation plan.",
+      "Build output verified as fully static and deployable to chosen static hosting target."
+    ]
+  }
+}

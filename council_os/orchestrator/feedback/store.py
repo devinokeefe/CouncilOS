@@ -4,7 +4,8 @@ import json
 from pathlib import Path
 from typing import Any
 
-from council_os.orchestrator.feedback.utils import stable_json_dumps
+from council_os.handoff.hashing import canonical_json_dumps
+
 
 class PlanningArtifactStoreError(RuntimeError):
     pass
@@ -30,7 +31,7 @@ class PlanningArtifactStore:
 
     def write_json(self, name: str, payload: dict[str, Any]) -> Path:
         path = self.path(name)
-        encoded = stable_json_dumps(payload)
+        encoded = canonical_json_dumps(payload)
         if path.exists():
             try:
                 existing = json.loads(path.read_text(encoding="utf-8"))

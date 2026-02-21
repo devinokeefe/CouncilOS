@@ -1,0 +1,129 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B2A_fallback_v3",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:18:34.969985Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "plan_candidate_B2A_v3"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2A_v3",
+    "findings": [
+      {
+        "id": "TG001",
+        "severity": "high",
+        "summary": "Requirement R1 (recursive Markdown discovery) is traced to milestone M2 but M2 deliverables do not explicitly include recursive discovery implementation; only File Collector Plugin (C9) is mentioned without confirming recursive behavior.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "R1",
+            "json_pointer": "/plan_package/requirements/0",
+            "note": "R1 requires recursive discovery of .md files.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "The system MUST accept a user-specified folder (or repository working directory) as input and recursively discover Markdown (.md) files"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1",
+            "note": "M2 deliverables list File Collector Plugin but do not explicitly confirm recursive discovery implementation.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "File Collector Plugin (C9): recursive .md discovery, include/exclude patterns, default symlink policy documented"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "AT1",
+            "json_pointer": "/plan_package/acceptance_tests/0",
+            "note": "AT1 pass criteria requires recursive discovery but M2 exit criteria do not explicitly verify AT1 passes.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "All .md files in all subfolders are included as notes; non-.md files are excluded."
+          }
+        ],
+        "routing_target": "engineering.milestone_refinement"
+      },
+      {
+        "id": "TG002",
+        "severity": "medium",
+        "summary": "Requirement R2 (static-only output) is traced to milestones M1 and M2, but M1 deliverables focus on orchestrator/plugin API without any output generation capability; R2 cannot be validated at M1 exit.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "R2",
+            "json_pointer": "/plan_package/requirements/1",
+            "note": "R2 requires static website output with no server-side runtime.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "The system MUST generate a static website output consisting only of static files (HTML/CSS/JS/assets)"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0",
+            "note": "M1 deliverables are orchestrator/plugin API only; no rendering or output generation.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Core Orchestrator (C8) with deterministic lifecycle hook ordering (init/collectFiles/transform/resolve/render/finalize)"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "AT2",
+            "json_pointer": "/plan_package/acceptance_tests/1",
+            "note": "AT2 validates R2 but is not listed in M1 exit criteria.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Build completes successfully; output contains only static assets (HTML/CSS/JS/media)"
+          }
+        ],
+        "routing_target": "engineering.milestone_refinement"
+      },
+      {
+        "id": "TG003",
+        "severity": "high",
+        "summary": "Requirement R3 (Markdown rendering with formatting preservation) is traced to milestones M1 and M2, but M2 deliverables include only Markdown Parser Plugin (C10) which emits AST, not rendered HTML; rendering is deferred to M3 (DL10), creating a gap.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "R3",
+            "json_pointer": "/plan_package/requirements/2",
+            "note": "R3 requires parsing and rendering Markdown to HTML with preserved formatting.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "The system MUST parse and render each input Markdown file into a corresponding static HTML page while preserving Markdown formatting"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/deliverables/1",
+            "note": "M2 DL6 delivers parser that emits AST, not rendered HTML.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Markdown Parser Plugin (C10): CommonMark baseline with optional GFM extensions toggle; frontmatter extraction; emits AST/plain-text"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "M3",
+            "json_pointer": "/plan_package/milestones/2/deliverables/2",
+            "note": "Renderer plugin skeleton is delivered in M3, not M2.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Renderer/Theme Plugin skeleton (C14) capable of rendering note pages"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "AT3",
+            "json_pointer": "/plan_package/acceptance_tests/2",
+            "note": "AT3 validates R3 rendering but M2 exit criteria claim AT3 passes despite no renderer.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "AT3 passes for the selected baseline Markdown features on the fixture set."
+          }
+        ],
+        "routing_target": "engineering.milestone_refinement"
+      }
+    ]
+  }
+}

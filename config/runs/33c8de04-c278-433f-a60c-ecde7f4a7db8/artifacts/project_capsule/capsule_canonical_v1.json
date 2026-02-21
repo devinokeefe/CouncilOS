@@ -1,0 +1,173 @@
+{
+  "artifact_type": "project_capsule",
+  "artifact_id": "capsule_canonical_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T11:55:34.580792Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "capsule_draft_a_v1",
+    "capsule_draft_b_v1"
+  ],
+  "payload": {
+    "brief": "Create a software to turn my Markdown notes into a searchable static site with tags and backlinks.\n",
+    "problem_statement": "Markdown notes become difficult to navigate and discover at scale; the user needs an automated way to convert a set of Markdown files into a browsable static website with fast full-text search, tag-based browsing, and bidirectional linking/backlinks between notes.",
+    "goals": [
+      "G1: Ingest a folder (or repository) of Markdown notes and generate a static website from them.",
+      "G2: Provide full-text search across all notes in the generated static site.",
+      "G3: Support tags to categorize notes and enable browsing/filtering by tag.",
+      "G4: Detect and render forward links and backlinks between notes.",
+      "G5: Preserve Markdown formatting and structure in the generated site output."
+    ],
+    "non_goals": [
+      "NG1: Building a hosted SaaS service or requiring a server-side application/database at runtime.",
+      "NG2: Real-time collaborative editing or multi-user permissions within the notes.",
+      "NG3: A WYSIWYG note editor (authoring remains in Markdown).",
+      "NG4: Mobile native applications or desktop clients beyond the generated static site.",
+      "NG5: Authentication or access control features.",
+      "NG6: Version control or history tracking of note changes.",
+      "NG7: Guaranteeing compatibility with every Markdown extension or every wiki-link dialect without explicit specification."
+    ],
+    "constraints": [
+      {
+        "id": "CNS1",
+        "type": "tech",
+        "text": "Output must be a static site (static HTML/CSS/JS/assets), with no required server-side runtime for browsing/search/backlinks beyond what can run in the browser."
+      },
+      {
+        "id": "CNS2",
+        "type": "tech",
+        "text": "Must process standard Markdown files as input (Markdown flavor/extensions to be specified)."
+      }
+    ],
+    "assumptions": [
+      {
+        "id": "A1",
+        "text": "Notes are available as Markdown files on a local filesystem or in a repository, and the tool can read them as input.",
+        "impact": "high",
+        "confidence": "medium",
+        "needs_confirmation": true
+      },
+      {
+        "id": "A2",
+        "text": "Backlinks can be derived from explicit links in the Markdown (e.g., standard Markdown links and/or a wiki-link format), and the link syntax can be standardized/specified for this project.",
+        "impact": "high",
+        "confidence": "low",
+        "needs_confirmation": true
+      },
+      {
+        "id": "A3",
+        "text": "Search is acceptable as an in-browser (client-side) search index generated at build time and queried in the static site.",
+        "impact": "high",
+        "confidence": "high",
+        "needs_confirmation": true
+      },
+      {
+        "id": "A4",
+        "text": "Tags are expressed in a consistent, parseable way (e.g., YAML frontmatter field and/or inline #tags) that will be specified for the project.",
+        "impact": "high",
+        "confidence": "medium",
+        "needs_confirmation": true
+      },
+      {
+        "id": "A5",
+        "text": "The generated site will be hosted via static hosting (e.g., GitHub Pages/Netlify) or self-hosted without backend requirements.",
+        "impact": "medium",
+        "confidence": "medium",
+        "needs_confirmation": true
+      },
+      {
+        "id": "A6",
+        "text": "The user can run a CLI/build tool to generate the site.",
+        "impact": "low",
+        "confidence": "medium",
+        "needs_confirmation": true
+      }
+    ],
+    "open_questions": [
+      {
+        "id": "Q1",
+        "text": "What Markdown flavor and internal link syntax should be supported for links/backlinks (CommonMark/GFM; standard Markdown links, Obsidian-style [[WikiLinks]], both)?",
+        "impact": "high",
+        "blocking": true
+      },
+      {
+        "id": "Q2",
+        "text": "How are tags represented in the notes (YAML frontmatter key, inline #tags, both), and should nested tags be supported?",
+        "impact": "high",
+        "blocking": true
+      },
+      {
+        "id": "Q3",
+        "text": "What is the expected scale (number of notes/total size) and performance targets for search and page load?",
+        "impact": "high",
+        "blocking": false
+      },
+      {
+        "id": "Q4",
+        "text": "What is the preferred build workflow (CLI, git-based build, watch mode) and what OS environments must be supported?",
+        "impact": "medium",
+        "blocking": false
+      },
+      {
+        "id": "Q5",
+        "text": "Do you need additional navigation features such as a graph view, note outline/TOC generation, or automatic index pages per tag?",
+        "impact": "medium",
+        "blocking": false
+      },
+      {
+        "id": "Q6",
+        "text": "Where will the site be hosted (e.g., GitHub Pages, Netlify, local-only), and are there any restrictions on client-side JavaScript usage?",
+        "impact": "medium",
+        "blocking": false
+      },
+      {
+        "id": "Q7",
+        "text": "Should the site support themes or customizable styling?",
+        "impact": "low",
+        "blocking": false
+      },
+      {
+        "id": "Q8",
+        "text": "Are there any specific search features required (e.g., fuzzy search, tag filters, sorting, highlighting)?",
+        "impact": "medium",
+        "blocking": false
+      }
+    ],
+    "success_metrics": [
+      "SM1: Static site generation succeeds on a representative notes folder and produces a browsable site (manual verification: build completes without errors and output is static files).",
+      "SM2: Search returns relevant results for a test set of queries (measurement: at least 90% of predefined queries return the expected note within top 10 results).",
+      "SM3: Tags are correctly extracted and navigable (measurement: 100% of notes with tags appear under the corresponding tag pages/filters in a test dataset).",
+      "SM4: Backlinks are correctly computed (measurement: for a test set of interlinked notes, 100% of expected backlinks appear on their target pages).",
+      "SM5: Generated site is hostable as static files (measurement: deploy to a chosen static host or open from a local file server and verify core features work without a backend).",
+      "SM6: Generated site loads and functions in modern browsers (Chrome, Firefox, Safari, Edge) without errors on a representative dataset.",
+      "SM7: On a representative dataset (e.g., 100+ notes), generation time and search responsiveness meet agreed performance targets (targets to be defined once scale is known)."
+    ],
+    "stakeholders": [
+      "Primary user (note author/maintainer)",
+      "Readers of the published notes site (could be the same as the user)",
+      "Potential future users with similar note-taking workflows"
+    ],
+    "glossary": [
+      {
+        "term": "Static site",
+        "definition": "A website composed of pre-generated files (HTML/CSS/JS/assets) that can be served without server-side application logic."
+      },
+      {
+        "term": "Markdown",
+        "definition": "A lightweight markup language used to format plain text documents."
+      },
+      {
+        "term": "Backlink",
+        "definition": "A list of notes/pages that link to the current note/page, computed by analyzing links across the note set."
+      },
+      {
+        "term": "Tag",
+        "definition": "A label associated with a note, used for categorization and navigation (representation to be specified)."
+      },
+      {
+        "term": "Full-text search",
+        "definition": "Searching the contents of notes (not just titles), typically via an index generated at build time and queried client-side."
+      }
+    ]
+  }
+}

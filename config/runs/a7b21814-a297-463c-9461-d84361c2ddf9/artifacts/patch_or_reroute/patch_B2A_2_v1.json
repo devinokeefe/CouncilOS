@@ -1,0 +1,16 @@
+{
+  "artifact_type": "patch_or_reroute",
+  "artifact_id": "patch_B2A_2_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:39:56.736693Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B2A_v1"
+  ],
+  "payload": {
+    "action": "reroute",
+    "rationale": "Blockers require edits to locked canonical sections (/architecture/options and /risk_register). The id_integrity violations for architecture option risks can only be fixed by modifying /plan_package/architecture/options, which is disallowed. Risk K8 closure also requires /plan_package/risk_register edits. Per rules, must reroute.",
+    "patch": [],
+    "reroute_target": "Orchestrator → Plan Owner (risk_register + architecture risk cross-references) and Orchestrator → Review/Judge (alignment_warnings content)"
+  }
+}

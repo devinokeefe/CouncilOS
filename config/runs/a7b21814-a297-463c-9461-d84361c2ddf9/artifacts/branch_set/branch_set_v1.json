@@ -1,0 +1,71 @@
+{
+  "artifact_type": "branch_set",
+  "artifact_id": "branch_set_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:34:33.532275Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "alignment_warnings_v1"
+  ],
+  "payload": {
+    "branches": [
+      {
+        "branch_id": "B2",
+        "selected_arch_option_id": "O2",
+        "milestone_strategy": {
+          "style": "hybrid",
+          "notes": "Phase A (big-bang foundation): Build the core engine with lifecycle hooks (ingest/transform/render/emit), shared build context, and plugin loader (C9, C10). Phase B (thin-slice feature plugins): Deliver plugins incrementally — (1) Ingestion + Markdown render plugins (R1–R6), (2) Link/backlink plugin (R9, R10), (3) Tag plugin (R11–R13), (4) Search index plugin (R7, R8), (5) Theme/template plugin (R17). Phase C: Wiki-link support plugin (R15), base-URL plugin (R19), incremental build plugin (R23). The hybrid approach front-loads the plugin API design then iterates features as isolated plugins."
+        },
+        "acceptance_strategy": {
+          "notes": "After Phase A, validate plugin loading and lifecycle execution with integration smoke tests. After each Phase B plugin, run the corresponding acceptance tests (AT1–AT14 mapped per requirement). Add plugin-isolation tests to verify plugins can be swapped without side effects. Address AL001 by creating acceptance tests for SHOULD requirements as corresponding plugins are delivered. Performance acceptance (R22) tested after search plugin delivery."
+        },
+        "governance_posture": {
+          "tooling_level": "sandboxed",
+          "hitl_strictness": "high"
+        },
+        "risk_posture": {
+          "notes": "High HITL strictness because the plugin API design (Phase A) is a critical decision point — incorrect API design causes cascading rework. K2/K3 risks are naturally mitigated by plugin configurability (link and tag conventions become plugin-level settings). K7 (XSS) requires review of each plugin's template output; enforce sanitization in the shared context API. K8 (privacy) accepted with documentation disclaimer and a build-time 'publish warning' feature. K19 (template injection) is elevated due to plugin extensibility — sandbox user-provided plugins. K21 (supply chain) is higher due to more dependencies; pin all plugin dependencies."
+        },
+        "rationale": "The plugin-based architecture (O2) trades upfront complexity for long-term extensibility. This branch is appropriate if the project is expected to grow beyond initial scope (e.g., multiple Markdown flavors, additional output formats, community contributions). The hybrid milestone strategy acknowledges that the plugin API must be designed holistically before features can be delivered incrementally. Higher governance strictness reflects the architectural risk of getting the plugin contract wrong early."
+      },
+      {
+        "branch_id": "B2",
+        "selected_arch_option_id": "O2",
+        "milestone_strategy": {
+          "style": "hybrid",
+          "notes": "First, a 'big bang' style milestone to design and build the core engine, a stable plugin API, and the shared data model. Subsequent milestones will be 'thin slices' that implement features like link resolution, tagging, and search as discreet, swappable plugins on the stable foundation."
+        },
+        "acceptance_strategy": {
+          "notes": "Initial acceptance criteria focus on the core engine and plugin API stability, with rigorous testing of the plugin lifecycle. Feature acceptance will occur on a per-plugin basis, ensuring each component is independently verifiable against its requirements before integration."
+        },
+        "governance_posture": {
+          "tooling_level": "full",
+          "hitl_strictness": "high"
+        },
+        "risk_posture": {
+          "notes": "Prioritize mitigating architectural risks upfront, including plugin API instability and data model design flaws, even if it delays initial feature delivery. A formal review will address the critical data leakage risk (K8) by designing a mandatory build-time check to prevent publication of notes marked as private. All high-severity alignment warnings (e.g., AL001, AL008) must be addressed before proceeding."
+        },
+        "rationale": "This branch, 'Foundation First', prioritizes long-term quality and extensibility. By choosing the plugin-based architecture (O2) and investing in a robust core API upfront, it establishes a maintainable and flexible foundation for future development. This path is slower initially but minimizes architectural risk and technical debt."
+      },
+      {
+        "branch_id": "B1",
+        "selected_arch_option_id": "O1",
+        "milestone_strategy": {
+          "style": "thin_slice",
+          "notes": "Milestone 1: CLI skeleton + Markdown ingestion + single-note HTML render (R1, R2, R3, R4, R5). Milestone 2: Tag extraction, tag pages, and tag navigation (R11, R12, R13). Milestone 3: Internal link resolution + backlinks section (R9, R10). Milestone 4: Client-side search index generation and search UI (R7, R8). Milestone 5: Polish — broken-link warnings (R18), base-URL config (R19), GFM extensions (R21), browser QA (R14). Each milestone produces a deployable static site with incrementally more features."
+        },
+        "acceptance_strategy": {
+          "notes": "Run AT1–AT6 after Milestone 1 to lock ingestion and build correctness. Add AT9–AT10 after Milestone 3 for links/backlinks. Add AT7–AT8 after Milestone 4 for search. AT11–AT14 run end-to-end after Milestone 5. Expand acceptance coverage for SHOULD requirements (R15–R22) once MUST tests pass; address alignment warning AL001 by adding tests for wiki-links, tag normalization, navigation, and broken-link handling before freeze."
+        },
+        "governance_posture": {
+          "tooling_level": "sandboxed",
+          "hitl_strictness": "medium"
+        },
+        "risk_posture": {
+          "notes": "Prioritize mitigations for K2 (link conventions) and K3 (tag conventions) in Milestones 2–3 by requiring convention configuration before those milestones start. Accept K8 (privacy leakage) with documentation-only mitigation (build-time warning banner and README disclaimer) per alignment warning AL003. Defer K4/K5 (scale) risks since monolithic in-memory approach is acceptable at confirmed 1,000-note target (R22). K6 (malformed YAML) addressed in Milestone 1 via graceful per-file error handling. K7 (XSS) mitigated by default HTML sanitization in renderer."
+        },
+        "rationale": "The monolithic CLI pipeline (O1) is the simplest architecture that satisfies all MUST requirements with the least upfront design overhead. A thin-slice delivery strategy de-risks integration issues by producing a working static site from the first milestone. This branch is best suited for a single developer or small team wanting fast time-to-value with a straightforward codebase. The main trade-off is limited extensibility, which is acceptable given the project's focused scope and single-user orientation."
+      }
+    ]
+  }
+}

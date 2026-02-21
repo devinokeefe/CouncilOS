@@ -1,0 +1,185 @@
+{
+  "artifact_type": "project_capsule",
+  "artifact_id": "capsule_canonical_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:23:20.769410Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "capsule_draft_a_v1",
+    "capsule_draft_b_v1"
+  ],
+  "payload": {
+    "brief": "Create a software to turn my Markdown notes into a searchable static site with tags and backlinks.\n",
+    "problem_statement": "Markdown notes are currently not easily discoverable and navigable; the user needs an automated way to publish notes as a static website with full-text search, tag-based browsing, and backlink navigation between notes.",
+    "goals": [
+      "Ingest a collection of Markdown notes and generate a static website (HTML/CSS/JS) from them.",
+      "Preserve Markdown formatting and structure in the generated site.",
+      "Provide full-text search across generated content in the static site.",
+      "Support tags so users can browse/filter notes by tag.",
+      "Detect and render internal links between notes and generate backlinks (\"linked from\") sections.",
+      "Produce a build output that can be hosted on common static hosting without requiring a server-side runtime."
+    ],
+    "non_goals": [
+      "Building a dynamic, server-rendered web application or requiring a database/server at runtime.",
+      "Real-time collaborative editing or multi-user permissions/roles.",
+      "Authentication or access control features.",
+      "A full Markdown editor; the source of truth remains existing Markdown files.",
+      "Mobile native applications.",
+      "Version control or change tracking beyond what exists in source files.",
+      "Automatic note-taking, summarization, or AI-based content generation.",
+      "Guaranteeing compatibility with every Markdown extension; only a defined subset will be supported."
+    ],
+    "constraints": [
+      {
+        "id": "CNS1",
+        "type": "tech",
+        "text": "Output must be static HTML/CSS/JS that can be hosted on any web server"
+      },
+      {
+        "id": "CNS2",
+        "type": "tech",
+        "text": "Must process standard Markdown syntax as input"
+      }
+    ],
+    "assumptions": [
+      {
+        "id": "A1",
+        "text": "Notes exist as a set of Markdown (.md) files stored as individual files that can be read from a local directory and/or repository.",
+        "impact": "high",
+        "confidence": "medium",
+        "needs_confirmation": true
+      },
+      {
+        "id": "A2",
+        "text": "Internal links between notes can be identified via a consistent convention (e.g., Markdown links to filenames/paths or wiki-style links like [[Note Title]]).",
+        "impact": "high",
+        "confidence": "low",
+        "needs_confirmation": true
+      },
+      {
+        "id": "A3",
+        "text": "Tags can be derived from a consistent convention (e.g., YAML front matter tags and/or inline #tags) and do not require manual curation in the generated site.",
+        "impact": "high",
+        "confidence": "low",
+        "needs_confirmation": true
+      },
+      {
+        "id": "A4",
+        "text": "Search will be implemented client-side (e.g., a prebuilt index shipped with the site) to keep the output fully static.",
+        "impact": "high",
+        "confidence": "medium",
+        "needs_confirmation": true
+      },
+      {
+        "id": "A5",
+        "text": "A command-line build workflow is acceptable (run a build command to generate the site).",
+        "impact": "medium",
+        "confidence": "medium",
+        "needs_confirmation": true
+      },
+      {
+        "id": "A6",
+        "text": "The site will be used by a single user or small group without access control needs.",
+        "impact": "low",
+        "confidence": "medium",
+        "needs_confirmation": false
+      }
+    ],
+    "open_questions": [
+      {
+        "id": "Q1",
+        "text": "What Markdown/linking conventions must be supported for internal links and backlinks (standard Markdown links, relative paths, wiki-links [[...]], Obsidian-style links, etc.)?",
+        "impact": "high",
+        "blocking": true
+      },
+      {
+        "id": "Q2",
+        "text": "How should tags be specified and parsed (YAML front matter, inline hashtags, a dedicated syntax), and what are the rules for tag normalization (case, spaces, nesting)?",
+        "impact": "high",
+        "blocking": true
+      },
+      {
+        "id": "Q3",
+        "text": "What scale is required (approx. number of notes and total size), to choose an indexing/search approach and performance targets?",
+        "impact": "high",
+        "blocking": true
+      },
+      {
+        "id": "Q4",
+        "text": "What is the desired information architecture: required pages and navigation (home, all notes, tags index, per-tag pages, per-note page layout)?",
+        "impact": "high",
+        "blocking": true
+      },
+      {
+        "id": "Q5",
+        "text": "What hosting/deployment target is expected (local file browsing, GitHub Pages, Netlify, other), and are there constraints on relative paths/base URLs?",
+        "impact": "medium",
+        "blocking": false
+      },
+      {
+        "id": "Q6",
+        "text": "What Markdown flavor/features must be supported (e.g., CommonMark/GFM; tables, footnotes, math/LaTeX, mermaid/diagrams, code highlighting), and is there an existing renderer preference?",
+        "impact": "medium",
+        "blocking": false
+      },
+      {
+        "id": "Q7",
+        "text": "Should the build be incremental (only rebuild changed notes) and/or provide a watch mode for local preview?",
+        "impact": "medium",
+        "blocking": false
+      },
+      {
+        "id": "Q8",
+        "text": "Should the site expose outgoing links, backlinks only, or a full graph view; and how should broken links be handled (warn, fail build, render as plain text)?",
+        "impact": "medium",
+        "blocking": false
+      },
+      {
+        "id": "Q9",
+        "text": "Are there specific design or theming requirements for the generated site?",
+        "impact": "low",
+        "blocking": false
+      },
+      {
+        "id": "Q10",
+        "text": "Should the tool run as a CLI, GUI application, or build script integration?",
+        "impact": "medium",
+        "blocking": true
+      }
+    ],
+    "success_metrics": [
+      "Given an input directory of Markdown notes, the tool generates a static site output directory successfully (build completes without errors on a supported environment).",
+      "All Markdown files in the input set are rendered into accessible HTML pages in the output (excluding explicitly configured ignores).",
+      "Full-text search returns relevant results for queries that match note titles and body text, with search interaction remaining responsive at the confirmed target note scale.",
+      "For any valid internal link between notes, the destination note page includes a backlinks section listing the source note after a successful build, and backlinks are rendered as clickable links.",
+      "Tag index pages are generated such that selecting a tag shows all notes containing that tag, and each note page displays its associated tags.",
+      "Generated site loads and functions in modern browsers without errors."
+    ],
+    "stakeholders": [
+      "Primary user (note owner/author)",
+      "Readers/consumers of the published notes (if shared)"
+    ],
+    "glossary": [
+      {
+        "term": "Static site",
+        "definition": "A website consisting of pre-generated files (e.g., HTML/CSS/JS) served without server-side rendering or a runtime database."
+      },
+      {
+        "term": "Markdown",
+        "definition": "A lightweight markup language using plain text formatting syntax that converts to HTML."
+      },
+      {
+        "term": "Tag",
+        "definition": "A label associated with a note, used to group and browse notes by topic."
+      },
+      {
+        "term": "Backlink",
+        "definition": "A reverse reference showing which other notes link to the current note."
+      },
+      {
+        "term": "Full-text search",
+        "definition": "Search that matches terms in the content of notes (not only titles/metadata), typically via a prebuilt index for static sites."
+      }
+    ]
+  }
+}

@@ -1,0 +1,587 @@
+{
+  "artifact_type": "architecture_canonical",
+  "artifact_id": "architecture_canonical_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:29:00.055150Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "architecture_merge_v1"
+  ],
+  "payload": {
+    "options": [
+      {
+        "id": "O1",
+        "summary": "Custom-built monolithic CLI pipeline (single-process) that scans Markdown files, extracts metadata/tags/links, builds a note graph with backlinks, renders HTML via templates, generates a client-side search index, and writes a fully static HTML/CSS/JS output (implementation can be Node.js- or Python-based).",
+        "components": [
+          {
+            "id": "C1",
+            "name": "CLI Orchestrator",
+            "responsibilities": [
+              "Parse CLI args (source dir, output dir, config/theme options)",
+              "Validate configuration and inputs",
+              "Run pipeline stages in order and report build summary/errors"
+            ]
+          },
+          {
+            "id": "C2",
+            "name": "Source Scanner & Front Matter Parser",
+            "responsibilities": [
+              "Recursively discover Markdown files",
+              "Read file contents and parse front matter (title, tags, metadata)",
+              "Normalize identifiers (slugs) from file paths/titles for cross-referencing"
+            ]
+          },
+          {
+            "id": "C3",
+            "name": "Content Analyzer (Links/Tags) & Graph Builder",
+            "responsibilities": [
+              "Parse note bodies for internal links (Markdown links and optional wiki-links)",
+              "Resolve links to note identifiers/slugs",
+              "Build forward links and compute backlinks (reverse edges)",
+              "Extract and normalize tags (front matter and/or inline tags)",
+              "Produce a unified in-memory NoteGraph used by rendering and search"
+            ]
+          },
+          {
+            "id": "C4",
+            "name": "Markdown Renderer",
+            "responsibilities": [
+              "Convert Markdown to HTML via a configurable renderer pipeline",
+              "Support code block syntax highlighting (as configured)",
+              "Provide hooks to inject tag lists and backlinks into per-note HTML"
+            ]
+          },
+          {
+            "id": "C5",
+            "name": "Template & Theme Renderer",
+            "responsibilities": [
+              "Render per-note pages using templates/layouts",
+              "Generate site-level pages (home, all-notes, tag index, per-tag pages)",
+              "Apply theme/layout configuration (including user overrides if supported)"
+            ]
+          },
+          {
+            "id": "C6",
+            "name": "Search Index Builder",
+            "responsibilities": [
+              "Build a client-side full-text search index from note titles/body text",
+              "Serialize the index (and any supporting documents) to static JSON/assets"
+            ]
+          },
+          {
+            "id": "C7",
+            "name": "Output Emitter & Asset Copier",
+            "responsibilities": [
+              "Write generated HTML pages and search assets to the output directory",
+              "Copy static assets (CSS/JS/images/fonts) into the output directory",
+              "Optionally emit auxiliary files (e.g., sitemap/manifest) if configured"
+            ]
+          },
+          {
+            "id": "C8",
+            "name": "Client-Side Runtime (Search UI)",
+            "responsibilities": [
+              "Load the prebuilt search index in the browser",
+              "Provide a search UI with interactive results",
+              "Link results to generated note pages"
+            ]
+          }
+        ],
+        "interfaces": [
+          {
+            "id": "IF1",
+            "from": "C1",
+            "to": "C2",
+            "contract": "Pass validated build configuration including sourceDir, outputDir, and parsing/rendering options."
+          },
+          {
+            "id": "IF2",
+            "from": "C2",
+            "to": "C3",
+            "contract": "Provide NoteFile[] with {slug/id, rawMarkdown, frontMatter, filePath} for analysis and graph construction."
+          },
+          {
+            "id": "IF3",
+            "from": "C3",
+            "to": "C4",
+            "contract": "Provide NoteGraph with per-note {rawMarkdown, title, tags, outLinks, backLinks} to drive rendering."
+          },
+          {
+            "id": "IF4",
+            "from": "C4",
+            "to": "C5",
+            "contract": "Provide RenderedNote[] with {slug, title, htmlContent, tags, backLinks} for templating into full pages."
+          },
+          {
+            "id": "IF5",
+            "from": "C3",
+            "to": "C6",
+            "contract": "Provide NoteGraph (or equivalent note corpus data) required to build the client-side search index."
+          },
+          {
+            "id": "IF6",
+            "from": "C5",
+            "to": "C7",
+            "contract": "Provide PageOutput[] with {relativePath, htmlString} and referenced static assets to write to the output directory."
+          },
+          {
+            "id": "IF7",
+            "from": "C6",
+            "to": "C7",
+            "contract": "Provide serialized search index assets (e.g., search-index.json and supporting files) to be emitted to output."
+          },
+          {
+            "id": "IF8",
+            "from": "C7",
+            "to": "C8",
+            "contract": "Browser fetches search index asset(s) from the static output (e.g., GET /search-index.json); runtime JS is included in pages."
+          }
+        ],
+        "tradeoffs": {
+          "pros": [
+            "Straightforward end-to-end build flow and debugging (single CLI program)",
+            "No server runtime required; outputs static HTML/CSS/JS",
+            "Easy to package as a single tool users run against a notes directory",
+            "Good performance for small-to-medium note sets with in-memory processing"
+          ],
+          "cons": [
+            "Harder to extend safely compared to a formal plugin architecture",
+            "Potential scalability limits (memory/time) on very large note sets without caching/incremental rebuilds",
+            "Implementation stack choice (Node vs Python) affects ecosystem fit, performance, and distribution approach"
+          ]
+        },
+        "risks": [
+          "Large collections can lead to high memory usage if all notes and derived structures are held in memory",
+          "Client-side search index size can grow large and impact browser load/interaction time",
+          "Tight coupling between graph-building and rendering may complicate future extensibility"
+        ]
+      },
+      {
+        "id": "O2",
+        "summary": "Plugin-based build core with defined lifecycle hooks (ingest/transform/render/emit) and a shared build context or data store; features like Markdown parsing, link/backlink resolution, tags, templates, and search are implemented as swappable plugins.",
+        "components": [
+          {
+            "id": "C9",
+            "name": "Core Build Engine / Orchestrator",
+            "responsibilities": [
+              "Load configuration and discover/register plugins",
+              "Define and execute lifecycle hooks (ingest, transform, render, emit)",
+              "Manage plugin ordering and dependency constraints",
+              "Provide stable APIs for plugins to read/write shared build state"
+            ]
+          },
+          {
+            "id": "C10",
+            "name": "Shared Build Context / Central Data Store",
+            "responsibilities": [
+              "Hold normalized note records, metadata, and derived indices",
+              "Expose APIs for plugins to query and mutate notes, tags, and link relationships",
+              "Act as the handoff mechanism across lifecycle stages"
+            ]
+          },
+          {
+            "id": "C11",
+            "name": "Ingestion Plugin",
+            "responsibilities": [
+              "Scan source directory and load Markdown files",
+              "Create note entries in the shared build context"
+            ]
+          },
+          {
+            "id": "C12",
+            "name": "Metadata & Tag Extraction Plugin",
+            "responsibilities": [
+              "Parse front matter and extract tags from configured conventions",
+              "Normalize tags and attach metadata to note entries"
+            ]
+          },
+          {
+            "id": "C13",
+            "name": "Link Resolution & Backlink Plugin",
+            "responsibilities": [
+              "Detect internal links in note bodies (Markdown links and optional wiki-links)",
+              "Resolve targets to canonical note identifiers",
+              "Compute backlinks and store link graph structures in the shared context"
+            ]
+          },
+          {
+            "id": "C14",
+            "name": "Markdown Render Plugin",
+            "responsibilities": [
+              "Convert Markdown to HTML with configurable renderer and extensions",
+              "Apply syntax highlighting or other content transforms",
+              "Store per-note rendered HTML in the shared context"
+            ]
+          },
+          {
+            "id": "C15",
+            "name": "Theme / Template Plugin",
+            "responsibilities": [
+              "Render final pages from shared context data (notes, tags, backlinks)",
+              "Generate site-level pages (tag indexes, per-tag pages, listing pages)",
+              "Support user-supplied theme overrides (if implemented)"
+            ]
+          },
+          {
+            "id": "C16",
+            "name": "Search Index Plugin",
+            "responsibilities": [
+              "Build a static client-side search index from notes in the shared context",
+              "Emit index asset(s) into the build outputs"
+            ]
+          },
+          {
+            "id": "C17",
+            "name": "Emit Plugin",
+            "responsibilities": [
+              "Write generated pages and assets to the output directory",
+              "Handle base URL/relative path rewriting for deployment targets (if configured)"
+            ]
+          }
+        ],
+        "interfaces": [
+          {
+            "id": "IF9",
+            "from": "C9",
+            "to": "C11",
+            "contract": "Invoke ingest hook; plugin populates shared context with discovered notes."
+          },
+          {
+            "id": "IF10",
+            "from": "C9",
+            "to": "C12",
+            "contract": "Invoke transform hook; plugin reads notes and writes normalized metadata/tags into shared context."
+          },
+          {
+            "id": "IF11",
+            "from": "C9",
+            "to": "C13",
+            "contract": "Invoke transform hook; plugin reads note bodies and writes link graph + backlinks into shared context."
+          },
+          {
+            "id": "IF12",
+            "from": "C9",
+            "to": "C14",
+            "contract": "Invoke render hook; plugin reads raw Markdown and writes rendered HTML into shared context."
+          },
+          {
+            "id": "IF13",
+            "from": "C9",
+            "to": "C15",
+            "contract": "Invoke render hook; plugin reads rendered notes + metadata and produces final PageOutput entries."
+          },
+          {
+            "id": "IF14",
+            "from": "C9",
+            "to": "C16",
+            "contract": "Invoke render hook; plugin reads note corpus and produces static search index asset(s)."
+          },
+          {
+            "id": "IF15",
+            "from": "C9",
+            "to": "C17",
+            "contract": "Invoke emit hook; plugin writes pages and assets from shared context to the output directory."
+          }
+        ],
+        "tradeoffs": {
+          "pros": [
+            "High extensibility via swappable plugins (Markdown flavors, search providers, themes, extra outputs)",
+            "Separation of concerns improves maintainability and isolated testing",
+            "Supports multiple user workflows and future features without rewriting the core"
+          ],
+          "cons": [
+            "Higher upfront complexity designing a stable plugin API and shared data model",
+            "Plugin ordering/dependencies complicate debugging and user configuration",
+            "Potential performance overhead and subtle bugs from shared mutable state"
+          ]
+        },
+        "risks": [
+          "Plugin API and data model may evolve, causing breaking changes and ecosystem churn",
+          "Third-party plugin compatibility/versioning can become an ongoing maintenance burden",
+          "Conflicting plugins can cause non-obvious behavior and hard-to-reproduce build failures"
+        ]
+      },
+      {
+        "id": "O3",
+        "summary": "Build on an existing static site generator (e.g., Eleventy/11ty) and add custom configuration/plugins for wiki-links/backlinks, tag pages, and a search index; relies on the SSG's built-in watch/dev server and templating ecosystem.",
+        "components": [
+          {
+            "id": "C18",
+            "name": "SSG Core (External Dependency)",
+            "responsibilities": [
+              "Provide the main static site build engine, templating, and collections/pagination",
+              "Process Markdown input via configurable Markdown library",
+              "Offer watch mode and a dev server (where supported by the SSG)"
+            ]
+          },
+          {
+            "id": "C19",
+            "name": "SSG Configuration Module",
+            "responsibilities": [
+              "Configure input/output directories and template formats",
+              "Register collections/filters/shortcodes used by templates",
+              "Configure Markdown parsing options and extensions"
+            ]
+          },
+          {
+            "id": "C20",
+            "name": "Backlinks / Link Graph Plugin",
+            "responsibilities": [
+              "Scan note content for internal links (Markdown links and optional wiki-links)",
+              "Compute backlinks map and make it available to templates via the SSG data model"
+            ]
+          },
+          {
+            "id": "C21",
+            "name": "Tag Pages Generator",
+            "responsibilities": [
+              "Generate tag index and per-tag listing pages using SSG pagination/collections",
+              "Expose tag counts and filtering logic to templates"
+            ]
+          },
+          {
+            "id": "C22",
+            "name": "Search Index Build Step",
+            "responsibilities": [
+              "Build a static search index from rendered content or source notes",
+              "Write index assets to the output directory as part of (or after) the SSG build"
+            ]
+          },
+          {
+            "id": "C23",
+            "name": "Theme / Layout Templates",
+            "responsibilities": [
+              "Define note page layout, tag pages, and global navigation",
+              "Include search UI elements and backlink sections in page layouts",
+              "Provide CSS styling and any shared template components"
+            ]
+          },
+          {
+            "id": "C24",
+            "name": "Client-Side Runtime (Search UI)",
+            "responsibilities": [
+              "Load the search index and provide interactive search in the browser",
+              "Support navigation to notes from search results"
+            ]
+          }
+        ],
+        "interfaces": [
+          {
+            "id": "IF16",
+            "from": "C19",
+            "to": "C18",
+            "contract": "Register configuration, collections, filters, and shortcodes into the SSG build lifecycle."
+          },
+          {
+            "id": "IF17",
+            "from": "C20",
+            "to": "C18",
+            "contract": "Integrate backlinks data into the SSG's data pipeline so templates can render per-note backlinks."
+          },
+          {
+            "id": "IF18",
+            "from": "C21",
+            "to": "C18",
+            "contract": "Define pagination/collection rules so the SSG generates tag index and per-tag pages."
+          },
+          {
+            "id": "IF19",
+            "from": "C22",
+            "to": "C18",
+            "contract": "Run as a build hook/transform to produce search index assets into the SSG output directory."
+          },
+          {
+            "id": "IF20",
+            "from": "C18",
+            "to": "C23",
+            "contract": "Provide merged content and data (notes, tags, backlinks) as template inputs to render final HTML."
+          },
+          {
+            "id": "IF21",
+            "from": "C18",
+            "to": "C24",
+            "contract": "Serve static output; client runtime JS loads search index assets from the output site."
+          }
+        ],
+        "tradeoffs": {
+          "pros": [
+            "Leverages mature SSG functionality (templating, collections, watch/dev server, incremental rebuilds where available)",
+            "Reduces custom code by building atop a battle-tested toolchain and community plugins",
+            "Faster time-to-value for common site features (pagination, navigation, layouts)"
+          ],
+          "cons": [
+            "Tight coupling to the chosen SSG architecture and upgrade cadence",
+            "Backlinks/wiki-link parsing often requires custom logic beyond the SSG defaults",
+            "Distribution as a standalone tool is harder; users must adopt the SSG environment"
+          ]
+        },
+        "risks": [
+          "SSG major-version changes can break custom plugins/configuration",
+          "Wiki-link/backlink behavior may vary with Markdown plugins and require ongoing compatibility work",
+          "Search integration may be constrained by what the SSG build lifecycle exposes without deeper customization"
+        ]
+      },
+      {
+        "id": "O4",
+        "summary": "Multi-stage build pipeline with intermediate artifacts (e.g., JSON per note plus a global graph manifest) enabling caching and incremental rebuilds; each stage can be re-run independently and the final stage assembles the static site output.",
+        "components": [
+          {
+            "id": "C25",
+            "name": "Ingestion Stage",
+            "responsibilities": [
+              "Read source Markdown files and collect raw content and file metadata",
+              "Write a standardized intermediate representation (one artifact per note) to a build/cache directory"
+            ]
+          },
+          {
+            "id": "C26",
+            "name": "Analysis Stage",
+            "responsibilities": [
+              "Parse intermediate note artifacts to extract structured metadata (title, tags)",
+              "Detect internal links and enrich intermediate artifacts with extracted structure"
+            ]
+          },
+          {
+            "id": "C27",
+            "name": "Graph Build Stage",
+            "responsibilities": [
+              "Aggregate enriched note artifacts to build a global site graph",
+              "Compute backlinks and tag relationships",
+              "Write a site-wide manifest (graph + tag indexes) for downstream consumption"
+            ]
+          },
+          {
+            "id": "C28",
+            "name": "Render Stage",
+            "responsibilities": [
+              "Render note HTML and index pages using enriched artifacts and the global manifest",
+              "Generate client-side search index assets from note content/metadata",
+              "Write rendered outputs to a temporary build output directory"
+            ]
+          },
+          {
+            "id": "C29",
+            "name": "Site Assembler / Final Emitter",
+            "responsibilities": [
+              "Assemble rendered files and static assets into the final output directory",
+              "Manage cache keys and incremental rebuild decisions (e.g., hash-based invalidation)"
+            ]
+          }
+        ],
+        "interfaces": [
+          {
+            "id": "IF22",
+            "from": "C25",
+            "to": "C26",
+            "contract": "Intermediate per-note artifacts (e.g., JSON files) are written by ingestion and read/updated by analysis."
+          },
+          {
+            "id": "IF23",
+            "from": "C26",
+            "to": "C27",
+            "contract": "Enriched per-note artifacts are consumed to produce a global graph/tag manifest artifact."
+          },
+          {
+            "id": "IF24",
+            "from": "C27",
+            "to": "C28",
+            "contract": "Render stage consumes the global manifest plus per-note artifacts to produce HTML pages and search index assets."
+          },
+          {
+            "id": "IF25",
+            "from": "C28",
+            "to": "C29",
+            "contract": "Rendered files in a temporary build directory are assembled and emitted to the final output directory."
+          }
+        ],
+        "tradeoffs": {
+          "pros": [
+            "Enables incremental builds by re-running only stages impacted by changed inputs",
+            "Improves scalability by avoiding the need to hold all derived structures in memory at once",
+            "Decoupled stages are easier to test, benchmark, and troubleshoot independently"
+          ],
+          "cons": [
+            "More complex build orchestration and cache management",
+            "Clean builds may be slower due to additional disk I/O for intermediate artifacts",
+            "Intermediate representation becomes a de facto internal API that must be versioned"
+          ]
+        },
+        "risks": [
+          "Cache invalidation and dependency tracking bugs can lead to stale or inconsistent site output",
+          "Intermediate artifact schema changes can break builds or require migrations",
+          "Increased pipeline complexity introduces more failure points (partial stage failures, corrupted cache)"
+        ]
+      }
+    ],
+    "option_id_map": {
+      "OPT_U_1": "O1",
+      "OPT_U_2": "O2",
+      "OPT_U_3": "O3",
+      "OPT_U_4": "O4"
+    },
+    "component_id_map": {
+      "CMP_U_1": "C1",
+      "CMP_U_2": "C2",
+      "CMP_U_3": "C3",
+      "CMP_U_4": "C4",
+      "CMP_U_5": "C5",
+      "CMP_U_6": "C6",
+      "CMP_U_7": "C7",
+      "CMP_U_8": "C8",
+      "CMP_U_9": "C9",
+      "CMP_U_10": "C10",
+      "CMP_U_11": "C11",
+      "CMP_U_12": "C12",
+      "CMP_U_13": "C13",
+      "CMP_U_14": "C14",
+      "CMP_U_15": "C15",
+      "CMP_U_16": "C16",
+      "CMP_U_17": "C17",
+      "CMP_U_18": "C18",
+      "CMP_U_19": "C19",
+      "CMP_U_20": "C20",
+      "CMP_U_21": "C21",
+      "CMP_U_22": "C22",
+      "CMP_U_23": "C23",
+      "CMP_U_24": "C24",
+      "CMP_U_25": "C25",
+      "CMP_U_26": "C26",
+      "CMP_U_27": "C27",
+      "CMP_U_28": "C28",
+      "CMP_U_29": "C29"
+    },
+    "interface_id_map": {
+      "IF_U_1": "IF1",
+      "IF_U_2": "IF2",
+      "IF_U_3": "IF3",
+      "IF_U_4": "IF4",
+      "IF_U_5": "IF5",
+      "IF_U_6": "IF6",
+      "IF_U_7": "IF7",
+      "IF_U_8": "IF8",
+      "IF_U_9": "IF9",
+      "IF_U_10": "IF10",
+      "IF_U_11": "IF11",
+      "IF_U_12": "IF12",
+      "IF_U_13": "IF13",
+      "IF_U_14": "IF14",
+      "IF_U_15": "IF15",
+      "IF_U_16": "IF16",
+      "IF_U_17": "IF17",
+      "IF_U_18": "IF18",
+      "IF_U_19": "IF19",
+      "IF_U_20": "IF20",
+      "IF_U_21": "IF21",
+      "IF_U_22": "IF22",
+      "IF_U_23": "IF23",
+      "IF_U_24": "IF24",
+      "IF_U_25": "IF25"
+    },
+    "merge_log": [
+      "{\"action\":\"merged_near_duplicates\",\"from_ids\":[\"OPT_A1\",\"OPT_B_1\",\"OPT_A3\"],\"to_id\":\"OPT_U_1\",\"evidence\":[{\"artifact_ref\":\"architecture_draft_1_v1\",\"entity_id\":\"OPT_A1\",\"json_pointer\":\"/inputs/architecture_option_drafts/0/options/0\",\"note\":\"Single-process CLI pipeline with ingestion→graph/backlinks→render/templates→search→emit.\"},{\"artifact_ref\":\"architecture_draft_2_v1\",\"entity_id\":\"OPT_B_1\",\"json_pointer\":\"/inputs/architecture_option_drafts/1/options/0\",\"note\":\"Single executable, in-memory graph, renders HTML, generates tags/backlinks/search and writes output.\"},{\"artifact_ref\":\"architecture_draft_1_v1\",\"entity_id\":\"OPT_A3\",\"json_pointer\":\"/inputs/architecture_option_drafts/0/options/2\",\"note\":\"CLI driver orchestrating stages with the same functional pipeline; differs mainly by implementation language and libraries.\"}]}",
+      "{\"action\":\"merged_near_duplicates\",\"from_ids\":[\"OPT_A2\",\"OPT_B_3\"],\"to_id\":\"OPT_U_2\",\"evidence\":[{\"artifact_ref\":\"architecture_draft_1_v1\",\"entity_id\":\"OPT_A2\",\"json_pointer\":\"/inputs/architecture_option_drafts/0/options/1\",\"note\":\"Core orchestrator with plugin hooks (ingest/transform/render/emit) and plugins for tags/links/render/search.\"},{\"artifact_ref\":\"architecture_draft_2_v1\",\"entity_id\":\"OPT_B_3\",\"json_pointer\":\"/inputs/architecture_option_drafts/1/options/2\",\"note\":\"Core engine orchestrating configurable plugins with a central data store; equivalent plugin-based separation of concerns.\"}]}",
+      "{\"action\":\"kept_distinct\",\"from_ids\":[\"OPT_A4\"],\"to_id\":\"OPT_U_3\",\"evidence\":[{\"artifact_ref\":\"architecture_draft_1_v1\",\"entity_id\":\"OPT_A4\",\"json_pointer\":\"/inputs/architecture_option_drafts/0/options/3\",\"note\":\"Distinct approach: extend an existing SSG (Eleventy) rather than building a bespoke generator core.\"}]}",
+      "{\"action\":\"kept_distinct\",\"from_ids\":[\"OPT_B_2\"],\"to_id\":\"OPT_U_4\",\"evidence\":[{\"artifact_ref\":\"architecture_draft_2_v1\",\"entity_id\":\"OPT_B_2\",\"json_pointer\":\"/inputs/architecture_option_drafts/1/options/1\",\"note\":\"Distinct approach: multi-stage pipeline communicating via intermediate files for caching and incremental builds.\"}]}"
+    ]
+  }
+}

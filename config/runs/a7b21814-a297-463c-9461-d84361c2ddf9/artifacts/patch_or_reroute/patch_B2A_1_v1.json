@@ -1,0 +1,68 @@
+{
+  "artifact_type": "patch_or_reroute",
+  "artifact_id": "patch_B2A_1_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:39:56.725402Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B2A_v1"
+  ],
+  "payload": {
+    "action": "patch",
+    "rationale": "Fix hard-gate failures with minimal edits: (1) close critical risk K8 by adding mitigation and acceptance text; (2) restore evidence traceability by correcting DEC6 artifact_ref to the declared capsule; (3) satisfy id_integrity by replacing architecture option free-text risk strings with existing risk_register IDs (or empty lists where no matching IDs exist).",
+    "patch": [
+      {
+        "op": "replace",
+        "path": "/plan_package/risk_register/7/mitigation",
+        "from": null,
+        "value": {
+          "text": "Implement a mandatory build-time privacy gate: support an explicit, configurable marker to exclude notes from emission AND from search indexing; generate a human-readable exclusion report; provide warn vs fail (strict) modes; ensure excluded notes are not present anywhere in output artifacts (HTML, JSON, manifests).",
+          "owner": "sec",
+          "status": "planned"
+        }
+      },
+      {
+        "op": "replace",
+        "path": "/plan_package/risk_register/7/acceptance",
+        "from": null,
+        "value": "Given a fixture where at least one note is marked private/non-publishable, the build output MUST contain no rendered page for that note and the search index MUST NOT include its title/body; the build MUST emit a clear report listing excluded notes; in strict mode the build MUST fail if any private-marked note would otherwise be emitted/indexed."
+      },
+      {
+        "op": "replace",
+        "path": "/plan_package/governance/decision_log/5/evidence_pointers/1/artifact_ref",
+        "from": null,
+        "value": "capsule_canonical_v1"
+      },
+      {
+        "op": "replace",
+        "path": "/plan_package/architecture/options/0/risks",
+        "from": null,
+        "value": [
+          "K4",
+          "K5"
+        ]
+      },
+      {
+        "op": "replace",
+        "path": "/plan_package/architecture/options/1/risks",
+        "from": null,
+        "value": []
+      },
+      {
+        "op": "replace",
+        "path": "/plan_package/architecture/options/2/risks",
+        "from": null,
+        "value": []
+      },
+      {
+        "op": "replace",
+        "path": "/plan_package/architecture/options/3/risks",
+        "from": null,
+        "value": [
+          "K14"
+        ]
+      }
+    ],
+    "reroute_target": null
+  }
+}

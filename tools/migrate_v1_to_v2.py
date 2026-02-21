@@ -14,10 +14,7 @@ from council_os.implementation.schemas import (
     WorkPlanPayloadV2,
     WorkTaskV2,
 )
-
-
-def _load_json(path: Path) -> dict:
-    return json.loads(path.read_text(encoding="utf-8"))
+from council_os.utils import load_json
 
 
 def main() -> None:
@@ -31,13 +28,13 @@ def main() -> None:
     out_dir = Path(args.output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    repo_context_v1 = RepoContextPayload.model_validate(_load_json(Path(args.repo_context)))
-    work_plan_v1 = WorkPlanPayload.model_validate(_load_json(Path(args.work_plan)))
+    repo_context_v1 = RepoContextPayload.model_validate(load_json(Path(args.repo_context)))
+    work_plan_v1 = WorkPlanPayload.model_validate(load_json(Path(args.work_plan)))
     test_results = None
     if args.test_results:
         from council_os.implementation.schemas import TestResultsPayload
 
-        test_results = TestResultsPayload.model_validate(_load_json(Path(args.test_results)))
+        test_results = TestResultsPayload.model_validate(load_json(Path(args.test_results)))
 
     default_profile = "legacy_v1"
     exec_profiles = ExecutionProfilesConfig(

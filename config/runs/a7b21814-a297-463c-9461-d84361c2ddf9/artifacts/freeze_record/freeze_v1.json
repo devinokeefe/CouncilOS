@@ -1,0 +1,50 @@
+{
+  "artifact_type": "freeze_record",
+  "artifact_id": "freeze_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T11:07:05.467883Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B1A_v4"
+  ],
+  "payload": {
+    "winner_candidate_ref": "plan_candidate_B1A_v4",
+    "frozen_plan_ref": "frozen_B1A_vFinal",
+    "why_winner": [
+      "Passed validators",
+      "Won tournament"
+    ],
+    "tradeoffs": [
+      {
+        "topic": "tradeoff",
+        "winner_reason": "Higher score",
+        "runner_up_reason": "Lower score"
+      }
+    ],
+    "judge_summary_refs": [
+      "judge_pair_B1A_B1B_1_v1",
+      "judge_pair_B1A_B1B_2_v1",
+      "judge_pair_B1A_B1B_3_v1",
+      "judge_pair_B2A_B2B_1_v1",
+      "judge_pair_B2A_B2B_2_v1",
+      "judge_pair_B2A_B2B_3_v1",
+      "judge_pair_B1A_B2B_1_v1",
+      "judge_pair_B1A_B2B_2_v1",
+      "judge_pair_B1A_B2B_3_v1"
+    ],
+    "validator_summary_ref": "validator_B1A_v4",
+    "remaining_open_questions": [
+      "Q1",
+      "Q2",
+      "Q3",
+      "Q4",
+      "Q5",
+      "Q6",
+      "Q7",
+      "Q8",
+      "Q9",
+      "Q10"
+    ],
+    "accepted_risks": []
+  }
+}

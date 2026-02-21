@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from council_os.handoff.hashing import (
     artifact_hash,
+    canonicalize_json,
     canonical_json_bytes,
     canonical_json_dumps,
     default_hash_spec,
@@ -46,6 +47,7 @@ __all__ = [
     "RepoAcquisitionSpec",
     "RepoSnapshot",
     "artifact_hash",
+    "canonicalize_json",
     "canonical_json_bytes",
     "canonical_json_dumps",
     "compute_manifest_digest",

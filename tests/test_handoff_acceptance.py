@@ -9,7 +9,7 @@ from uuid import uuid4
 
 import pytest
 
-from council_os.handoff.hashing import artifact_hash, plan_content_hash
+from council_os.handoff.hashing import artifact_hash, default_hash_spec, plan_content_hash
 from council_os.handoff.schemas import (
     ApprovalRef,
     ClarificationsRef,
@@ -37,6 +37,7 @@ def _sample_plan(plan_status: str = "FROZEN") -> dict[str, object]:
         "meta": {
             "plan_id": "plan-1",
             "version": "vFinal",
+            "plan_version": 1,
             "created_at": "2026-02-19T00:00:00Z",
             "source_run_id": "run-1",
             "schema_version": "1.0.0",
@@ -84,6 +85,23 @@ def _write_handoff_bundle(
     human_feedback_path = planning_root / "human_feedback_bundle.json"
     human_feedback_path.write_text(human_feedback.model_dump_json(), encoding="utf-8")
 
+    artifacts_root = planning_root / "artifacts"
+    artifacts_root.mkdir(parents=True, exist_ok=True)
+    hash_spec = default_hash_spec().model_dump()
+    (planning_root / "hash_spec.json").write_text(json.dumps(hash_spec, sort_keys=True), encoding="utf-8")
+    (artifacts_root / "hash_spec.json").write_text(json.dumps(hash_spec, sort_keys=True), encoding="utf-8")
+    env_snapshot = {
+        "schema_version": "env_snapshot.v1",
+        "captured_at": "2026-02-19T00:00:00Z",
+        "platform": "test",
+        "python_version": "3.12.0",
+        "python_executable": "python",
+        "runtime": {"implementation": "cpython"},
+        "notes": [],
+    }
+    (planning_root / "env_snapshot.json").write_text(json.dumps(env_snapshot, sort_keys=True), encoding="utf-8")
+    (artifacts_root / "env_snapshot.json").write_text(json.dumps(env_snapshot, sort_keys=True), encoding="utf-8")
+
     plan_ref = HandoffArtifactRef(path="planning/plan_package_final.json", sha256=artifact_hash(plan_payload))
     config_ref = HandoffArtifactRef(path="planning/config_snapshot.json", sha256=artifact_hash(config_snapshot))
     human_feedback_ref = HandoffArtifactRef(
@@ -107,16 +125,39 @@ def _write_handoff_bundle(
             sha256=artifact_hash(approval.model_dump()),
         )
 
+    repo_snapshot_payload = (repo_snapshot or RepoSnapshot(commit_sha="unknown", branch="unknown", dirty=True)).model_dump()
+    (artifacts_root / "repo_snapshot.json").write_text(
+        json.dumps(repo_snapshot_payload, sort_keys=True), encoding="utf-8"
+    )
+    hash_spec_ref = HandoffArtifactRef(
+        path="artifacts/hash_spec.json",
+        sha256=artifact_hash(hash_spec),
+    )
+    env_snapshot_ref = HandoffArtifactRef(
+        path="artifacts/env_snapshot.json",
+        sha256=artifact_hash(env_snapshot),
+    )
+    repo_snapshot_ref = HandoffArtifactRef(
+        path="artifacts/repo_snapshot.json",
+        sha256=artifact_hash(repo_snapshot_payload),
+    )
+
     freeze_record = PlanFreezeRecord(
         plan_id=str(plan_payload.get("meta", {}).get("plan_id", "")),
         planning_run_id="run-1",
         frozen_at=datetime.now(UTC).isoformat(),
         plan_package_final_ref=plan_ref,
         plan_content_hash=plan_hash,
+        hash_spec_version="1",
+        selected_draft_ref="planning/plan_package_draft_v1.json",
+        selected_draft_hash=plan_hash,
         interactive_flags={"clarify_intent_enabled": False, "plan_review_enabled": approval_required},
         clarification_resolutions_ref=None,
         plan_approval_ref=approval_ref,
         approved_plan_hash=approved_hash if approval_ref is not None else None,
+        repo_snapshot_ref=repo_snapshot_ref,
+        env_snapshot_ref=env_snapshot_ref,
+        hash_spec_ref=hash_spec_ref,
         config_snapshot_ref=config_ref,
         human_feedback_bundle_ref=human_feedback_ref,
         notes="test",
@@ -136,6 +177,7 @@ def _write_handoff_bundle(
     workspace_context_payload = {"workspace_root": "workspace"}
     workspace_context_path = tmp_path / "workspace_context.json"
     workspace_context_path.write_text(json.dumps(workspace_context_payload, sort_keys=True), encoding="utf-8")
+
 
     repo_context_ref = HandoffArtifactRef(path="repo_context.json", sha256=artifact_hash(repo_context_payload))
     workspace_context_ref = HandoffArtifactRef(
@@ -170,6 +212,9 @@ def _write_handoff_bundle(
             plan_ref,
             freeze_ref,
             config_ref,
+            repo_snapshot_ref,
+            env_snapshot_ref,
+            hash_spec_ref,
             repo_context_ref,
             workspace_context_ref,
         ],
@@ -494,3 +539,56 @@ def test_finalize_uses_selected_draft_over_latest(tmp_path: Path) -> None:
     freeze_path = planning_root / "plan_freeze_record.json"
     freeze_payload = json.loads(freeze_path.read_text(encoding="utf-8"))
     assert freeze_payload["selected_draft_ref"].endswith("plan_package_draft_v1.json")
+
+
+def test_finalize_uses_change_request_lineage(tmp_path: Path) -> None:
+    run_root = tmp_path / "planning_run"
+    run_root.mkdir()
+    planning_root = run_root / "planning"
+    planning_root.mkdir(parents=True, exist_ok=True)
+
+    change_request_payload = {
+        "schema_version": "change_request.v1",
+        "meta": {"impl_run_id": "impl-1", "source_plan_hash": "sha256:parent"},
+        "reason": {"code": "SCOPE_CHANGE", "summary": "Scope expanded"},
+        "blocked_entities": {"task_ids": [], "job_ids": [], "check_ids": []},
+        "evidence_refs": [{"type": "patchset", "ref": "patchset-1"}],
+        "proposed_plan_edits_ref": "artifacts/plan_edits_v1.json",
+        "impact": {"milestones_affected": ["MS-001"], "checks_affected": []},
+    }
+    impl_artifacts = run_root / "implementation" / "artifacts"
+    impl_artifacts.mkdir(parents=True, exist_ok=True)
+    (impl_artifacts / "change_request_v1.json").write_text(
+        json.dumps(change_request_payload, sort_keys=True), encoding="utf-8"
+    )
+
+    plan = _sample_plan("CANDIDATE")
+    repo_root = tmp_path / "repo"
+    _init_git_repo(repo_root)
+    repo_context_path = tmp_path / "repo_context.json"
+    repo_context_path.write_text(json.dumps({"repo_root": str(repo_root)}, sort_keys=True), encoding="utf-8")
+    workspace_context_path = tmp_path / "workspace_context.json"
+    workspace_context_path.write_text(json.dumps({"workspace_root": "workspace"}, sort_keys=True), encoding="utf-8")
+
+    finalize_and_write_handoff(
+        run_id="run-1",
+        run_root=run_root,
+        plan=plan,
+        feedback_cfg=FeedbackConfig(plan_review=False, clarify=False),
+        config_snapshot={"schema_version": "2.1.0", "source": "test"},
+        repo_context_path=repo_context_path,
+        workspace_context_path=workspace_context_path,
+    )
+
+    final_payload = json.loads((planning_root / "plan_package_final.json").read_text(encoding="utf-8"))
+    assert final_payload["meta"]["parent_plan_hash"] == "sha256:parent"
+    assert final_payload["meta"]["amendment_id"]
+
+    migration_payload = json.loads((planning_root / "plan_migration_record.json").read_text(encoding="utf-8"))
+    assert migration_payload["parent_plan_hash"] == "sha256:parent"
+    assert migration_payload["notes"]
+
+    manifest_payload = json.loads((planning_root / "handoff_manifest.json").read_text(encoding="utf-8"))
+    assert any(
+        artifact.get("schema_version") == "change_request.v1" for artifact in manifest_payload.get("artifacts", [])
+    )

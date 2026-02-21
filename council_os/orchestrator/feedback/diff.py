@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from council_os.handoff.hashing import canonical_json_dumps, plan_content_hash
 from council_os.orchestrator.feedback.schemas import AnchorRef, PlanDiffChange, PlanDiffSummary
-from council_os.orchestrator.feedback.utils import plan_hash, stable_json_dumps
 
 
 def _index(plan: dict[str, Any]) -> dict[tuple[str, str], dict[str, Any]]:
@@ -55,7 +55,7 @@ def diff_plan(old_plan: dict[str, Any], new_plan: dict[str, Any]) -> PlanDiffSum
         )
         notes.append(f"{kind} {item_id} removed")
     for kind, item_id in common:
-        if stable_json_dumps(old_index[(kind, item_id)]) != stable_json_dumps(new_index[(kind, item_id)]):
+        if canonical_json_dumps(old_index[(kind, item_id)]) != canonical_json_dumps(new_index[(kind, item_id)]):
             changed.append(
                 PlanDiffChange(anchor=AnchorRef(kind=kind, id=item_id), change_type="modified")
             )
@@ -63,8 +63,8 @@ def diff_plan(old_plan: dict[str, Any], new_plan: dict[str, Any]) -> PlanDiffSum
 
     return PlanDiffSummary(
         schema_version="1.0",
-        from_plan_hash=plan_hash(old_plan),
-        to_plan_hash=plan_hash(new_plan),
+        from_plan_hash=plan_content_hash(old_plan),
+        to_plan_hash=plan_content_hash(new_plan),
         changed=changed,
         added_ids=[item_id for _, item_id in added],
         removed_ids=[item_id for _, item_id in removed],

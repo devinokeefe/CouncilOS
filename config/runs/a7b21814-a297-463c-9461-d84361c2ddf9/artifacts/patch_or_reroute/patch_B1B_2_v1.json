@@ -1,0 +1,105 @@
+{
+  "artifact_type": "patch_or_reroute",
+  "artifact_id": "patch_B1B_2_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:41:39.929849Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B1B_v1"
+  ],
+  "payload": {
+    "action": "patch",
+    "rationale": "Apply minimal patches to resolve validator id_integrity and risk_closure failures, align AT3/M1 scope, and remove unconfirmed scale claims in narrative while preserving locked requirement sections.",
+    "patch": [
+      {
+        "op": "remove",
+        "path": "/plan_package/architecture/options/0/risks",
+        "from": null,
+        "value": null
+      },
+      {
+        "op": "remove",
+        "path": "/plan_package/architecture/options/1/risks",
+        "from": null,
+        "value": null
+      },
+      {
+        "op": "remove",
+        "path": "/plan_package/architecture/options/2/risks",
+        "from": null,
+        "value": null
+      },
+      {
+        "op": "remove",
+        "path": "/plan_package/architecture/options/3/risks",
+        "from": null,
+        "value": null
+      },
+      {
+        "op": "remove",
+        "path": "/plan_package/decision_log/0/evidence_pointers/1",
+        "from": null,
+        "value": null
+      },
+      {
+        "op": "remove",
+        "path": "/plan_package/decision_log/1/evidence_pointers/0",
+        "from": null,
+        "value": null
+      },
+      {
+        "op": "remove",
+        "path": "/plan_package/decision_log/5/evidence_pointers/1",
+        "from": null,
+        "value": null
+      },
+      {
+        "op": "replace",
+        "path": "/plan_package/risk_register/7/mitigation",
+        "from": null,
+        "value": {
+          "text": "Documentation-only mitigation: add README disclaimer and a build-time warning banner/message reminding users that publishing may expose sensitive notes; recommend using exclusion rules for sensitive files and reviewing output before deploying publicly.",
+          "owner": "pm",
+          "status": "planned"
+        }
+      },
+      {
+        "op": "replace",
+        "path": "/plan_package/acceptance_tests/2/procedure",
+        "from": null,
+        "value": "Prepare a fixture with N Markdown files (N>=3). Run the build. Count generated HTML note pages and verify a one-to-one mapping for all discovered .md files."
+      },
+      {
+        "op": "replace",
+        "path": "/plan_package/acceptance_tests/2/pass_criteria",
+        "from": null,
+        "value": "For each discovered input Markdown file, exactly one corresponding HTML page exists in output."
+      },
+      {
+        "op": "replace",
+        "path": "/plan_package/milestones/0/deliverables/4/text",
+        "from": null,
+        "value": "Clear, actionable build error handling (R6) including: invalid/non-existent input directory, invalid output directory permissions, malformed configuration files, and graceful per-file handling for malformed YAML front matter (K6)."
+      },
+      {
+        "op": "replace",
+        "path": "/plan_package/decision_log/4/rationale",
+        "from": null,
+        "value": "The monolithic in-memory pipeline (O1) is expected to be within performance limits for an assumed ~1,000-note target, pending confirmation of Q3. K4 and K5 mitigations (streaming, chunked index loading) would add complexity without benefit at smaller scales. R22 SHOULD performance target (500 ms search) is validated in M4."
+      },
+      {
+        "op": "replace",
+        "path": "/plan_package/architecture/chosen/rationale",
+        "from": null,
+        "value": "O1 (monolithic CLI pipeline) is the best fit for this project's focused scope, single-user orientation, and desire for fast time-to-value. It satisfies every MUST requirement with the least upfront design overhead. The single-process, in-memory approach is expected to be within performance limits for an assumed ~1,000-note scale (pending Q3 confirmation). The main trade-off—limited extensibility compared to O2's plugin architecture—is acceptable because the project's non-goals explicitly exclude features that would demand a plugin ecosystem (e.g., multi-user, AI generation, mobile apps). O3 (SSG wrapper) was rejected because it couples the project to an external SSG's release cadence and makes standalone distribution harder. O4 (multi-stage pipeline with intermediate artifacts) adds complexity for incremental builds that are only a COULD requirement (R23)."
+      },
+      {
+        "op": "replace",
+        "path": "/plan_package/executive_summary",
+        "from": null,
+        "value": "Candidate B1B implements a monolithic CLI pipeline (O1) to convert a local directory of Markdown notes into a fully static website with tags, backlinks, and client-side full-text search. The interface is assumed to be CLI pending Q10 confirmation. The plan follows a thin-slice milestone strategy: Milestone 1 delivers a working CLI skeleton that ingests Markdown, renders HTML, and produces a deployable static site. Subsequent milestones layer tag extraction and tag pages (M2), internal link resolution and backlinks (M3), client-side search (M4), and polish items including broken-link warnings, base-URL configuration, GFM extensions, and cross-browser QA (M5). Key risks around link conventions (K2) and tag conventions (K3) are front-loaded into Milestones 2–3 via explicit configuration requirements. Scale risks (K4/K5) are deferred given an assumed ~1,000-note target pending Q3 confirmation. Privacy risk (K8) is accepted with documentation-only mitigation. The architecture keeps all processing in a single in-memory pipeline for simplicity, with clear component boundaries (C1–C8) that can be refactored later if extensibility demands grow."
+      }
+    ],
+    "reroute_target": null
+  }
+}

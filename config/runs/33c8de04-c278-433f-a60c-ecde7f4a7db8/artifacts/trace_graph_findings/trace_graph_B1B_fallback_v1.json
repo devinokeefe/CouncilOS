@@ -1,0 +1,120 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B1B_fallback_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:10:32.585581Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "plan_candidate_B1B_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B1B_v1",
+    "findings": [
+      {
+        "id": "TG001",
+        "severity": "medium",
+        "summary": "R1 maps to M1 and M2, but M2 depends on M1 and does not add new R1-related deliverables; M2 mapping appears redundant.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "R1",
+            "json_pointer": "/plan_package/requirements/0",
+            "note": "R1 requirement text",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "The system MUST accept a user-specified folder"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0",
+            "note": "M1 delivers file discovery (DL2)",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "Markdown Parser & Metadata Extractor (C2) with recursive .md discovery"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1",
+            "note": "M2 focuses on links/backlinks, no new R1 deliverables",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "Forward Links & Backlinks"
+          }
+        ],
+        "routing_target": "requirements_trace"
+      },
+      {
+        "id": "TG002",
+        "severity": "medium",
+        "summary": "R2 maps to M1 and M2, but M2 does not introduce new static-output deliverables; M2 mapping appears redundant.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "R2",
+            "json_pointer": "/plan_package/requirements/1",
+            "note": "R2 requirement text",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "The system MUST generate a static website output"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0",
+            "note": "M1 delivers static HTML output (DL3)",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "HTML Renderer (C6) producing one static HTML page per note"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1",
+            "note": "M2 focuses on links/backlinks, no new static-output deliverables",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "Forward Links & Backlinks"
+          }
+        ],
+        "routing_target": "requirements_trace"
+      },
+      {
+        "id": "TG003",
+        "severity": "medium",
+        "summary": "R3 maps to M1 and M2, but M2 does not introduce new Markdown rendering deliverables; M2 mapping appears redundant.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "R3",
+            "json_pointer": "/plan_package/requirements/2",
+            "note": "R3 requirement text",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "The system MUST parse and render each input Markdown file"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0",
+            "note": "M1 delivers Markdown-to-HTML rendering (DL2)",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "Markdown Parser & Metadata Extractor (C2) with recursive .md discovery, frontmatter parsing, and Markdown-to-HTML rendering"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1",
+            "note": "M2 focuses on links/backlinks, no new rendering deliverables",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "Forward Links & Backlinks"
+          }
+        ],
+        "routing_target": "requirements_trace"
+      }
+    ]
+  }
+}

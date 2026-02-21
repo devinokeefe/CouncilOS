@@ -20,7 +20,8 @@ def run_preplan_triage(
 ) -> PrePlanTriage:
     task = (
         "Perform a quick uncertainty scan and list potential avenues for this planning run. "
-        "Return PrePlanTriage JSON."
+        "Include ambiguities, default assumptions, candidate approaches, key decisions, a rough complexity band, "
+        "and recommended defaults. Return PrePlanTriage JSON."
     )
     context = f"Brief:\n{brief}\n\nConfig summary:\n{config_summary}"
     messages, meta = build_json_schema_messages(PrePlanTriage, task=task, context=context)

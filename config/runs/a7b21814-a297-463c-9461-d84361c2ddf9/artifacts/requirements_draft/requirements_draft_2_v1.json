@@ -1,0 +1,164 @@
+{
+  "artifact_type": "requirements_draft",
+  "artifact_id": "requirements_draft_2_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:25:10.655445Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "capsule_canonical_v1"
+  ],
+  "payload": {
+    "requirements": [
+      {
+        "id": "REQ_B_1",
+        "priority": "MUST",
+        "text": "The system SHALL accept a local directory path containing Markdown (.md) files as input and recursively discover all .md files within that directory tree.",
+        "rationale": "Core ingestion capability required by goal 1; relies on assumption A1 that notes are stored as individual .md files in a local directory."
+      },
+      {
+        "id": "REQ_B_2",
+        "priority": "MUST",
+        "text": "The system SHALL parse each discovered Markdown file using at least CommonMark-compliant syntax and produce a corresponding HTML page that preserves the original formatting and structure (headings, lists, code blocks, emphasis, images, links).",
+        "rationale": "Directly supports goal 2 (preserve Markdown formatting) and constraint CNS2 (standard Markdown syntax)."
+      },
+      {
+        "id": "REQ_B_3",
+        "priority": "MUST",
+        "text": "The build output SHALL consist exclusively of static files (HTML, CSS, JS, and associated assets) that can be served by any standard HTTP file server or static hosting provider without a server-side runtime or database.",
+        "rationale": "Satisfies constraint CNS1 and goal 6; aligns with non-goal of no dynamic server-rendered application."
+      },
+      {
+        "id": "REQ_B_4",
+        "priority": "MUST",
+        "text": "The system SHALL generate a client-side full-text search index at build time and embed it in the output so that users can search note titles and body text entirely in the browser without server-side processing.",
+        "rationale": "Supports goal 3 (full-text search) and assumption A4 (client-side search to keep the site static). Maps to success metric on search returning relevant results."
+      },
+      {
+        "id": "REQ_B_5",
+        "priority": "MUST",
+        "text": "The system SHALL extract tags from each note using at least one supported convention (YAML front matter `tags` field or inline `#tag` syntax) and generate a tag index page listing all tags, plus individual per-tag pages listing all notes associated with each tag.",
+        "rationale": "Supports goal 4 (tag-based browsing) and assumption A3. Maps to success metric that selecting a tag shows all associated notes."
+      },
+      {
+        "id": "REQ_B_6",
+        "priority": "MUST",
+        "text": "Each generated note page SHALL display the tags associated with that note as navigable links to the corresponding tag pages.",
+        "rationale": "Completes the tag browsing loop described in goal 4 and the success metric requiring each note page to display its tags."
+      },
+      {
+        "id": "REQ_B_7",
+        "priority": "MUST",
+        "text": "The system SHALL detect internal links between notes (at minimum, standard Markdown relative links to other .md files) and resolve them to the correct generated HTML pages in the output.",
+        "rationale": "Supports goal 5 (detect and render internal links). Relates to assumption A2 and blocking question Q1; at minimum relative-path Markdown links must work."
+      },
+      {
+        "id": "REQ_B_8",
+        "priority": "MUST",
+        "text": "For every note that is the target of at least one internal link, the generated page SHALL include a 'Backlinks' section listing all notes that link to it, rendered as clickable navigation links.",
+        "rationale": "Directly supports goal 5 (backlinks / 'linked from' sections) and the success metric on backlink generation."
+      },
+      {
+        "id": "REQ_B_9",
+        "priority": "MUST",
+        "text": "The system SHALL provide a command-line interface (CLI) that accepts at minimum an input directory path and an output directory path, and executes the full build pipeline.",
+        "rationale": "Assumption A5 confirms a CLI build workflow is acceptable; Q10 asks about interface but CLI is the minimum viable interface to trigger builds."
+      },
+      {
+        "id": "REQ_B_10",
+        "priority": "MUST",
+        "text": "The build process SHALL complete without errors for a valid input set of Markdown files and produce a usable output directory, or report clear, actionable error messages on failure.",
+        "rationale": "Maps directly to the first success metric (build completes without errors) and general usability."
+      },
+      {
+        "id": "REQ_B_11",
+        "priority": "MUST",
+        "text": "Every Markdown file in the input set (not explicitly excluded by configuration) SHALL have a corresponding HTML page in the output.",
+        "rationale": "Maps to success metric that all Markdown files are rendered into accessible HTML pages."
+      },
+      {
+        "id": "REQ_B_12",
+        "priority": "MUST",
+        "text": "The generated site SHALL load and function correctly in the current stable releases of Chrome, Firefox, Safari, and Edge without JavaScript errors that block core functionality (navigation, search, backlinks, tags).",
+        "rationale": "Maps to success metric requiring the site to load and function in modern browsers without errors."
+      },
+      {
+        "id": "REQ_B_13",
+        "priority": "SHOULD",
+        "text": "The system SHOULD support wiki-style internal links (e.g., [[Note Title]]) in addition to standard Markdown relative links, resolving them to the appropriate generated pages.",
+        "rationale": "Assumption A2 notes wiki-style links as a likely convention; Q1 highlights this as high-impact. Supporting both conventions greatly increases compatibility with popular note-taking tools like Obsidian."
+      },
+      {
+        "id": "REQ_B_14",
+        "priority": "SHOULD",
+        "text": "The system SHOULD support GitHub Flavored Markdown (GFM) extensions including tables, strikethrough, task lists, and fenced code blocks with syntax highlighting.",
+        "rationale": "Q6 asks about Markdown flavor; GFM is the most common superset and widely expected by users. Enhances goal 2 (preserve formatting)."
+      },
+      {
+        "id": "REQ_B_15",
+        "priority": "SHOULD",
+        "text": "The generated site SHOULD include a home/landing page and a navigation structure providing access to an all-notes listing, the tag index, and the search feature.",
+        "rationale": "Q4 identifies information architecture as high-impact. A minimal navigation structure is necessary for the site to be usable and discoverable."
+      },
+      {
+        "id": "REQ_B_16",
+        "priority": "SHOULD",
+        "text": "The system SHOULD allow configuration of a base URL / path prefix so the generated site can be deployed to a subdirectory (e.g., GitHub Pages project sites).",
+        "rationale": "Q5 highlights deployment targets; base URL configuration is essential for GitHub Pages and similar hosts where the site is not at the root."
+      },
+      {
+        "id": "REQ_B_17",
+        "priority": "SHOULD",
+        "text": "The system SHOULD warn at build time when an internal link target cannot be resolved (broken link), listing the source file and link text, without failing the build by default.",
+        "rationale": "Q8 asks about broken link handling. Warning without failing is the most pragmatic default; supports iterative authoring while surfacing issues."
+      },
+      {
+        "id": "REQ_B_18",
+        "priority": "SHOULD",
+        "text": "Full-text search results SHALL be returned and rendered in under 500 ms for collections of up to 1,000 notes on a modern consumer device.",
+        "rationale": "Q3 asks about scale; 1,000 notes is a reasonable default target. The success metric requires search to remain responsive at the confirmed target scale."
+      },
+      {
+        "id": "REQ_B_19",
+        "priority": "SHOULD",
+        "text": "The system SHOULD normalize tags by lowercasing and trimming whitespace so that equivalent tags (e.g., 'JavaScript' and 'javascript') are merged into a single tag page.",
+        "rationale": "Q2 asks about tag normalization rules. Without normalization, duplicate tag pages degrade the browsing experience."
+      },
+      {
+        "id": "REQ_B_20",
+        "priority": "SHOULD",
+        "text": "The system SHOULD allow users to exclude specific files or directories from the build via a configuration file or CLI option.",
+        "rationale": "Supports the success metric caveat 'excluding explicitly configured ignores' and common user need to skip drafts or template files."
+      },
+      {
+        "id": "REQ_B_21",
+        "priority": "COULD",
+        "text": "The system COULD provide an incremental build mode that only regenerates pages for notes that have changed since the last build.",
+        "rationale": "Q7 identifies incremental builds as a medium-impact enhancement. Improves developer experience for large collections but is not essential for correctness."
+      },
+      {
+        "id": "REQ_B_22",
+        "priority": "COULD",
+        "text": "The system COULD provide a local development server with live-reload/watch mode that automatically rebuilds and refreshes the browser when source files change.",
+        "rationale": "Q7 mentions watch mode for local preview. Greatly improves authoring workflow but is not required for the core build-and-deploy use case."
+      },
+      {
+        "id": "REQ_B_23",
+        "priority": "COULD",
+        "text": "The generated site COULD include an interactive graph visualization showing the link relationships between notes.",
+        "rationale": "Q8 asks about graph views. A graph view enhances discoverability but is a significant feature beyond the core backlinks requirement."
+      },
+      {
+        "id": "REQ_B_24",
+        "priority": "COULD",
+        "text": "The system COULD support user-selectable themes or custom CSS injection to allow visual customization of the generated site.",
+        "rationale": "Q9 asks about theming requirements. Theming improves personalization but is not essential for the core functionality of search, tags, and backlinks."
+      },
+      {
+        "id": "REQ_B_25",
+        "priority": "COULD",
+        "text": "The system COULD render outgoing links on each note page as a dedicated section alongside the backlinks section, providing bidirectional link context.",
+        "rationale": "Q8 asks whether to expose outgoing links. Showing outgoing links alongside backlinks enhances navigation but backlinks alone satisfy the stated goals."
+      }
+    ]
+  }
+}

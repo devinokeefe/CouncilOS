@@ -1,0 +1,676 @@
+{
+  "artifact_type": "triage_report",
+  "artifact_id": "triage_B1A_v4",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:59:14.605569Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B1A_v4",
+    "validator_B1A_v4"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B1A_v4",
+    "critic_id": "MERGED",
+    "verdict": "reject",
+    "defects": [
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Interface choice is a blocking open question (Q10), but the plan hard-codes a CLI as a MUST across requirements/milestones/decisions; requires HITL confirmation before proceeding as-written.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v4",
+            "entity_id": "Q10",
+            "json_pointer": "/plan_package/project_capsule/open_questions/9",
+            "note": "Marked blocking: CLI vs GUI vs integration.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v4",
+            "entity_id": "A5",
+            "json_pointer": "/plan_package/project_capsule/assumptions/4",
+            "note": "CLI acceptability is only an assumption and needs confirmation.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v4",
+            "entity_id": "R5",
+            "json_pointer": "/plan_package/requirements/4",
+            "note": "CLI is specified as MUST.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v4",
+            "entity_id": "AT5",
+            "json_pointer": "/plan_package/acceptance_tests/4",
+            "note": "Acceptance test assumes CLI exists.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v4",
+            "entity_id": "DEC1",
+            "json_pointer": "/plan_package/decision_log/0",
+            "note": "Architecture decision explicitly assumes a CLI pipeline.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": []
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "id_integrity hard gate failing: architecture option risk references are not tied to risk_register IDs; align /architecture/options[*]/risks to existing risk IDs (or empty) to satisfy ID integrity validation without minting new IDs.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v4",
+            "entity_id": "O1",
+            "json_pointer": "/plan_package/architecture/options/0/risks",
+            "note": "Contains free-text risks that validator flags as missing references.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v4",
+            "entity_id": "O2",
+            "json_pointer": "/plan_package/architecture/options/1/risks",
+            "note": "Contains free-text risks that validator flags as missing references.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v4",
+            "entity_id": "O3",
+            "json_pointer": "/plan_package/architecture/options/2/risks",
+            "note": "Contains free-text risks that validator flags as missing references.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v4",
+            "entity_id": "O4",
+            "json_pointer": "/plan_package/architecture/options/3/risks",
+            "note": "Contains free-text risks that validator flags as missing references.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v4",
+            "entity_id": null,
+            "json_pointer": "/inputs/validator_report/checks/1",
+            "note": "Validator reports id_integrity FAIL with missing risk reference messages.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/options/0/risks",
+            "value": [
+              "K4",
+              "K5"
+            ]
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/options/1/risks",
+            "value": []
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/options/2/risks",
+            "value": []
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/options/3/risks",
+            "value": []
+          }
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "risk_closure hard gate failing: critical privacy risk K8 has no recorded mitigation/acceptance closure in the risk register; must be closed (and likely requires Security+PO HITL sign-off).",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v4",
+            "entity_id": "K8",
+            "json_pointer": "/plan_package/risk_register/7",
+            "note": "K8 mitigation and acceptance are null.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v4",
+            "entity_id": null,
+            "json_pointer": "/inputs/validator_report/checks/2",
+            "note": "Validator reports risk_closure FAIL: Risk K8 missing closure.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v4",
+            "entity_id": "DL21",
+            "json_pointer": "/plan_package/milestones/4/deliverables/5",
+            "note": "Plan elsewhere suggests a documentation-based mitigation, but risk register does not reflect it.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v4",
+            "entity_id": "W2",
+            "json_pointer": "/plan_package/synthesis_warnings/1",
+            "note": "Flags K8 as critical with documentation-only mitigation and requests confirmation.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "risk_closure",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/risk_register/7/mitigation",
+            "value": {
+              "text": "Add prominent publish-risk documentation (README + generated-site banner) warning that static output may be publicly accessible; recommend a pre-publish review checklist and exclusion patterns for sensitive paths.",
+              "owner": "sec",
+              "status": "planned"
+            }
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/risk_register/7/acceptance",
+            "value": {
+              "text": "Acceptable only with explicit HITL sign-off confirming intended exposure posture (local/private vs public hosting) and acknowledging documentation-only mitigation limits.",
+              "owner": "pm",
+              "status": "pending_hitl"
+            }
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Risk register inconsistency: K6 has null mitigation while M1 deliverable DL6 claims to address it; record the mitigation in K6 to match the plan.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v4",
+            "entity_id": "K6",
+            "json_pointer": "/plan_package/risk_register/5",
+            "note": "Mitigation is null.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v4",
+            "entity_id": "DL6",
+            "json_pointer": "/plan_package/milestones/0/deliverables/5",
+            "note": "Deliverable explicitly claims to address K6.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/risk_register/5/mitigation",
+            "value": {
+              "text": "Parse YAML front matter per-file with error isolation; on parse errors, emit a warning with file path and continue the build (default), with an optional strict mode to fail on front-matter errors.",
+              "owner": "eng",
+              "status": "planned"
+            }
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Risk mitigations appear copy/pasted/misaligned: K10 collision risk mitigation duplicates K9 and does not describe collision detection/disambiguation; K9 should explicitly address cycles/edge cases in graph handling.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v4",
+            "entity_id": "K9",
+            "json_pointer": "/plan_package/risk_register/8/mitigation/text",
+            "note": "Mitigation text matches K10, not clearly addressing cycles/graph edge cases.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v4",
+            "entity_id": "K10",
+            "json_pointer": "/plan_package/risk_register/9/mitigation/text",
+            "note": "Mitigation text duplicates K9 and omits collision-specific strategy.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v4",
+            "entity_id": "DEC2",
+            "json_pointer": "/plan_package/decision_log/1",
+            "note": "DEC2 describes collision detection/disambiguation/error strategy not mirrored in K10.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/risk_register/8/mitigation/text",
+            "value": "Use an explicit link graph representation and compute backlinks via iterative traversal (no recursion requirements); handle cycles without infinite loops; add fixture tests for cycles, anchors, and duplicates; enforce stable deterministic ordering of backlinks."
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/risk_register/9/mitigation/text",
+            "value": "Derive output paths from normalized source-relative paths (canonical IDs) and preflight the full output path set; detect collisions before emitting files and fail with an actionable report listing colliding inputs and suggested remediations (rename/move/configure explicit slug)."
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "Deliverable/validation gap: M5 DL18 commits to GFM extension support, but acceptance tests do not validate GFM-specific features; extend existing AT4 to cover tables/strikethrough/task lists (and a basic syntax-highlighting expectation) without minting new AT IDs.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v4",
+            "entity_id": "DL18",
+            "json_pointer": "/plan_package/milestones/4/deliverables/2",
+            "note": "Commits to GFM extension support.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v4",
+            "entity_id": "AT4",
+            "json_pointer": "/plan_package/acceptance_tests/3",
+            "note": "Currently tests basic Markdown only; does not cover GFM extensions.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "coverage",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/acceptance_tests/3/procedure",
+            "value": "Create a fixture Markdown file containing headings (H1/H2), ordered and unordered lists, bold/italic emphasis, links, images, fenced code blocks, plus GFM elements: a Markdown table, strikethrough text, and a task list. Build the site and open the generated HTML for that note. Inspect the HTML DOM or rendered page for each element type."
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/acceptance_tests/3/pass_criteria",
+            "value": "Rendered HTML preserves the structure and formatting for all specified elements: headings map to appropriate <h1>/<h2>, lists to <ol>/<ul>, emphasis to <em>/<strong>, links to <a>, images to <img>, code blocks to <pre><code> (optionally with language/class attributes for highlighting), tables render as <table>, strikethrough renders as <del> or equivalent, and task lists render as checkboxes or equivalent list markup."
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Exclusion support is implicitly required (R3: 'not explicitly excluded by configuration' and AT3 assumes exclusion), but R20 is only SHOULD and no milestone deliverable explicitly commits to exclusion configuration; align requirement priority and fold exclusion support into an existing deliverable (no new IDs).",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v4",
+            "entity_id": "R3",
+            "json_pointer": "/plan_package/requirements/2",
+            "note": "R3 implies a configuration-based exclusion mechanism.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v4",
+            "entity_id": "AT3",
+            "json_pointer": "/plan_package/acceptance_tests/2",
+            "note": "AT3 explicitly assumes an exclusion configuration exists.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v4",
+            "entity_id": "R20",
+            "json_pointer": "/plan_package/requirements/19",
+            "note": "R20 currently only SHOULD.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v4",
+            "entity_id": "DL1",
+            "json_pointer": "/plan_package/milestones/0/deliverables/0/text",
+            "note": "DL1 defines CLI args; can incorporate exclude option/config here without adding new deliverable IDs.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "coverage",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/requirements/19/priority",
+            "value": "MUST"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/milestones/0/deliverables/0/text",
+            "value": "CLI command `build` accepting input directory path and output directory path (and a config and/or CLI exclude option for explicitly ignored files/dirs); validates inputs and produces non-zero exit codes with actionable error messages (R5, R6)."
+          }
+        ]
+      },
+      {
+        "label": "note",
+        "severity": "low",
+        "summary": "Plan metadata has version=\"v4\" but plan_version is null; clarify intended field usage to avoid downstream confusion.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v4",
+            "entity_id": null,
+            "json_pointer": "/plan_package/meta/version",
+            "note": "Non-null version.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v4",
+            "entity_id": null,
+            "json_pointer": "/plan_package/meta/plan_version",
+            "note": "Null plan_version.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "naming_consistency",
+        "patch": []
+      },
+      {
+        "label": "note",
+        "severity": "high",
+        "summary": "Search performance target R22 (<500ms for 1,000 notes) has no acceptance-test enforcement; M4 exit criteria mention metrics but do not define a concrete test, leaving the target unverifiable.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v4",
+            "entity_id": "R22",
+            "json_pointer": "/plan_package/requirements/21",
+            "note": "Defines a concrete performance target.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v4",
+            "entity_id": "M4",
+            "json_pointer": "/plan_package/milestones/3/exit_criteria",
+            "note": "Mentions capturing metrics but not an acceptance test.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "measurability",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Validator reports 12 missing risk IDs referenced in architecture options (O1/O2/O3/O4 risks field) that do not exist in risk_register, violating id_integrity hard gate.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B1A_v4",
+            "entity_id": null,
+            "json_pointer": "/inputs/validator_report/checks/1/violations",
+            "note": "id_integrity check failed with 12 high-severity violations for missing risk references in architecture options.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Option O1 references missing risk Large collections can lead to high memory usage..."
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Validator reports risk K8 (critical privacy leakage) missing closure, violating risk_closure hard gate.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B1A_v4",
+            "entity_id": "K8",
+            "json_pointer": "/inputs/validator_report/checks/4/violations/0",
+            "note": "risk_closure check failed: K8 missing closure despite critical severity.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Risk K8 missing closure"
+          }
+        ],
+        "violated_gate": "risk_closure",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Consistency finding CS1 (CLI interface treated as MUST while capsule marks it as blocking open question Q10) represents unresolved scope ambiguity that invalidates requirements R5, milestone M1.DL1, and decision DEC1.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B1A_v4",
+            "entity_id": "CS1",
+            "json_pointer": "/inputs/consistency_findings/findings/0",
+            "note": "High-severity consistency violation: plan hard-codes CLI while capsule Q10 is blocking and unconfirmed.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Plan treats a CLI interface as a MUST...while the capsule marks the interface choice...as a blocking open question"
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": []
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "Risk K6 (malformed YAML front matter) has null mitigation field but M1.DL6 explicitly addresses it; mitigation field must reference DL6 or describe the graceful handling strategy.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B1A_v4",
+            "entity_id": "CS2",
+            "json_pointer": "/inputs/consistency_findings/findings/1",
+            "note": "K6 mitigation is null but DL6 claims to address K6.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Risk K6 (malformed YAML front matter) has no mitigation recorded...but Milestone M1 includes a deliverable explicitly claiming to address K6"
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "Risk K8 (critical privacy leakage) has null mitigation and acceptance fields but M5.DL21 delivers documentation mitigation; K8 acceptance field must reference DL21 and mitigation status must be explicit.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B1A_v4",
+            "entity_id": "CS3",
+            "json_pointer": "/inputs/consistency_findings/findings/2",
+            "note": "K8 mitigation/acceptance null despite DL21 delivering documentation banner.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Critical privacy leakage risk K8 has no mitigation recorded...while the plan elsewhere indicates a documentation-based mitigation"
+          }
+        ],
+        "violated_gate": "risk_closure",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Risk K9 and K10 have identical mitigation text, indicating copy-paste error; K9 (backlink/circular link handling) requires distinct mitigation addressing graph cycles and edge cases.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B1A_v4",
+            "entity_id": "CS4",
+            "json_pointer": "/inputs/consistency_findings/findings/3",
+            "note": "K10 mitigation text does not reflect collision-specific disambiguation strategy from DEC2.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "K10 mitigation text appears misaligned with the risk description...suggesting a copy/paste or semantic mismatch"
+          },
+          {
+            "artifact_ref": "candidate_delta_B1A_v4",
+            "entity_id": "CS8",
+            "json_pointer": "/inputs/consistency_findings/findings/7",
+            "note": "K9 and K10 mitigation texts are identical.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "K9 mitigation text is identical to K10 mitigation text, suggesting a copy-paste error"
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "Requirement R22 (search performance <500ms for 1,000 notes) has no corresponding acceptance test; M4 exit criteria mention metrics but no formal AT validates the performance target.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B1A_v4",
+            "entity_id": "CS6",
+            "json_pointer": "/inputs/consistency_findings/findings/5",
+            "note": "R22 specifies concrete performance target but no acceptance test validates it.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Requirement R22 (search performance target: <500ms for 1,000 notes) is marked SHOULD but has no corresponding acceptance test"
+          }
+        ],
+        "violated_gate": "coverage",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Requirement R20 (file/directory exclusion configuration) is marked SHOULD but no deliverable implements it; AT3 assumes exclusion exists creating a gap.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B1A_v4",
+            "entity_id": "CS7",
+            "json_pointer": "/inputs/consistency_findings/findings/6",
+            "note": "R20 requires exclusion configuration but no deliverable implements it; AT3 assumes it exists.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Requirement R20 (file/directory exclusion configuration) is marked SHOULD but no deliverable in any milestone explicitly implements exclusion configuration"
+          }
+        ],
+        "violated_gate": "coverage",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "Milestone M5 deliverable DL18 (GFM extension support) lacks corresponding acceptance test coverage; AT4 tests basic Markdown but not GFM-specific extensions.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B1A_v4",
+            "entity_id": "CS1",
+            "json_pointer": "/inputs/consistency_findings/findings/0",
+            "note": "DL18 commits to GFM extensions but no acceptance test validates tables/strikethrough/task lists.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Milestone M5 deliverable DL18 (GFM extension support) lacks corresponding acceptance test coverage"
+          }
+        ],
+        "violated_gate": "coverage",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "note",
+        "severity": "medium",
+        "summary": "Risk K16 (mobile responsiveness) and K23 (CLI installation/UX) have null mitigation/acceptance and no deliverables; while marked low severity, gaps may affect adoption if mobile access or ease-of-install are implicit expectations.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B1A_v4",
+            "entity_id": "CS4",
+            "json_pointer": "/inputs/consistency_findings/findings/3",
+            "note": "K16 has no mitigation or acceptance plan; AT14 does not include mobile browser testing.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Risk K16 (mobile responsiveness) has null mitigation and acceptance but is marked low severity"
+          },
+          {
+            "artifact_ref": "candidate_delta_B1A_v4",
+            "entity_id": "CS5",
+            "json_pointer": "/inputs/consistency_findings/findings/4",
+            "note": "K23 has no mitigation or acceptance plan; no deliverable addresses installation packaging.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Risk K23 (CLI installation/UX complexity) has null mitigation and acceptance"
+          }
+        ],
+        "violated_gate": "none",
+        "patch": []
+      },
+      {
+        "label": "note",
+        "severity": "low",
+        "summary": "Plan metadata has version='v4' but plan_version=null, creating internal inconsistency in version field usage.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B1A_v4",
+            "entity_id": "CS5",
+            "json_pointer": "/inputs/consistency_findings/findings/4",
+            "note": "version and plan_version fields are inconsistently populated.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Plan metadata includes version='v4' but plan_version is null, which is internally inconsistent naming/field usage"
+          }
+        ],
+        "violated_gate": "none",
+        "patch": []
+      }
+    ],
+    "reroute_target": "hitl.product_owner",
+    "reroute_reason": "Blocking product decisions required: (1) confirm interface choice for Q10 (CLI vs GUI vs integration) because the plan currently hard-codes CLI as MUST; (2) confirm privacy publishing posture for critical risk K8 (coordinate with Security Reviewer for explicit acceptance/mitigation expectations)."
+  }
+}

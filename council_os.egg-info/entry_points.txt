@@ -1,0 +1,2 @@
+[console_scripts]
+council = council_os.cli:app

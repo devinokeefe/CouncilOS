@@ -1,0 +1,148 @@
+{
+  "artifact_type": "acceptance_canonical",
+  "artifact_id": "acceptance_canonical_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:04:15.297402Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "acceptance_draft_v1"
+  ],
+  "payload": {
+    "acceptance_tests": [
+      {
+        "id": "AT1",
+        "maps_to_requirements": [
+          "R1"
+        ],
+        "type": "system",
+        "procedure": "Create a test input directory with nested subfolders containing .md files and non-.md files. Run the CLI build specifying the root input directory and an output directory. Inspect the discovered notes list (build log or generated site pages) to confirm recursive discovery.",
+        "pass_criteria": "All .md files in all subfolders are included as notes; non-.md files are excluded."
+      },
+      {
+        "id": "AT2",
+        "maps_to_requirements": [
+          "R2"
+        ],
+        "type": "system",
+        "procedure": "Run the build on a representative notes folder. Inspect the output directory contents and attempt to open the site via a local static file server (or static hosting).",
+        "pass_criteria": "Build completes successfully; output contains only static assets (HTML/CSS/JS/media); site functions without any server-side runtime for browsing, search, tags, or backlinks."
+      },
+      {
+        "id": "AT3",
+        "maps_to_requirements": [
+          "R3"
+        ],
+        "type": "human_eval",
+        "procedure": "Prepare notes covering headings, lists, code blocks, blockquotes, links, images, and tables per the selected Markdown flavor. Build the site and visually compare rendered HTML output to expected formatting.",
+        "pass_criteria": "All tested Markdown elements render correctly and preserve structure and formatting."
+      },
+      {
+        "id": "AT4",
+        "maps_to_requirements": [
+          "R4"
+        ],
+        "type": "system",
+        "procedure": "Create notes with known filenames/paths and optional frontmatter slugs. Build the site and record the generated URLs for each note. Rebuild without changes and compare URLs.",
+        "pass_criteria": "Each note has a distinct page; URLs are deterministically derived from path/filename or frontmatter slug and remain stable across rebuilds."
+      },
+      {
+        "id": "AT5",
+        "maps_to_requirements": [
+          "R5"
+        ],
+        "type": "system",
+        "procedure": "Build the site and verify that a search index artifact is generated. Open the site in a browser with network disabled and perform searches via the UI.",
+        "pass_criteria": "Search operates fully client-side without network access; search returns results across note contents/titles."
+      },
+      {
+        "id": "AT6",
+        "maps_to_requirements": [
+          "R7",
+          "R20"
+        ],
+        "type": "system",
+        "procedure": "Create a dataset with tagged and untagged notes using the specified tag convention. Build the site and navigate tag pages/filters. Count notes per tag and compare with source data.",
+        "pass_criteria": "All tagged notes appear under each corresponding tag; untagged notes are not listed; 100% of notes with tags are included under the correct tag pages/filters."
+      },
+      {
+        "id": "AT7",
+        "maps_to_requirements": [
+          "R8"
+        ],
+        "type": "system",
+        "procedure": "Build a dataset with multiple tags across notes. Build the site and navigate to each tag’s listing page or filter UI.",
+        "pass_criteria": "Each tag has a navigable listing showing all notes containing that tag, with working links to note pages."
+      },
+      {
+        "id": "AT8",
+        "maps_to_requirements": [
+          "R9"
+        ],
+        "type": "system",
+        "procedure": "Create notes with internal forward links using the specified link syntax. Build the site and click each internal link in rendered pages.",
+        "pass_criteria": "All internal links resolve to the correct target note pages and are rendered as clickable elements."
+      },
+      {
+        "id": "AT9",
+        "maps_to_requirements": [
+          "R10",
+          "R21"
+        ],
+        "type": "system",
+        "procedure": "Create a known link graph (e.g., A→B, C→B, B→D). Build the site and inspect backlinks sections on each note page.",
+        "pass_criteria": "Each note’s backlinks list includes all and only notes that link to it; for the test set, 100% of expected backlinks appear."
+      },
+      {
+        "id": "AT10",
+        "maps_to_requirements": [
+          "R11"
+        ],
+        "type": "system",
+        "procedure": "Run the CLI build specifying input and output directories while offline (no network).",
+        "pass_criteria": "CLI accepts input/output paths; build completes without network access and produces the static site output."
+      },
+      {
+        "id": "AT11",
+        "maps_to_requirements": [
+          "R13"
+        ],
+        "type": "human_eval",
+        "procedure": "Open the generated site in latest Chrome, Firefox, Safari, and Edge. Test navigation, search, tag browsing, and backlinks in each browser.",
+        "pass_criteria": "Core features function without runtime errors in all listed browsers."
+      },
+      {
+        "id": "AT12",
+        "maps_to_requirements": [
+          "R19"
+        ],
+        "type": "metric",
+        "procedure": "Define a representative query set with expected target notes. Build the site and execute each query in the search UI, recording the top 10 results.",
+        "pass_criteria": "At least 90% of queries return the expected note within the top 10 results."
+      },
+      {
+        "id": "AT13",
+        "maps_to_requirements": [
+          "R22"
+        ],
+        "type": "system",
+        "procedure": "Run the build on a representative notes folder and monitor for errors. Verify output directory contains generated static files.",
+        "pass_criteria": "Build completes without errors and produces a valid set of static files."
+      }
+    ],
+    "id_map": {
+      "AT_U_1": "AT1",
+      "AT_U_2": "AT2",
+      "AT_U_3": "AT3",
+      "AT_U_4": "AT4",
+      "AT_U_5": "AT5",
+      "AT_U_6": "AT6",
+      "AT_U_7": "AT7",
+      "AT_U_8": "AT8",
+      "AT_U_9": "AT9",
+      "AT_U_10": "AT10",
+      "AT_U_11": "AT11",
+      "AT_U_12": "AT12",
+      "AT_U_13": "AT13"
+    }
+  }
+}

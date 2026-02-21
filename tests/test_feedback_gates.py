@@ -46,7 +46,7 @@ from council_os.orchestrator.feedback.schemas import (
     UpdateAcceptanceTestOp,
 )
 from council_os.orchestrator.feedback.store import PlanningArtifactStore
-from council_os.orchestrator.feedback.utils import plan_hash
+from council_os.handoff.hashing import plan_content_hash
 
 
 def _make_plan_dict() -> dict[str, object]:
@@ -136,7 +136,7 @@ def _make_plan_dict() -> dict[str, object]:
 
 def test_plan_hash_stable() -> None:
     plan = _make_plan_dict()
-    assert plan_hash(plan) == plan_hash(plan)
+    assert plan_content_hash(plan) == plan_content_hash(plan)
 
 
 def test_render_orders_by_id() -> None:
@@ -154,7 +154,7 @@ def test_apply_plan_edits_update_requirement() -> None:
     edits = PlanEdits(
         schema_version="1.0",
         round=1,
-        plan_hash=plan_hash(plan),
+        plan_hash=plan_content_hash(plan),
         ops=[
             UpdateRequirementOp(op="update_requirement", id="R1", set={"text": "Updated text"}),
         ],
@@ -168,7 +168,7 @@ def test_apply_plan_edits_add_remove_requirement() -> None:
     edits = PlanEdits(
         schema_version="1.0",
         round=1,
-        plan_hash=plan_hash(plan),
+        plan_hash=plan_content_hash(plan),
         ops=[
             AddRequirementOp(
                 op="add_requirement",
@@ -194,7 +194,7 @@ def test_apply_plan_edits_missing_id() -> None:
     edits = PlanEdits(
         schema_version="1.0",
         round=1,
-        plan_hash=plan_hash(plan),
+        plan_hash=plan_content_hash(plan),
         ops=[UpdateRequirementOp(op="update_requirement", id="R9", set={"text": "X"})],
     )
     with pytest.raises(PlanEditError):

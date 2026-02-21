@@ -1,0 +1,390 @@
+{
+  "artifact_type": "consistency_findings",
+  "artifact_id": "consistency_B1B_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:37:15.912192Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B1B_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B1B_v1",
+    "findings": [
+      {
+        "id": "CS1",
+        "severity": "high",
+        "summary": "The plan repeatedly treats the note-scale target as \"confirmed 1,000 notes\", but the project capsule marks scale (Q3) as a blocking open question (unconfirmed). This creates an internal inconsistency that affects architecture rationale (in-memory pipeline) and performance-risk posture (K4/K5).",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": null,
+            "json_pointer": "/plan_package/executive_summary",
+            "note": "Exec summary asserts a confirmed scale target",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "...deferred given the confirmed 1,000-note target..."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "DEC5",
+            "json_pointer": "/plan_package/decision_log/4/rationale",
+            "note": "Decision rationale depends on scale being confirmed",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "...in-memory pipeline (O1) is well within performance limits for 1,000 notes."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "Q3",
+            "json_pointer": "/plan_package/project_capsule/open_questions/2",
+            "note": "Capsule marks scale as blocking and unconfirmed",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "What scale is required (approx. number of notes and total size)...?"
+          }
+        ],
+        "routing_target": "architecture_canonical"
+      },
+      {
+        "id": "CS2",
+        "severity": "medium",
+        "summary": "Risk K6 (malformed YAML front matter) has no mitigation in the risk register, but the milestone plan includes a concrete mitigation/deliverable for it (graceful per-file handling). This is a semantic mismatch between risk governance and delivery plan.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "K6",
+            "json_pointer": "/plan_package/risk_register/5/mitigation",
+            "note": "Risk register mitigation is null",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "DL5",
+            "json_pointer": "/plan_package/milestones/0/deliverables/4/text",
+            "note": "Milestone deliverable proposes a mitigation for K6",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "Graceful per-file error handling for malformed YAML front matter (K6)..."
+          }
+        ],
+        "routing_target": "risk_gov_canonical"
+      },
+      {
+        "id": "CS3",
+        "severity": "medium",
+        "summary": "Risk K8 (privacy leakage) has no mitigation/acceptance recorded in the risk register, but the decision log states K8 is accepted with documentation-only mitigation and M5 includes a corresponding deliverable. This is inconsistent risk-governance bookkeeping within the same plan package.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "K8",
+            "json_pointer": "/plan_package/risk_register/7",
+            "note": "Risk register entry lacks mitigation/acceptance",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "Sensitive/private information contained within notes is inadvertently published..."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "DEC6",
+            "json_pointer": "/plan_package/decision_log/5/choice",
+            "note": "Decision log records acceptance/mitigation approach",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "Accept with documentation-only mitigation: build-time warning banner and README disclaimer"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "DL25",
+            "json_pointer": "/plan_package/milestones/4/deliverables/7/text",
+            "note": "Milestone deliverable implements the stated mitigation",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "Privacy disclaimer and build-time warning banner for public deployment (K8 documentation-only mitigation)"
+          }
+        ],
+        "routing_target": "risk_gov_canonical"
+      },
+      {
+        "id": "CS4",
+        "severity": "high",
+        "summary": "Q10 (CLI vs GUI) is marked as a blocking open question in the capsule, but the plan hard-codes a CLI as a MUST requirement (R5) and builds the entire milestone structure around a CLI from M1 onward. This is a direct mismatch between declared uncertainty and committed requirements/plan.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "Q10",
+            "json_pointer": "/plan_package/project_capsule/open_questions/9",
+            "note": "Capsule marks interface choice as blocking",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "Should the tool run as a CLI, GUI application, or build script integration?"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "R5",
+            "json_pointer": "/plan_package/requirements/4/text",
+            "note": "Plan elevates CLI to a MUST",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "The system MUST provide a command-line interface (CLI) build workflow..."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "DL1",
+            "json_pointer": "/plan_package/milestones/0/deliverables/0/text",
+            "note": "Milestone 1 deliverable assumes CLI immediately",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "CLI entry point accepting input directory and output directory arguments (R5)"
+          }
+        ],
+        "routing_target": "clarification_plan"
+      },
+      {
+        "id": "CS001",
+        "severity": "high",
+        "summary": "Milestone M1 exit criteria reference AT1-AT6 but AT6 is defined to test both valid and invalid inputs; M1 deliverables do not explicitly include invalid-input error handling beyond malformed YAML (DL5).",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/exit_criteria",
+            "note": "M1 exit criteria claim AT6 passes",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "AT6 passes: valid input succeeds; invalid input yields non-zero exit and actionable error"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "DL5",
+            "json_pointer": "/plan_package/milestones/0/deliverables/4",
+            "note": "DL5 only covers malformed YAML front matter",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Graceful per-file error handling for malformed YAML front matter (K6) and clear build error messages (R6)"
+          }
+        ],
+        "routing_target": "milestones"
+      },
+      {
+        "id": "CS002",
+        "severity": "medium",
+        "summary": "R3 requires HTML generation for every input Markdown file 'not explicitly excluded by configuration', but M1 deliverables do not include file/directory exclusion capability; exclusion is deferred to M5 (DL23/R20 SHOULD).",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "R3",
+            "json_pointer": "/plan_package/requirements/2",
+            "note": "R3 MUST generate HTML for non-excluded files",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "generate a corresponding HTML page for every input Markdown file not explicitly excluded by configuration"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/deliverables",
+            "note": "M1 deliverables do not include exclusion configuration",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "DL23",
+            "json_pointer": "/plan_package/milestones/4/deliverables/6",
+            "note": "Exclusion deferred to M5",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "File/directory exclusion via configuration or CLI option (R20 SHOULD)"
+          }
+        ],
+        "routing_target": "milestones"
+      },
+      {
+        "id": "CS003",
+        "severity": "medium",
+        "summary": "DEC3 states tag normalization includes 'case-fold, trim' but R16 only requires 'lowercasing and trimming whitespace'; 'case-fold' is broader than 'lowercasing' and may introduce Unicode normalization not specified in requirements.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "DEC3",
+            "json_pointer": "/plan_package/decision_log/2/choice",
+            "note": "DEC3 specifies case-fold normalization",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "normalization pipeline (case-fold, trim)"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "R16",
+            "json_pointer": "/plan_package/requirements/15",
+            "note": "R16 specifies lowercasing and trimming",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "configurable tag normalization rules (e.g., lowercasing and trimming whitespace)"
+          }
+        ],
+        "routing_target": "decision_log"
+      },
+      {
+        "id": "CS004",
+        "severity": "high",
+        "summary": "K6 mitigation is null in canonical risk register but M1 DL5 claims to deliver 'graceful per-file error handling for malformed YAML front matter (K6)'; the plan assumes a mitigation that does not exist in the canonical artifact.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "K6",
+            "json_pointer": "/plan_package/risk_register/5/mitigation",
+            "note": "K6 mitigation is null",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "DL5",
+            "json_pointer": "/plan_package/milestones/0/deliverables/4",
+            "note": "M1 DL5 references K6 mitigation",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Graceful per-file error handling for malformed YAML front matter (K6)"
+          }
+        ],
+        "routing_target": "risk_register"
+      },
+      {
+        "id": "CS005",
+        "severity": "high",
+        "summary": "K8 mitigation and acceptance are null in canonical risk register but DEC6 and M5 DL25 reference K8 mitigation (documentation-only); the plan assumes a mitigation/acceptance decision not recorded in the canonical artifact.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "K8",
+            "json_pointer": "/plan_package/risk_register/7/mitigation",
+            "note": "K8 mitigation is null",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "K8",
+            "json_pointer": "/plan_package/risk_register/7/acceptance",
+            "note": "K8 acceptance is null",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "DEC6",
+            "json_pointer": "/plan_package/decision_log/5",
+            "note": "DEC6 references K8 mitigation",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Accept with documentation-only mitigation: build-time warning banner and README disclaimer"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "DL25",
+            "json_pointer": "/plan_package/milestones/4/deliverables/8",
+            "note": "M5 DL25 references K8 mitigation",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Privacy disclaimer and build-time warning banner for public deployment (K8 documentation-only mitigation)"
+          }
+        ],
+        "routing_target": "risk_register"
+      },
+      {
+        "id": "CS006",
+        "severity": "medium",
+        "summary": "Supplemental evaluation 'Acceptance Test Coverage for SHOULD Requirements' states AT1-AT14 cover MUST requirements only, but AT3 maps to R3 which includes exclusion logic ('not explicitly excluded'), and exclusion is R20 SHOULD; AT3 pass criteria may be incomplete without exclusion capability.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": null,
+            "json_pointer": "/plan_package/supplemental_evaluations/0/notes",
+            "note": "Supplemental evaluation claims AT1-AT14 cover MUST only",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "AT1–AT14 cover all MUST requirements"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "AT3",
+            "json_pointer": "/plan_package/acceptance_tests/2",
+            "note": "AT3 references exclusion configuration",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "a configuration that excludes one specific Markdown file"
+          }
+        ],
+        "routing_target": "acceptance_tests"
+      },
+      {
+        "id": "CS007",
+        "severity": "low",
+        "summary": "Synthesis warning W3 states K6 has no mitigation and recommends updating the risk register, but the candidate itself includes K6 mitigation in M1 DL5; the warning is inconsistent with the candidate's own milestone deliverables.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "W3",
+            "json_pointer": "/plan_package/synthesis_warnings/2",
+            "note": "W3 claims K6 has no mitigation",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "K6 (malformed YAML front matter) has no mitigation defined in the canonical risk register"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "DL5",
+            "json_pointer": "/plan_package/milestones/0/deliverables/4",
+            "note": "M1 DL5 delivers K6 mitigation",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Graceful per-file error handling for malformed YAML front matter (K6)"
+          }
+        ],
+        "routing_target": "synthesis_warnings"
+      },
+      {
+        "id": "CS008",
+        "severity": "low",
+        "summary": "Synthesis warning W4 states K8 has no mitigation and recommends updating the risk register, but the candidate includes K8 mitigation in DEC6 and M5 DL25; the warning is inconsistent with the candidate's own decision log and milestones.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "W4",
+            "json_pointer": "/plan_package/synthesis_warnings/3",
+            "note": "W4 claims K8 has no mitigation",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "K8 (privacy leakage) has no mitigation defined in the canonical risk register"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "DEC6",
+            "json_pointer": "/plan_package/decision_log/5",
+            "note": "DEC6 defines K8 mitigation",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Accept with documentation-only mitigation"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "DL25",
+            "json_pointer": "/plan_package/milestones/4/deliverables/8",
+            "note": "M5 DL25 delivers K8 mitigation",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Privacy disclaimer and build-time warning banner for public deployment (K8 documentation-only mitigation)"
+          }
+        ],
+        "routing_target": "synthesis_warnings"
+      }
+    ]
+  }
+}

@@ -1,0 +1,224 @@
+{
+  "artifact_type": "risk_gov_draft",
+  "artifact_id": "risk_gov_draft_2_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T11:58:17.575605Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "capsule_canonical_v1"
+  ],
+  "payload": {
+    "risk_register": [
+      {
+        "id": "RISK_B_01",
+        "severity": "high",
+        "description": "Unsupported or non-standard Markdown syntax in user notes could cause parsing errors, leading to incorrect rendering or build failures, compromising core functionality (G5).",
+        "mitigation": {
+          "text": "Clearly define and document the supported Markdown flavor (e.g., CommonMark, GFM) and any extensions. Implement robust error handling for unsupported syntax.",
+          "owner": "Project Team",
+          "status": "planned"
+        },
+        "acceptance": null
+      },
+      {
+        "id": "RISK_B_02",
+        "severity": "high",
+        "description": "Ambiguous or mixed link syntax (e.g., [[WikiLinks]] vs. standard Markdown links) could result in the tool failing to parse some links, leading to broken forward links and incomplete backlinks (violates G4). This is flagged as a blocking open question (Q1).",
+        "mitigation": {
+          "text": "Resolve open question Q1 to specify a clear, unambiguous link syntax to be supported. Implement a parser that strictly adheres to this specification.",
+          "owner": "Project Team",
+          "status": "planned"
+        },
+        "acceptance": null
+      },
+      {
+        "id": "RISK_B_03",
+        "severity": "high",
+        "description": "The client-side search index may become too large to download or query efficiently in the browser as the number of notes grows, leading to poor performance or crashes (violates SM7). This is related to open question Q3 on scale.",
+        "mitigation": {
+          "text": "Investigate and prototype efficient client-side search libraries (e.g., Lunr.js, FlexSearch). Establish performance targets based on expected scale (Q3) and test against them.",
+          "owner": "Project Team",
+          "status": "planned"
+        },
+        "acceptance": null
+      },
+      {
+        "id": "RISK_B_04",
+        "severity": "high",
+        "description": "An inconsistent or unspecified format for tags in notes (Q2) could lead to the tool failing to extract tags correctly, breaking the tag-based browsing feature (G3, SM3).",
+        "mitigation": {
+          "text": "Define a clear specification for how tags should be formatted in notes (e.g., YAML frontmatter, inline syntax) by resolving Q2. Implement a parser based on this spec.",
+          "owner": "Project Team",
+          "status": "planned"
+        },
+        "acceptance": null
+      },
+      {
+        "id": "RISK_B_05",
+        "severity": "high",
+        "description": "Poorly managed third-party dependencies (e.g., Markdown parser, search indexer) could introduce breaking changes in updates or contain security vulnerabilities, destabilizing the entire tool.",
+        "mitigation": {
+          "text": "Pin dependency versions and use a lockfile. Implement a process for vetting and updating dependencies, including automated vulnerability scanning.",
+          "owner": "Project Team",
+          "status": "planned"
+        },
+        "acceptance": null
+      },
+      {
+        "id": "RISK_B_06",
+        "severity": "medium",
+        "description": "The backlink generation algorithm may be inefficient, leading to excessively long build times as the number of notes and links increases, failing performance targets (SM7).",
+        "mitigation": {
+          "text": "Design and benchmark the backlink generation algorithm against the expected scale of notes (Q3). Optimize graph traversal and indexing logic.",
+          "owner": "Project Team",
+          "status": "planned"
+        },
+        "acceptance": null
+      },
+      {
+        "id": "RISK_B_07",
+        "severity": "medium",
+        "description": "A complex installation process or numerous system-specific dependencies for the CLI tool (A6) could create a high barrier to entry for users.",
+        "mitigation": {
+          "text": "Aim for a simple installation (e.g., via a package manager like npm/pip). Document dependencies clearly and consider bundling them or using containers (e.g., Docker) for easier setup.",
+          "owner": "Project Team",
+          "status": "planned"
+        },
+        "acceptance": null
+      },
+      {
+        "id": "RISK_B_08",
+        "severity": "medium",
+        "description": "Large numbers of notes or large individual files could lead to excessive memory consumption or crashes during the build process, making the tool unusable for large projects.",
+        "mitigation": {
+          "text": "Profile memory usage during development. Implement streaming or chunking for file processing instead of loading all content into memory at once.",
+          "owner": "Project Team",
+          "status": "planned"
+        },
+        "acceptance": null
+      },
+      {
+        "id": "RISK_B_09",
+        "severity": "medium",
+        "description": "Generated HTML/CSS/JS may not be fully cross-browser compatible (violates SM6), or may have accessibility issues, leading to a poor experience for some readers.",
+        "mitigation": {
+          "text": "Define a set of target browsers. Use automated testing tools (e.g., Lighthouse, axe) and manual testing to ensure accessibility and compatibility.",
+          "owner": "Project Team",
+          "status": "planned"
+        },
+        "acceptance": null
+      },
+      {
+        "id": "RISK_B_10",
+        "severity": "medium",
+        "description": "The generated site may not function correctly when opened directly from the local filesystem (via file:// protocol) due to browser security restrictions on JavaScript, which might affect search or other features.",
+        "mitigation": {
+          "text": "Test the generated site using the file:// protocol. Document that a local web server is recommended for full functionality if these restrictions cannot be overcome.",
+          "owner": "Project Team",
+          "status": "planned"
+        },
+        "acceptance": null
+      },
+      {
+        "id": "RISK_B_11",
+        "severity": "low",
+        "description": "Failure to properly resolve relative paths for assets (like images) or links between notes in nested directories could result in broken links and images in the generated site.",
+        "mitigation": {
+          "text": "Establish a clear rule for path resolution and implement it consistently. Add tests for nested content and links.",
+          "owner": "Project Team",
+          "status": "planned"
+        },
+        "acceptance": null
+      },
+      {
+        "id": "RISK_B_12",
+        "severity": "low",
+        "description": "Scope creep from undefined secondary features (Q5, Q7, e.g., graph views, themes) could divert resources from core goals and delay the project.",
+        "mitigation": {
+          "text": "Prioritize core features. Defer decisions on optional features until after an MVP is complete, and track them as distinct work items if approved.",
+          "owner": "Project Team",
+          "status": "planned"
+        },
+        "acceptance": null
+      }
+    ],
+    "tool_policy": {
+      "stage_policies": [
+        {
+          "stage": "Intake",
+          "allowlisted_tools": [
+            "artifact_write"
+          ],
+          "restrictions": [],
+          "hitl_triggers": []
+        },
+        {
+          "stage": "Generate",
+          "allowlisted_tools": [
+            "code_interpreter",
+            "file_system_access",
+            "web_browser"
+          ],
+          "restrictions": [],
+          "hitl_triggers": []
+        },
+        {
+          "stage": "Validate",
+          "allowlisted_tools": [
+            "code_interpreter"
+          ],
+          "restrictions": [],
+          "hitl_triggers": []
+        },
+        {
+          "stage": "Review",
+          "allowlisted_tools": [
+            "artifact_write"
+          ],
+          "restrictions": [],
+          "hitl_triggers": []
+        },
+        {
+          "stage": "Judge",
+          "allowlisted_tools": [
+            "artifact_write"
+          ],
+          "restrictions": [],
+          "hitl_triggers": []
+        },
+        {
+          "stage": "Freeze",
+          "allowlisted_tools": [
+            "artifact_write"
+          ],
+          "restrictions": [],
+          "hitl_triggers": []
+        }
+      ]
+    },
+    "hitl_policy": {
+      "when_to_interrupt": [
+        "On repeated failures to pass critical path test cases.",
+        "Before making significant architectural changes or adding new major dependencies.",
+        "When a generated solution deviates from the defined project capsule requirements.",
+        "Upon detection of a high-severity security vulnerability in code or dependencies."
+      ],
+      "approval_roles": [
+        "Engineering Lead",
+        "Product Manager",
+        "Security Analyst"
+      ]
+    },
+    "taxonomy_categories": [
+      "Parsing and Ingestion Error",
+      "Data Processing Error",
+      "Code Generation Error",
+      "Build Process Failure",
+      "Performance Degradation",
+      "Dependency and Environment Issue",
+      "Output Rendering and Formatting Error",
+      "Security Vulnerability",
+      "Usability and Accessibility Failure"
+    ]
+  }
+}

@@ -1,0 +1,120 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B2A_v3",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:57:55.236624Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "trace_graph_B2A_primary_v3",
+    "trace_graph_B2A_anchor_v3"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2A_v3",
+    "findings": [
+      {
+        "id": "TG-001",
+        "severity": "medium",
+        "summary": "Requirement R1 (Ingestion) is scheduled for delivery in Milestone M3, which falls outside the audited range (M1-M2) expected by the sample check.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "R1",
+            "json_pointer": "/requirements/0",
+            "note": "Requirement R1 mandates recursive discovery of Markdown files from an input directory.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "The system MUST accept a user-specified local directory path as input and recursively discover Markdown files..."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "M3",
+            "json_pointer": "/milestones/2/deliverables/0",
+            "note": "Milestone M3 explicitly lists the delivery of the Ingestion Plugin to satisfy R1, contradicting the expectation of R1 availability in M1/M2.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Ingestion Plugin (C11) + CLI wiring to satisfy directory input/discovery (R1) and build workflow (R5)."
+          }
+        ],
+        "routing_target": "planner"
+      },
+      {
+        "id": "TG-002",
+        "severity": "medium",
+        "summary": "Requirement R3 (Markdown Rendering) is scheduled for delivery in Milestone M3, which falls outside the audited range (M1-M2) expected by the sample check.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "R3",
+            "json_pointer": "/requirements/2",
+            "note": "Requirement R3 mandates CommonMark-compliant parsing and HTML generation.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "The system MUST parse each discovered Markdown file using at least CommonMark-compliant syntax..."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "M3",
+            "json_pointer": "/milestones/2/deliverables/1",
+            "note": "Milestone M3 explicitly lists the delivery of the Markdown Render Plugin to satisfy R3, contradicting the expectation of R3 availability in M1/M2.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Markdown Render Plugin (C14) implementing CommonMark baseline rendering (R3, R4)..."
+          }
+        ],
+        "routing_target": "planner"
+      },
+      {
+        "id": "TG1",
+        "severity": "medium",
+        "summary": "Deterministic sample check for R1 links milestones [M1, M2], but the plan’s milestone deliverables place R1 implementation (ingestion + CLI wiring) in M3 (DL7); M1–M2 are contract/scaffold and do not explicitly deliver R1.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "R1",
+            "json_pointer": "/inputs/deterministic_sample_checks/0/milestones",
+            "note": "Sample check claims R1 is covered by milestones M1 and M2.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "M3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/2/deliverables/0",
+            "note": "M3 deliverable DL7 explicitly targets R1/R5 via ingestion plugin + CLI wiring.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Ingestion Plugin (C11) + CLI wiring to satisfy directory input/discovery (R1) and build workflow (R5)."
+          }
+        ],
+        "routing_target": "Orchestrator:TraceGraphAlignment"
+      },
+      {
+        "id": "TG2",
+        "severity": "medium",
+        "summary": "Deterministic sample check for R3 links milestones [M1, M2], but the plan’s milestone deliverables place CommonMark parsing/rendering (R3/R4) in M3 (DL8); M1–M2 do not explicitly deliver R3.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "R3",
+            "json_pointer": "/inputs/deterministic_sample_checks/2/milestones",
+            "note": "Sample check claims R3 is covered by milestones M1 and M2.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "M3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/2/deliverables/1",
+            "note": "M3 deliverable DL8 explicitly targets R3/R4 via Markdown render plugin (CommonMark baseline).",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Markdown Render Plugin (C14) implementing CommonMark baseline rendering (R3, R4) and producing per-note HTML fragments into the context."
+          }
+        ],
+        "routing_target": "Orchestrator:TraceGraphAlignment"
+      }
+    ]
+  }
+}

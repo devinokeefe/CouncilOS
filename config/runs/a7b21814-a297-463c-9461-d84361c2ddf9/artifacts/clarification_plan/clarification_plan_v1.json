@@ -1,0 +1,424 @@
+{
+  "artifact_type": "clarification_plan",
+  "artifact_id": "clarification_plan_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:24:29.364479Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "capsule_canonical_v1"
+  ],
+  "payload": {
+    "questions": [
+      {
+        "id": "QX1",
+        "text": "Which internal-link syntaxes must be recognized and resolved between notes (standard Markdown links to relative paths/filenames, wiki-links [[Title]], Obsidian-style variants like [[Title|Alias]] / [[Title#Heading]]), and how should unmatched/broken links be handled (warn, fail build, render as plain text)?",
+        "impact": "high",
+        "blocking": true,
+        "rationale": "This determines how link resolution, canonical URLs, and backlink generation work. If unanswered, assume: support (1) standard Markdown relative links to .md files, and (2) wiki-links [[Title]] resolved by filename stem/title; broken links render as non-clickable text and emit a build warning.",
+        "evidence": [
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q1",
+            "json_pointer": "/inputs/project_capsule/open_questions/0/text",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "What Markdown/linking conventions must be supported for internal links and backlinks (standard Markdown links, relative paths, wiki-links [[...]], Obsidian-style links, etc.)?"
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q8",
+            "json_pointer": "/inputs/project_capsule/open_questions/7/text",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Should the site expose outgoing links, backlinks only, or a full graph view; and how should broken links be handled (warn, fail build, render as plain text)?"
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "A2",
+            "json_pointer": "/inputs/project_capsule/assumptions/1/text",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Internal links between notes can be identified via a consistent convention (e.g., Markdown links to filenames/paths or wiki-style links like [[Note Title]])."
+          }
+        ]
+      },
+      {
+        "id": "QX2",
+        "text": "How should tags be specified and parsed (YAML front matter vs inline #tags vs both), and what are the normalization rules (case sensitivity, spaces, nesting like tag/subtag, allowed characters)?",
+        "impact": "high",
+        "blocking": true,
+        "rationale": "Tag extraction impacts index generation and URLs. If unanswered, assume: parse YAML front matter key \"tags\" as a list of strings; additionally recognize inline hashtags (#tag) excluding code blocks; normalize to lowercase, replace spaces with '-', allow '/' for nesting.",
+        "evidence": [
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q2",
+            "json_pointer": "/inputs/project_capsule/open_questions/1/text",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "How should tags be specified and parsed (YAML front matter, inline hashtags, a dedicated syntax), and what are the rules for tag normalization (case, spaces, nesting)?"
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "A3",
+            "json_pointer": "/inputs/project_capsule/assumptions/2/text",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Tags can be derived from a consistent convention (e.g., YAML front matter tags and/or inline #tags) and do not require manual curation in the generated site."
+          }
+        ]
+      },
+      {
+        "id": "QX3",
+        "text": "What is the expected scale (approx. number of notes, total Markdown size, and typical query patterns), and what responsiveness target should full-text search meet on that scale?",
+        "impact": "high",
+        "blocking": true,
+        "rationale": "Scale determines indexing format and client-side search approach. If unanswered, assume: up to ~5,000 notes / <200MB total text; client-side search index shipped with the site and returning results in <200ms on a modern laptop.",
+        "evidence": [
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q3",
+            "json_pointer": "/inputs/project_capsule/open_questions/2/text",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "What scale is required (approx. number of notes and total size), to choose an indexing/search approach and performance targets?"
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "A4",
+            "json_pointer": "/inputs/project_capsule/assumptions/3/text",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Search will be implemented client-side (e.g., a prebuilt index shipped with the site) to keep the output fully static."
+          }
+        ]
+      },
+      {
+        "id": "QX4",
+        "text": "What pages and navigation are required for the generated site (e.g., home, all-notes list, tags index, per-tag pages, per-note layout with TOC), and what metadata should appear on each note page (title source, date, tags, backlinks placement)?",
+        "impact": "high",
+        "blocking": true,
+        "rationale": "Information architecture drives templates, routing, and what gets indexed/linked. If unanswered, assume: pages = Home (search + recent/all notes), All Notes (A–Z), Tags index, Per-tag listing, Per-note page with title (from H1 or filename), tags, backlinks at bottom, optional TOC from headings.",
+        "evidence": [
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q4",
+            "json_pointer": "/inputs/project_capsule/open_questions/3/text",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "What is the desired information architecture: required pages and navigation (home, all notes, tags index, per-tag pages, per-note page layout)?"
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": null,
+            "json_pointer": "/inputs/project_capsule/goals/3",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Support tags so users can browse/filter notes by tag."
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": null,
+            "json_pointer": "/inputs/project_capsule/goals/5",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Produce a build output that can be hosted on common static hosting without requiring a server-side runtime."
+          }
+        ]
+      },
+      {
+        "id": "QX1",
+        "text": "What specific syntax conventions must be supported for internal links (e.g., Wiki-style `[[...]]` vs standard `[...](...)`) and tags (e.g., YAML frontmatter vs inline `#tags`)?",
+        "impact": "high",
+        "blocking": true,
+        "rationale": "Parsing logic and dependency selection depend entirely on the specific delimiter syntax for links and metadata.",
+        "evidence": [
+          {
+            "artifact_ref": "capsule",
+            "entity_id": "Q1",
+            "json_pointer": "/open_questions/0",
+            "note": "Original question regarding linking conventions",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "capsule",
+            "entity_id": "Q2",
+            "json_pointer": "/open_questions/1",
+            "note": "Original question regarding tag syntax",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "QX2",
+        "text": "Is a CLI (Command Line Interface) acceptable for the build workflow, or is a GUI application required?",
+        "impact": "high",
+        "blocking": true,
+        "rationale": "Determines the fundamental scope and technology stack (app wrapper vs script).",
+        "evidence": [
+          {
+            "artifact_ref": "capsule",
+            "entity_id": "Q10",
+            "json_pointer": "/open_questions/9",
+            "note": "Original question regarding CLI/GUI",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "capsule",
+            "entity_id": "A5",
+            "json_pointer": "/assumptions/4",
+            "note": "Conflicting/pending assumption regarding CLI acceptability",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "QX01",
+        "text": "What specific conventions must be supported for links between notes and for tags? For example, for links: `[[WikiLinks]]` or `[note](./note.md)`? For tags: `#hashtags` in the body or a `tags:` list in YAML frontmatter?",
+        "impact": "high",
+        "blocking": true,
+        "rationale": "The parsing logic for identifying connections and topics is fundamental to the core functionality (backlinks, tag navigation) and cannot be designed without this information.",
+        "evidence": [
+          {
+            "artifact_ref": "capsule",
+            "entity_id": null,
+            "json_pointer": "/goals/4",
+            "note": "This goal requires a clear definition of what constitutes an internal link.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Detect and render internal links between notes and generate backlinks (\"linked from\") sections."
+          },
+          {
+            "artifact_ref": "capsule",
+            "entity_id": null,
+            "json_pointer": "/goals/3",
+            "note": "This goal requires a clear definition of how tags are identified.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Support tags so users can browse/filter notes by tag."
+          },
+          {
+            "artifact_ref": "capsule",
+            "entity_id": "Q1",
+            "json_pointer": "/open_questions/0",
+            "note": "The capsule already identifies this as a high-impact, blocking question.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "What Markdown/linking conventions must be supported for internal links and backlinks (standard Markdown links, relative paths, wiki-links [[...]], Obsidian-style links, etc.)?"
+          },
+          {
+            "artifact_ref": "capsule",
+            "entity_id": "Q2",
+            "json_pointer": "/open_questions/1",
+            "note": "The capsule already identifies this as a high-impact, blocking question.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "How should tags be specified and parsed (YAML front matter, inline hashtags, a dedicated syntax), and what are the rules for tag normalization (case, spaces, nesting)?"
+          }
+        ]
+      },
+      {
+        "id": "QX02",
+        "text": "What is the approximate number of notes (e.g., hundreds, thousands, tens of thousands) that the tool needs to support? This is critical for choosing a performant search-indexing strategy.",
+        "impact": "high",
+        "blocking": true,
+        "rationale": "The scale (number of notes) directly impacts the technical approach for client-side search, affecting performance and user experience. A solution for 100 notes may not work for 10,000.",
+        "evidence": [
+          {
+            "artifact_ref": "capsule",
+            "entity_id": "Q3",
+            "json_pointer": "/open_questions/2",
+            "note": "The capsule already identifies this as a high-impact, blocking question.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "What scale is required (approx. number of notes and total size), to choose an indexing/search approach and performance targets?"
+          },
+          {
+            "artifact_ref": "capsule",
+            "entity_id": null,
+            "json_pointer": "/goals/2",
+            "note": "The search goal's implementation depends on the scale.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Provide full-text search across generated content in the static site."
+          },
+          {
+            "artifact_ref": "capsule",
+            "entity_id": "A4",
+            "json_pointer": "/assumptions/3",
+            "note": "The assumption of client-side search makes performance at scale a key concern.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Search will be implemented client-side (e.g., a prebuilt index shipped with the site) to keep the output fully static."
+          }
+        ]
+      },
+      {
+        "id": "QX03",
+        "text": "What form should the software take? Should it be a command-line tool (e.g., `build-site .`), a graphical desktop application, or a library for programmatic use?",
+        "impact": "high",
+        "blocking": true,
+        "rationale": "The choice between a CLI, GUI, or library fundamentally changes the project's architecture, user experience, and implementation scope.",
+        "evidence": [
+          {
+            "artifact_ref": "capsule",
+            "entity_id": "Q10",
+            "json_pointer": "/open_questions/9",
+            "note": "The capsule already identifies this as a blocking question.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Should the tool run as a CLI, GUI application, or build script integration?"
+          },
+          {
+            "artifact_ref": "capsule",
+            "entity_id": "A5",
+            "json_pointer": "/assumptions/4",
+            "note": "The capsule makes a medium-confidence assumption that a CLI is acceptable, which needs to be confirmed.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "A command-line build workflow is acceptable (run a build command to generate the site)."
+          }
+        ]
+      },
+      {
+        "id": "QX6",
+        "text": "What is the required delivery/UX for running the generator (CLI command only vs additional watch mode/local preview), and should builds be incremental (only rebuild changed notes)?",
+        "impact": "medium",
+        "blocking": true,
+        "rationale": "This sets expectations for developer experience and implementation complexity. If unanswered, assume: CLI-only build command is sufficient; no incremental build required for v1; optional watch mode deferred.",
+        "evidence": [
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q10",
+            "json_pointer": "/inputs/project_capsule/open_questions/9/text",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Should the tool run as a CLI, GUI application, or build script integration?"
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q7",
+            "json_pointer": "/inputs/project_capsule/open_questions/6/text",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Should the build be incremental (only rebuild changed notes) and/or provide a watch mode for local preview?"
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "A5",
+            "json_pointer": "/inputs/project_capsule/assumptions/4/text",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "A command-line build workflow is acceptable (run a build command to generate the site)."
+          }
+        ]
+      },
+      {
+        "id": "QX5",
+        "text": "What is the hosting/deployment target (local file browsing vs GitHub Pages/Netlify/etc.), and are there constraints on base URL (subpath hosting), clean URLs (/, /note/ vs /note.html), and asset paths?",
+        "impact": "medium",
+        "blocking": false,
+        "rationale": "Hosting choice affects routing strategy, relative paths, and whether clean URLs are feasible. If unanswered, assume: GitHub Pages-style subpath hosting is possible; emit relative URLs and use /note.html-style pages for maximum compatibility without server rewrites.",
+        "evidence": [
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q5",
+            "json_pointer": "/inputs/project_capsule/open_questions/4/text",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "What hosting/deployment target is expected (local file browsing, GitHub Pages, Netlify, other), and are there constraints on relative paths/base URLs?"
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "CNS1",
+            "json_pointer": "/inputs/project_capsule/constraints/0/text",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Output must be static HTML/CSS/JS that can be hosted on any web server"
+          }
+        ]
+      }
+    ],
+    "assumptions": [
+      {
+        "id": "AX1",
+        "text": "The input notes will adhere to GitHub Flavored Markdown (GFM) as the base standard for rendering (supporting tables, task lists, etc.).",
+        "impact": "medium",
+        "confidence": "high",
+        "needs_confirmation": false
+      },
+      {
+        "id": "AX2",
+        "text": "Search functionality will be implemented client-side using a pre-built index, suited for static hosting.",
+        "impact": "high",
+        "confidence": "medium",
+        "needs_confirmation": true
+      },
+      {
+        "id": "AX3",
+        "text": "The target scale for the notebook is personal or small-group use (e.g., < 5,000 notes), allowing for in-browser search indexing without performance issues.",
+        "impact": "medium",
+        "confidence": "medium",
+        "needs_confirmation": true
+      },
+      {
+        "id": "AX4",
+        "text": "The output structure will use relative paths suitable for hosting on any generic static file server (GitHub Pages, Netlify, S3) without specific server-side mapping config.",
+        "impact": "low",
+        "confidence": "high",
+        "needs_confirmation": false
+      },
+      {
+        "id": "AX01",
+        "text": "In the absence of a specific convention, we will assume support for standard Markdown relative path links (e.g., `[text](./note.md)`) and tags defined in a YAML frontmatter `tags` list.",
+        "impact": "high",
+        "confidence": "low",
+        "needs_confirmation": true
+      },
+      {
+        "id": "AX02",
+        "text": "In the absence of a specified count, we will design for a moderate scale of up to 1,000-2,000 notes, using a lightweight client-side search library (e.g., Lunr.js, FlexSearch).",
+        "impact": "high",
+        "confidence": "low",
+        "needs_confirmation": true
+      },
+      {
+        "id": "AX03",
+        "text": "In the absence of a specified format, we will proceed with creating a command-line interface (CLI) tool, as this is common for static site generators and was listed as an acceptable assumption.",
+        "impact": "medium",
+        "confidence": "medium",
+        "needs_confirmation": true
+      }
+    ],
+    "notes": [
+      "Fallback assumptions are embedded in each question’s rationale to allow implementation to proceed if answers are not provided.",
+      "Questions selected prioritize link/tag conventions, scale, and information architecture because they directly determine parsing rules, URL design, index/search strategy, and required templates.",
+      "Consolidated detailed syntax questions (Q1, Q2) into QX1 to unblock the parser design.",
+      "Elevated CLI vs GUI decision to QX2 as it drastically changes the implementation effort.",
+      "Assumed GFM (AX1) to avoid asking low-impact configuration questions at this stage.",
+      "Assumed moderate scale (AX3) to validate the client-side search approach (AX2)."
+    ]
+  }
+}

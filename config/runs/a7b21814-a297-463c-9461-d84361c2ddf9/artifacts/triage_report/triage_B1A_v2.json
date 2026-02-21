@@ -1,0 +1,496 @@
+{
+  "artifact_type": "triage_report",
+  "artifact_id": "triage_B1A_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:50:27.393746Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B1A_v2",
+    "validator_B1A_v2"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B1A_v2",
+    "critic_id": "MERGED",
+    "verdict": "reject",
+    "defects": [
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Hard-gate id_integrity failure: architecture option risk lists reference non-existent risk-register IDs/entries (strings that are not present in /risk_register), breaking referential integrity.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": "O1",
+            "json_pointer": "/plan_package/architecture/options/0/risks",
+            "note": "O1 risks are free-text strings; validator expects references that exist in the risk register.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": "O2",
+            "json_pointer": "/plan_package/architecture/options/1/risks",
+            "note": "O2 risks are free-text strings not represented as risk-register entries.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": "O3",
+            "json_pointer": "/plan_package/architecture/options/2/risks",
+            "note": "O3 risks are free-text strings not represented as risk-register entries.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": "O4",
+            "json_pointer": "/plan_package/architecture/options/3/risks",
+            "note": "O4 risks are free-text strings not represented as risk-register entries.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": null,
+            "json_pointer": "/plan_package/risk_register",
+            "note": "Risk register contains K1..K23 but does not include the architecture option risk strings as entries.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/options/0/risks",
+            "value": []
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/options/1/risks",
+            "value": []
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/options/2/risks",
+            "value": []
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/options/3/risks",
+            "value": []
+          },
+          {
+            "type": "patch_hint",
+            "recommendation": "If architecture-option risk text must be preserved, reroute to a role allowed to mint new risk IDs (K*) and add corresponding risk_register entries; then reference those IDs from architecture options."
+          }
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Hard-gate risk_closure failure: critical risk K8 (privacy leakage) has no recorded mitigation/closure in the risk register, despite DEC8 asserting a mitigation posture.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": "K8",
+            "json_pointer": "/plan_package/risk_register/7",
+            "note": "K8 is critical severity with mitigation=null and acceptance=null.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": "DEC8",
+            "json_pointer": "/plan_package/decision_log/7/choice",
+            "note": "DEC8 states K8 will be handled via documentation/build-time messaging, but the risk register does not reflect this.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Treat privacy leakage (K8) as a documented/UX-mitigated risk: add prominent documentation and build-time messaging reminding users that generated output may be public; do not implement access control "
+          }
+        ],
+        "violated_gate": "risk_closure",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/risk_register/7/mitigation",
+            "value": {
+              "text": "Mitigate via explicit documentation + build-time messaging: warn prominently that generated static output may be published publicly; provide deployment checklist guidance; do not add access control (non-goal).",
+              "owner": "pm",
+              "status": "planned"
+            }
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "Decision-log evidence pointers are internally inconsistent with this plan_candidate’s structure (invalid JSON Pointers like \"/options\" and \"/requirements/requirements\"), breaking traceability.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": "DEC1",
+            "json_pointer": "/plan_package/decision_log/0/evidence_pointers/0/json_pointer",
+            "note": "Points to \"/options\" while this candidate’s architecture options live under /plan_package/architecture/options.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "/options"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": "DEC1",
+            "json_pointer": "/plan_package/decision_log/0/evidence_pointers/1/json_pointer",
+            "note": "Points to \"/requirements/requirements\" while this candidate’s requirements array is at /plan_package/requirements.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "/requirements/requirements"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": null,
+            "json_pointer": "/plan_package/architecture/options",
+            "note": "Actual architecture options location in this candidate.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": null,
+            "json_pointer": "/plan_package/requirements",
+            "note": "Actual requirements location in this candidate.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency_findings",
+        "patch": [
+          {
+            "type": "patch_hint",
+            "recommendation": "Update decision_log evidence_pointers to valid RFC6901 paths for the referenced artifacts. Safe local repair option: point evidence_pointers to this plan_candidate (artifact_ref=plan_candidate_B1A_v2) and use /plan_package/... paths."
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/0/evidence_pointers/0/artifact_ref",
+            "value": "plan_candidate_B1A_v2"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/0/evidence_pointers/0/json_pointer",
+            "value": "/plan_package/architecture/options/0"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/0/evidence_pointers/1/artifact_ref",
+            "value": "plan_candidate_B1A_v2"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/0/evidence_pointers/1/json_pointer",
+            "value": "/plan_package/requirements/1"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/1/evidence_pointers/0/artifact_ref",
+            "value": "plan_candidate_B1A_v2"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/1/evidence_pointers/0/json_pointer",
+            "value": "/plan_package/requirements/8"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/1/evidence_pointers/1/artifact_ref",
+            "value": "plan_candidate_B1A_v2"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/1/evidence_pointers/1/json_pointer",
+            "value": "/plan_package/risk_register/9"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/1/evidence_pointers/2/artifact_ref",
+            "value": "plan_candidate_B1A_v2"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/1/evidence_pointers/2/json_pointer",
+            "value": "/plan_package/risk_register/19"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/2/evidence_pointers/0/artifact_ref",
+            "value": "plan_candidate_B1A_v2"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/2/evidence_pointers/0/json_pointer",
+            "value": "/plan_package/requirements/8"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/2/evidence_pointers/1/artifact_ref",
+            "value": "plan_candidate_B1A_v2"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/2/evidence_pointers/1/json_pointer",
+            "value": "/plan_package/requirements/17"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/2/evidence_pointers/2/artifact_ref",
+            "value": "plan_candidate_B1A_v2"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/2/evidence_pointers/2/json_pointer",
+            "value": "/plan_package/project_capsule/open_questions/0"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/2/evidence_pointers/3/artifact_ref",
+            "value": "plan_candidate_B1A_v2"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/2/evidence_pointers/3/json_pointer",
+            "value": "/plan_package/risk_register/1"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/3/evidence_pointers/0/artifact_ref",
+            "value": "plan_candidate_B1A_v2"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/3/evidence_pointers/0/json_pointer",
+            "value": "/plan_package/requirements/10"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/3/evidence_pointers/1/artifact_ref",
+            "value": "plan_candidate_B1A_v2"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/3/evidence_pointers/1/json_pointer",
+            "value": "/plan_package/requirements/15"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/3/evidence_pointers/2/artifact_ref",
+            "value": "plan_candidate_B1A_v2"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/3/evidence_pointers/2/json_pointer",
+            "value": "/plan_package/project_capsule/open_questions/1"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/3/evidence_pointers/3/artifact_ref",
+            "value": "plan_candidate_B1A_v2"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/3/evidence_pointers/3/json_pointer",
+            "value": "/plan_package/risk_register/2"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/4/evidence_pointers/0/artifact_ref",
+            "value": "plan_candidate_B1A_v2"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/4/evidence_pointers/0/json_pointer",
+            "value": "/plan_package/requirements/6"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/4/evidence_pointers/1/artifact_ref",
+            "value": "plan_candidate_B1A_v2"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/4/evidence_pointers/1/json_pointer",
+            "value": "/plan_package/requirements/7"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/4/evidence_pointers/2/artifact_ref",
+            "value": "plan_candidate_B1A_v2"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/4/evidence_pointers/2/json_pointer",
+            "value": "/plan_package/project_capsule/open_questions/2"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/4/evidence_pointers/3/artifact_ref",
+            "value": "plan_candidate_B1A_v2"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/4/evidence_pointers/3/json_pointer",
+            "value": "/plan_package/risk_register/4"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/5/evidence_pointers/0/artifact_ref",
+            "value": "plan_candidate_B1A_v2"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/5/evidence_pointers/0/json_pointer",
+            "value": "/plan_package/risk_register/6"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/5/evidence_pointers/1/artifact_ref",
+            "value": "plan_candidate_B1A_v2"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/5/evidence_pointers/1/json_pointer",
+            "value": "/plan_package/requirements/13"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/6/evidence_pointers/0/artifact_ref",
+            "value": "plan_candidate_B1A_v2"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/6/evidence_pointers/0/json_pointer",
+            "value": "/plan_package/requirements/18"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/6/evidence_pointers/1/artifact_ref",
+            "value": "plan_candidate_B1A_v2"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/6/evidence_pointers/1/json_pointer",
+            "value": "/plan_package/risk_register/12"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/6/evidence_pointers/2/artifact_ref",
+            "value": "plan_candidate_B1A_v2"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/6/evidence_pointers/2/json_pointer",
+            "value": "/plan_package/project_capsule/open_questions/4"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/7/evidence_pointers/0/artifact_ref",
+            "value": "plan_candidate_B1A_v2"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/7/evidence_pointers/0/json_pointer",
+            "value": "/plan_package/risk_register/7"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/7/evidence_pointers/1/artifact_ref",
+            "value": "plan_candidate_B1A_v2"
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/decision_log/7/evidence_pointers/1/json_pointer",
+            "value": "/plan_package/project_capsule/non_goals"
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Acceptance test AT7 may be unexecutable as written: it requires 'network disabled' while the architecture requires the browser to fetch the shipped search index asset from the static output.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": "AT7",
+            "json_pointer": "/plan_package/acceptance_tests/6/procedure",
+            "note": "AT7 procedure includes 'network disabled'.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Build the site for a fixture dataset with known terms in note titles and bodies. Open the site in a browser with network disabled or using a static file server that blocks outbound requests."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": "IF8",
+            "json_pointer": "/plan_package/architecture/options/0/interfaces/7/contract",
+            "note": "Client runtime expects to fetch the index asset from the static output.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Browser fetches search index asset(s) from the static output (e.g., GET /search-index.json)"
+          }
+        ],
+        "violated_gate": "consistency_findings",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/acceptance_tests/6/procedure",
+            "value": "Build the site for a fixture dataset with known terms in note titles and bodies. Serve the output with a static file server (same-origin). Open the site in a browser and verify that search works entirely client-side: (a) no requests to non-local/non-output origins occur during search, and (b) search continues to work when the browser is offline AFTER the site and shipped index asset(s) have been loaded (e.g., reload once online to prime cache, then toggle offline and perform searches without outbound requests)."
+          }
+        ]
+      },
+      {
+        "label": "note",
+        "severity": "medium",
+        "summary": "Risk K6 (malformed YAML front matter causing build failure) has no mitigation recorded, while M1/DL5 promises per-file parse failure handling and references K6; clarify/record intended handling policy in the risk register.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": "K6",
+            "json_pointer": "/plan_package/risk_register/5",
+            "note": "K6 mitigation is null.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": "DL5",
+            "json_pointer": "/plan_package/milestones/0/deliverables/4/text",
+            "note": "DL5 references per-file parse failures and cites K6.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Clear, actionable error handling for invalid paths/config and per-file parse failures; build summary with counts and warnings (R6, K22, K6)."
+          }
+        ],
+        "violated_gate": "completeness_heuristic",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/risk_register/5/mitigation",
+            "value": {
+              "text": "Treat front-matter parse errors as per-file recoverable by default: emit a warning with file path and error detail; continue build while omitting invalid metadata (or fall back to no front matter). Provide an optional strict mode to fail the build on YAML errors.",
+              "owner": "eng",
+              "status": "planned"
+            }
+          }
+        ]
+      }
+    ],
+    "reroute_target": "synthesizer",
+    "reroute_reason": "Validator hard-gate failures require synthesizer repair: (1) id_integrity check failed with 12 violations - architecture options O1-O4 reference risk descriptions in their 'risks' arrays that do not correspond to any risk_register entry IDs (e.g., 'Large collections can lead to high memory usage...' is prose, not a risk ID like K4). (2) risk_closure check failed - critical risk K8 has null mitigation/acceptance despite being addressed in DEC8. These structural defects cannot be patched in-place without minting new risk IDs or rewriting architecture option risk arrays, which exceeds triage critic authority. Consistency findings CS1-CS6 also indicate schema/structure mismatches (evidence pointers using wrong JSON Pointer paths, AT2/AT7 procedure gaps, missing mitigation records) that require synthesizer-level correction to ensure canonical integrity before freeze."
+  }
+}

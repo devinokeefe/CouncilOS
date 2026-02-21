@@ -1,0 +1,94 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B2A_anchor_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:09:32.744066Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "plan_candidate_B2A_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2A_v1",
+    "findings": [
+      {
+        "id": "TG1",
+        "severity": "high",
+        "summary": "Deterministic sample checks for R1/R2/R3 claim milestone coverage in both M1 and M2, but M1 deliverables/exit criteria are foundation-only and do not implement recursive file discovery, static site output, or Markdown rendering; substantive capability appears in M2. This overstates trace coverage for the sampled requirements.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": null,
+            "json_pointer": "/inputs/deterministic_sample_checks/0/milestones",
+            "note": "Sample check for R1 includes M1.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "\"milestones\": [\"M1\", \"M2\"]"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "M1",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/0/deliverables",
+            "note": "M1 deliverables are orchestrator/context/plugin ordering/test harness/security stub; no collector/parser/renderer implementation.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Core Orchestrator ... Plugin API ... shared build-context schema ... dependency/ordering ... test harness ... Security-by-default renderer policy stub"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "M2",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/1/deliverables",
+            "note": "M2 introduces collector, parser, and renderer needed for R1/R2/R3.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "File Collector plugin ... Markdown Parser plugin ... Renderer/Theme plugin ... CLI command surface"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": null,
+            "json_pointer": "/inputs/deterministic_sample_checks/1/milestones",
+            "note": "Sample check for R2 includes M1.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "\"milestones\": [\"M1\", \"M2\"]"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": null,
+            "json_pointer": "/inputs/deterministic_sample_checks/2/milestones",
+            "note": "Sample check for R3 includes M1.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "\"milestones\": [\"M1\", \"M2\"]"
+          }
+        ],
+        "routing_target": "Review:TechLead+EngineeringLead"
+      },
+      {
+        "id": "TG2",
+        "severity": "medium",
+        "summary": "R3→AT3 relies on “selected Markdown flavor” but the flavor/link dialect decision remains an open question (Q1). As written, AT3 pass criteria can be ambiguous without pinning the flavor/extensions set first, weakening the sampled trace’s determinism.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "AT3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/acceptance_tests/2/procedure",
+            "note": "AT3 references the selected Markdown flavor but does not define it here.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Prepare notes ... and tables per the selected Markdown flavor. Build the site and visually compare rendered HTML output to expected formatting."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "Q1",
+            "json_pointer": "/inputs/plan_candidate/plan_package/project_capsule/open_questions/0",
+            "note": "Blocking open question about Markdown flavor/link syntax remains unresolved.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "What Markdown flavor and internal link syntax should be supported for links/backlinks (CommonMark/GFM; ...)?"
+          }
+        ],
+        "routing_target": "HITL:ProductOwner+TechLead"
+      }
+    ]
+  }
+}

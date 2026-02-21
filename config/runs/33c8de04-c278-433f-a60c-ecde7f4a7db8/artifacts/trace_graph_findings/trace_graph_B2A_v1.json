@@ -1,0 +1,323 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B2A_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:09:53.268814Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "trace_graph_B2A_primary_v1",
+    "trace_graph_B2A_anchor_v1",
+    "trace_graph_B2A_fallback_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2A_v1",
+    "findings": [
+      {
+        "id": "TG-1",
+        "severity": "medium",
+        "summary": "Validation of Requirement R2 (Static Site Output) via Acceptance Test AT2 is delayed to Milestone M4, leaving the core static-site constraint unverified in Milestone M2 where the renderer is delivered.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/exit_criteria/0",
+            "note": "Milestone M2 exit criteria validates AT13 (build success) but omits AT2 (static hosting functional verification).",
+            "candidate_id": "B2A",
+            "artifact_id": "0c048aa4-831a-4fde-b450-818544f67fb9",
+            "quote": "AT1 (recursive discovery), AT4 (stable URLs), AT10 (offline CLI invocation), and AT13 (build completes and outputs static files) are runnable and pass on a small representative fixture set."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "M4",
+            "json_pointer": "/plan_package/milestones/3/exit_criteria/0",
+            "note": "AT2 is explicitly deferred to Milestone M4.",
+            "candidate_id": "B2A",
+            "artifact_id": "0c048aa4-831a-4fde-b450-818544f67fb9",
+            "quote": "AT5 (client-side search offline), AT2 (static hosting behavior), AT11 (modern browsers), and AT12 (≥90% queries in top 10) pass on the representative dataset."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "DL8",
+            "json_pointer": "/plan_package/milestones/1/deliverables/2",
+            "note": "Rendering capability (R2 implementation) is delivered in M2 (DL8), creating a gap between delivery and validation.",
+            "candidate_id": "B2A",
+            "artifact_id": "0c048aa4-831a-4fde-b450-818544f67fb9",
+            "quote": "Renderer/Theme plugin (C14) producing one stable URL/page per note plus minimal home/index page; copies static assets (CSS/JS) to output."
+          }
+        ],
+        "routing_target": "Plan_Author"
+      },
+      {
+        "id": "TG1",
+        "severity": "high",
+        "summary": "Deterministic sample checks for R1/R2/R3 claim milestone coverage in both M1 and M2, but M1 deliverables/exit criteria are foundation-only and do not implement recursive file discovery, static site output, or Markdown rendering; substantive capability appears in M2. This overstates trace coverage for the sampled requirements.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": null,
+            "json_pointer": "/inputs/deterministic_sample_checks/0/milestones",
+            "note": "Sample check for R1 includes M1.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "\"milestones\": [\"M1\", \"M2\"]"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "M1",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/0/deliverables",
+            "note": "M1 deliverables are orchestrator/context/plugin ordering/test harness/security stub; no collector/parser/renderer implementation.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Core Orchestrator ... Plugin API ... shared build-context schema ... dependency/ordering ... test harness ... Security-by-default renderer policy stub"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "M2",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/1/deliverables",
+            "note": "M2 introduces collector, parser, and renderer needed for R1/R2/R3.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "File Collector plugin ... Markdown Parser plugin ... Renderer/Theme plugin ... CLI command surface"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": null,
+            "json_pointer": "/inputs/deterministic_sample_checks/1/milestones",
+            "note": "Sample check for R2 includes M1.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "\"milestones\": [\"M1\", \"M2\"]"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": null,
+            "json_pointer": "/inputs/deterministic_sample_checks/2/milestones",
+            "note": "Sample check for R3 includes M1.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "\"milestones\": [\"M1\", \"M2\"]"
+          }
+        ],
+        "routing_target": "Review:TechLead+EngineeringLead"
+      },
+      {
+        "id": "TG2",
+        "severity": "medium",
+        "summary": "R3→AT3 relies on “selected Markdown flavor” but the flavor/link dialect decision remains an open question (Q1). As written, AT3 pass criteria can be ambiguous without pinning the flavor/extensions set first, weakening the sampled trace’s determinism.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "AT3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/acceptance_tests/2/procedure",
+            "note": "AT3 references the selected Markdown flavor but does not define it here.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Prepare notes ... and tables per the selected Markdown flavor. Build the site and visually compare rendered HTML output to expected formatting."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "Q1",
+            "json_pointer": "/inputs/plan_candidate/plan_package/project_capsule/open_questions/0",
+            "note": "Blocking open question about Markdown flavor/link syntax remains unresolved.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "What Markdown flavor and internal link syntax should be supported for links/backlinks (CommonMark/GFM; ...)?"
+          }
+        ],
+        "routing_target": "HITL:ProductOwner+TechLead"
+      },
+      {
+        "id": "TG001",
+        "severity": "high",
+        "summary": "R1 milestone coverage incomplete: M1 does not deliver file collection capability required by R1",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "R1",
+            "json_pointer": "/plan_package/requirements/0",
+            "note": "R1 requires recursive Markdown file discovery",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "MUST accept a user-specified folder... and recursively discover Markdown (.md) files"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0",
+            "note": "M1 deliverables do not include file collector plugin",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Core Orchestrator (C8) skeleton with deterministic lifecycle hook execution"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/deliverables/0",
+            "note": "File collector first appears in M2",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "File Collector plugin (C9) implementing recursive .md discovery"
+          }
+        ],
+        "routing_target": "Review:TechLead"
+      },
+      {
+        "id": "TG002",
+        "severity": "medium",
+        "summary": "AT1 cannot execute in M1 as claimed: test requires file collector which is not delivered until M2",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "AT1",
+            "json_pointer": "/plan_package/acceptance_tests/0",
+            "note": "AT1 tests recursive discovery of .md files",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Create a test input directory with nested subfolders containing .md files"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/exit_criteria",
+            "note": "M1 exit criteria reference no-op/reference plugins only",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "A minimal pipeline run executes all lifecycle hooks... with no-op/reference plugins"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/exit_criteria/0",
+            "note": "AT1 first becomes executable in M2",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "AT1 (recursive discovery)... are runnable and pass"
+          }
+        ],
+        "routing_target": "Review:TechLead"
+      },
+      {
+        "id": "TG003",
+        "severity": "high",
+        "summary": "R2 milestone coverage incomplete: M1 does not deliver renderer required to produce static output per R2",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "R2",
+            "json_pointer": "/plan_package/requirements/1",
+            "note": "R2 requires generation of static website output",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "MUST generate a static website output consisting only of static files"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/deliverables",
+            "note": "M1 has no renderer deliverable",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Core Orchestrator (C8) skeleton... Plugin dependency/ordering mechanism"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/deliverables/2",
+            "note": "Renderer first appears in M2",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Renderer/Theme plugin (C14) producing one stable URL/page per note"
+          }
+        ],
+        "routing_target": "Review:TechLead"
+      },
+      {
+        "id": "TG004",
+        "severity": "medium",
+        "summary": "AT2 cannot execute in M1: test requires static output generation which is not delivered until M2",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "AT2",
+            "json_pointer": "/plan_package/acceptance_tests/1",
+            "note": "AT2 tests static output generation",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Run the build on a representative notes folder. Inspect the output directory contents"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/exit_criteria/1",
+            "note": "AT2 first becomes executable in M2 (implicitly via M4 reference)",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "AT1 (recursive discovery), AT4 (stable URLs), AT10 (offline CLI invocation), and AT13"
+          }
+        ],
+        "routing_target": "Review:TechLead"
+      },
+      {
+        "id": "TG005",
+        "severity": "high",
+        "summary": "R3 milestone coverage incomplete: M1 does not deliver Markdown parser required by R3",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "R3",
+            "json_pointer": "/plan_package/requirements/2",
+            "note": "R3 requires Markdown parsing and rendering",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "MUST parse and render each input Markdown file into a corresponding static HTML page"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/deliverables",
+            "note": "M1 has no parser deliverable",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Core Orchestrator (C8) skeleton... Plugin dependency/ordering mechanism"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/deliverables/1",
+            "note": "Parser first appears in M2",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Markdown Parser plugin (C10) implementing baseline Markdown flavor support"
+          }
+        ],
+        "routing_target": "Review:TechLead"
+      },
+      {
+        "id": "TG006",
+        "severity": "medium",
+        "summary": "AT3 cannot execute in M1: test requires Markdown rendering which is not delivered until M2",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "AT3",
+            "json_pointer": "/plan_package/acceptance_tests/2",
+            "note": "AT3 tests Markdown rendering correctness",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Prepare notes covering headings, lists, code blocks... Build the site and visually compare rendered HTML"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/exit_criteria/1",
+            "note": "AT3 first becomes executable in M2",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "AT3 (Markdown render correctness) passes for the selected baseline elements"
+          }
+        ],
+        "routing_target": "Review:TechLead"
+      }
+    ]
+  }
+}

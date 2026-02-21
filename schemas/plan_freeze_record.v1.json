@@ -1,0 +1,84 @@
+{
+  "title": "PlanFreezeRecord",
+  "type": "object",
+  "additionalProperties": false,
+  "$defs": {
+    "HandoffArtifactRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "path": {"type": "string"},
+        "sha256": {"type": "string"}
+      },
+      "required": ["path", "sha256"]
+    },
+    "PlanFreezeRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ref": {"type": "string"},
+        "hash": {"type": "string"}
+      },
+      "required": ["ref", "hash"]
+    }
+  },
+  "properties": {
+    "schema_version": {"type": "string"},
+    "plan_id": {"type": "string"},
+    "planning_run_id": {"type": "string"},
+    "frozen_at": {"type": "string"},
+    "plan_package_final_ref": {"$ref": "#/$defs/HandoffArtifactRef"},
+    "plan_content_hash": {"type": "string"},
+    "hash_spec_version": {"type": ["string", "null"]},
+    "selected_draft_ref": {"type": ["string", "null"]},
+    "selected_draft_hash": {"type": ["string", "null"]},
+    "interactive_flags": {"type": "object"},
+    "clarification_resolutions_ref": {"anyOf": [{"$ref": "#/$defs/HandoffArtifactRef"}, {"type": "null"}]},
+    "plan_approval_ref": {"anyOf": [{"$ref": "#/$defs/HandoffArtifactRef"}, {"type": "null"}]},
+    "approved_plan_hash": {"type": ["string", "null"]},
+    "repo_snapshot_ref": {"anyOf": [{"$ref": "#/$defs/HandoffArtifactRef"}, {"type": "null"}]},
+    "env_snapshot_ref": {"anyOf": [{"$ref": "#/$defs/HandoffArtifactRef"}, {"type": "null"}]},
+    "hash_spec_ref": {"anyOf": [{"$ref": "#/$defs/HandoffArtifactRef"}, {"type": "null"}]},
+    "config_snapshot_ref": {"$ref": "#/$defs/HandoffArtifactRef"},
+    "human_feedback_bundle_ref": {"$ref": "#/$defs/HandoffArtifactRef"},
+    "refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "config_snapshot": {"anyOf": [{"$ref": "#/$defs/PlanFreezeRef"}, {"type": "null"}]},
+        "clarifications": {"anyOf": [{"$ref": "#/$defs/PlanFreezeRef"}, {"type": "null"}]},
+        "approval": {"anyOf": [{"$ref": "#/$defs/PlanFreezeRef"}, {"type": "null"}]},
+        "repo_snapshot": {"anyOf": [{"$ref": "#/$defs/PlanFreezeRef"}, {"type": "null"}]},
+        "env_snapshot": {"anyOf": [{"$ref": "#/$defs/PlanFreezeRef"}, {"type": "null"}]},
+        "hash_spec": {"anyOf": [{"$ref": "#/$defs/PlanFreezeRef"}, {"type": "null"}]}
+      },
+      "required": [
+        "config_snapshot",
+        "clarifications",
+        "approval",
+        "repo_snapshot",
+        "env_snapshot",
+        "hash_spec"
+      ]
+    },
+    "notes": {"type": ["string", "null"]}
+  },
+  "required": [
+    "schema_version",
+    "plan_id",
+    "planning_run_id",
+    "frozen_at",
+    "plan_package_final_ref",
+    "plan_content_hash",
+    "hash_spec_version",
+    "selected_draft_ref",
+    "selected_draft_hash",
+    "interactive_flags",
+    "config_snapshot_ref",
+    "human_feedback_bundle_ref",
+    "repo_snapshot_ref",
+    "env_snapshot_ref",
+    "hash_spec_ref",
+    "refs"
+  ]
+}

@@ -1,0 +1,94 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B2A_primary_v3",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:17:29.418428Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "plan_candidate_B2A_v3"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2A_v3",
+    "findings": [
+      {
+        "id": "TG-001",
+        "severity": "high",
+        "summary": "Logical unavailability of HTML output prevents satisfying AT3 in Milestone M2.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "M2",
+            "json_pointer": "/plan_candidate/milestones/1/exit_criteria/1",
+            "note": "Milestone M2 exit criteria claims AT3 (HTML visual comparison) passed.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "AT3 passes for the selected baseline Markdown features on the fixture set."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "AT3",
+            "json_pointer": "/plan_candidate/acceptance_tests/2/procedure",
+            "note": "AT3 requires visual comparison of rendered HTML output.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Build the site and visually compare rendered HTML output to expected formatting."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "DL10",
+            "json_pointer": "/plan_candidate/milestones/2/deliverables/2",
+            "note": "The Renderer/Theme Plugin (C14) capable of rendering pages is not delivered until Milestone M3 (DL10).",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Renderer/Theme Plugin skeleton (C14) capable of rendering note pages..."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "DL6",
+            "json_pointer": "/plan_candidate/milestones/1/deliverables/1",
+            "note": "M2 only produces the Markdown Parser (DL6) which emits AST/plain-text, not HTML.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "emits AST/plain-text for indexing"
+          }
+        ],
+        "routing_target": "plan.milestones"
+      },
+      {
+        "id": "TG-002",
+        "severity": "medium",
+        "summary": "Requirement R2 (Static Output) is not satisfied within the sample check's target milestones (M1/M2).",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "M1",
+            "json_pointer": "/plan_candidate/milestones/0/exit_criteria/0",
+            "note": "Milestone M1 explicit criteria states no pages are rendered yet.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "produce a build manifest (even if no pages are rendered yet)"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "AT2",
+            "json_pointer": "/plan_candidate/milestones/4/exit_criteria/0",
+            "note": "Full validation of R2 via AT2 is deferred to Milestone M5.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "AT2 and AT13 pass on a representative notes folder (static output only; build completes without errors)."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "DL10",
+            "json_pointer": "/plan_candidate/milestones/2/deliverables/2",
+            "note": "The capability to render static pages (R2, R3) is provided in M3, outside the sample check's requested window (M1, M2).",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Renderer/Theme Plugin skeleton (C14) capable of rendering note pages... (R2/R10/R8)"
+          }
+        ],
+        "routing_target": "plan.milestones"
+      }
+    ]
+  }
+}

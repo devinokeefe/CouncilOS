@@ -52,7 +52,7 @@ from council_os.implementation.schemas import (
     WorkGraphPayload,
     WorkGraphTask,
 )
-from council_os.handoff.hashing import artifact_hash, plan_content_hash
+from council_os.handoff.hashing import artifact_hash, default_hash_spec, plan_content_hash
 from council_os.handoff.schemas import (
     ApprovalRef,
     ClarificationsRef,
@@ -188,6 +188,39 @@ def _write_handoff_bundle(
     human_feedback_path = planning_root / "human_feedback_bundle.json"
     human_feedback_path.write_text(human_feedback.model_dump_json(), encoding="utf-8")
 
+    artifacts_root = planning_root / "artifacts"
+    artifacts_root.mkdir(parents=True, exist_ok=True)
+    hash_spec = default_hash_spec().model_dump()
+    (planning_root / "hash_spec.json").write_text(json.dumps(hash_spec, sort_keys=True), encoding="utf-8")
+    (artifacts_root / "hash_spec.json").write_text(json.dumps(hash_spec, sort_keys=True), encoding="utf-8")
+    env_snapshot = {
+        "schema_version": "env_snapshot.v1",
+        "captured_at": "2026-02-19T00:00:00Z",
+        "platform": "test",
+        "python_version": "3.12.0",
+        "python_executable": "python",
+        "runtime": {"implementation": "cpython"},
+        "notes": [],
+    }
+    (planning_root / "env_snapshot.json").write_text(json.dumps(env_snapshot, sort_keys=True), encoding="utf-8")
+    (artifacts_root / "env_snapshot.json").write_text(json.dumps(env_snapshot, sort_keys=True), encoding="utf-8")
+    repo_snapshot_payload = RepoSnapshot(commit_sha="unknown", branch="unknown", dirty=True).model_dump()
+    (artifacts_root / "repo_snapshot.json").write_text(
+        json.dumps(repo_snapshot_payload, sort_keys=True), encoding="utf-8"
+    )
+    hash_spec_ref = HandoffArtifactRef(
+        path="artifacts/hash_spec.json",
+        sha256=artifact_hash(hash_spec),
+    )
+    env_snapshot_ref = HandoffArtifactRef(
+        path="artifacts/env_snapshot.json",
+        sha256=artifact_hash(env_snapshot),
+    )
+    repo_snapshot_ref = HandoffArtifactRef(
+        path="artifacts/repo_snapshot.json",
+        sha256=artifact_hash(repo_snapshot_payload),
+    )
+
     plan_ref = HandoffArtifactRef(path="planning/plan_package_final.json", sha256=artifact_hash(plan_payload))
     config_ref = HandoffArtifactRef(path="planning/config_snapshot.json", sha256=artifact_hash(config_snapshot))
     human_feedback_ref = HandoffArtifactRef(
@@ -200,10 +233,16 @@ def _write_handoff_bundle(
         frozen_at=datetime.now(UTC).isoformat(),
         plan_package_final_ref=plan_ref,
         plan_content_hash=plan_hash,
+        hash_spec_version="1",
+        selected_draft_ref="planning/plan_package_draft_v1.json",
+        selected_draft_hash=plan_hash,
         interactive_flags={"clarify_intent_enabled": False, "plan_review_enabled": False},
         clarification_resolutions_ref=None,
         plan_approval_ref=None,
         approved_plan_hash=None,
+        repo_snapshot_ref=repo_snapshot_ref,
+        env_snapshot_ref=env_snapshot_ref,
+        hash_spec_ref=hash_spec_ref,
         config_snapshot_ref=config_ref,
         human_feedback_bundle_ref=human_feedback_ref,
         notes="test",
@@ -241,6 +280,9 @@ def _write_handoff_bundle(
             plan_ref,
             freeze_ref,
             config_ref,
+            repo_snapshot_ref,
+            env_snapshot_ref,
+            hash_spec_ref,
             repo_context_ref,
             workspace_context_ref,
         ],
@@ -462,6 +504,66 @@ def test_vnext_kernel_artifacts_written(tmp_path: Path) -> None:
     assert list((jobs_root / "run_records").glob("*.jsonl"))
     events_path = run_root / "implementation" / "events.jsonl"
     assert events_path.exists()
+
+
+def test_vnext_change_request_emits_plan_edits(tmp_path: Path) -> None:
+    job_specs = [
+        JobSpecPayload(
+            schema_version="2.1.0",
+            job_id="job_fail",
+            job_type="validate",
+            profile_id="legacy_v1",
+            inputs=[],
+            idempotency_key="vnext:job_fail",
+            budget=None,
+            expected_expectation_ids=["EXP-FAIL"],
+            mock_output={"score": 0.0},
+        )
+    ]
+    expectation_registry = {
+        "schema_version": "2.1.0",
+        "registry_id": "custom",
+        "expectations": [
+            {
+                "expectation_id": "EXP-FAIL",
+                "level": "test",
+                "source": {"type": "CUSTOM", "id": "EXP-FAIL"},
+                "subject": {"kind": "metric", "artifact_type": None, "name": "score"},
+                "oracle": {"type": "metrics_threshold", "metric": "score", "threshold": 1.0},
+                "tolerance": None,
+                "inputs": [],
+                "parents": [],
+                "children": [],
+                "must_exist_before_remote_ops": False,
+            }
+        ],
+    }
+    inputs = _setup_run_inputs(
+        tmp_path,
+        v2_inputs={
+            "job_specs": [job.model_dump() for job in job_specs],
+            "expectation_registry": expectation_registry,
+        },
+    )
+    engine = ImplementationEngine(storage_root=inputs["storage_root"])
+    with pytest.raises(Exception):
+        engine.run(
+            inputs["plan_path"],
+            inputs["repo_context_path"],
+            inputs["workspace_context_path"],
+            inputs["config_path"],
+            inputs["handoff_bundle_path"],
+            allow_repo_override=True,
+        )
+    run_root = _latest_run_root(inputs["storage_root"])
+    change_request_path = run_root / "implementation" / "artifacts" / "change_request_v1.json"
+    assert change_request_path.exists()
+    change_request_payload = json.loads(change_request_path.read_text(encoding="utf-8"))
+    plan_edits_ref = change_request_payload.get("proposed_plan_edits_ref")
+    assert isinstance(plan_edits_ref, str) and plan_edits_ref
+    plan_edits_path = run_root / "implementation" / plan_edits_ref
+    assert plan_edits_path.exists()
+    assert change_request_payload.get("evidence_refs")
 
 
 def test_at24_profiles_enforced_forbidden_dep(tmp_path: Path) -> None:

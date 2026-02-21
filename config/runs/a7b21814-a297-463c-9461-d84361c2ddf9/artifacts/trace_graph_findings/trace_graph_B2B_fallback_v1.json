@@ -1,0 +1,147 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B2B_fallback_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:38:46.875011Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B2B_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2B_v1",
+    "findings": [
+      {
+        "id": "TG001",
+        "severity": "high",
+        "summary": "R1 acceptance test AT1 is not fully satisfied by milestone M1 alone; M1 only delivers ingestion plugin (DL4) but AT1 requires full build completion with output directory creation, which depends on M4 (Emit Plugin C17).",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "R1",
+            "json_pointer": "/plan_package/requirements/0",
+            "note": "R1 requires recursive discovery of .md files and full build execution.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "The system MUST accept a user-specified local directory path as input and recursively discover Markdown files"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "AT1",
+            "json_pointer": "/plan_package/acceptance_tests/0",
+            "note": "AT1 requires CLI build with output directory and build log showing discovered files.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Run the CLI build with the input directory path and a valid output directory path"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0",
+            "note": "M1 delivers ingestion plugin but not full build pipeline or output emission.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Minimal Ingestion Plugin (C11) that scans a directory and populates C10"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "M4",
+            "json_pointer": "/plan_package/milestones/3/deliverables/3",
+            "note": "Emit Plugin (C17) that writes output is delivered in M4, not M1.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Emit Plugin (C17) writing pages and static assets to output directory"
+          }
+        ],
+        "routing_target": "plan_candidate_B2B_v1"
+      },
+      {
+        "id": "TG002",
+        "severity": "high",
+        "summary": "R2 acceptance test AT2 is mapped to milestones M1 and M2, but AT2 requires serving the complete static site with all pages and assets, which cannot be satisfied until M4 (Theme/Template Plugin C15 and Emit Plugin C17) is complete.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "R2",
+            "json_pointer": "/plan_package/requirements/1",
+            "note": "R2 requires complete static output with HTML/CSS/JS that can be served.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "The system MUST generate a static build output consisting only of HTML, CSS, JavaScript"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "AT2",
+            "json_pointer": "/plan_package/acceptance_tests/1",
+            "note": "AT2 requires inspecting output directory and serving the site in a browser.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Serve the output with a simple static file server and open the site in a browser"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1",
+            "note": "M2 delivers Markdown rendering plugin but not page assembly or emission.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Markdown Render Plugin (C14) with CommonMark-compliant parsing and HTML generation"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "M4",
+            "json_pointer": "/plan_package/milestones/3",
+            "note": "M4 delivers Theme/Template Plugin and Emit Plugin required for complete static site.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Theme / Template Plugin (C15) rendering per-note pages"
+          }
+        ],
+        "routing_target": "plan_candidate_B2B_v1"
+      },
+      {
+        "id": "TG003",
+        "severity": "high",
+        "summary": "R3 acceptance test AT3 is mapped to milestones M1 and M2, but AT3 requires one-to-one HTML page generation for non-excluded Markdown files, which depends on M4 (Theme/Template Plugin C15 and Emit Plugin C17) to produce actual HTML pages in the output directory.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "R3",
+            "json_pointer": "/plan_package/requirements/2",
+            "note": "R3 requires generating a corresponding HTML page for every non-excluded Markdown file.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "generate a corresponding HTML page for every input Markdown file not explicitly excluded"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "AT3",
+            "json_pointer": "/plan_package/acceptance_tests/2",
+            "note": "AT3 requires counting generated HTML note pages and verifying one-to-one mapping.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Count generated HTML note pages and verify a one-to-one mapping for non-excluded files"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1",
+            "note": "M2 delivers Markdown-to-HTML conversion but not final page generation or emission.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Markdown Render Plugin (C14) with CommonMark-compliant parsing and HTML generation"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "M4",
+            "json_pointer": "/plan_package/milestones/3",
+            "note": "M4 delivers Theme/Template Plugin and Emit Plugin required to produce HTML pages in output.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Theme / Template Plugin (C15) rendering per-note pages"
+          }
+        ],
+        "routing_target": "plan_candidate_B2B_v1"
+      }
+    ]
+  }
+}

@@ -4,7 +4,6 @@ import hashlib
 import json
 import os
 import random
-import subprocess
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -114,7 +113,8 @@ from council_os.orchestrator.feedback.schemas import (
 )
 from council_os.orchestrator.feedback.store import PlanningArtifactStore
 from council_os.orchestrator.feedback.triage import build_clarification_questions, run_preplan_triage
-from council_os.orchestrator.feedback.utils import plan_hash, write_planning_artifact
+from council_os.handoff.hashing import plan_content_hash
+from council_os.orchestrator.feedback.utils import write_planning_artifact
 from council_os.orchestrator.handoff.finalize import build_config_snapshot, finalize_and_write_handoff
 from council_os.orchestrator.tools import (
     EchoTool,
@@ -128,6 +128,7 @@ from council_os.orchestrator.tools import (
 from council_os.orchestrator.triage import apply_repairs, critic_findings, merge_findings, triage_repair_loop
 from council_os.render import render_plan_markdown
 from council_os.validation.failure_modes import analyze_failure_modes, close_open_findings
+from council_os.utils import git_code_version, is_hq_config, model_portfolio_from_roles
 from council_os.validation.validators import validate_candidate
 
 STAGES = [
@@ -142,12 +143,6 @@ STAGES = [
     "judge",
     "freeze",
 ]
-
-
-def _is_hq_config(config: object) -> bool:
-    if not isinstance(config, dict):
-        return False
-    return bool(config.get("stages") and config.get("models") and config.get("providers"))
 
 
 @dataclass(frozen=True)
@@ -204,14 +199,6 @@ class Engine:
         self._llm_semaphore: threading.BoundedSemaphore | None = None
         self._run_lock_path: Path | None = None
         self._llm_timeout_sec: float | None = None
-
-    def _git_code_version(self) -> str:
-        try:
-            commit = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True, stderr=subprocess.DEVNULL).strip()
-            dirty = bool(subprocess.check_output(["git", "status", "--porcelain"], text=True).strip())
-            return f"{commit}:{'dirty' if dirty else 'clean'}"
-        except Exception:
-            return "unknown:dirty"
 
     def _event(
         self,
@@ -418,17 +405,7 @@ class Engine:
             )
 
     def _manifest_model_portfolio(self, role_configs: dict[str, RoleConfig]) -> dict[str, dict[str, object]]:
-        portfolio: dict[str, dict[str, object]] = {}
-        for role_name in sorted(role_configs.keys()):
-            role = role_configs[role_name]
-            portfolio[role_name] = {
-                "provider": role.model_provider,
-                "model": role.model_name,
-                "temperature": role.temperature,
-                "max_tokens": role.max_tokens,
-                "prompt_version_hash": role.prompt_version_hash,
-            }
-        return portfolio
+        return model_portfolio_from_roles(role_configs, sort_keys=True)
 
     def _resolve_max_parallel_llm_calls(self, config: dict[str, object]) -> int:
         runtime_cfg = config.get("runtime", {})
@@ -607,12 +584,16 @@ class Engine:
                 else:
                     resolved_value = raw
                 source = "user"
+            impact = None
+            if question.decision_impact:
+                impact = ", ".join([str(item) for item in question.decision_impact])
             resolved_items.append(
                 {
                     "question_id": question.id,
                     "resolved_value": resolved_value,
                     "source": source,
                     "raw_response": raw,
+                    "impact_assessment": impact,
                 }
             )
         return ClarificationResolutions(schema_version="1.0", resolutions=resolved_items)
@@ -1958,7 +1939,7 @@ class Engine:
     ) -> RunResult:
         config_raw = config_path.read_text(encoding="utf-8")
         config = yaml.safe_load(config_raw)
-        if _is_hq_config(config):
+        if is_hq_config(config):
             pipeline = HQPipeline(
                 storage_root=self.storage_root,
                 config_path=config_path,
@@ -2069,7 +2050,7 @@ class Engine:
                 run_root,
                 ManifestInput(
                     run_id=run_id,
-                    code_version=self._git_code_version(),
+                    code_version=git_code_version(include_dirty=True),
                     schema_versions={"artifacts": schema_version},
                     run_config_version=config_version,
                     stage_machine_version=str(config["stage_machine_version"]),
@@ -3753,7 +3734,7 @@ class Engine:
                         if (
                             approval is None
                             or not approval.approved
-                            or approval.approved_plan_hash != plan_hash(plan_dict)
+                            or approval.approved_plan_hash != plan_content_hash(plan_dict)
                         ):
                             raise RuntimeError("Plan review approval required before freeze")
                 remaining_open_questions = [
@@ -3966,7 +3947,7 @@ class Engine:
             new_run_root,
             ManifestInput(
                 run_id=new_run_id,
-                code_version=self._git_code_version(),
+                code_version=git_code_version(include_dirty=True),
                 schema_versions={"artifacts": schema_version},
                 run_config_version=config_version,
                 stage_machine_version=str(config["stage_machine_version"]),

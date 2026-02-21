@@ -1,0 +1,194 @@
+{
+  "artifact_type": "failure_mode_findings",
+  "artifact_id": "failure_modes_B2B_v3",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T11:04:47.784705Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B2B_v3"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2B_v3",
+    "taxonomy": "taxonomy_categories",
+    "critical_findings": [
+      {
+        "id": "FM1",
+        "category": "SECURITY_PRIVACY:DATA_LEAKAGE",
+        "severity": "critical",
+        "finding": "Private/sensitive notes can be unintentionally published because output is static (no runtime access control) and the canonical risk register currently has K8 with no mitigation; a single missed exclusion can leak content publicly on common hosts.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "risk_gov_canonical_v1:/risk_register/7 (K8 mitigation=null); capsule_canonical_v1:/non_goals/2 (no auth/access control); architecture_canonical_v1:/options/1/summary (static output); plan_candidate_B2B_v3:/milestones/0/deliverables/6 (DL7 proposes exclusion but not yet canonicalized)",
+          "closure_target": "Before any real rendering/emission beyond placeholders, implement and test mandatory private-note exclusion across ALL outputs (note pages, tag pages, backlinks, search index, all-notes lists) plus an allowlist/denylist mechanism; update canonical risk register K8 mitigation text to match implementation; add an explicit ‘public export mode’ confirmation or banner in logs.",
+          "earliest_prevention_stage": "M1 (Core Engine & Plugin API Foundation)",
+          "acceptance_criteria": "E2E test fixture with at least one private note verifies: no HTML page emitted, no references in tag pages/backlinks, and no search index inclusion; build report lists excluded files; default behavior is safe-by-default."
+        }
+      },
+      {
+        "id": "FM2",
+        "category": "Security: injection/XSS & unsafe content handling",
+        "severity": "critical",
+        "finding": "Rendered pages can execute injected script via raw HTML in Markdown and/or unsafe template/theme customization boundaries, especially if users publish or share notes; this compromises reader browser security and site integrity.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "risk_gov_canonical_v1:/risk_register/6 (K7); risk_gov_canonical_v1:/risk_register/18 (K19); plan_candidate_B2B_v3:/decision_log/4 (DEC5 raw HTML handling); plan_candidate_B2B_v3:/decision_log/6 (DEC7 customization boundaries)",
+          "closure_target": "Enforce safe defaults: raw HTML disabled by default; if enabled, sanitize via allowlist sanitizer; auto-escape all template variables; explicitly prohibit arbitrary JS injection via templates by default; add a CSP guidance section in docs (even if not enforceable by generator) and include security regression tests with known payloads.",
+          "earliest_prevention_stage": "M4 (Markdown Rendering & Theming Plugins) with policy decisions finalized in M1 API/spec",
+          "acceptance_criteria": "Golden tests containing representative XSS payloads prove no script execution; static HTML output contains escaped/sanitized content; customization mechanism cannot introduce executable script unless an explicit unsafe override is set and logged."
+        }
+      },
+      {
+        "id": "FM3",
+        "category": "BUILD_LOGIC:CRASH_OR_HANG",
+        "severity": "critical",
+        "finding": "Build can crash/hang or become unusably slow on larger collections due to full-corpus in-memory processing across plugins (parsing, graph, rendering, indexing), but target scale is currently unknown and blocking (Q3).",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "capsule_canonical_v1:/open_questions/2 (Q3 blocking); risk_gov_canonical_v1:/risk_register/3 (K4 critical); plan_candidate_B2B_v3:/milestones/4/deliverables/2 (DL28 budgets for 1,000 notes but may be misaligned)",
+          "closure_target": "Resolve Q3 (scale) via HITL before committing to in-memory-only assumptions; implement progress reporting + timeouts where feasible; enforce memory/time budgets in CI with stress fixtures at declared upper bounds; design plugins to avoid quadratic behavior (e.g., link resolution/backlinks) and cap/stream expensive stages where possible.",
+          "earliest_prevention_stage": "M1 (set performance/scale constraints in API/spec) and M2/M3 (avoid quadratic data structures)",
+          "open_question_blocker": "Confirm expected #notes and total corpus size; decide whether incremental build is required early."
+        }
+      },
+      {
+        "id": "FM4",
+        "category": "Requirements ambiguity / scope drift",
+        "severity": "high",
+        "finding": "Blocking convention questions (link syntax Q1, tags Q2, IA Q4, interface Q10) remain unresolved; implementing defaults may produce a ‘working’ build that fails user expectations (e.g., wrong link resolver precedence, wrong tag parsing, missing required navigation pages), causing rework across multiple plugins and the shared data model.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "capsule_canonical_v1:/open_questions/0 (Q1 blocking); capsule_canonical_v1:/open_questions/1 (Q2 blocking); capsule_canonical_v1:/open_questions/3 (Q4 blocking); capsule_canonical_v1:/open_questions/9 (Q10 blocking); plan_candidate_B2B_v3:/supplemental_evaluations/1 (defaults assumed)",
+          "closure_target": "Run HITL clarification for Q1/Q2/Q4/Q10 before finalizing shared context schema and plugin contracts; document explicit default behaviors and precedence rules in config spec; ensure acceptance tests/fixtures match confirmed conventions.",
+          "earliest_prevention_stage": "M1 (Plugin API specification + config schema) before M2/M3 plugin implementation",
+          "acceptance_criteria": "Confirmed convention matrix exists in docs/config; fixtures cover each supported convention; unresolved items are explicitly out-of-scope with warnings."
+        }
+      },
+      {
+        "id": "FM5",
+        "category": "Link resolution & graph integrity (links/backlinks)",
+        "severity": "high",
+        "finding": "Incorrect canonical ID/slug strategy can produce broken links/backlinks or overwritten pages under collisions (duplicate titles, same filenames in different dirs, index.md patterns). This undermines trust in navigation and backlinks correctness.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "risk_gov_canonical_v1:/risk_register/8 (K9); risk_gov_canonical_v1:/risk_register/9 (K10); plan_candidate_B2B_v3:/milestones/2/deliverables/3 (DL17 graph checks); requirements_canonical_v1:/requirements/8 (R9); requirements_canonical_v1:/requirements/9 (R10)",
+          "closure_target": "Define canonical note identifier as path-based (not title-based) with a deterministic slug/output-path mapping; detect collisions and either disambiguate (stable suffix) or fail with actionable error; ensure backlinks computation uses canonical IDs; add golden tests for collisions and circular links.",
+          "earliest_prevention_stage": "M1 (shared data model) and M3 (link/backlink plugin)",
+          "acceptance_criteria": "Collision fixture demonstrates no overwrites; link resolver consistently targets the intended note; build report flags ambiguous links."
+        }
+      },
+      {
+        "id": "FM6",
+        "category": "Deployment/hosting compatibility (base paths, assets)",
+        "severity": "high",
+        "finding": "Incorrect base URL/path-prefix handling can break navigation and asset loading on common static hosts (e.g., GitHub Pages project sites) or when browsing locally; this is easy to miss until deployment and impacts all core functionality.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "requirements_canonical_v1:/requirements/18 (R19); capsule_canonical_v1:/open_questions/4 (Q5 hosting); risk_gov_canonical_v1:/risk_register/12 (K13); plan_candidate_B2B_v3:/milestones/3/deliverables/4 (DL23 base URL config)",
+          "closure_target": "Implement a single URL-joining/rewrite utility used by ALL plugins that emit links/assets; add deploy-target test matrix (root, subdir basePath, local file-like serving) and a link checker against built output; document required hosting settings.",
+          "earliest_prevention_stage": "M4 (theme/template + emit) with config schema finalized in M1",
+          "acceptance_criteria": "Automated tests validate correct href/src across basePath variants; no broken internal asset links in link-checker output."
+        }
+      },
+      {
+        "id": "FM7",
+        "category": "Search indexing quality & performance",
+        "severity": "high",
+        "finding": "Client-side search index can become too large/slow to load or query, causing unresponsive UX and potentially browser crashes; performance target assumes 1,000 notes but scale is unconfirmed and indexing library choice is deferred.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "requirements_canonical_v1:/requirements/21 (R22); risk_gov_canonical_v1:/risk_register/4 (K5); capsule_canonical_v1:/assumptions/3 (A4 client-side search); plan_candidate_B2B_v3:/decision_log/5 (DEC6 defers library choice)",
+          "closure_target": "After Q3 scale confirmation, select an index strategy that meets size/latency budgets; implement index size reporting; consider chunking/lazy-loading and field selection (title/body excerpts) to cap payload; add perf tests and threshold gates in CI.",
+          "earliest_prevention_stage": "M5 (search plugin/runtime) but requires Q3 clarification before implementation",
+          "acceptance_criteria": "Index size and query latency gates pass on declared target scale; search remains responsive with network disabled (static-only constraint)."
+        }
+      },
+      {
+        "id": "FM8",
+        "category": "Build determinism & reproducibility",
+        "severity": "medium",
+        "finding": "Non-deterministic ordering (filesystem traversal order, plugin ordering, locale-sensitive sorting) and embedded timestamps can cause noisy diffs and unreliable deployments; determinism is required later (M6) but design decisions earlier can make it hard to retrofit.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "risk_gov_canonical_v1:/risk_register/19 (K20); plan_candidate_B2B_v3:/milestones/5/deliverables/3 (DL33 determinism verification in M6); plan_candidate_B2B_v3:/decision_log/3 (DEC4 plugin ordering/toposort implies ordering concerns)",
+          "closure_target": "Specify deterministic ordering guarantees in M1 plugin API/spec (sorted inputs, stable iteration order for tags/links/pages); avoid timestamps in output by default; add early unit tests for stable ordering (before M6).",
+          "earliest_prevention_stage": "M1 (API/spec + core engine) and M2 (ingestion ordering)",
+          "acceptance_criteria": "Repeated clean builds produce byte-identical output on the same OS; ordering is stable across OSes when feasible (or differences are explicitly documented)."
+        }
+      },
+      {
+        "id": "FM001",
+        "category": "SECURITY_PRIVACY:DATA_LEAKAGE",
+        "severity": "critical",
+        "finding": "The private-note exclusion mechanism, while planned, can be easily bypassed by common variations in front-matter syntax (e.g., case-sensitivity, non-boolean 'true' values). A user accustomed to flexible YAML might assume a note is private when it is not, leading to inadvertent publication of sensitive information.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "notes": "Mitigation is planned in M1/DL7, but must be hardened to cover a wide range of YAML boolean conventions and provide explicit user warnings on build. Evidence: /risk_register/7 (K8)",
+          "earliest_prevention_stage": "Implementation",
+          "closure_target": "M1"
+        }
+      },
+      {
+        "id": "FM002",
+        "category": "BUILD_LOGIC:CRASH_OR_HANG",
+        "severity": "critical",
+        "finding": "The plugin-based architecture creates a significant risk of build failure from a single misbehaving plugin. A third-party or poorly-written plugin could cause a denial of service on the build process by consuming unbounded memory/CPU or entering an infinite loop, making the entire tool unreliable without core engine-level sandboxing or resource limits.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "notes": "Highlights a primary con of architecture O2. The Core Build Engine (C9) in M1 must include defensive designs like timeouts or resource monitoring for plugin execution. Evidence: /architecture/options/1/tradeoffs/cons/2",
+          "earliest_prevention_stage": "Architecture",
+          "closure_target": "M1"
+        }
+      },
+      {
+        "id": "FM003",
+        "category": "OUTPUT_ARTIFACT:SECURITY_VULNERABILITY",
+        "severity": "high",
+        "finding": "The theme/template customization feature introduces a supply-chain risk. A trusted user downloading a third-party theme could unknowingly install one containing malicious JavaScript, leading to client-side attacks (e.g., content spoofing, credential theft via host platform cookies) on visitors of the generated static site.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "notes": "Mitigation described for K19 (sandboxing) is crucial. The security review in M6 must validate the boundaries of the theming system to prevent arbitrary script execution. Evidence: /risk_register/18 (K19)",
+          "earliest_prevention_stage": "Design",
+          "closure_target": "M6"
+        }
+      },
+      {
+        "id": "FM004",
+        "category": "Link resolution & graph integrity (links/backlinks)",
+        "severity": "high",
+        "finding": "Identifier collisions in the note graph are a probable failure mode. Two notes with the same title used for [[WikiLink]] resolution or slugified to the same output path can cause one note to be silently overwritten or links to resolve non-deterministically. This corrupts the site's navigation graph and leads to data loss in the output.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "notes": "Mitigation is planned in M3/DL17. The graph builder must implement deterministic collision detection and fail the build with an actionable error by default when ambiguity is found. Evidence: /risk_register/1 (K2), /risk_register/9 (K10)",
+          "earliest_prevention_stage": "Design",
+          "closure_target": "M3"
+        }
+      },
+      {
+        "id": "FM005",
+        "category": "Search indexing quality & performance",
+        "severity": "high",
+        "finding": "For large note collections, the client-side search index can become excessively large, increasing site load time and browser memory usage to the point of making search unresponsive or crashing the browser tab. This failure mode directly undermines a core functional requirement (R7) and success metric.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "notes": "Mitigation for K5 relies on performance budgeting and potential index chunking (M5/DL28). This must be tested at the scale defined in Q3, and the system should warn if the index exceeds a configurable size budget. Evidence: /risk_register/4 (K5), /requirements/21 (R22)",
+          "earliest_prevention_stage": "Architecture",
+          "closure_target": "M5"
+        }
+      }
+    ],
+    "closure_pass": false
+  }
+}

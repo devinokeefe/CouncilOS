@@ -33,7 +33,9 @@
         "required": [
           "expectation_id",
           "severity",
-          "oracle"
+          "oracle",
+          "required_env_class",
+          "evidence_type"
         ],
         "additionalProperties": true
       }

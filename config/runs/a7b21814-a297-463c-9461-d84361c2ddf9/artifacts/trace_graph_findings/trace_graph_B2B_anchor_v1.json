@@ -1,0 +1,138 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B2B_anchor_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:38:21.527743Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B2B_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2B_v1",
+    "findings": [
+      {
+        "id": "TG1",
+        "severity": "high",
+        "summary": "Sample check for R2 maps the requirement (static-only output) and its acceptance test (AT2) to milestones M1/M2, but the plan places AT2 and the key static-output emitter deliverable in M4. This breaks the trace for R2 in the sample checks provided.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": null,
+            "json_pointer": "/deterministic_sample_checks/1/milestones",
+            "note": "R2 sample check claims milestones M1 and M2.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "M4",
+            "json_pointer": "/plan_candidate/plan_package/milestones/3/deliverables/3/text",
+            "note": "M4 includes the Emit Plugin deliverable explicitly covering R2 (static assets output).",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Emit Plugin (C17) writing pages and static assets to output directory with configurable base URL/path prefix (R2, R19, K13 mitigation)."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "M4",
+            "json_pointer": "/plan_candidate/plan_package/milestones/3/exit_criteria/0",
+            "note": "AT2 is an M4 exit criterion in the plan.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "AT2 passes: output is purely static (HTML/CSS/JS), loads without server runtime."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "AT2",
+            "json_pointer": "/plan_candidate/plan_package/acceptance_tests/1/maps_to_requirements",
+            "note": "AT2 maps to R2, but is validated in M4 per exit criteria (not M1/M2).",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "deterministic_sample_checks"
+      },
+      {
+        "id": "TG2",
+        "severity": "low",
+        "summary": "Sample check for R1 includes milestone M2, but the plan’s explicit R1 coverage (directory scan/recursive discovery) is in M1 via the Ingestion Plugin and M1 exit criteria. Including M2 may be overinclusive/noisy for trace purposes.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": null,
+            "json_pointer": "/deterministic_sample_checks/0/milestones",
+            "note": "R1 sample check lists milestones M1 and M2.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "DL4",
+            "json_pointer": "/plan_candidate/plan_package/milestones/0/deliverables/3/text",
+            "note": "M1 deliverable explicitly satisfies R1 at the plugin level.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Minimal Ingestion Plugin (C11) that scans a directory and populates C10 with raw note entries (satisfies R1 at plugin level)."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_candidate/plan_package/milestones/0/exit_criteria/1",
+            "note": "M1 exit criteria ties ingestion discovery to AT1 precondition (R1 validation path).",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Ingestion plugin discovers .md files recursively and populates C10 (AT1 precondition met)."
+          }
+        ],
+        "routing_target": "deterministic_sample_checks"
+      },
+      {
+        "id": "TG3",
+        "severity": "low",
+        "summary": "Sample check for R3 includes milestone M1, but the plan’s explicit R3 implementation/verification (CommonMark parsing + one HTML page per non-excluded file, AT3) is in M2. M1 is a dependency (engine + ingest) but does not itself implement parsing/rendering.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": null,
+            "json_pointer": "/deterministic_sample_checks/2/milestones",
+            "note": "R3 sample check lists milestones M1 and M2.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "DL8",
+            "json_pointer": "/plan_candidate/plan_package/milestones/1/deliverables/0/text",
+            "note": "M2 deliverable explicitly covers CommonMark parsing and HTML generation (R3/R4).",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Markdown Render Plugin (C14) with CommonMark-compliant parsing and HTML generation (R3, R4)."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "M2",
+            "json_pointer": "/plan_candidate/plan_package/milestones/1/exit_criteria/0",
+            "note": "AT3 is an M2 exit criterion (primary verification for R3).",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "AT3 passes: one HTML page per non-excluded Markdown file."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "AT3",
+            "json_pointer": "/plan_candidate/plan_package/acceptance_tests/2/maps_to_requirements",
+            "note": "AT3 maps to R3.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "deterministic_sample_checks"
+      }
+    ]
+  }
+}

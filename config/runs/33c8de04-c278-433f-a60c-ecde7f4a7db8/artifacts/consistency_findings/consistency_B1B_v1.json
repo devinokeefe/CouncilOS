@@ -1,0 +1,372 @@
+{
+  "artifact_type": "consistency_findings",
+  "artifact_id": "consistency_B1B_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:08:51.307895Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "plan_candidate_B1B_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B1B_v1",
+    "findings": [
+      {
+        "id": "CS1",
+        "severity": "high",
+        "summary": "Blocking questions Q1/Q2 are stated as prerequisites before M1 work/coding begins, but are also listed as M1 exit criteria (i.e., something verified after M1 work), creating a timing contradiction for milestone gating.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/exit_criteria/7",
+            "note": "M1 exit criteria includes resolving Q1/Q2 before milestone work begins",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "Blocking questions Q1 and Q2 resolved and documented before milestone work begins."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": null,
+            "json_pointer": "/plan_package/executive_summary",
+            "note": "Executive summary states Q1/Q2 must be resolved before coding begins",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "Blocking questions Q1 (link syntax) and Q2 (tag format) must be resolved before coding begins."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "DEC3",
+            "json_pointer": "/plan_package/decision_log/2/choice",
+            "note": "Decision log states Q1/Q2 must be resolved before any coding begins",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "Both must be resolved and documented before any coding begins (before M1 work starts)."
+          }
+        ],
+        "routing_target": "milestones"
+      },
+      {
+        "id": "CS2",
+        "severity": "medium",
+        "summary": "Internal link detection appears to be both part of M1 deliverables and the main focus of M2 deliverables, creating overlap/ambiguity about when forward-link parsing/rendering is actually implemented.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "DL2",
+            "json_pointer": "/plan_package/milestones/0/deliverables/1/text",
+            "note": "M1 deliverable includes internal link detection/normalization in C2",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "Detect and normalize internal links (standard Markdown links and optional wiki-links)"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "DL6",
+            "json_pointer": "/plan_package/milestones/1/deliverables/0/text",
+            "note": "M2 deliverable also introduces internal link detection/rendering using resolved Q1",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "Internal link detection and rendering in C2 using the resolved Q1 link syntax"
+          }
+        ],
+        "routing_target": "milestones"
+      },
+      {
+        "id": "CS3",
+        "severity": "medium",
+        "summary": "Executive summary claims \"stakeholder sign-off at each milestone gate,\" but governance HITL policy describes interrupt triggers rather than explicit per-milestone sign-off requirements; milestone exit criteria likewise omit explicit sign-off steps.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": null,
+            "json_pointer": "/plan_package/executive_summary",
+            "note": "Claims per-milestone stakeholder sign-off",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "High HITL strictness ensures stakeholder sign-off at each milestone gate."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": null,
+            "json_pointer": "/plan_package/governance/hitl_policy/when_to_interrupt",
+            "note": "HITL policy lists interrupt conditions, not milestone sign-off requirements",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/exit_criteria",
+            "note": "Representative milestone exit criteria do not mention stakeholder sign-off as a gate",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "governance"
+      },
+      {
+        "id": "CS4",
+        "severity": "low",
+        "summary": "AT3 pass criteria appears to require tables to render correctly, which can conflict with the plan’s stance that tables are only supported when the selected Markdown flavor includes them (CommonMark baseline may not include tables).",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "AT3",
+            "json_pointer": "/plan_package/acceptance_tests/2/pass_criteria",
+            "note": "AT3 pass criteria includes tables unconditionally",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "All tested Markdown elements render correctly and preserve structure and formatting."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "AT3",
+            "json_pointer": "/plan_package/acceptance_tests/2/procedure",
+            "note": "AT3 procedure includes tables in the test set",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "Prepare notes covering ... images, and tables per the selected Markdown flavor."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "R15",
+            "json_pointer": "/plan_package/requirements/14/text",
+            "note": "Tables are positioned as GFM extensions (SHOULD), not necessarily baseline",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "SHOULD additionally support GitHub-Flavored Markdown (GFM) extensions such as tables"
+          }
+        ],
+        "routing_target": "qa_strategy_canonical"
+      },
+      {
+        "id": "CS5",
+        "severity": "medium",
+        "summary": "M4 exit criteria requires performance targets to be \"documented and met\" for index size/query latency, but performance targets are explicitly dependent on Q3 (expected scale), which is non-blocking and may remain unresolved; this can make M4 exit criteria unverifiable or prematurely strict without scale agreement.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "M4",
+            "json_pointer": "/plan_package/milestones/3/exit_criteria/2",
+            "note": "M4 exit criteria requires performance targets be met",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "Search index size and query latency benchmarked; targets documented and met."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "Q3",
+            "json_pointer": "/plan_package/project_capsule/open_questions/2",
+            "note": "Scale/performance targets not yet defined (Q3 unresolved)",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "What is the expected scale (number of notes/total size) and performance targets for search and page load?"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "R23",
+            "json_pointer": "/plan_package/requirements/22/text",
+            "note": "R23 states targets should be defined/documented based on expected scale",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "targets SHOULD be defined/documented based on expected scale"
+          }
+        ],
+        "routing_target": "clarification_plan"
+      },
+      {
+        "id": "CS001",
+        "severity": "high",
+        "summary": "Milestone M1 exit criteria references blocking questions Q1 and Q2 resolution, but M1 depends_on is empty, creating a logical inconsistency in the dependency chain.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/exit_criteria",
+            "note": "M1 exit criteria requires Q1/Q2 resolution before milestone work begins",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "Blocking questions Q1 and Q2 resolved and documented before milestone work begins."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/depends_on",
+            "note": "M1 has no dependencies, contradicting the requirement that Q1/Q2 must be resolved first",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "milestone_dependencies"
+      },
+      {
+        "id": "CS002",
+        "severity": "medium",
+        "summary": "Decision DEC3 states Q1 and Q2 must be resolved before any coding begins (before M1), but no formal gate or dependency enforces this in the milestone structure.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "DEC3",
+            "json_pointer": "/plan_package/decision_log/2/choice",
+            "note": "Decision requires Q1/Q2 resolution before M1 work starts",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "Both must be resolved and documented before any coding begins (before M1 work starts)."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0",
+            "note": "M1 has no blocking gate or dependency enforcing Q1/Q2 resolution",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "governance_gates"
+      },
+      {
+        "id": "CS003",
+        "severity": "medium",
+        "summary": "Synthesis warning W2 states a new acceptance test ID should be minted for XSS validation, but M1 deliverable DL4 references an 'XSS security test suite' without a corresponding AT# identifier.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "W2",
+            "json_pointer": "/plan_package/synthesis_warnings/1/summary",
+            "note": "Warning identifies missing formal AT for XSS",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "No canonical acceptance test covers XSS/security validation (K3). A new acceptance test ID (AT#) should be minted"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "DL4",
+            "json_pointer": "/plan_package/milestones/0/deliverables/3/text",
+            "note": "DL4 references XSS test suite but no AT# is assigned",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "XSS security test suite covering known payloads (K3 mitigation)."
+          }
+        ],
+        "routing_target": "acceptance_tests"
+      },
+      {
+        "id": "CS004",
+        "severity": "low",
+        "summary": "Requirement R14 states the system SHOULD support configuration of Markdown flavor and link/tag syntax, but no component in the chosen architecture (O1) is explicitly assigned responsibility for configuration parsing or validation.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "R14",
+            "json_pointer": "/plan_package/requirements/13/text",
+            "note": "R14 requires configuration support",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "The system SHOULD support configuration of the Markdown flavor, internal link syntax, and tag conventions"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "C1",
+            "json_pointer": "/plan_package/architecture/options/0/components/0/responsibilities",
+            "note": "C1 mentions parsing config file path but no validation responsibility",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "Parse command-line arguments (input folder, output folder, config file path)"
+          }
+        ],
+        "routing_target": "architecture_refinement"
+      },
+      {
+        "id": "CS005",
+        "severity": "medium",
+        "summary": "Risk K6 mitigation requires deterministic builds with stable sorting and pinned dependencies, but no milestone deliverable or acceptance test explicitly validates build reproducibility.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "K6",
+            "json_pointer": "/plan_package/risk_register/5/mitigation/text",
+            "note": "K6 mitigation requires reproducibility check",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "Add a reproducibility check comparing outputs across two clean runs."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": null,
+            "json_pointer": "/plan_package/milestones",
+            "note": "No milestone deliverable or exit criteria validates reproducibility",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "test_coverage"
+      },
+      {
+        "id": "CS006",
+        "severity": "low",
+        "summary": "Risk K11 mitigation suggests providing guidance for local preview via simple local server, but no milestone deliverable includes documentation or tooling for local preview setup.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "K11",
+            "json_pointer": "/plan_package/risk_register/10/mitigation/text",
+            "note": "K11 mitigation mentions local server guidance",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "for local preview, provide guidance to run a simple local server"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": null,
+            "json_pointer": "/plan_package/milestones",
+            "note": "No deliverable includes local preview documentation",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "documentation_scope"
+      },
+      {
+        "id": "CS007",
+        "severity": "medium",
+        "summary": "Requirement R12 (error reporting with file paths and line numbers) is mapped to M5 deliverable DL19, but parser component C2 in M1 would need to capture source location metadata from the start to enable this.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "R12",
+            "json_pointer": "/plan_package/requirements/11/text",
+            "note": "R12 requires error reporting with file paths and line/position",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "The build process SHOULD provide clear error reporting for invalid Markdown, unresolvable links, or tag parsing failures, including file paths and line/position"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "DL19",
+            "json_pointer": "/plan_package/milestones/4/deliverables/0/text",
+            "note": "DL19 defers enhanced error reporting to M5",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "Enhanced error reporting for invalid Markdown, unresolvable links, and tag parsing failures with file paths and line numbers (R12)."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "C2",
+            "json_pointer": "/plan_package/architecture/options/0/components/1/responsibilities",
+            "note": "C2 responsibilities do not mention capturing source location metadata",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "architecture_refinement"
+      }
+    ]
+  }
+}

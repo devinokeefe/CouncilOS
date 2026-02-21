@@ -1,0 +1,387 @@
+{
+  "artifact_type": "risk_gov_draft",
+  "artifact_id": "risk_gov_draft_1_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:25:13.822195Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "capsule_canonical_v1"
+  ],
+  "payload": {
+    "risk_register": [
+      {
+        "id": "RISK_A_1",
+        "severity": "high",
+        "description": "Incorrect parsing/rendering of Markdown flavor (e.g., GFM tables, footnotes, code fences) causes content loss, broken layouts, or misleading output.",
+        "mitigation": {
+          "text": "Explicitly select and document a supported Markdown flavor; add golden-file render tests for representative notes; provide a compatibility mode matrix and a build-time warning list for unsupported constructs.",
+          "owner": "eng",
+          "status": "planned"
+        },
+        "acceptance": null
+      },
+      {
+        "id": "RISK_A_2",
+        "severity": "high",
+        "description": "Ambiguous internal link conventions (relative paths vs wiki-links) lead to broken links and incorrect backlink graphs.",
+        "mitigation": {
+          "text": "Make link-convention support an explicit configuration; implement a deterministic resolver with precedence rules; fail or warn on unresolved links based on strictness setting; add fixture-based tests for Q1 scenarios.",
+          "owner": "eng",
+          "status": "planned"
+        },
+        "acceptance": null
+      },
+      {
+        "id": "RISK_A_3",
+        "severity": "medium",
+        "description": "Tag extraction rules (front matter vs inline #tags) produce inconsistent tag sets (case, spaces, duplicates), breaking tag browsing expectations.",
+        "mitigation": {
+          "text": "Define a single normalization pipeline (case-folding, trimming, delimiter rules); support configurable sources (front matter / inline) with explicit precedence; add a validation report listing tags and counts.",
+          "owner": "eng",
+          "status": "planned"
+        },
+        "acceptance": null
+      },
+      {
+        "id": "RISK_A_4",
+        "severity": "high",
+        "description": "Client-side full-text search index becomes too large or slow at target scale, causing unresponsive search and degraded UX.",
+        "mitigation": {
+          "text": "Collect target scale requirements (Q3); choose an indexing approach appropriate to scale; implement chunking/lazy loading; add performance budgets (index size, query latency) and a build-time size report.",
+          "owner": "eng",
+          "status": "planned"
+        },
+        "acceptance": null
+      },
+      {
+        "id": "RISK_A_5",
+        "severity": "high",
+        "description": "XSS/content injection risk if note content is rendered into HTML without proper sanitization, especially if raw HTML is allowed in Markdown.",
+        "mitigation": {
+          "text": "Default to disallowing raw HTML in Markdown or sanitize it; ensure escaping of all user-controlled strings in templates; add security tests with known payloads; document trust model (personal notes vs shared).",
+          "owner": "sec",
+          "status": "planned"
+        },
+        "acceptance": null
+      },
+      {
+        "id": "RISK_A_6",
+        "severity": "medium",
+        "description": "Broken relative paths/base URLs on different hosting targets (local file browsing vs GitHub Pages) cause missing assets and navigation failures.",
+        "mitigation": {
+          "text": "Support configurable basePath/baseUrl (Q5); generate consistent absolute/relative URLs; add a deploy-target test matrix and a link checker against the built output directory.",
+          "owner": "eng",
+          "status": "planned"
+        },
+        "acceptance": null
+      },
+      {
+        "id": "RISK_A_7",
+        "severity": "medium",
+        "description": "Backlink generation is incomplete or incorrect due to edge cases (anchors, aliases, transclusion-like links, duplicate titles).",
+        "mitigation": {
+          "text": "Define canonical note identifiers (path-based) and maintain an explicit link graph; record link types and targets during parse; add graph consistency checks and backlink golden tests.",
+          "owner": "eng",
+          "status": "planned"
+        },
+        "acceptance": null
+      },
+      {
+        "id": "RISK_A_8",
+        "severity": "high",
+        "description": "Build pipeline fails on non-UTF8 files, unusual filenames, or OS-specific path handling, blocking generation on common environments.",
+        "mitigation": {
+          "text": "Normalize and validate paths; define supported encodings; add cross-platform tests (Windows/Mac/Linux path separators); implement clear error messages and a file-skip option with reporting.",
+          "owner": "eng",
+          "status": "planned"
+        },
+        "acceptance": null
+      },
+      {
+        "id": "RISK_A_9",
+        "severity": "medium",
+        "description": "Incremental/watch mode (if implemented) produces stale pages or inconsistent search index compared to clean builds.",
+        "mitigation": {
+          "text": "Treat incremental build as an optional feature; add invariants to ensure incremental output matches clean build output; provide a 'clean' command and detect partial-state corruption.",
+          "owner": "eng",
+          "status": "planned"
+        },
+        "acceptance": null
+      },
+      {
+        "id": "RISK_A_10",
+        "severity": "medium",
+        "description": "Large note sets cause memory spikes during parsing/indexing, leading to crashes on typical developer machines/CI.",
+        "mitigation": {
+          "text": "Stream processing where feasible; cap in-memory caches; provide progress logging; add stress tests at expected upper bounds and document hardware recommendations.",
+          "owner": "eng",
+          "status": "planned"
+        },
+        "acceptance": null
+      },
+      {
+        "id": "RISK_A_11",
+        "severity": "low",
+        "description": "Accessibility regressions (poor contrast, missing landmarks/ARIA, keyboard traps) reduce usability of the generated site.",
+        "mitigation": {
+          "text": "Adopt an accessible base theme; run automated checks (e.g., semantic headings, alt text handling); document accessibility assumptions for user-supplied content.",
+          "owner": "eng",
+          "status": "planned"
+        },
+        "acceptance": null
+      },
+      {
+        "id": "RISK_A_12",
+        "severity": "medium",
+        "description": "Navigation/information architecture mismatches user expectations (missing pages, confusing tag index, poor discoverability).",
+        "mitigation": {
+          "text": "Resolve IA requirements (Q4); provide a minimal default nav (Home, All notes, Tags) plus configurable menus; include a generated sitemap page and consistent breadcrumbs.",
+          "owner": "pm",
+          "status": "planned"
+        },
+        "acceptance": null
+      },
+      {
+        "id": "RISK_A_13",
+        "severity": "medium",
+        "description": "Broken links are handled inconsistently (silent failures), leading to hidden navigation defects and reduced trust.",
+        "mitigation": {
+          "text": "Implement build-time link validation; provide strict/warn modes; generate a 'broken links' report artifact and optionally fail the build in CI.",
+          "owner": "eng",
+          "status": "planned"
+        },
+        "acceptance": null
+      },
+      {
+        "id": "RISK_A_14",
+        "severity": "medium",
+        "description": "Search relevance quality is poor (stemming, ranking, stopwords) and fails success metrics despite functioning index.",
+        "mitigation": {
+          "text": "Define relevance acceptance tests (queries and expected top results); allow configuration of tokenization/stopwords; include title boosting and tag boosting where applicable.",
+          "owner": "eng",
+          "status": "planned"
+        },
+        "acceptance": null
+      },
+      {
+        "id": "RISK_A_15",
+        "severity": "high",
+        "description": "Template/theme customization introduces code execution or unsafe injections (e.g., user-provided templates or scripts) that compromise site integrity.",
+        "mitigation": {
+          "text": "Limit customization to safe configuration (CSS variables, allowed template slots); if templating is supported, sandbox and lint templates; document security boundaries and disable arbitrary JS by default.",
+          "owner": "sec",
+          "status": "planned"
+        },
+        "acceptance": null
+      },
+      {
+        "id": "RISK_A_16",
+        "severity": "medium",
+        "description": "Non-deterministic builds (ordering differences, timestamps, locale) cause noisy diffs and unreliable deployment pipelines.",
+        "mitigation": {
+          "text": "Enforce deterministic ordering (sorted paths/tags); avoid embedding timestamps by default; control locale/timezone; add a 'deterministic build' CI check comparing repeated builds.",
+          "owner": "eng",
+          "status": "planned"
+        },
+        "acceptance": null
+      },
+      {
+        "id": "RISK_A_17",
+        "severity": "medium",
+        "description": "Dependency supply-chain issues (vulnerable Markdown/render/search libraries) introduce security or maintenance risk.",
+        "mitigation": {
+          "text": "Pin dependencies; run vulnerability scanning in CI; maintain an upgrade cadence; prefer well-maintained libraries with security track records.",
+          "owner": "sec",
+          "status": "planned"
+        },
+        "acceptance": null
+      },
+      {
+        "id": "RISK_A_18",
+        "severity": "low",
+        "description": "Insufficient error messages/logging during build leads to long debugging cycles and poor user experience.",
+        "mitigation": {
+          "text": "Standardize structured logs and human-readable summaries; include file/line context where possible; provide a final build report with counts (notes, tags, links, warnings).",
+          "owner": "eng",
+          "status": "planned"
+        },
+        "acceptance": null
+      }
+    ],
+    "tool_policy": {
+      "stage_policies": [
+        {
+          "stage": "Intake",
+          "allowlisted_tools": [
+            "artifact_read",
+            "artifact_write"
+          ],
+          "restrictions": [
+            {
+              "type": "no_external_network",
+              "value": true
+            },
+            {
+              "type": "write_scope",
+              "value": "audit_spine_and_intake_notes_only"
+            },
+            {
+              "type": "data_minimization",
+              "value": "do_not_request_or_store_note_contents_unless_required"
+            }
+          ],
+          "hitl_triggers": [
+            "Any request to access private repositories, personal notes, or credentials",
+            "Any ambiguity in requirements that changes scope beyond capsule goals/non-goals"
+          ]
+        },
+        {
+          "stage": "Generate",
+          "allowlisted_tools": [
+            "artifact_read"
+          ],
+          "restrictions": [
+            {
+              "type": "no_external_network",
+              "value": true
+            },
+            {
+              "type": "no_side_effects",
+              "value": true
+            },
+            {
+              "type": "must_trace_to_inputs",
+              "value": "only_use_project_capsule_and_confirmed_answers"
+            }
+          ],
+          "hitl_triggers": [
+            "Proposed features conflict with non-goals (e.g., auth, server runtime, AI generation)",
+            "Proposed approach requires unsupported Markdown/linking/tag conventions without confirmation"
+          ]
+        },
+        {
+          "stage": "Validate",
+          "allowlisted_tools": [
+            "artifact_read"
+          ],
+          "restrictions": [
+            {
+              "type": "no_external_network",
+              "value": true
+            },
+            {
+              "type": "consistency_checks_required",
+              "value": [
+                "goals_vs_non_goals",
+                "constraints_coverage",
+                "open_questions_blockers"
+              ]
+            }
+          ],
+          "hitl_triggers": [
+            "Validation finds blockers that affect architecture (Q1/Q2/Q3/Q4/Q10)",
+            "Security risk identified that requires a trust-model decision (e.g., raw HTML handling)"
+          ]
+        },
+        {
+          "stage": "Review",
+          "allowlisted_tools": [
+            "artifact_read",
+            "artifact_write"
+          ],
+          "restrictions": [
+            {
+              "type": "no_external_network",
+              "value": true
+            },
+            {
+              "type": "write_scope",
+              "value": "review_findings_only"
+            },
+            {
+              "type": "require_citations",
+              "value": "all key claims must reference capsule fields or confirmed answers"
+            }
+          ],
+          "hitl_triggers": [
+            "Any acceptance of high/critical risks without mitigations",
+            "Any policy decision impacting user security (sanitization, template execution)"
+          ]
+        },
+        {
+          "stage": "Judge",
+          "allowlisted_tools": [
+            "artifact_read"
+          ],
+          "restrictions": [
+            {
+              "type": "no_external_network",
+              "value": true
+            },
+            {
+              "type": "no_writes",
+              "value": true
+            },
+            {
+              "type": "decision_basis",
+              "value": "must_be_explainable_from_artifacts"
+            }
+          ],
+          "hitl_triggers": [
+            "Tradeoff requires product decision (feature cuts, performance budgets, compatibility choices)"
+          ]
+        },
+        {
+          "stage": "Freeze",
+          "allowlisted_tools": [
+            "artifact_read"
+          ],
+          "restrictions": [
+            {
+              "type": "no_external_network",
+              "value": true
+            },
+            {
+              "type": "no_writes",
+              "value": true
+            },
+            {
+              "type": "no_new_requirements",
+              "value": true
+            }
+          ],
+          "hitl_triggers": [
+            "Request to change scope or revise locked decisions"
+          ]
+        }
+      ]
+    },
+    "hitl_policy": {
+      "when_to_interrupt": [
+        "Unconfirmed blocker questions (Q1/Q2/Q3/Q4/Q10) would materially change architecture or success metrics",
+        "Any decision affecting security boundaries (raw HTML, template execution, third-party JS/search libraries)",
+        "Any proposal that violates hard constraints (static-only output) or non-goals (server runtime, auth, AI content generation)",
+        "Any need to accept a high/critical risk without a mitigation plan"
+      ],
+      "approval_roles": [
+        "Product Owner",
+        "Security Reviewer",
+        "Tech Lead"
+      ]
+    },
+    "taxonomy_categories": [
+      "Requirements ambiguity / scope drift",
+      "Parser/rendering correctness",
+      "Link resolution & graph integrity (links/backlinks)",
+      "Metadata extraction (tags/front matter) correctness",
+      "Search indexing quality & performance",
+      "Build determinism & reproducibility",
+      "Cross-platform filesystem/path handling",
+      "Security: injection/XSS & unsafe content handling",
+      "Dependency/supply-chain risk",
+      "UX/IA/navigation & accessibility",
+      "Operational robustness (logging, error handling, diagnostics)",
+      "Deployment/hosting compatibility (base paths, assets)"
+    ]
+  }
+}

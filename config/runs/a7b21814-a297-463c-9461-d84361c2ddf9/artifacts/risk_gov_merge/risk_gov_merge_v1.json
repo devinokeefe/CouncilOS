@@ -1,0 +1,570 @@
+{
+  "artifact_type": "risk_gov_merge",
+  "artifact_id": "risk_gov_merge_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:30:54.096284Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "requirements_draft_1_v1",
+    "requirements_draft_2_v1",
+    "architecture_draft_1_v1",
+    "architecture_draft_2_v1",
+    "qa_templates_draft_1_v1",
+    "qa_templates_draft_2_v1",
+    "risk_gov_draft_1_v1",
+    "risk_gov_draft_2_v1"
+  ],
+  "payload": {
+    "risk_register": [
+      {
+        "id": "RISK_U_1",
+        "severity": "high",
+        "description": "Incorrect or unsupported Markdown flavor parsing/rendering (e.g., CommonMark vs GFM extensions such as tables/footnotes/code fences) causes content loss, broken layouts, or misleading HTML output (relates to Q6).",
+        "mitigation": {
+          "text": "Explicitly select and document a supported Markdown flavor; add golden-file render tests for representative notes; provide a compatibility mode matrix and a build-time warning list for unsupported constructs.",
+          "owner": "eng",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_1",
+          "RISK_B_1"
+        ]
+      },
+      {
+        "id": "RISK_U_2",
+        "severity": "high",
+        "description": "Ambiguous or unsupported internal link conventions (relative paths vs wiki-links) lead to broken links and incorrect/incomplete backlink graphs (relates to A2, Q1).",
+        "mitigation": {
+          "text": "Make link-convention support an explicit configuration; implement a deterministic resolver with precedence rules; fail or warn on unresolved links based on strictness setting; add fixture-based tests for Q1 scenarios.",
+          "owner": "eng",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_2",
+          "RISK_B_2"
+        ]
+      },
+      {
+        "id": "RISK_U_3",
+        "severity": "high",
+        "description": "Tag extraction conventions and normalization are undefined/inconsistent (front matter vs inline #tags; case/spacing/duplicates), producing incomplete or confusing tag navigation (relates to A3, Q2).",
+        "mitigation": {
+          "text": "Define a single normalization pipeline (case-folding, trimming, delimiter rules); support configurable sources (front matter / inline) with explicit precedence; add a validation report listing tags and counts.",
+          "owner": "eng",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_3",
+          "RISK_B_3"
+        ]
+      },
+      {
+        "id": "RISK_U_4",
+        "severity": "critical",
+        "description": "At the user’s required scale, the build process becomes unacceptably slow, crashes, or hangs due to large numbers of notes or very large files, including memory spikes during parsing/indexing (relates to Q3).",
+        "mitigation": {
+          "text": "Stream processing where feasible; cap in-memory caches; provide progress logging; add stress tests at expected upper bounds and document hardware recommendations.",
+          "owner": "eng",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_B_4",
+          "RISK_A_10"
+        ]
+      },
+      {
+        "id": "RISK_U_5",
+        "severity": "high",
+        "description": "Client-side full-text search index size/performance scales poorly (large index, slow load, high memory), causing unresponsive search and degraded UX at target scale (relates to A4, A4/Q3).",
+        "mitigation": {
+          "text": "Collect target scale requirements (Q3); choose an indexing approach appropriate to scale; implement chunking/lazy loading; add performance budgets (index size, query latency) and a build-time size report.",
+          "owner": "eng",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_4",
+          "RISK_B_7"
+        ]
+      },
+      {
+        "id": "RISK_U_6",
+        "severity": "medium",
+        "description": "Malformed YAML front matter in Markdown files causes the build process to fail (file-level or site-level).",
+        "mitigation": null,
+        "acceptance": null,
+        "source_ids": [
+          "RISK_B_5"
+        ]
+      },
+      {
+        "id": "RISK_U_7",
+        "severity": "high",
+        "description": "XSS/content injection risk if note content (including raw HTML) is rendered into pages without proper sanitization/escaping, allowing malicious content to execute in the browser.",
+        "mitigation": {
+          "text": "Default to disallowing raw HTML in Markdown or sanitize it; ensure escaping of all user-controlled strings in templates; add security tests with known payloads; document trust model (personal notes vs shared).",
+          "owner": "sec",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_5",
+          "RISK_B_6"
+        ]
+      },
+      {
+        "id": "RISK_U_8",
+        "severity": "critical",
+        "description": "Sensitive/private information contained within notes is inadvertently published to a public host because access control is a non-goal and the user may not fully appreciate the exposure risk.",
+        "mitigation": null,
+        "acceptance": null,
+        "source_ids": [
+          "RISK_B_8"
+        ]
+      },
+      {
+        "id": "RISK_U_9",
+        "severity": "medium",
+        "description": "Backlink generation is incomplete or incorrect due to edge cases (anchors, aliases, transclusion-like links, duplicate titles) and/or circular link relationships causing faulty graph handling (e.g., infinite loop/stack overflow).",
+        "mitigation": {
+          "text": "Define canonical note identifiers (path-based) and maintain an explicit link graph; record link types and targets during parse; add graph consistency checks and backlink golden tests.",
+          "owner": "eng",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_7",
+          "RISK_B_11"
+        ]
+      },
+      {
+        "id": "RISK_U_10",
+        "severity": "medium",
+        "description": "File name, slug, or note title collisions map multiple notes to the same output path, causing overwrites and incorrect link/backlink resolution (e.g., multiple index.md files or duplicate titles).",
+        "mitigation": {
+          "text": "Define canonical note identifiers (path-based) and maintain an explicit link graph; record link types and targets during parse; add graph consistency checks and backlink golden tests.",
+          "owner": "eng",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_B_10",
+          "RISK_A_7"
+        ]
+      },
+      {
+        "id": "RISK_U_11",
+        "severity": "high",
+        "description": "Build pipeline fails or produces incorrect output due to non-UTF8 files, unusual filenames, OS-specific path handling, and/or limited cross-platform support (Windows/macOS/Linux).",
+        "mitigation": {
+          "text": "Normalize and validate paths; define supported encodings; add cross-platform tests (Windows/Mac/Linux path separators); implement clear error messages and a file-skip option with reporting.",
+          "owner": "eng",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_8",
+          "RISK_B_12",
+          "RISK_B_18"
+        ]
+      },
+      {
+        "id": "RISK_U_12",
+        "severity": "medium",
+        "description": "Broken internal links are handled inconsistently (e.g., silent failures or crashes), leading to hidden navigation defects and reduced trust.",
+        "mitigation": {
+          "text": "Implement build-time link validation; provide strict/warn modes; generate a 'broken links' report artifact and optionally fail the build in CI.",
+          "owner": "eng",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_13",
+          "RISK_B_13"
+        ]
+      },
+      {
+        "id": "RISK_U_13",
+        "severity": "medium",
+        "description": "Broken relative paths/base URLs and/or absolute link generation break assets and navigation on common hosting targets (local file browsing vs subdirectory hosting such as GitHub Pages).",
+        "mitigation": {
+          "text": "Support configurable basePath/baseUrl (Q5); generate consistent absolute/relative URLs; add a deploy-target test matrix and a link checker against the built output directory.",
+          "owner": "eng",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_6",
+          "RISK_B_14"
+        ]
+      },
+      {
+        "id": "RISK_U_14",
+        "severity": "medium",
+        "description": "If incremental/watch mode is implemented, it produces stale pages or inconsistent search index compared to clean builds due to missed dependencies (e.g., templates/shared assets).",
+        "mitigation": {
+          "text": "Treat incremental build as an optional feature; add invariants to ensure incremental output matches clean build output; provide a 'clean' command and detect partial-state corruption.",
+          "owner": "eng",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_9",
+          "RISK_B_17"
+        ]
+      },
+      {
+        "id": "RISK_U_15",
+        "severity": "medium",
+        "description": "Generated site accessibility is poor (contrast, semantics/landmarks/ARIA, keyboard navigation), reducing usability for users with disabilities.",
+        "mitigation": {
+          "text": "Adopt an accessible base theme; run automated checks (e.g., semantic headings, alt text handling); document accessibility assumptions for user-supplied content.",
+          "owner": "eng",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_11",
+          "RISK_B_16"
+        ]
+      },
+      {
+        "id": "RISK_U_16",
+        "severity": "low",
+        "description": "Generated site is not mobile-responsive or has poor usability on small screens, limiting utility for mobile readers.",
+        "mitigation": null,
+        "acceptance": null,
+        "source_ids": [
+          "RISK_B_9"
+        ]
+      },
+      {
+        "id": "RISK_U_17",
+        "severity": "medium",
+        "description": "Navigation/information architecture mismatches user expectations (missing pages, confusing tag index, poor discoverability).",
+        "mitigation": {
+          "text": "Resolve IA requirements (Q4); provide a minimal default nav (Home, All notes, Tags) plus configurable menus; include a generated sitemap page and consistent breadcrumbs.",
+          "owner": "pm",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_12"
+        ]
+      },
+      {
+        "id": "RISK_U_18",
+        "severity": "medium",
+        "description": "Search relevance quality is poor (stemming, ranking, stopwords), failing success expectations despite a functioning index.",
+        "mitigation": {
+          "text": "Define relevance acceptance tests (queries and expected top results); allow configuration of tokenization/stopwords; include title boosting and tag boosting where applicable.",
+          "owner": "eng",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_14"
+        ]
+      },
+      {
+        "id": "RISK_U_19",
+        "severity": "high",
+        "description": "Template/theme customization introduces unsafe injections or code execution (e.g., user-provided templates/scripts) that compromise site integrity.",
+        "mitigation": {
+          "text": "Limit customization to safe configuration (CSS variables, allowed template slots); if templating is supported, sandbox and lint templates; document security boundaries and disable arbitrary JS by default.",
+          "owner": "sec",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_15"
+        ]
+      },
+      {
+        "id": "RISK_U_20",
+        "severity": "medium",
+        "description": "Non-deterministic builds (ordering differences, timestamps, locale/timezone differences) cause noisy diffs and unreliable deployment pipelines.",
+        "mitigation": {
+          "text": "Enforce deterministic ordering (sorted paths/tags); avoid embedding timestamps by default; control locale/timezone; add a 'deterministic build' CI check comparing repeated builds.",
+          "owner": "eng",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_16"
+        ]
+      },
+      {
+        "id": "RISK_U_21",
+        "severity": "medium",
+        "description": "Dependency supply-chain issues (vulnerable Markdown/render/search libraries) introduce security and maintenance risk.",
+        "mitigation": {
+          "text": "Pin dependencies; run vulnerability scanning in CI; maintain an upgrade cadence; prefer well-maintained libraries with security track records.",
+          "owner": "sec",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_17"
+        ]
+      },
+      {
+        "id": "RISK_U_22",
+        "severity": "low",
+        "description": "Insufficient error messages/logging during build leads to long debugging cycles and poor user experience.",
+        "mitigation": {
+          "text": "Standardize structured logs and human-readable summaries; include file/line context where possible; provide a final build report with counts (notes, tags, links, warnings).",
+          "owner": "eng",
+          "status": "planned"
+        },
+        "acceptance": null,
+        "source_ids": [
+          "RISK_A_18"
+        ]
+      },
+      {
+        "id": "RISK_U_23",
+        "severity": "low",
+        "description": "CLI has complex installation steps or confusing UX, creating a barrier to entry for less technical users (relates to Q10).",
+        "mitigation": null,
+        "acceptance": null,
+        "source_ids": [
+          "RISK_B_15"
+        ]
+      }
+    ],
+    "tool_policy": {
+      "stage_policies": [
+        {
+          "stage": "Intake",
+          "allowlisted_tools": [
+            "artifact_read",
+            "artifact_write"
+          ],
+          "restrictions": [
+            {
+              "type": "no_external_network",
+              "value": true
+            },
+            {
+              "type": "write_scope",
+              "value": "audit_spine_and_intake_notes_only"
+            },
+            {
+              "type": "data_minimization",
+              "value": "do_not_request_or_store_note_contents_unless_required"
+            }
+          ],
+          "hitl_triggers": [
+            "Any request to access private repositories, personal notes, or credentials",
+            "Any ambiguity in requirements that changes scope beyond capsule goals/non-goals",
+            "Unconfirmed blocker questions (Q1/Q2/Q3/Q4/Q10) would materially change architecture or success metrics",
+            "Any decision affecting security boundaries (raw HTML, template execution, third-party JS/search libraries)"
+          ]
+        },
+        {
+          "stage": "Generate",
+          "allowlisted_tools": [
+            "artifact_read"
+          ],
+          "restrictions": [
+            {
+              "type": "no_external_network",
+              "value": true
+            },
+            {
+              "type": "no_side_effects",
+              "value": true
+            },
+            {
+              "type": "must_trace_to_inputs",
+              "value": "only_use_project_capsule_and_confirmed_answers"
+            }
+          ],
+          "hitl_triggers": [
+            "Proposed features conflict with non-goals (e.g., auth, server runtime, AI generation)",
+            "Proposed approach requires unsupported Markdown/linking/tag conventions without confirmation",
+            "build_process_failure",
+            "excessive_resource_usage"
+          ]
+        },
+        {
+          "stage": "Validate",
+          "allowlisted_tools": [
+            "artifact_read"
+          ],
+          "restrictions": [
+            {
+              "type": "no_external_network",
+              "value": true
+            },
+            {
+              "type": "consistency_checks_required",
+              "value": [
+                "goals_vs_non_goals",
+                "constraints_coverage",
+                "open_questions_blockers"
+              ]
+            }
+          ],
+          "hitl_triggers": [
+            "Validation finds blockers that affect architecture (Q1/Q2/Q3/Q4/Q10)",
+            "Security risk identified that requires a trust-model decision (e.g., raw HTML handling)",
+            "validation_error_threshold_exceeded",
+            "Validation stage detects a high number of broken links or accessibility violations above a defined threshold.",
+            "Build time or memory usage exceeds performance targets for the specified note scale."
+          ]
+        },
+        {
+          "stage": "Review",
+          "allowlisted_tools": [
+            "artifact_read",
+            "artifact_write"
+          ],
+          "restrictions": [
+            {
+              "type": "no_external_network",
+              "value": true
+            },
+            {
+              "type": "write_scope",
+              "value": "review_findings_only"
+            },
+            {
+              "type": "require_citations",
+              "value": "all key claims must reference capsule fields or confirmed answers"
+            }
+          ],
+          "hitl_triggers": [
+            "Any acceptance of high/critical risks without mitigations",
+            "Any policy decision impacting user security (sanitization, template execution)"
+          ]
+        },
+        {
+          "stage": "Judge",
+          "allowlisted_tools": [
+            "artifact_read"
+          ],
+          "restrictions": [
+            {
+              "type": "no_external_network",
+              "value": true
+            },
+            {
+              "type": "no_writes",
+              "value": true
+            },
+            {
+              "type": "decision_basis",
+              "value": "must_be_explainable_from_artifacts"
+            }
+          ],
+          "hitl_triggers": [
+            "Tradeoff requires product decision (feature cuts, performance budgets, compatibility choices)",
+            "Any build process failure (e.g., crash, non-zero exit code)."
+          ]
+        },
+        {
+          "stage": "Freeze",
+          "allowlisted_tools": [
+            "artifact_read"
+          ],
+          "restrictions": [
+            {
+              "type": "no_external_network",
+              "value": true
+            },
+            {
+              "type": "no_writes",
+              "value": true
+            },
+            {
+              "type": "no_new_requirements",
+              "value": true
+            }
+          ],
+          "hitl_triggers": [
+            "Request to change scope or revise locked decisions"
+          ]
+        }
+      ]
+    },
+    "hitl_policy": {
+      "when_to_interrupt": [
+        "Unconfirmed blocker questions (Q1/Q2/Q3/Q4/Q10) would materially change architecture or success metrics",
+        "Any decision affecting security boundaries (raw HTML, template execution, third-party JS/search libraries)",
+        "Any proposal that violates hard constraints (static-only output) or non-goals (server runtime, auth, AI content generation)",
+        "Any need to accept a high/critical risk without a mitigation plan",
+        "Any build process failure (e.g., crash, non-zero exit code).",
+        "Validation stage detects a high number of broken links or accessibility violations above a defined threshold.",
+        "Build time or memory usage exceeds performance targets for the specified note scale."
+      ],
+      "approval_roles": [
+        "Product Owner",
+        "Security Reviewer",
+        "Tech Lead",
+        "Developer",
+        "Project Lead"
+      ]
+    },
+    "taxonomy_categories": [
+      "Requirements ambiguity / scope drift",
+      "Parser/rendering correctness",
+      "Link resolution & graph integrity (links/backlinks)",
+      "Metadata extraction (tags/front matter) correctness",
+      "Search indexing quality & performance",
+      "Build determinism & reproducibility",
+      "Cross-platform filesystem/path handling",
+      "Security: injection/XSS & unsafe content handling",
+      "Dependency/supply-chain risk",
+      "UX/IA/navigation & accessibility",
+      "Operational robustness (logging, error handling, diagnostics)",
+      "Deployment/hosting compatibility (base paths, assets)",
+      "DATA_INPUT:PARSING_FAILURE",
+      "DATA_INPUT:CONVENTION_AMBIGUITY",
+      "DATA_INPUT:SCALE_FAILURE",
+      "DATA_INPUT:INVALID_FORMAT",
+      "BUILD_LOGIC:PERFORMANCE_BOTTLENECK",
+      "BUILD_LOGIC:DEPENDENCY_ERROR",
+      "BUILD_LOGIC:CRASH_OR_HANG",
+      "OUTPUT_ARTIFACT:SECURITY_VULNERABILITY",
+      "OUTPUT_ARTIFACT:FUNCTIONAL_BUG",
+      "OUTPUT_ARTIFACT:RENDERING_ERROR",
+      "OUTPUT_ARTIFACT:ACCESSIBILITY_VIOLATION",
+      "OUTPUT_ARTIFACT:CONFIGURATION_ERROR",
+      "USER_ADOPTION:USABILITY_ISSUE",
+      "SECURITY_PRIVACY:DATA_LEAKAGE"
+    ],
+    "merge_log": [
+      "{\"action\":\"merged_near_duplicates\",\"to_id\":\"RISK_U_1\",\"from_ids\":[\"RISK_A_1\",\"RISK_B_1\"],\"evidence\":[{\"artifact_ref\":\"risk_gov_draft_1_v1\",\"entity_id\":\"RISK_A_1\",\"json_pointer\":\"/inputs/risk_drafts/0/risk_register/0\",\"note\":\"Markdown flavor parsing/rendering risk with mitigation.\"},{\"artifact_ref\":\"risk_gov_draft_2_v1\",\"entity_id\":\"RISK_B_1\",\"json_pointer\":\"/inputs/risk_drafts/1/risk_register/0\",\"note\":\"Markdown syntax incompatibility risk (Q6).\"}]}",
+      "{\"action\":\"merged_near_duplicates\",\"to_id\":\"RISK_U_2\",\"from_ids\":[\"RISK_A_2\",\"RISK_B_2\"],\"evidence\":[{\"artifact_ref\":\"risk_gov_draft_1_v1\",\"entity_id\":\"RISK_A_2\",\"json_pointer\":\"/inputs/risk_drafts/0/risk_register/1\",\"note\":\"Ambiguous internal link conventions; deterministic resolver mitigation.\"},{\"artifact_ref\":\"risk_gov_draft_2_v1\",\"entity_id\":\"RISK_B_2\",\"json_pointer\":\"/inputs/risk_drafts/1/risk_register/1\",\"note\":\"Unsupported internal linking conventions cause backlink failures (A2/Q1).\"}]}",
+      "{\"action\":\"merged_near_duplicates\",\"to_id\":\"RISK_U_3\",\"from_ids\":[\"RISK_A_3\",\"RISK_B_3\"],\"evidence\":[{\"artifact_ref\":\"risk_gov_draft_1_v1\",\"entity_id\":\"RISK_A_3\",\"json_pointer\":\"/inputs/risk_drafts/0/risk_register/2\",\"note\":\"Tag extraction inconsistency + normalization mitigation.\"},{\"artifact_ref\":\"risk_gov_draft_2_v1\",\"entity_id\":\"RISK_B_3\",\"json_pointer\":\"/inputs/risk_drafts/1/risk_register/2\",\"note\":\"Undefined tag conventions break tag navigation (Q2).\"}]}",
+      "{\"action\":\"merged_near_duplicates\",\"to_id\":\"RISK_U_4\",\"from_ids\":[\"RISK_B_4\",\"RISK_A_10\"],\"evidence\":[{\"artifact_ref\":\"risk_gov_draft_2_v1\",\"entity_id\":\"RISK_B_4\",\"json_pointer\":\"/inputs/risk_drafts/1/risk_register/3\",\"note\":\"Critical scale failure (slow/crash) at large note counts (Q3).\"},{\"artifact_ref\":\"risk_gov_draft_1_v1\",\"entity_id\":\"RISK_A_10\",\"json_pointer\":\"/inputs/risk_drafts/0/risk_register/9\",\"note\":\"Memory spikes during parsing/indexing on large sets.\"}]}",
+      "{\"action\":\"merged_near_duplicates\",\"to_id\":\"RISK_U_5\",\"from_ids\":[\"RISK_A_4\",\"RISK_B_7\"],\"evidence\":[{\"artifact_ref\":\"risk_gov_draft_1_v1\",\"entity_id\":\"RISK_A_4\",\"json_pointer\":\"/inputs/risk_drafts/0/risk_register/3\",\"note\":\"Client-side search index too large/slow; performance budgets mitigation.\"},{\"artifact_ref\":\"risk_gov_draft_2_v1\",\"entity_id\":\"RISK_B_7\",\"json_pointer\":\"/inputs/risk_drafts/1/risk_register/6\",\"note\":\"Index size too large causes slow loads/high memory.\"}]}",
+      "{\"action\":\"kept_distinct\",\"to_id\":\"RISK_U_6\",\"from_ids\":[\"RISK_B_5\"],\"evidence\":[{\"artifact_ref\":\"risk_gov_draft_2_v1\",\"entity_id\":\"RISK_B_5\",\"json_pointer\":\"/inputs/risk_drafts/1/risk_register/4\",\"note\":\"Malformed YAML frontmatter build failure risk.\"}]}",
+      "{\"action\":\"merged_near_duplicates\",\"to_id\":\"RISK_U_7\",\"from_ids\":[\"RISK_A_5\",\"RISK_B_6\"],\"evidence\":[{\"artifact_ref\":\"risk_gov_draft_1_v1\",\"entity_id\":\"RISK_A_5\",\"json_pointer\":\"/inputs/risk_drafts/0/risk_register/4\",\"note\":\"XSS/content injection with sanitization mitigation.\"},{\"artifact_ref\":\"risk_gov_draft_2_v1\",\"entity_id\":\"RISK_B_6\",\"json_pointer\":\"/inputs/risk_drafts/1/risk_register/5\",\"note\":\"XSS vulnerability if raw HTML/scripts rendered.\"}]}",
+      "{\"action\":\"kept_distinct\",\"to_id\":\"RISK_U_8\",\"from_ids\":[\"RISK_B_8\"],\"evidence\":[{\"artifact_ref\":\"risk_gov_draft_2_v1\",\"entity_id\":\"RISK_B_8\",\"json_pointer\":\"/inputs/risk_drafts/1/risk_register/7\",\"note\":\"Critical privacy leakage risk due to static output without access control.\"}]}",
+      "{\"action\":\"merged_related\",\"to_id\":\"RISK_U_9\",\"from_ids\":[\"RISK_A_7\",\"RISK_B_11\"],\"evidence\":[{\"artifact_ref\":\"risk_gov_draft_1_v1\",\"entity_id\":\"RISK_A_7\",\"json_pointer\":\"/inputs/risk_drafts/0/risk_register/6\",\"note\":\"Backlink correctness edge cases incl. duplicate titles.\"},{\"artifact_ref\":\"risk_gov_draft_2_v1\",\"entity_id\":\"RISK_B_11\",\"json_pointer\":\"/inputs/risk_drafts/1/risk_register/10\",\"note\":\"Circular link risk causing stack overflow/infinite loop.\"}]}",
+      "{\"action\":\"merged_related\",\"to_id\":\"RISK_U_10\",\"from_ids\":[\"RISK_B_10\",\"RISK_A_7\"],\"evidence\":[{\"artifact_ref\":\"risk_gov_draft_2_v1\",\"entity_id\":\"RISK_B_10\",\"json_pointer\":\"/inputs/risk_drafts/1/risk_register/9\",\"note\":\"Filename/title collisions overwrite pages or break links.\"},{\"artifact_ref\":\"risk_gov_draft_1_v1\",\"entity_id\":\"RISK_A_7\",\"json_pointer\":\"/inputs/risk_drafts/0/risk_register/6\",\"note\":\"Duplicate titles listed as a backlink edge case.\"}]}",
+      "{\"action\":\"merged_near_duplicates\",\"to_id\":\"RISK_U_11\",\"from_ids\":[\"RISK_A_8\",\"RISK_B_12\",\"RISK_B_18\"],\"evidence\":[{\"artifact_ref\":\"risk_gov_draft_1_v1\",\"entity_id\":\"RISK_A_8\",\"json_pointer\":\"/inputs/risk_drafts/0/risk_register/7\",\"note\":\"Non-UTF8/unusual filenames/OS path handling mitigation.\"},{\"artifact_ref\":\"risk_gov_draft_2_v1\",\"entity_id\":\"RISK_B_12\",\"json_pointer\":\"/inputs/risk_drafts/1/risk_register/11\",\"note\":\"Non-UTF-8 encoding handling risk.\"},{\"artifact_ref\":\"risk_gov_draft_2_v1\",\"entity_id\":\"RISK_B_18\",\"json_pointer\":\"/inputs/risk_drafts/1/risk_register/17\",\"note\":\"Limited platform support risk.\"}]}",
+      "{\"action\":\"merged_near_duplicates\",\"to_id\":\"RISK_U_12\",\"from_ids\":[\"RISK_A_13\",\"RISK_B_13\"],\"evidence\":[{\"artifact_ref\":\"risk_gov_draft_1_v1\",\"entity_id\":\"RISK_A_13\",\"json_pointer\":\"/inputs/risk_drafts/0/risk_register/12\",\"note\":\"Broken links handled inconsistently; report/strict mode mitigation.\"},{\"artifact_ref\":\"risk_gov_draft_2_v1\",\"entity_id\":\"RISK_B_13\",\"json_pointer\":\"/inputs/risk_drafts/1/risk_register/12\",\"note\":\"Broken links should warn not crash.\"}]}",
+      "{\"action\":\"merged_near_duplicates\",\"to_id\":\"RISK_U_13\",\"from_ids\":[\"RISK_A_6\",\"RISK_B_14\"],\"evidence\":[{\"artifact_ref\":\"risk_gov_draft_1_v1\",\"entity_id\":\"RISK_A_6\",\"json_pointer\":\"/inputs/risk_drafts/0/risk_register/5\",\"note\":\"Base URLs/paths differ by hosting target; basePath mitigation.\"},{\"artifact_ref\":\"risk_gov_draft_2_v1\",\"entity_id\":\"RISK_B_14\",\"json_pointer\":\"/inputs/risk_drafts/1/risk_register/13\",\"note\":\"Absolute paths fail when hosted in subdirectory.\"}]}",
+      "{\"action\":\"merged_near_duplicates\",\"to_id\":\"RISK_U_14\",\"from_ids\":[\"RISK_A_9\",\"RISK_B_17\"],\"evidence\":[{\"artifact_ref\":\"risk_gov_draft_1_v1\",\"entity_id\":\"RISK_A_9\",\"json_pointer\":\"/inputs/risk_drafts/0/risk_register/8\",\"note\":\"Incremental/watch mode stale outputs; clean/invariants mitigation.\"},{\"artifact_ref\":\"risk_gov_draft_2_v1\",\"entity_id\":\"RISK_B_17\",\"json_pointer\":\"/inputs/risk_drafts/1/risk_register/16\",\"note\":\"Incremental builds miss dependencies and go stale.\"}]}",
+      "{\"action\":\"merged_near_duplicates\",\"to_id\":\"RISK_U_15\",\"from_ids\":[\"RISK_A_11\",\"RISK_B_16\"],\"evidence\":[{\"artifact_ref\":\"risk_gov_draft_1_v1\",\"entity_id\":\"RISK_A_11\",\"json_pointer\":\"/inputs/risk_drafts/0/risk_register/10\",\"note\":\"Accessibility regressions risk + mitigation.\"},{\"artifact_ref\":\"risk_gov_draft_2_v1\",\"entity_id\":\"RISK_B_16\",\"json_pointer\":\"/inputs/risk_drafts/1/risk_register/15\",\"note\":\"Poor accessibility risk.\"}]}",
+      "{\"action\":\"kept_distinct\",\"to_id\":\"RISK_U_16\",\"from_ids\":[\"RISK_B_9\"],\"evidence\":[{\"artifact_ref\":\"risk_gov_draft_2_v1\",\"entity_id\":\"RISK_B_9\",\"json_pointer\":\"/inputs/risk_drafts/1/risk_register/8\",\"note\":\"Mobile responsiveness/usability risk.\"}]}",
+      "{\"action\":\"kept_distinct\",\"to_id\":\"RISK_U_17\",\"from_ids\":[\"RISK_A_12\"],\"evidence\":[{\"artifact_ref\":\"risk_gov_draft_1_v1\",\"entity_id\":\"RISK_A_12\",\"json_pointer\":\"/inputs/risk_drafts/0/risk_register/11\",\"note\":\"Information architecture mismatch risk (Q4).\"}]}",
+      "{\"action\":\"kept_distinct\",\"to_id\":\"RISK_U_18\",\"from_ids\":[\"RISK_A_14\"],\"evidence\":[{\"artifact_ref\":\"risk_gov_draft_1_v1\",\"entity_id\":\"RISK_A_14\",\"json_pointer\":\"/inputs/risk_drafts/0/risk_register/13\",\"note\":\"Search relevance quality risk.\"}]}",
+      "{\"action\":\"kept_distinct\",\"to_id\":\"RISK_U_19\",\"from_ids\":[\"RISK_A_15\"],\"evidence\":[{\"artifact_ref\":\"risk_gov_draft_1_v1\",\"entity_id\":\"RISK_A_15\",\"json_pointer\":\"/inputs/risk_drafts/0/risk_register/14\",\"note\":\"Template/theme customization unsafe injection risk.\"}]}",
+      "{\"action\":\"kept_distinct\",\"to_id\":\"RISK_U_20\",\"from_ids\":[\"RISK_A_16\"],\"evidence\":[{\"artifact_ref\":\"risk_gov_draft_1_v1\",\"entity_id\":\"RISK_A_16\",\"json_pointer\":\"/inputs/risk_drafts/0/risk_register/15\",\"note\":\"Non-deterministic builds risk.\"}]}",
+      "{\"action\":\"kept_distinct\",\"to_id\":\"RISK_U_21\",\"from_ids\":[\"RISK_A_17\"],\"evidence\":[{\"artifact_ref\":\"risk_gov_draft_1_v1\",\"entity_id\":\"RISK_A_17\",\"json_pointer\":\"/inputs/risk_drafts/0/risk_register/16\",\"note\":\"Dependency supply-chain risk.\"}]}",
+      "{\"action\":\"kept_distinct\",\"to_id\":\"RISK_U_22\",\"from_ids\":[\"RISK_A_18\"],\"evidence\":[{\"artifact_ref\":\"risk_gov_draft_1_v1\",\"entity_id\":\"RISK_A_18\",\"json_pointer\":\"/inputs/risk_drafts/0/risk_register/17\",\"note\":\"Insufficient build logging/error messages risk.\"}]}",
+      "{\"action\":\"kept_distinct\",\"to_id\":\"RISK_U_23\",\"from_ids\":[\"RISK_B_15\"],\"evidence\":[{\"artifact_ref\":\"risk_gov_draft_2_v1\",\"entity_id\":\"RISK_B_15\",\"json_pointer\":\"/inputs/risk_drafts/1/risk_register/14\",\"note\":\"CLI installation/usability barrier risk (Q10).\"}]}",
+      "{\"action\":\"tool_policy_consolidated\",\"from_artifacts\":[\"risk_gov_draft_1_v1\",\"risk_gov_draft_2_v1\"],\"evidence\":[{\"artifact_ref\":\"risk_gov_draft_1_v1\",\"entity_id\":null,\"json_pointer\":\"/inputs/risk_drafts/0/tool_policy\",\"note\":\"Conservative artifact-only tools, explicit restrictions, HITL triggers.\"},{\"artifact_ref\":\"risk_gov_draft_2_v1\",\"entity_id\":null,\"json_pointer\":\"/inputs/risk_drafts/1/tool_policy\",\"note\":\"Included FS/process tools; consolidated into stricter artifact-only policy while retaining relevant HITL triggers.\"}]}",
+      "{\"action\":\"hitl_policy_consolidated\",\"from_artifacts\":[\"risk_gov_draft_1_v1\",\"risk_gov_draft_2_v1\"],\"evidence\":[{\"artifact_ref\":\"risk_gov_draft_1_v1\",\"entity_id\":null,\"json_pointer\":\"/inputs/risk_drafts/0/hitl_policy\",\"note\":\"Scope/security/non-goal constraint based interruptions + approval roles.\"},{\"artifact_ref\":\"risk_gov_draft_2_v1\",\"entity_id\":null,\"json_pointer\":\"/inputs/risk_drafts/1/hitl_policy\",\"note\":\"Operational interruption triggers (failures/thresholds) + roles.\"}]}"
+    ]
+  }
+}

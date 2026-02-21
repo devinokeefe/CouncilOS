@@ -1,0 +1,551 @@
+{
+  "artifact_type": "candidate_delta",
+  "artifact_id": "candidate_delta_B1B_v3",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:56:25.930199Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "branch_set_v1"
+  ],
+  "payload": {
+    "candidate_id": "B1B",
+    "executive_summary": "Candidate B1B delivers a Markdown-to-static-site generator using a monolithic CLI pipeline (O1) with a thin-slice milestone strategy. Five milestones incrementally build a fully functional static site: (1) CLI skeleton with Markdown ingestion and single-note HTML rendering, (2) tag extraction and tag pages, (3) internal link resolution and backlinks, (4) client-side search, and (5) polish including broken-link warnings, base-URL configuration, GFM extensions, and cross-browser QA. Each milestone produces a deployable static site with progressively more features, de-risking integration early. The monolithic architecture minimizes design overhead and is well-suited for the confirmed single-user, ≤1,000-note scope. Key risks around link conventions (K2) and tag conventions (K3) are front-loaded into Milestones 2–3 with explicit configuration requirements. Scale risks (K4/K5) are deferred as acceptable at the confirmed target. Privacy risk (K8) is accepted with documentation-only mitigation.",
+    "architecture_choice": {
+      "option_id": "O1",
+      "rationale": "O1 (monolithic CLI pipeline) is the simplest architecture that satisfies all MUST requirements with minimal upfront design overhead. The single-process, in-memory pipeline is straightforward to implement, debug, and package. At the confirmed scale of ≤1,000 notes, in-memory processing is performant and memory-safe. The thin-slice delivery strategy produces a working static site from the first milestone, validating the end-to-end pipeline early. The main trade-off—limited extensibility—is acceptable given the project's focused scope and single-user orientation. A plugin-based approach (O2) or SSG wrapper (O3) would add unnecessary complexity; a multi-stage pipeline (O4) is premature without incremental-build requirements being MUST-level.",
+      "high_level_dataflow": "CLI Orchestrator (C1) → Source Scanner & Front Matter Parser (C2) discovers .md files and parses front matter → Content Analyzer & Graph Builder (C3) extracts links, tags, builds note graph with backlinks → Markdown Renderer (C4) converts Markdown to HTML → Template & Theme Renderer (C5) produces per-note pages, tag index, per-tag pages, home page, all-notes page → Search Index Builder (C6) generates client-side search index from note corpus → Output Emitter (C7) writes HTML, CSS, JS, search index, and static assets to output directory → Client-Side Runtime (C8) loads search index in browser and provides search UI.",
+      "key_design_decisions": [
+        "DEC1",
+        "DEC2",
+        "DEC3",
+        "DEC4",
+        "DEC5",
+        "DEC6",
+        "DEC7"
+      ]
+    },
+    "milestones": [
+      {
+        "id": "M1",
+        "name": "CLI Skeleton + Markdown Ingestion + Single-Note HTML Render",
+        "deliverables": [
+          {
+            "id": "DL1",
+            "text": "CLI entry point accepting input directory and output directory arguments (R5)"
+          },
+          {
+            "id": "DL2",
+            "text": "Recursive .md file discovery from input directory (R1)"
+          },
+          {
+            "id": "DL3",
+            "text": "CommonMark-compliant Markdown-to-HTML rendering preserving headings, lists, emphasis, links, images, code blocks (R3, R4)"
+          },
+          {
+            "id": "DL4",
+            "text": "One HTML page per input Markdown file written to output directory (R2, R3)"
+          },
+          {
+            "id": "DL5",
+            "text": "Build success/failure reporting with actionable error messages (R6)"
+          },
+          {
+            "id": "DL6",
+            "text": "Graceful handling of malformed YAML front matter (per-file skip with warning, not build failure) (K6)"
+          },
+          {
+            "id": "DL7",
+            "text": "Default HTML sanitization to mitigate XSS from raw HTML in notes (K7)"
+          }
+        ],
+        "exit_criteria": [
+          "AT1 passes: three nested .md files discovered, non-.md excluded",
+          "AT2 passes: output contains only static assets, site loads from static server",
+          "AT3 passes: one-to-one HTML mapping for non-excluded files",
+          "AT4 passes: all specified formatting elements preserved in rendered HTML",
+          "AT5 passes: CLI accepts paths, exits 0, output directory populated",
+          "AT6 passes: valid input succeeds; invalid input yields non-zero exit and actionable error"
+        ],
+        "depends_on": []
+      },
+      {
+        "id": "M2",
+        "name": "Tag Extraction, Tag Pages, and Tag Navigation",
+        "deliverables": [
+          {
+            "id": "DL8",
+            "text": "Configurable tag extraction supporting at least YAML front matter tags and/or inline #tag syntax (R11)"
+          },
+          {
+            "id": "DL9",
+            "text": "Tag normalization pipeline (case-folding, trimming) applied consistently (R16, K3)"
+          },
+          {
+            "id": "DL10",
+            "text": "Per-note tag display with navigable links to tag pages (R12)"
+          },
+          {
+            "id": "DL11",
+            "text": "Tags index page listing all tags and per-tag pages listing associated notes (R13)"
+          },
+          {
+            "id": "DL12",
+            "text": "Tag convention configuration documented and required before milestone start (K3 mitigation)"
+          }
+        ],
+        "exit_criteria": [
+          "AT11 passes: tags extracted per configured convention and associated with correct notes",
+          "AT12 passes: tags displayed on note pages as navigable links to tag pages",
+          "AT13 passes: tags index page and per-tag pages exist with correct note listings",
+          "Tag normalization produces no duplicate tags for equivalent inputs"
+        ],
+        "depends_on": [
+          "M1"
+        ]
+      },
+      {
+        "id": "M3",
+        "name": "Internal Link Resolution + Backlinks",
+        "deliverables": [
+          {
+            "id": "DL13",
+            "text": "Standard Markdown relative link resolution to generated HTML pages (R9)"
+          },
+          {
+            "id": "DL14",
+            "text": "Backlinks section on each linked-to note page listing all source notes with clickable links (R10)"
+          },
+          {
+            "id": "DL15",
+            "text": "Link convention configuration (relative paths; optional wiki-links) documented and required before milestone start (K2 mitigation)"
+          },
+          {
+            "id": "DL16",
+            "text": "Graph consistency checks: canonical path-based note identifiers, cycle-safe traversal, duplicate-title/slug collision detection (K9, K10)"
+          }
+        ],
+        "exit_criteria": [
+          "AT9 passes: relative link in note-a navigates to note-b HTML page",
+          "AT10 passes: note-c shows backlinks from note-a and note-b, each clickable",
+          "No graph errors or infinite loops on test fixtures with circular links",
+          "Slug collision detection emits warnings for duplicate output paths"
+        ],
+        "depends_on": [
+          "M1"
+        ]
+      },
+      {
+        "id": "M4",
+        "name": "Client-Side Search Index and Search UI",
+        "deliverables": [
+          {
+            "id": "DL17",
+            "text": "Build-time full-text search index generation from note titles and body content (R8)"
+          },
+          {
+            "id": "DL18",
+            "text": "Client-side search UI that queries the prebuilt index entirely in-browser (R7)"
+          },
+          {
+            "id": "DL19",
+            "text": "Search results link to corresponding note pages"
+          },
+          {
+            "id": "DL20",
+            "text": "Search performance validated at ≤1,000 notes with <500ms query response (R22, K5)"
+          }
+        ],
+        "exit_criteria": [
+          "AT7 passes: search returns correct results for title and body queries with no server requests",
+          "AT8 passes: search index artifact present in output and loaded by client-side search",
+          "Search query latency <500ms on 1,000-note fixture on modern consumer device"
+        ],
+        "depends_on": [
+          "M1",
+          "M2",
+          "M3"
+        ]
+      },
+      {
+        "id": "M5",
+        "name": "Polish — Broken-Link Warnings, Base URL, GFM, Browser QA, Navigation",
+        "deliverables": [
+          {
+            "id": "DL21",
+            "text": "Build-time warnings for unresolved internal links with source file and link text; non-navigable rendering of broken links (R18, K12)"
+          },
+          {
+            "id": "DL22",
+            "text": "Configurable base URL / path prefix for subdirectory deployment (R19, K13)"
+          },
+          {
+            "id": "DL23",
+            "text": "GFM extensions: tables, strikethrough, task lists, fenced code with syntax highlighting (R21)"
+          },
+          {
+            "id": "DL24",
+            "text": "Cross-browser validation in Chrome, Firefox, Safari, Edge (R14)"
+          },
+          {
+            "id": "DL25",
+            "text": "Home/landing page and global navigation (all-notes, tags index, search) reachable from any note page (R17)"
+          },
+          {
+            "id": "DL26",
+            "text": "File/directory exclusion via configuration or CLI option (R20)"
+          },
+          {
+            "id": "DL27",
+            "text": "Build-time privacy warning banner and README disclaimer for public hosting (K8 documentation-only mitigation)"
+          },
+          {
+            "id": "DL28",
+            "text": "Deterministic build output (sorted paths/tags, no embedded timestamps) (K20)"
+          }
+        ],
+        "exit_criteria": [
+          "AT14 passes: core functionality works in Chrome, Firefox, Safari, Edge without blocking JS errors",
+          "Broken-link warnings emitted for fixture with intentionally unresolved links; build does not fail",
+          "Site deploys correctly under a subdirectory path prefix",
+          "GFM table, strikethrough, task list, and syntax-highlighted code render correctly",
+          "Navigation elements present and reachable from every note page",
+          "Repeated builds on same input produce byte-identical output"
+        ],
+        "depends_on": [
+          "M1",
+          "M2",
+          "M3",
+          "M4"
+        ]
+      }
+    ],
+    "decision_log": [
+      {
+        "id": "DEC1",
+        "question": "Which architecture option should be used?",
+        "choice": "O1 — Custom-built monolithic CLI pipeline",
+        "rationale": "O1 is the simplest architecture satisfying all MUST requirements. At ≤1,000 notes, in-memory processing is performant. The focused scope and single-user orientation make extensibility trade-offs acceptable. Plugin-based (O2), SSG-wrapper (O3), and multi-stage (O4) approaches add complexity without proportional benefit for this project.",
+        "alternatives_considered": [
+          "O2 — Plugin-based build core: higher extensibility but unnecessary upfront complexity",
+          "O3 — Existing SSG wrapper: faster for common features but couples to external SSG lifecycle",
+          "O4 — Multi-stage pipeline with intermediate artifacts: enables incremental builds but premature given COULD-level priority of R23"
+        ],
+        "what_would_change_this_decision": [
+          "Requirement for third-party plugin ecosystem or user-extensible build pipeline",
+          "Scale requirement exceeding in-memory processing limits (>>1,000 notes)",
+          "Incremental build becoming a MUST requirement"
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "architecture_canonical_v1",
+            "entity_id": "O1",
+            "json_pointer": "/options/0",
+            "note": "Monolithic CLI pipeline definition",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "branch_set_v1",
+            "entity_id": "B1",
+            "json_pointer": "/branches/0",
+            "note": "Branch B1 selects O1 with thin-slice strategy",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "DEC2",
+        "question": "What milestone delivery strategy should be used?",
+        "choice": "Thin-slice: each milestone delivers a deployable static site with incrementally more features",
+        "rationale": "Thin-slice de-risks integration by producing a working end-to-end pipeline from Milestone 1. Each subsequent milestone adds a feature vertical (tags, links/backlinks, search, polish) that can be independently validated. This approach surfaces integration issues early and provides continuous stakeholder visibility.",
+        "alternatives_considered": [
+          "Layer-cake: build all backend processing first, then all frontend rendering — higher integration risk",
+          "Big-bang: single milestone delivering everything — no incremental validation"
+        ],
+        "what_would_change_this_decision": [
+          "Tight deadline requiring parallel workstreams on independent components",
+          "Team size >3 enabling concurrent feature development with integration sprints"
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "branch_set_v1",
+            "entity_id": "B1",
+            "json_pointer": "/branches/0/milestone_strategy",
+            "note": "Thin-slice strategy specified for branch B1",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "DEC3",
+        "question": "How should tag conventions be handled to mitigate K3?",
+        "choice": "Require explicit tag convention configuration before Milestone 2; implement a normalization pipeline (case-folding, trimming, deduplication) applied consistently across extraction, tag pages, and note displays.",
+        "rationale": "Tag convention ambiguity (K3) is a high-severity risk. Requiring configuration upfront ensures the system handles the user's actual tagging practice. A normalization pipeline prevents duplicate tags and inconsistent navigation.",
+        "alternatives_considered": [
+          "Auto-detect tag conventions from input — fragile and non-deterministic",
+          "Support only YAML front matter tags — excludes inline #tag users"
+        ],
+        "what_would_change_this_decision": [
+          "User confirms a single tagging convention, removing need for configurability",
+          "Nested/hierarchical tag requirements emerge, requiring a more complex tag model"
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K3",
+            "json_pointer": "/risk_register/2",
+            "note": "Tag extraction conventions and normalization risk",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "requirements_canonical_v1",
+            "entity_id": "R11",
+            "json_pointer": "/requirements/10",
+            "note": "Tag extraction must be user-selectable/configurable",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "DEC4",
+        "question": "How should internal link conventions be handled to mitigate K2?",
+        "choice": "Require explicit link convention configuration before Milestone 3; implement a deterministic resolver with precedence rules for standard Markdown relative links (MUST) and optional wiki-links (SHOULD).",
+        "rationale": "Link convention ambiguity (K2) is a high-severity risk. Standard Markdown relative links satisfy R9 (MUST). Wiki-link support (R15, SHOULD) is configurable. A deterministic resolver with precedence rules avoids ambiguity when multiple conventions coexist.",
+        "alternatives_considered": [
+          "Support only standard Markdown links — simpler but excludes wiki-link users",
+          "Auto-detect link style per file — non-deterministic and error-prone"
+        ],
+        "what_would_change_this_decision": [
+          "User confirms only one link convention is needed",
+          "Obsidian-specific link features (e.g., block references) become requirements"
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K2",
+            "json_pointer": "/risk_register/1",
+            "note": "Ambiguous internal link conventions risk",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "requirements_canonical_v1",
+            "entity_id": "R9",
+            "json_pointer": "/requirements/8",
+            "note": "MUST resolve standard Markdown relative links",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "requirements_canonical_v1",
+            "entity_id": "R15",
+            "json_pointer": "/requirements/14",
+            "note": "SHOULD support additional link syntaxes like wiki-links",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "DEC5",
+        "question": "How should scale and search performance risks (K4, K5) be handled?",
+        "choice": "Defer scale mitigations; accept in-memory processing as sufficient for ≤1,000 notes. Validate search performance against R22 (500ms at 1,000 notes) in Milestone 4.",
+        "rationale": "The confirmed target scale is ≤1,000 notes (R22). In-memory processing in O1 is well within capacity for this scale. Search index size and query latency will be validated with a 1,000-note fixture. Streaming or chunked approaches would add unnecessary complexity.",
+        "alternatives_considered": [
+          "Implement streaming/chunked processing upfront — premature optimization",
+          "Choose O4 multi-stage pipeline for caching — overkill at this scale"
+        ],
+        "what_would_change_this_decision": [
+          "Scale requirement increases to >10,000 notes",
+          "Memory profiling reveals issues at 1,000 notes during Milestone 4 testing"
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K4",
+            "json_pointer": "/risk_register/3",
+            "note": "Build process scale failure risk",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K5",
+            "json_pointer": "/risk_register/4",
+            "note": "Search index size/performance risk",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "requirements_canonical_v1",
+            "entity_id": "R22",
+            "json_pointer": "/requirements/21",
+            "note": "SHOULD return search results in <500ms for up to 1,000 notes",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "DEC6",
+        "question": "How should the privacy leakage risk (K8) be handled?",
+        "choice": "Accept K8 with documentation-only mitigation: build-time warning banner and README disclaimer advising users about public hosting exposure.",
+        "rationale": "Access control is an explicit non-goal. The tool generates static files intended for hosting. A build-time warning and documentation are proportionate mitigations for a single-user tool where the user controls deployment. Implementing access control would violate non-goals.",
+        "alternatives_considered": [
+          "Add .htaccess or basic auth generation — violates static-only constraint and non-goals",
+          "Encrypt output — fundamentally changes the static site model"
+        ],
+        "what_would_change_this_decision": [
+          "Multi-user or team deployment becomes a requirement",
+          "Regulatory compliance (e.g., GDPR) mandates access control on published content"
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K8",
+            "json_pointer": "/risk_register/7",
+            "note": "Privacy leakage risk — critical severity, documentation-only mitigation",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "alignment_warnings_v1",
+            "entity_id": null,
+            "json_pointer": "/warnings",
+            "note": "AL003 alignment warning regarding K8 acceptance",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "DEC7",
+        "question": "How should XSS risk (K7) be mitigated?",
+        "choice": "Default to HTML sanitization in the Markdown renderer; disallow or sanitize raw HTML in notes. Escape all user-controlled strings in templates.",
+        "rationale": "Since notes may contain raw HTML and the output is served in browsers, XSS is a real risk (K7, high severity). Sanitization by default is the safest posture for a personal-notes tool that may be shared. Users can opt into raw HTML via explicit configuration if needed.",
+        "alternatives_considered": [
+          "Allow raw HTML by default — higher XSS risk",
+          "Strip all HTML entirely — may break legitimate use cases"
+        ],
+        "what_would_change_this_decision": [
+          "User explicitly requires raw HTML passthrough for embedded widgets",
+          "A formal trust model is established confirming all content is self-authored"
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K7",
+            "json_pointer": "/risk_register/6",
+            "note": "XSS/content injection risk with sanitization mitigation",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      }
+    ],
+    "supplemental_evaluations": [
+      {
+        "title": "Acceptance Test Coverage Analysis",
+        "notes": "AT1–AT6 cover Milestone 1 (R1–R6). AT11–AT13 cover Milestone 2 (R11–R13). AT9–AT10 cover Milestone 3 (R9–R10). AT7–AT8 cover Milestone 4 (R7–R8). AT14 covers Milestone 5 (R14). SHOULD requirements R15–R22 and R17–R20 lack dedicated acceptance tests in the canonical set; the branch acceptance strategy calls for expanding coverage for SHOULD requirements once MUST tests pass. Alignment warning AL001 identifies missing tests for wiki-links, tag normalization, navigation, and broken-link handling that should be added before freeze.",
+        "evidence": [
+          {
+            "artifact_ref": "acceptance_canonical_v1",
+            "entity_id": null,
+            "json_pointer": "/acceptance_tests",
+            "note": "Canonical acceptance tests cover MUST requirements only",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "alignment_warnings_v1",
+            "entity_id": null,
+            "json_pointer": "/warnings",
+            "note": "AL001 flags missing SHOULD-level test coverage",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "title": "Risk Posture Summary",
+        "notes": "High/critical risks addressed: K2 (link conventions) and K3 (tag conventions) mitigated by requiring configuration before Milestones 2–3. K7 (XSS) mitigated by default sanitization in Milestone 1. K8 (privacy) accepted with documentation-only mitigation. K4/K5 (scale) deferred as acceptable at ≤1,000 notes. K6 (malformed YAML) handled via graceful per-file error handling in Milestone 1. Medium risks K9, K10, K12, K13 addressed in Milestones 3 and 5. K20 (deterministic builds) addressed in Milestone 5.",
+        "evidence": [
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": null,
+            "json_pointer": "/risk_register",
+            "note": "Full risk register",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      }
+    ],
+    "synthesis_warnings": [
+      {
+        "id": "W1",
+        "severity": "medium",
+        "summary": "Canonical acceptance tests do not cover SHOULD requirements (R15–R22). Additional tests for wiki-link parsing, tag normalization, navigation structure, broken-link warnings, base-URL configuration, GFM extensions, file exclusion, and search performance should be authored before freeze to validate Milestone 5 deliverables.",
+        "routing_target": "acceptance_tests",
+        "evidence": [
+          {
+            "artifact_ref": "alignment_warnings_v1",
+            "entity_id": null,
+            "json_pointer": "/warnings",
+            "note": "AL001 identifies missing SHOULD-level acceptance test coverage",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "acceptance_canonical_v1",
+            "entity_id": null,
+            "json_pointer": "/acceptance_tests",
+            "note": "Only 14 acceptance tests covering MUST requirements",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "W2",
+        "severity": "low",
+        "summary": "Blocker open questions Q1, Q2, Q3, Q4, Q10 are assumed resolved based on branch configuration (CLI interface, configurable link/tag conventions, ≤1,000 note scale, minimal IA). If any assumption is invalidated, architecture choice and milestone scoping may need revision.",
+        "routing_target": "clarification",
+        "evidence": [
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": null,
+            "json_pointer": "/open_questions",
+            "note": "Q1–Q4, Q10 marked as blocking",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      }
+    ]
+  }
+}

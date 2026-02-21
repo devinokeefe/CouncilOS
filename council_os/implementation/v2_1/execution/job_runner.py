@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Callable
-import hashlib
 import time
 
 from council_os.implementation.schemas import (
@@ -17,9 +16,9 @@ from council_os.implementation.schemas import (
     JobSpecPayload,
     ExpectationRegistryPayload,
     JobSpecInputRef,
-    deterministic_json_dumps,
     ToolProbeResultsPayload,
 )
+from council_os.utils import deterministic_json_hash
 from council_os.implementation.v2_1.execution.cache import IdempotencyCache
 from council_os.implementation.v2_1.execution.evaluators import build_diff_report, evaluate_expectations
 from council_os.implementation.v2_1.execution.tool_prober import probe_tool
@@ -74,9 +73,6 @@ class JobRunner:
             "detail": detail,
         }
         self._job_event_logger(payload)
-
-    def _hash_payload(self, payload: dict[str, Any]) -> str:
-        return hashlib.sha256(deterministic_json_dumps(payload).encode("utf-8")).hexdigest()
 
     def _resolve_input_refs(self, inputs: list[JobSpecInputRef]) -> list[str]:
         refs: list[str] = []
@@ -344,7 +340,7 @@ class JobRunner:
             if self._artifact_reader:
                 try:
                     payload = self._artifact_reader(ref)
-                    digest = self._hash_payload(payload)
+                    digest = deterministic_json_hash(payload)
                 except Exception:
                     digest = None
             outputs.append(JobOutputRef(artifact_ref=ref, hash=digest))

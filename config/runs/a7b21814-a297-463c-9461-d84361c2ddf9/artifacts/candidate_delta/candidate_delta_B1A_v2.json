@@ -1,0 +1,716 @@
+{
+  "artifact_type": "candidate_delta",
+  "artifact_id": "candidate_delta_B1A_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:46:59.463178Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "branch_set_v1"
+  ],
+  "payload": {
+    "candidate_id": "B1A",
+    "executive_summary": "This candidate delivers a minimal, end-to-end static-site generator for Markdown notes using a single-process CLI pipeline (O1). The plan follows a thin-slice approach: first produce a working build that discovers .md files and renders per-note HTML, then incrementally add tags, internal links + backlinks, and finally client-side full-text search, finishing with cross-browser QA and deployment polish (base path, broken-link warnings, GFM extensions). Key open questions about link and tag conventions remain blockers for broad compatibility, so the plan includes explicit configuration points and routes those decisions to HITL before freeze.",
+    "architecture_choice": {
+      "option_id": "O1",
+      "rationale": "O1 (a monolithic CLI pipeline) is the lowest-complexity approach that directly satisfies the core MUST requirements: recursive ingestion (R1), static output (R2), CommonMark rendering (R3–R4), a CLI build workflow (R5–R6), internal links + backlinks (R9–R10), tags (R11–R13), and client-side search via a build-time index (R7–R8). Given the project’s focused scope and a thin-slice milestone strategy, a single in-memory graph and render pipeline minimizes upfront design overhead compared to plugin-based (O2), SSG-based (O3), or multi-stage artifact pipelines (O4).",
+      "high_level_dataflow": "CLI Orchestrator (C1) loads config + validates input/output paths → Source Scanner (C2) recursively discovers .md files and parses front matter to form normalized note records → Content Analyzer/Graph Builder (C3) extracts tags and resolves internal links to build a NoteGraph and compute backlinks → Markdown Renderer (C4) converts Markdown to HTML (sanitized by default) → Template/Theme Renderer (C5) wraps rendered content into per-note pages and site-level pages (tags index, per-tag pages, optional home/all-notes/search entry points) → Search Index Builder (C6) builds a client-side index from note titles/body and emits index assets → Output Emitter (C7) writes HTML/pages/assets and copies static CSS/JS; browser-side Search UI (C8) loads the shipped index and performs queries fully in-browser.",
+      "key_design_decisions": [
+        "DEC1",
+        "DEC2",
+        "DEC3",
+        "DEC4",
+        "DEC5",
+        "DEC6",
+        "DEC7",
+        "DEC8"
+      ]
+    },
+    "milestones": [
+      {
+        "id": "M1",
+        "name": "Thin slice: CLI ingestion + per-note HTML rendering (core build correctness)",
+        "deliverables": [
+          {
+            "id": "DL1",
+            "text": "CLI build command that accepts inputDir and outputDir and runs the full pipeline end-to-end (R5)."
+          },
+          {
+            "id": "DL2",
+            "text": "Recursive discovery of .md files by default and ignore of non-.md files; deterministic discovery ordering (R1, K20)."
+          },
+          {
+            "id": "DL3",
+            "text": "CommonMark-compliant Markdown parsing/rendering into one HTML page per non-excluded note (R3–R4)."
+          },
+          {
+            "id": "DL4",
+            "text": "Static output directory emitter that produces only static assets (HTML/CSS/JS/JSON/media as applicable) and can be served by a static server (R2)."
+          },
+          {
+            "id": "DL5",
+            "text": "Clear, actionable error handling for invalid paths/config and per-file parse failures; build summary with counts and warnings (R6, K22, K6)."
+          },
+          {
+            "id": "DL6",
+            "text": "Minimal default layout/template with site navigation stubs that can be expanded in later milestones (supports future R17)."
+          }
+        ],
+        "exit_criteria": [
+          "AT1–AT6 pass.",
+          "A clean build produces a browsable set of per-note pages served statically with no server runtime required (R2).",
+          "Build failures (bad input path/config) provide actionable messages (R6)."
+        ],
+        "depends_on": []
+      },
+      {
+        "id": "M2",
+        "name": "Tags: extraction + normalization + tag pages + navigation",
+        "deliverables": [
+          {
+            "id": "DL7",
+            "text": "Configurable selection of at least one tag convention (initially support YAML front matter tags as the default convention) and extraction into note metadata (R11)."
+          },
+          {
+            "id": "DL8",
+            "text": "Tag normalization pipeline (at minimum: trim + case-fold) applied consistently to tag display and tag-page grouping; expose normalization config knobs (R16)."
+          },
+          {
+            "id": "DL9",
+            "text": "Per-note tag display with each tag rendered as a link to its tag page (R12)."
+          },
+          {
+            "id": "DL10",
+            "text": "Tags index page and per-tag pages listing associated notes; include tag counts and deterministic ordering (R13, K20)."
+          },
+          {
+            "id": "DL11",
+            "text": "Update global navigation to provide entry points to Tags and search placeholder from any note page (partial fulfillment toward R17)."
+          }
+        ],
+        "exit_criteria": [
+          "AT11–AT13 pass.",
+          "Tag extraction is demonstrably configurable/user-selectable (R11) even if only one convention is initially implemented.",
+          "No duplicate tag pages are produced due to inconsistent normalization (R16)."
+        ],
+        "depends_on": [
+          "M1"
+        ]
+      },
+      {
+        "id": "M3",
+        "name": "Internal links + link resolution + backlinks",
+        "deliverables": [
+          {
+            "id": "DL12",
+            "text": "Internal link resolver that correctly rewrites standard Markdown relative links between notes to generated HTML targets (R9)."
+          },
+          {
+            "id": "DL13",
+            "text": "Backlinks computation from the resolved graph and backlinks section rendered on destination note pages, with each backlink linking to the source note page (R10)."
+          },
+          {
+            "id": "DL14",
+            "text": "Deterministic canonical note identifier and output path mapping based on normalized relative file paths; collision detection with clear errors (K10, K20)."
+          },
+          {
+            "id": "DL15",
+            "text": "Broken-link handling baseline: unresolved internal links are recorded for later warning/report output; ensure build does not crash on unresolved targets (supports R18, K12)."
+          }
+        ],
+        "exit_criteria": [
+          "AT9–AT10 pass.",
+          "Backlink generation completes without infinite loops on cyclic graphs (K9).",
+          "Link rewriting is deterministic and stable across repeated builds (K20)."
+        ],
+        "depends_on": [
+          "M1"
+        ]
+      },
+      {
+        "id": "M4",
+        "name": "Client-side full-text search: build-time index + in-browser UI",
+        "deliverables": [
+          {
+            "id": "DL16",
+            "text": "Build-time search index generation from note titles and body text; emit index artifact(s) into static output (R8)."
+          },
+          {
+            "id": "DL17",
+            "text": "Client-side search UI that loads the shipped index and performs queries fully in-browser without server requests; results link to note pages (R7)."
+          },
+          {
+            "id": "DL18",
+            "text": "Basic relevance heuristics (e.g., title boosting) and a build-time report of index size to monitor K5."
+          }
+        ],
+        "exit_criteria": [
+          "AT7–AT8 pass.",
+          "Search works with network disabled (static-only constraint) (R7).",
+          "Index artifact is present in output and loaded from static hosting paths (R8)."
+        ],
+        "depends_on": [
+          "M3"
+        ]
+      },
+      {
+        "id": "M5",
+        "name": "Polish + deployment readiness: broken-link warnings, base path, GFM, cross-browser QA",
+        "deliverables": [
+          {
+            "id": "DL19",
+            "text": "Broken-link warnings emitted at build-time including source file and link text; default behavior is warn (not fail) and unresolved links render non-navigable in output (R18)."
+          },
+          {
+            "id": "DL20",
+            "text": "Base URL / path-prefix configuration with correct rewriting of internal links and asset URLs for subdirectory hosting (R19, K13)."
+          },
+          {
+            "id": "DL21",
+            "text": "Optional GFM extensions support (tables/strikethrough/task lists) and code highlighting per configuration (R21, K1)."
+          },
+          {
+            "id": "DL22",
+            "text": "Cross-browser QA fixes ensuring navigation, tags, backlinks, and search function without blocking JS errors on Chrome/Firefox/Safari/Edge (R14)."
+          },
+          {
+            "id": "DL23",
+            "text": "Security and privacy posture defaults: sanitize/disallow raw HTML in Markdown by default; document trust model and publish-warning guidance (K7, K8)."
+          }
+        ],
+        "exit_criteria": [
+          "AT14 pass.",
+          "R18 behavior is demonstrable via a fixture with at least one unresolved link (warning emitted; output renders non-navigable link).",
+          "Deployment under a non-root base path is verified using the base-path config (R19)."
+        ],
+        "depends_on": [
+          "M2",
+          "M4"
+        ]
+      }
+    ],
+    "decision_log": [
+      {
+        "id": "DEC1",
+        "question": "Which overall architecture option should be used for the generator?",
+        "choice": "Adopt O1: a custom-built, monolithic single-process CLI pipeline that builds an in-memory representation (notes/links/tags) and emits a fully static site.",
+        "rationale": "O1 is the simplest architecture that directly covers all MUST requirements with minimal coordination overhead and supports thin-slice delivery. It avoids the upfront complexity of a plugin system (O2), external SSG coupling (O3), or intermediate-artifact orchestration (O4) while remaining sufficient for the target scale implied by R22 (1,000 notes).",
+        "alternatives_considered": [
+          "O2 (plugin-based core)",
+          "O3 (extend an existing SSG)",
+          "O4 (multi-stage pipeline with intermediate artifacts)"
+        ],
+        "what_would_change_this_decision": [
+          "If confirmed requirements strongly prioritize extensibility/third-party plugins or multiple rendering/search backends (would favor O2).",
+          "If watch mode/incremental builds become MUST and caching complexity is justified (would favor O4 or O3).",
+          "If the user explicitly wants to adopt a particular SSG ecosystem (would favor O3)."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "architecture_canonical_v1",
+            "entity_id": "O1",
+            "json_pointer": "/options",
+            "note": "O1 describes a single CLI pipeline with scanning→analysis/graph→render→search→emit.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "requirements_canonical_v1",
+            "entity_id": "R2",
+            "json_pointer": "/requirements/requirements",
+            "note": "Static-output constraint aligns well with a CLI emitting only static assets.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "DEC2",
+        "question": "What is the canonical note identifier and output path mapping strategy?",
+        "choice": "Use a deterministic identifier derived from normalized relative file path (from inputDir), and map to output HTML path by replacing .md with .html while preserving subdirectory structure; detect collisions as errors.",
+        "rationale": "Path-derived IDs are stable, deterministic, and avoid ambiguity from duplicate titles. Preserving directory structure makes link rewriting from relative Markdown links straightforward and reduces collision risk (K10), while deterministic ordering supports reproducible builds (K20).",
+        "alternatives_considered": [
+          "Use note title-derived slugs (risk of collisions, rename churn).",
+          "Use content hash IDs (breaks stable URLs on edits).",
+          "Flatten all notes into a single directory (increases collision risk and breaks relative-link expectations)."
+        ],
+        "what_would_change_this_decision": [
+          "If the user requires Obsidian-style title-based linking as the primary identifier (Q1), requiring an alias/title resolution layer.",
+          "If the hosting target requires a different permalink structure (Q5)."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "requirements_canonical_v1",
+            "entity_id": "R9",
+            "json_pointer": "/requirements/requirements",
+            "note": "Standard Markdown relative links are easiest to resolve when output paths mirror input paths.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K10",
+            "json_pointer": "/risk_register",
+            "note": "Slug/title collisions can overwrite pages; path-based IDs mitigate.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K20",
+            "json_pointer": "/risk_register",
+            "note": "Deterministic ordering/paths reduce non-deterministic build outputs.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "DEC3",
+        "question": "What internal link syntaxes are supported initially, and how are unresolved links handled?",
+        "choice": "Support standard Markdown relative links between notes as the initial MUST implementation; additional syntaxes (e.g., wiki-links) remain optional behind configurable parsing rules. Unresolved internal links do not fail the build by default; they are recorded and emitted as build-time warnings in later polish (R18).",
+        "rationale": "R9 requires correct resolution of standard Markdown relative links at minimum; Q1 indicates link conventions may vary, so configuration hooks are needed but should not block delivering core navigation/backlinks. Warning-not-fail behavior aligns with R18 and reduces friction for imperfect note sets.",
+        "alternatives_considered": [
+          "Implement wiki-links and multiple syntaxes immediately (risk: wrong assumptions; higher complexity without confirmed Q1).",
+          "Fail the build on unresolved links by default (more strict but conflicts with R18 default behavior)."
+        ],
+        "what_would_change_this_decision": [
+          "If the user confirms wiki-links (e.g., [[Title]]) are the primary convention and must work (Q1), requiring earlier implementation and additional acceptance coverage.",
+          "If the user needs CI enforcement for broken links, making strict mode the default in some environments."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "requirements_canonical_v1",
+            "entity_id": "R9",
+            "json_pointer": "/requirements/requirements",
+            "note": "Minimum link support: standard Markdown relative links must resolve to generated HTML pages.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "requirements_canonical_v1",
+            "entity_id": "R18",
+            "json_pointer": "/requirements/requirements",
+            "note": "Broken-link behavior: warn, do not fail by default, and render as non-navigable.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q1",
+            "json_pointer": "/project_capsule/open_questions",
+            "note": "Linking convention is explicitly a blocking open question.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K2",
+            "json_pointer": "/risk_register",
+            "note": "Ambiguous link conventions are a high-severity risk; configurability mitigates.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "DEC4",
+        "question": "Which tag convention(s) are implemented first, and how is normalization handled?",
+        "choice": "Implement YAML front matter tags as the first supported convention, selected via configuration; apply a single normalization pipeline (trim + case-fold at minimum) and expose rules as configuration settings.",
+        "rationale": "R11 requires at least one supported, user-selectable tagging convention; YAML front matter is a common, structured choice. Normalization reduces duplicate tag fragmentation (R16) and addresses K3 risk. Additional conventions (inline hashtags) can be added later without changing the core data model.",
+        "alternatives_considered": [
+          "Inline hashtags as the first convention (risk: false positives and parsing edge cases).",
+          "Support multiple tag sources immediately (more coverage but higher complexity without confirmed Q2)."
+        ],
+        "what_would_change_this_decision": [
+          "If the user confirms inline hashtags are the primary source or YAML is not used (Q2).",
+          "If the user requires nested tags or special normalization rules (Q2)."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "requirements_canonical_v1",
+            "entity_id": "R11",
+            "json_pointer": "/requirements/requirements",
+            "note": "Tag extraction must be configurable/user-selectable, but only requires at least one convention.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "requirements_canonical_v1",
+            "entity_id": "R16",
+            "json_pointer": "/requirements/requirements",
+            "note": "Tag normalization should be configurable and consistent.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q2",
+            "json_pointer": "/project_capsule/open_questions",
+            "note": "Tag convention and normalization rules are explicitly blocking open questions.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K3",
+            "json_pointer": "/risk_register",
+            "note": "Undefined tag conventions/normalization are high-severity; normalization pipeline mitigates.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "DEC5",
+        "question": "How will client-side search be implemented while keeping output fully static?",
+        "choice": "Generate a build-time search index artifact (e.g., JSON) from note titles and body text and ship it with the site; implement an in-browser search UI that loads the index from static output and queries it locally.",
+        "rationale": "This directly satisfies R7 (in-browser search with no server processing) and R8 (build-time index shipped with output) and aligns with the static-only constraint. Index-size reporting supports managing K5 and makes it possible to validate performance against R22 once scale (Q3) is confirmed.",
+        "alternatives_considered": [
+          "Server-side search (violates static-only non-goal/constraint).",
+          "Rely on an external hosted search service (adds runtime dependency).",
+          "No search index; naive scanning of all pages at runtime (likely fails performance at 1,000 notes)."
+        ],
+        "what_would_change_this_decision": [
+          "If confirmed scale is far beyond 1,000 notes or performance budgets become stricter, requiring a different indexing strategy (Q3, R22).",
+          "If the user requires advanced relevance features (stemming/language support) beyond simple tokenization (K18)."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "requirements_canonical_v1",
+            "entity_id": "R7",
+            "json_pointer": "/requirements/requirements",
+            "note": "Search must execute entirely in the browser with no server requests.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "requirements_canonical_v1",
+            "entity_id": "R8",
+            "json_pointer": "/requirements/requirements",
+            "note": "Build must generate and ship an index artifact.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q3",
+            "json_pointer": "/project_capsule/open_questions",
+            "note": "Scale is a blocking open question impacting index and performance decisions.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K5",
+            "json_pointer": "/risk_register",
+            "note": "Client-side index size/performance scaling is a high-severity risk.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "DEC6",
+        "question": "What are the default security boundaries for rendering Markdown to HTML?",
+        "choice": "Disallow or sanitize raw HTML in Markdown by default; ensure templates escape user-controlled strings; document the trust model and provide an explicit opt-in for less restrictive behavior if ever added.",
+        "rationale": "Notes may contain untrusted content (especially if shared), and rendered output runs in a browser. Default sanitization mitigates XSS risk (K7) while still supporting the core publishing workflow (R3–R4).",
+        "alternatives_considered": [
+          "Allow raw HTML by default (higher fidelity but high XSS risk).",
+          "Strip all HTML and disable many Markdown features (safer but can reduce fidelity and surprise users)."
+        ],
+        "what_would_change_this_decision": [
+          "If the user confirms notes are strictly private and never hosted publicly, and requires raw HTML fidelity (would still require an explicit opt-in and clear warnings).",
+          "If theme customization introduces user-provided executable code (would require stronger sandboxing decisions; see K19)."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K7",
+            "json_pointer": "/risk_register",
+            "note": "XSS/content injection risk requires sanitization/escaping mitigation.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "requirements_canonical_v1",
+            "entity_id": "R14",
+            "json_pointer": "/requirements/requirements",
+            "note": "Browser correctness requirement increases the importance of safe, predictable client-side behavior.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "DEC7",
+        "question": "How will deployment under subdirectory hosting be supported?",
+        "choice": "Implement a configurable base URL/path prefix that is applied consistently to internal links, tag/search routes, and static asset URLs during emission.",
+        "rationale": "Subdirectory hosting is a common static-site deployment pattern; base-path configurability prevents broken navigation and assets and addresses K13. This aligns with R19 while keeping the output static and portable.",
+        "alternatives_considered": [
+          "Assume root deployment only (simpler but violates R19).",
+          "Generate only relative URLs everywhere (can work but is error-prone for some assets and routing patterns)."
+        ],
+        "what_would_change_this_decision": [
+          "If the user only uses local file browsing and requires special handling for file:// URL quirks (Q5).",
+          "If the chosen routing scheme for search/tag pages requires different URL rewriting rules."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "requirements_canonical_v1",
+            "entity_id": "R19",
+            "json_pointer": "/requirements/requirements",
+            "note": "Base URL/path prefix configuration is a stated SHOULD requirement for subdirectory deployments.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K13",
+            "json_pointer": "/risk_register",
+            "note": "Base-path/URL mismatch is a recognized deployment compatibility risk.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q5",
+            "json_pointer": "/project_capsule/open_questions",
+            "note": "Hosting target and base URL constraints are an open question that can affect URL strategy.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "DEC8",
+        "question": "How will the project address the critical privacy leakage risk of publishing sensitive notes as a static site?",
+        "choice": "Treat privacy leakage (K8) as a documented/UX-mitigated risk: add prominent documentation and build-time messaging reminding users that generated output may be public; do not implement access control (non-goal).",
+        "rationale": "Access control/auth is explicitly out of scope; therefore the practical mitigation is to ensure the user understands the exposure risk before publishing. This aligns with the stated plan to accept K8 with documentation-only mitigation and avoids scope creep into server runtime or authentication features.",
+        "alternatives_considered": [
+          "Implement authentication/access control (conflicts with non-goals and static-only constraint).",
+          "Do nothing (unacceptable given K8 severity)."
+        ],
+        "what_would_change_this_decision": [
+          "If the user requires private hosting with access control (would require revisiting non-goals/constraints and likely changing architecture).",
+          "If organizational policy mandates stronger safeguards than documentation (would require HITL governance decision)."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K8",
+            "json_pointer": "/risk_register",
+            "note": "Privacy leakage is a critical risk; acceptance requires explicit posture.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": null,
+            "json_pointer": "/project_capsule/non_goals",
+            "note": "Authentication/access control is listed as a non-goal, constraining mitigation options.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      }
+    ],
+    "supplemental_evaluations": [
+      {
+        "title": "Milestone-to-requirement coverage (thin-slice)",
+        "notes": "M1 locks down ingestion/render/static-output/CLI and build robustness (R1–R6) with AT1–AT6. M2 delivers core tag UX (R11–R13) and starts global navigation (R17). M3 delivers internal link resolution + backlinks (R9–R10). M4 delivers search (R7–R8). M5 closes deployment/base-path (R19), broken-link warnings (R18), GFM support (R21), and cross-browser correctness (R14).",
+        "evidence": [
+          {
+            "artifact_ref": "requirements_canonical_v1",
+            "entity_id": null,
+            "json_pointer": "/requirements/requirements",
+            "note": "Requirements list used for mapping to milestone scope.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "acceptance_canonical_v1",
+            "entity_id": null,
+            "json_pointer": "/acceptance_tests/acceptance_tests",
+            "note": "Acceptance tests AT1–AT14 referenced in milestone exit criteria.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "title": "Risk posture alignment (links/tags/search/privacy)",
+        "notes": "This candidate prioritizes early mitigation for convention ambiguity risks: K2 (link conventions) and K3 (tag conventions) are addressed by making conventions explicit configuration points (DEC3/DEC4) and by scheduling tags and link/backlink functionality as dedicated milestones (M2–M3). Search scaling risk K5 is monitored via index size reporting and can be revisited once scale (Q3) is confirmed. Privacy risk K8 is handled via explicit documentation/build messaging (DEC8) consistent with static-only output and the non-goal of access control.",
+        "evidence": [
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K2",
+            "json_pointer": "/risk_register",
+            "note": "Link convention ambiguity risk.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K3",
+            "json_pointer": "/risk_register",
+            "note": "Tag convention/normalization risk.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K5",
+            "json_pointer": "/risk_register",
+            "note": "Search index scaling risk.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K8",
+            "json_pointer": "/risk_register",
+            "note": "Privacy leakage risk.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      }
+    ],
+    "synthesis_warnings": [
+      {
+        "id": "W1",
+        "severity": "critical",
+        "summary": "Blocker open questions Q1 (internal link conventions) and Q2 (tag conventions/normalization) are unresolved; if the user’s notes rely on wiki-links or inline hashtag tagging, Milestones M2–M3 scope and design decisions (DEC3–DEC4) may need changes before Freeze.",
+        "routing_target": "HITL/Product Owner + Tech Lead",
+        "evidence": [
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q1",
+            "json_pointer": "/project_capsule/open_questions",
+            "note": "Q1 is marked blocking and high impact.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q2",
+            "json_pointer": "/project_capsule/open_questions",
+            "note": "Q2 is marked blocking and high impact.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "W2",
+        "severity": "high",
+        "summary": "Critical privacy leakage risk (K8) is planned to be accepted with documentation/build messaging only; requires explicit stakeholder acknowledgement of the trust model and publishing workflow before public deployment guidance is finalized.",
+        "routing_target": "HITL/Security Reviewer + Product Owner",
+        "evidence": [
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K8",
+            "json_pointer": "/risk_register",
+            "note": "K8 is critical severity and has no canonical mitigation filled in.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": null,
+            "json_pointer": "/project_capsule/non_goals",
+            "note": "Access control/auth is out of scope, constraining mitigations.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "W3",
+        "severity": "high",
+        "summary": "Scale requirements (Q3) are a blocking unknown that can materially change search-index approach and performance targets (R22) and may affect architecture choice if far beyond 1,000 notes.",
+        "routing_target": "HITL/Product Owner + Tech Lead",
+        "evidence": [
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q3",
+            "json_pointer": "/project_capsule/open_questions",
+            "note": "Q3 is marked blocking and high impact.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "requirements_canonical_v1",
+            "entity_id": "R22",
+            "json_pointer": "/requirements/requirements",
+            "note": "Search performance target depends on confirmed scale.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "W4",
+        "severity": "medium",
+        "summary": "Information architecture and navigation expectations (Q4) and hosting target/base URL constraints (Q5) are not confirmed; default templates/navigation may require adjustment to meet user expectations and deployment environment.",
+        "routing_target": "HITL/Product Owner",
+        "evidence": [
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q4",
+            "json_pointer": "/project_capsule/open_questions",
+            "note": "Q4 impacts required pages and navigation structure.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q5",
+            "json_pointer": "/project_capsule/open_questions",
+            "note": "Q5 impacts base URL/path and link/asset rewriting strategy.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      }
+    ]
+  }
+}

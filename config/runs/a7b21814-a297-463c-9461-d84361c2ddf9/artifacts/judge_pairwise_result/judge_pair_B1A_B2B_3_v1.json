@@ -1,0 +1,66 @@
+{
+  "artifact_type": "judge_pairwise_result",
+  "artifact_id": "judge_pair_B1A_B2B_3_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T11:07:05.445539Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B1A_v4",
+    "plan_candidate_B2B_v3"
+  ],
+  "payload": {
+    "comparison": {
+      "a": "Chooses a monolithic CLI (O1) and a thin-slice milestone plan that delivers user-visible output early while deferring convention-dependent features behind configuration. It keeps implementation complexity lower and maps MUST requirements to concrete acceptance tests and exits.",
+      "b": "Chooses a plugin architecture (O2) and front-loads a Phase A engine/API build, which increases upfront risk and time-to-first-value for this scoped tool. It is stronger on extensibility and security posture for third-party plugins, but that is not required to reach core closure."
+    },
+    "judge_id": "judge.pairwise",
+    "judge_model": "unknown",
+    "winner": "a",
+    "scores": {
+      "feasibility": 8,
+      "testability": 8,
+      "governance": 7,
+      "architecture": 7,
+      "clarity": 8
+    },
+    "evidence": [
+      {
+        "artifact_ref": "plan_candidate_B1A_v4",
+        "entity_id": "O1",
+        "json_pointer": "/plan_package/architecture/chosen",
+        "note": "A selects O1 explicitly for lowest complexity and direct coverage of MUST requirements.",
+        "candidate_id": "B1A",
+        "artifact_id": null,
+        "quote": "O1 is the lowest-complexity architecture that directly satisfies the core MUST requirements"
+      },
+      {
+        "artifact_ref": "plan_candidate_B1A_v4",
+        "entity_id": "M1",
+        "json_pointer": "/plan_package/milestones/0",
+        "note": "A’s M1 delivers CLI+ingest+render+emit and gates on AT1–AT6, enabling early closure-ready output.",
+        "candidate_id": "B1A",
+        "artifact_id": null,
+        "quote": "exit_criteria\": [\"AT1–AT6 pass on a fixture dataset.\", \"Output directory contains only static assets"
+      },
+      {
+        "artifact_ref": "plan_candidate_B2B_v3",
+        "entity_id": "M1",
+        "json_pointer": "/plan_package/milestones/0",
+        "note": "B’s first phase is core engine/context/plugin API work, delaying delivery of required end-user features.",
+        "candidate_id": "B2B",
+        "artifact_id": null,
+        "quote": "Phase A — Core Engine & Plugin Infrastructure"
+      },
+      {
+        "artifact_ref": "plan_candidate_B2B_v3",
+        "entity_id": "O2",
+        "json_pointer": "/plan_package/architecture/chosen",
+        "note": "B acknowledges higher upfront complexity and plugin API instability risk inherent to O2.",
+        "candidate_id": "B2B",
+        "artifact_id": null,
+        "quote": "Higher upfront complexity designing a stable plugin API and shared data model"
+      }
+    ],
+    "notes": "For the stated goals (static site generator with search/tags/backlinks) A is more likely to reach an implementable, testable MVP with less architectural risk. B is better if a plugin ecosystem is a primary requirement, which is not established here."
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B1A_primary_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:37:17.141749Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B1A_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B1A_v1",
+    "findings": [
+      {
+        "id": "TG-001",
+        "severity": "medium",
+        "summary": "Milestone M2 introduces tag extraction and display features that modify the Markdown rendering pipeline (Component C4), but the plan fails to include Requirement R3 (CommonMark compliance) or R4 (Formatting preservation) in M2's exit criteria to detect regressions (e.g., collision between inline tags and standard syntax).",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": null,
+            "json_pointer": "/plan_package/milestones/1/deliverables",
+            "note": "Milestone M2 implements configurable tag extraction (DL6) and per-note tag display/linking (DL8), modifying C4 behavior.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Per-note tag display with each tag rendered as a navigable link"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": null,
+            "json_pointer": "/plan_package/milestones/1/exit_criteria",
+            "note": "Milestone M2 exit criteria check AT11-AT13 but omit R3/AT3 (compliance) despite the rendering changes.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "AT11–AT13 pass (R11–R13)."
+          }
+        ],
+        "routing_target": "hitl.tech_lead"
+      },
+      {
+        "id": "TG-002",
+        "severity": "medium",
+        "summary": "Milestone M2 mandates the implementation of front matter parsing (Component C2), utilizing a 'source scanner' that risks ingestion failure (Risk K6) on malformed input. The plan leaves Risk K6 unmitigated and fails to include Requirement R1 (Robust Discovery) in M2 verification to ensure ingestion resilience.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "C2",
+            "json_pointer": "/plan_package/architecture/options/0/components/1",
+            "note": "Component C2 combines 'Source Scanner' and 'Front Matter Parser' responsibilities, tightly coupling discovery and parsing.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Recursively discover Markdown files... Read file contents and parse front matter"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "K6",
+            "json_pointer": "/plan_package/risk_register/5",
+            "note": "Risk K6 (Malformed YAML fails build) is acknowledged but unmitigated.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "Malformed YAML front matter in Markdown files causes the build process to fail"
+          }
+        ],
+        "routing_target": "hitl.tech_lead"
+      }
+    ]
+  }
+}

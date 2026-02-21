@@ -24,6 +24,12 @@ def _get_list(plan: dict[str, Any], kind: str) -> tuple[list[dict[str, Any]], li
         return plan.get("requirements", []), ["requirements"]
     if kind == "acceptance_test":
         return plan.get("acceptance_tests", []), ["acceptance_tests"]
+    if kind == "work_item":
+        return plan.get("work_items", []), ["work_items"]
+    if kind == "check":
+        return plan.get("checks", plan.get("expectations", [])), ["checks"]
+    if kind == "milestone":
+        return plan.get("milestones", []), ["milestones"]
     if kind == "assumption":
         capsule = plan.get("project_capsule", {})
         return capsule.get("assumptions", []), ["project_capsule", "assumptions"]
@@ -40,7 +46,17 @@ def _get_list(plan: dict[str, Any], kind: str) -> tuple[list[dict[str, Any]], li
 
 def build_plan_index(plan: dict[str, Any]) -> dict[tuple[str, str], Anchor]:
     index: dict[tuple[str, str], Anchor] = {}
-    for kind in ("requirement", "acceptance_test", "assumption", "open_question", "architecture_option", "risk"):
+    for kind in (
+        "requirement",
+        "acceptance_test",
+        "work_item",
+        "check",
+        "milestone",
+        "assumption",
+        "open_question",
+        "architecture_option",
+        "risk",
+    ):
         items, base_path = _get_list(plan, kind)
         if not isinstance(items, list):
             continue
@@ -71,6 +87,31 @@ def _ensure_reference_integrity(plan: dict[str, Any]) -> None:
         for rid in mapped:
             if str(rid) not in requirements:
                 raise PlanEditError(f"Acceptance test maps to missing requirement: {rid}")
+    for item in plan.get("work_items", []) or []:
+        if not isinstance(item, dict):
+            continue
+        mapped = item.get("maps_to_requirements", [])
+        if not isinstance(mapped, list):
+            continue
+        for rid in mapped:
+            if str(rid) not in requirements:
+                raise PlanEditError(f"Work item maps to missing requirement: {rid}")
+    checks = plan.get("checks") or plan.get("expectations") or []
+    check_ids = {str(item.get("id")) for item in checks if isinstance(item, dict) and item.get("id")}
+    for milestone in plan.get("milestones", []) or []:
+        if not isinstance(milestone, dict):
+            continue
+        required = (
+            milestone.get("required_check_ids")
+            or milestone.get("required_checks")
+            or milestone.get("exit_criteria")
+            or []
+        )
+        if not isinstance(required, list):
+            continue
+        for cid in required:
+            if check_ids and str(cid) not in check_ids:
+                raise PlanEditError(f"Milestone references missing check: {cid}")
     architecture = plan.get("architecture", {})
     if isinstance(architecture, dict):
         chosen = architecture.get("chosen", {})
@@ -129,6 +170,57 @@ def apply_plan_edits(plan: dict[str, Any], edits: PlanEdits) -> dict[str, Any]:
                 raise PlanEditError(f"Acceptance test not found: {op.id}")
             tests, _ = _get_list(working, "acceptance_test")
             tests.pop(anchor.path[-1])
+        elif op.op == "update_work_item":
+            anchor = index.get(("work_item", op.id))
+            if anchor is None:
+                raise PlanEditError(f"Work item not found: {op.id}")
+            items, _ = _get_list(working, "work_item")
+            _apply_update(items[anchor.path[-1]], op.set)
+        elif op.op == "add_work_item":
+            items, _ = _get_list(working, "work_item")
+            if "work_items" not in working:
+                working["work_items"] = items
+            _insert_after(items, op.value, op.after_id)
+        elif op.op == "remove_work_item":
+            anchor = index.get(("work_item", op.id))
+            if anchor is None:
+                raise PlanEditError(f"Work item not found: {op.id}")
+            items, _ = _get_list(working, "work_item")
+            items.pop(anchor.path[-1])
+        elif op.op == "update_check":
+            anchor = index.get(("check", op.id))
+            if anchor is None:
+                raise PlanEditError(f"Check not found: {op.id}")
+            checks, _ = _get_list(working, "check")
+            _apply_update(checks[anchor.path[-1]], op.set)
+        elif op.op == "add_check":
+            checks, _ = _get_list(working, "check")
+            if "checks" not in working:
+                working["checks"] = checks
+            _insert_after(checks, op.value, op.after_id)
+        elif op.op == "remove_check":
+            anchor = index.get(("check", op.id))
+            if anchor is None:
+                raise PlanEditError(f"Check not found: {op.id}")
+            checks, _ = _get_list(working, "check")
+            checks.pop(anchor.path[-1])
+        elif op.op == "update_milestone":
+            anchor = index.get(("milestone", op.id))
+            if anchor is None:
+                raise PlanEditError(f"Milestone not found: {op.id}")
+            milestones, _ = _get_list(working, "milestone")
+            _apply_update(milestones[anchor.path[-1]], op.set)
+        elif op.op == "add_milestone":
+            milestones, _ = _get_list(working, "milestone")
+            if "milestones" not in working:
+                working["milestones"] = milestones
+            _insert_after(milestones, op.value, op.after_id)
+        elif op.op == "remove_milestone":
+            anchor = index.get(("milestone", op.id))
+            if anchor is None:
+                raise PlanEditError(f"Milestone not found: {op.id}")
+            milestones, _ = _get_list(working, "milestone")
+            milestones.pop(anchor.path[-1])
         elif op.op == "set_assumption":
             anchor = index.get(("assumption", op.id))
             if anchor is None:
@@ -185,6 +277,9 @@ def apply_plan_edits(plan: dict[str, Any], edits: PlanEdits) -> dict[str, Any]:
     # Structural validation
     _ensure_unique_ids(working.get("requirements", []), "requirements")
     _ensure_unique_ids(working.get("acceptance_tests", []), "acceptance_tests")
+    _ensure_unique_ids(working.get("work_items", []), "work_items")
+    _ensure_unique_ids(working.get("checks", []), "checks")
+    _ensure_unique_ids(working.get("milestones", []), "milestones")
     capsule = working.get("project_capsule", {})
     if isinstance(capsule, dict):
         _ensure_unique_ids(capsule.get("assumptions", []), "assumptions")
@@ -195,6 +290,8 @@ def apply_plan_edits(plan: dict[str, Any], edits: PlanEdits) -> dict[str, Any]:
         _ensure_unique_ids(architecture.get("options", []), "architecture.options")
     _ensure_reference_integrity(working)
 
-    # Schema validation
+    # Schema validation (vNext plans are validated by lint and downstream schema checks)
+    if "work_items" in working or "checks" in working:
+        return working
     PlanPackage.model_validate(working)
     return working

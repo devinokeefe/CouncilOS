@@ -1,0 +1,608 @@
+{
+  "artifact_type": "candidate_delta",
+  "artifact_id": "candidate_delta_B1A_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:17:09.973304Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "branch_set_v1"
+  ],
+  "payload": {
+    "candidate_id": "B1A",
+    "executive_summary": "Deliver a monolithic, single-command CLI (O1) that converts a folder of Markdown notes into a static site with per-note pages, stable URLs, preserved Markdown formatting, backlinks, tags, and fully client-side search. Execution is planned as thin-slice, acceptance-test-gated milestones, with explicit early Human-in-the-Loop (HITL) resolution of the two blocking specifications (Q1 link syntax; Q2 tag format) and “secure-by-default” rendering/ingestion constraints to mitigate critical security risks (notably XSS and path traversal).",
+    "architecture_choice": {
+      "option_id": "O1",
+      "rationale": "O1 (monolithic single-command CLI with an in-memory build pipeline) best matches the branch goal of fastest time-to-first-value with minimal upfront framework design, while still supporting all MUST requirements (static output, per-note pages, backlinks/tags/search) via a straightforward sequential pipeline. This choice also keeps operational complexity low (one command, offline build) and aligns with thin-slice delivery where each increment is shippable and can be acceptance-tested before expanding scope.",
+      "high_level_dataflow": "C1 orchestrates a single build run: (1) C2 recursively discovers .md files under the input root, parses frontmatter and Markdown, extracts canonical metadata (title/slug) plus tags and internal links; (2) C3 consumes extracted links to build a forward-link graph, resolves targets to URLs, computes backlinks, and emits unresolved-link warnings; (3) C4 aggregates tags across notes and builds a tag→notes index for tag navigation; (4) C5 builds a client-side search index artifact from note titles and plain-text content; (5) C6 renders per-note HTML pages (injecting backlinks and tag navigation), plus home/tag/search pages, and writes static assets; (6) C7 provides in-browser search UI that loads the generated search index and navigates to note pages. All outputs are static files in the output directory.",
+      "key_design_decisions": [
+        "DEC1",
+        "DEC2",
+        "DEC3",
+        "DEC4",
+        "DEC5",
+        "DEC6",
+        "DEC7"
+      ]
+    },
+    "milestones": [
+      {
+        "id": "M1",
+        "name": "Intake: Resolve blocking conventions + define fixtures (gates all coding)",
+        "deliverables": [
+          {
+            "id": "DL1",
+            "text": "Document chosen Markdown flavor/extensions and renderer security posture (raw HTML handling; allowed URL schemes)."
+          },
+          {
+            "id": "DL2",
+            "text": "Resolve and document internal link syntax and canonicalization rules (Q1), including how targets map to note URLs/slugs."
+          },
+          {
+            "id": "DL3",
+            "text": "Resolve and document tag representation and parsing rules (Q2), including precedence if multiple sources are allowed."
+          },
+          {
+            "id": "DL4",
+            "text": "Create deterministic fixture datasets for: (a) link/backlink graphs, (b) tags completeness, (c) search query set + expected top-10 targets."
+          }
+        ],
+        "exit_criteria": [
+          "Q1 and Q2 are answered and recorded as the single source of truth for link + tag parsing (HITL approval).",
+          "Security posture for Markdown rendering is explicitly defined to mitigate K3 (no unsafe raw HTML by default; unsafe URL schemes blocked).",
+          "Fixture datasets exist for backlinks (R21) and tags (R20) verification and for the search quality metric (R19).",
+          "A reproducible URL/slug strategy is defined along with collision-handling rules (ties to K5/K6)."
+        ],
+        "depends_on": []
+      },
+      {
+        "id": "M2",
+        "name": "Generate: Minimal end-to-end build (ingest -> per-note HTML)",
+        "deliverables": [
+          {
+            "id": "DL5",
+            "text": "CLI skeleton (input dir, output dir) with offline build flow and stable, deterministic build ordering."
+          },
+          {
+            "id": "DL6",
+            "text": "Recursive Markdown discovery and per-note page generation with deterministic URLs/slugs and baseline templates (home/index page included if feasible)."
+          },
+          {
+            "id": "DL7",
+            "text": "Markdown-to-HTML rendering that preserves core formatting/structure per the chosen flavor, with safe defaults applied (per DEC2)."
+          }
+        ],
+        "exit_criteria": [
+          "AT1 passes (recursive .md discovery).",
+          "AT13 passes (representative build completes without errors and outputs static files).",
+          "AT2 passes (output is static-site-only; no server runtime required).",
+          "AT3 passes (rendering preserves expected Markdown formatting/structure for the selected flavor).",
+          "AT4 passes (distinct per-note pages; stable deterministic URLs across rebuilds).",
+          "Ingestion is constrained to the declared root and does not follow symlinks (mitigates K9 per DEC3)."
+        ],
+        "depends_on": [
+          "M1"
+        ]
+      },
+      {
+        "id": "M3",
+        "name": "Validate: Forward links + backlink computation and rendering",
+        "deliverables": [
+          {
+            "id": "DL8",
+            "text": "Internal link extraction + normalization implementation aligned to the Q1 spec; unresolved internal links produce actionable warnings."
+          },
+          {
+            "id": "DL9",
+            "text": "Link graph + backlink computation, with backlink sections rendered on each note page."
+          }
+        ],
+        "exit_criteria": [
+          "AT8 passes (forward links render and resolve correctly).",
+          "AT9 passes (backlinks computed/rendered correctly for the fixture link graph; 100% expected backlinks appear for the test set per R21).",
+          "Broken/unresolvable internal links are reported with enough context to locate the source note (supports R12 as a precursor even if full R12 is deferred)."
+        ],
+        "depends_on": [
+          "M2"
+        ]
+      },
+      {
+        "id": "M4",
+        "name": "Validate: Tags extraction + per-tag navigation pages",
+        "deliverables": [
+          {
+            "id": "DL10",
+            "text": "Tag extraction per the Q2 spec, producing a per-note tag list and a tag→notes index."
+          },
+          {
+            "id": "DL11",
+            "text": "Tag index page and per-tag listing pages (or equivalent tag navigation UI) with working links back to note pages."
+          }
+        ],
+        "exit_criteria": [
+          "AT6 passes (tag extraction correctness + 100% completeness on fixtures per R20).",
+          "AT7 passes (each tag has a navigable listing page/filter with working note links).",
+          "Tag parsing failures (if any) produce clear warnings/errors aligned to the documented rules (progress toward R12)."
+        ],
+        "depends_on": [
+          "M3"
+        ]
+      },
+      {
+        "id": "M5",
+        "name": "Validate: Client-side search index + search UI + quality metric",
+        "deliverables": [
+          {
+            "id": "DL12",
+            "text": "Client-side search index artifact generated at build time and included in static output; search UI page loads it and searches over note content/titles without server support."
+          },
+          {
+            "id": "DL13",
+            "text": "Representative query set and expected results mapping (from M1 fixtures) wired into the acceptance runbook for the search-quality metric."
+          }
+        ],
+        "exit_criteria": [
+          "AT5 passes (search works fully client-side with network disabled).",
+          "AT12 passes (≥90% of representative queries return expected note within top 10 per R19).",
+          "If scale targets (Q3) are still unknown, document a placeholder benchmark protocol and defer hard performance budgets to post-Q3 resolution (ties to K4/K13)."
+        ],
+        "depends_on": [
+          "M4"
+        ]
+      },
+      {
+        "id": "M6",
+        "name": "Review: Polish + cross-browser validation + workflow improvements (SHOULDs)",
+        "deliverables": [
+          {
+            "id": "DL14",
+            "text": "Improved error reporting for invalid Markdown, unresolvable internal links, and tag parsing failures with file-relative locations where feasible (R12)."
+          },
+          {
+            "id": "DL15",
+            "text": "Cross-browser verification runbook and fixes for core feature parity across Chrome/Firefox/Safari/Edge (R13 / AT11)."
+          },
+          {
+            "id": "DL16",
+            "text": "If time permits: watch mode (R25) and per-note table-of-contents generation (R24), gated behind configuration if needed."
+          }
+        ],
+        "exit_criteria": [
+          "AT11 passes (core features work without runtime errors in Chrome, Firefox, Safari, Edge).",
+          "User-facing diagnostics are actionable for common failures (broken links, bad tags) and do not leak absolute filesystem paths (mitigates K17).",
+          "Any COULD requirements remain explicitly deferred unless separately approved (mitigates K20)."
+        ],
+        "depends_on": [
+          "M5"
+        ]
+      }
+    ],
+    "decision_log": [
+      {
+        "id": "DEC1",
+        "question": "Which architecture option should be used for the initial delivery plan?",
+        "choice": "Adopt O1: a monolithic, single-command CLI with an in-memory build pipeline that generates the full static site in one execution.",
+        "rationale": "This minimizes upfront framework complexity and optimizes for speed-to-first-value while still supporting the required pipeline stages (parse, links/backlinks, tags, search, render) as sequential in-process steps.",
+        "alternatives_considered": [
+          "O2 plugin-based custom core (more extensible but higher upfront design cost).",
+          "O3 Eleventy/SSG-based approach (faster templating/watch mode but adds dependencies and constrains internals).",
+          "O4 multi-tool pipeline with intermediate artifacts (modular but increases orchestration complexity for users)."
+        ],
+        "what_would_change_this_decision": [
+          "If extensibility/themes/plugins become a near-term MUST (strongly favor O2).",
+          "If large-scale search performance and watch mode are top priorities early (consider O3).",
+          "If independent toolchain evolution is required across stages (consider O4)."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "architecture_canonical_v1",
+            "entity_id": "O1",
+            "json_pointer": "/options/0",
+            "note": "O1 description, components, and tradeoffs.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "branch_set_v1",
+            "entity_id": "O1",
+            "json_pointer": "/branch/selected_arch_option_id",
+            "note": "Branch B1 selected O1 (if present in branch_set artifact).",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "DEC2",
+        "question": "What is the default security posture for Markdown rendering to mitigate XSS/content injection risk?",
+        "choice": "Default to safe rendering: do not allow raw HTML passthrough unless explicitly opted in; sanitize/escape as needed; and block unsafe URL schemes (e.g., javascript:) in rendered links/images.",
+        "rationale": "K3 is critical severity and the output is meant to be viewed by readers in a browser; a secure-by-default stance reduces likelihood of shipping an unsafe static site, and aligns with governance HITL triggers regarding unsafe rendering behaviors.",
+        "alternatives_considered": [
+          "Allow raw HTML by default (high risk; requires strong sanitization and explicit acceptance).",
+          "Strip all HTML and all non-http(s) URLs unconditionally (safer but may break legitimate content; could be configurable)."
+        ],
+        "what_would_change_this_decision": [
+          "A stakeholder explicitly requires trusted raw HTML support and accepts/mitigates the risk with a sanitization plan and added security acceptance coverage.",
+          "The selected Markdown flavor/renderer cannot practically disable raw HTML; would require switching renderer or adding a sanitizer layer."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K3",
+            "json_pointer": "/risk_register/2",
+            "note": "XSS/content injection risk and mitigation guidance.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": null,
+            "json_pointer": "/hitl_policy/when_to_interrupt",
+            "note": "HITL trigger for unsafe rendering without explicit mitigation.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "DEC3",
+        "question": "How should filesystem ingestion be constrained to prevent path traversal and unintended file inclusion?",
+        "choice": "Constrain ingestion to the declared input root, default to not following symlinks, and reject any resolved paths escaping the root; include an allowlist for input extensions (at least .md).",
+        "rationale": "This directly mitigates K9 (high severity) and preserves user trust by preventing leakage of local files into the generated static site output.",
+        "alternatives_considered": [
+          "Follow symlinks by default (higher risk; could traverse outside root).",
+          "Allow all file extensions (increases accidental inclusion and disclosure risk)."
+        ],
+        "what_would_change_this_decision": [
+          "A stakeholder explicitly needs symlink following within the repository and accepts the risk with additional guardrails (e.g., symlink target must still be under root).",
+          "A future requirement adds support for additional content types beyond .md, in which case the allowlist would expand."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K9",
+            "json_pointer": "/risk_register/8",
+            "note": "Path traversal/unintended inclusion risk and mitigation guidance.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "requirements_canonical_v1",
+            "entity_id": "R1",
+            "json_pointer": "/requirements/0",
+            "note": "Recursive discovery of Markdown files under user-specified folder.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "DEC4",
+        "question": "When and how should internal link syntax be implemented given the blocking open question (Q1)?",
+        "choice": "Treat Q1 as a hard gate: do not implement link extraction/resolution/backlinks until the supported internal link syntax is selected and documented; implement exactly the chosen syntax first, with any additional dialects (e.g., wiki-links) behind explicit configuration later.",
+        "rationale": "K1 is high severity and Q1 is blocking; premature implementation risks incorrect link graphs and broken navigation/backlinks. Gating avoids rework and reduces ambiguity-driven defects.",
+        "alternatives_considered": [
+          "Implement both standard Markdown links and wiki-links immediately with heuristic detection (likely ambiguous and brittle).",
+          "Implement only standard Markdown links and proceed without stakeholder confirmation (may fail user expectations)."
+        ],
+        "what_would_change_this_decision": [
+          "Stakeholder provides a definitive link syntax decision and test examples (then proceed).",
+          "A requirement arises to support multiple link dialects concurrently; would require explicit resolution rules and stronger test coverage."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q1",
+            "json_pointer": "/open_questions/0",
+            "note": "Blocking open question on Markdown/link syntax.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K1",
+            "json_pointer": "/risk_register/0",
+            "note": "Risk from ambiguous/mixed internal link syntax.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "requirements_canonical_v1",
+            "entity_id": "R9",
+            "json_pointer": "/requirements/8",
+            "note": "Forward link detection requirement depends on a specified syntax.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "DEC5",
+        "question": "When and how should tag parsing be implemented given the blocking open question (Q2)?",
+        "choice": "Treat Q2 as a hard gate: do not implement tag extraction and tag navigation until the tag representation is selected and documented; implement deterministic parsing rules (including precedence/validation) exactly per the chosen convention.",
+        "rationale": "K2 is high severity and Q2 is blocking; tag completeness is a MUST metric (R20), so the format must be unambiguous for deterministic tests and reliable navigation.",
+        "alternatives_considered": [
+          "Support both frontmatter and inline tags immediately with unspecified precedence (invites inconsistency).",
+          "Only support frontmatter tags and ignore inline tags without stakeholder confirmation (may not match user workflow)."
+        ],
+        "what_would_change_this_decision": [
+          "Stakeholder confirms a single tag convention and provides examples (then proceed).",
+          "A later decision mandates supporting multiple tag sources; would require explicit precedence and enhanced diagnostics."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q2",
+            "json_pointer": "/open_questions/1",
+            "note": "Blocking open question on tag representation.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K2",
+            "json_pointer": "/risk_register/1",
+            "note": "Risk from unspecified/mixed tag formats.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "requirements_canonical_v1",
+            "entity_id": "R7",
+            "json_pointer": "/requirements/6",
+            "note": "Tag extraction requires a specified convention.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "DEC6",
+        "question": "How will per-note URLs/slugs be generated to be stable and avoid collisions?",
+        "choice": "Generate URLs deterministically from the note’s path relative to the input root (minus extension), applying a single canonical normalization/encoding scheme; detect slug collisions during build and fail with an actionable error unless an explicit override is configured.",
+        "rationale": "Stable URLs are required (R4) and collisions are a known risk (K5). Collision detection prevents silent overwrites and unpredictable navigation.",
+        "alternatives_considered": [
+          "Use only filename as slug (higher collision risk).",
+          "Auto-resolve collisions by adding numeric suffixes (can break stability across builds).",
+          "Use a hash-only slug (stable but less readable URLs)."
+        ],
+        "what_would_change_this_decision": [
+          "A stakeholder prioritizes human-friendly slugs independent of folder structure (would require slug frontmatter or mapping).",
+          "A hosting constraint requires different URL shapes (e.g., all pages flat)."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "requirements_canonical_v1",
+            "entity_id": "R4",
+            "json_pointer": "/requirements/3",
+            "note": "Stable URL requirement.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K5",
+            "json_pointer": "/risk_register/4",
+            "note": "Slug/URL collision risk.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "DEC7",
+        "question": "What search implementation approach should be used under the static-site constraint?",
+        "choice": "Generate a client-side search index at build time as static artifact(s) and ship a browser-only search UI that loads and queries the index without network dependencies; defer advanced search features and scale optimizations until expected scale targets (Q3) are clarified.",
+        "rationale": "R5 requires fully client-side search with no server runtime (static constraint). Deferring advanced features prevents scope creep while still enabling the R19 quality metric to be validated with a representative query set.",
+        "alternatives_considered": [
+          "Add a server-side search backend (disallowed by static-site constraint).",
+          "Ship no search initially (violates MUST R5).",
+          "Implement advanced fuzzy/highlighting features immediately (scope risk; not required)."
+        ],
+        "what_would_change_this_decision": [
+          "If Q3 indicates very large corpora that exceed feasible single-asset indexing, require a chunked/lazy-loading index design.",
+          "If stakeholders require advanced search UX (R28) for MVP, reprioritize and accept added complexity/testing needs."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "requirements_canonical_v1",
+            "entity_id": "R5",
+            "json_pointer": "/requirements/4",
+            "note": "Client-side search index + UI requirement.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "A3",
+            "json_pointer": "/assumptions/2",
+            "note": "Assumption that in-browser search is acceptable.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K4",
+            "json_pointer": "/risk_register/3",
+            "note": "Search index scale/performance risk and need for Q3 targets.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      }
+    ],
+    "supplemental_evaluations": [
+      {
+        "title": "Acceptance coverage gap: XSS security test requested but not present in canonical AT list",
+        "notes": "Branch acceptance strategy calls for an explicit XSS-focused acceptance test covering K3 before the first shippable increment exits. The provided canonical acceptance tests (AT1–AT13) do not include a dedicated security/XSS test procedure. This should be routed to the acceptance-test/canonicalization owner to add without changing requirements.",
+        "evidence": [
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K3",
+            "json_pointer": "/risk_register/2",
+            "note": "Critical XSS risk requires concrete testing/mitigation.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "acceptance_canonical_v1",
+            "entity_id": null,
+            "json_pointer": "/acceptance_tests",
+            "note": "AT list lacks a dedicated XSS/security test.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "title": "Blocking-spec gating for thin-slice delivery",
+        "notes": "Because Q1 and Q2 are explicitly blocking (link syntax and tag format), the milestone plan inserts an Intake gate (M1) to resolve them before implementing link/backlink/tag features. This aligns risk mitigations for K1/K2 and reduces rework.",
+        "evidence": [
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q1",
+            "json_pointer": "/open_questions/0",
+            "note": "Blocking link syntax question.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q2",
+            "json_pointer": "/open_questions/1",
+            "note": "Blocking tag format question.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K1",
+            "json_pointer": "/risk_register/0",
+            "note": "Risk depends on resolving Q1.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K2",
+            "json_pointer": "/risk_register/1",
+            "note": "Risk depends on resolving Q2.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      }
+    ],
+    "synthesis_warnings": [
+      {
+        "id": "W1",
+        "severity": "high",
+        "summary": "Canonical acceptance test set (AT1–AT13) lacks a dedicated XSS/security acceptance test covering K3, but the branch acceptance strategy requires one before the first shippable increment exits; adding a new AT is outside this delta synthesizer’s permissions.",
+        "routing_target": "qa.acceptance_canonical_owner",
+        "evidence": [
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K3",
+            "json_pointer": "/risk_register/2",
+            "note": "Critical XSS risk calls for explicit testing.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "acceptance_canonical_v1",
+            "entity_id": null,
+            "json_pointer": "/acceptance_tests",
+            "note": "No dedicated security/XSS acceptance test present.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "W2",
+        "severity": "critical",
+        "summary": "Blocking questions Q1 (internal link syntax) and Q2 (tag representation) remain unresolved; per governance HITL policy they require stakeholder decisions before implementation of links/backlinks/tags.",
+        "routing_target": "hitl.product_owner_and_tech_lead",
+        "evidence": [
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q1",
+            "json_pointer": "/open_questions/0",
+            "note": "Marked blocking=true.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q2",
+            "json_pointer": "/open_questions/1",
+            "note": "Marked blocking=true.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": null,
+            "json_pointer": "/hitl_policy/when_to_interrupt",
+            "note": "HITL interrupt conditions include missing blocking spec decisions for Q1/Q2.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "W3",
+        "severity": "medium",
+        "summary": "Scale/performance targets for search (Q3) are not defined; committing to a specific indexing strategy or performance budget before Q3 is resolved could increase rework risk (K4/K13).",
+        "routing_target": "product_manager_scale_targets",
+        "evidence": [
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q3",
+            "json_pointer": "/open_questions/2",
+            "note": "Expected scale/performance targets unspecified (non-blocking but high impact).",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K4",
+            "json_pointer": "/risk_register/3",
+            "note": "Search index scale/performance risk depends on Q3.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      }
+    ]
+  }
+}

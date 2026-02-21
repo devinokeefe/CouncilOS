@@ -1,0 +1,183 @@
+{
+  "artifact_type": "failure_mode_findings",
+  "artifact_id": "failure_modes_B1A_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:42:06.040516Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B1A_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B1A_v1",
+    "taxonomy": "inputs.taxonomy_categories",
+    "critical_findings": [
+      {
+        "id": "FM1",
+        "category": "SECURITY_PRIVACY:DATA_LEAKAGE",
+        "severity": "critical",
+        "finding": "Accidental public exposure of sensitive/private note content is likely if users deploy outputs to public static hosting, because access control is explicitly out-of-scope and there is no stated pre-publish safety rail (e.g., allowlist publish set, secrets scanning, or prominent warnings).",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "closure_target": "Before any public-deployment guidance is shipped (no later than M5), require an explicit safety mechanism and user-facing warning workflow.",
+          "earliest_prevention_stage": "Requirements",
+          "evidence_pointers": "[{\"artifact_ref\":\"plan_candidate_B1A_v1\",\"entity_id\":\"K8\",\"json_pointer\":\"/plan_package/risk_register/7\",\"note\":\"Risk register calls out sensitive/private information being inadvertently published.\"},{\"artifact_ref\":\"plan_candidate_B1A_v1\",\"entity_id\":null,\"json_pointer\":\"/plan_package/project_capsule/non_goals/3\",\"note\":\"Authentication/access control is a non-goal; increases chance of accidental public exposure.\"}]",
+          "mitigation_expectation": "Implement (1) a prominent 'publishing is public' warning in CLI output and docs, (2) an opt-in publish allowlist or default deny for common private paths (configurable), (3) optional content scanning hooks (patterns for API keys) with warnings, and (4) clear instructions for private hosting/local-only workflows."
+        }
+      },
+      {
+        "id": "FM2",
+        "category": "Security: injection/XSS & unsafe content handling",
+        "severity": "critical",
+        "finding": "XSS/content injection in the generated static site can occur if Markdown raw HTML is passed through, if template rendering fails to escape user-controlled strings (titles/tags/link text), or if search UI renders snippets via innerHTML. This is high-impact in a trusted-user workflow because notes can include copied web content, and the output may be hosted/shared.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "closure_target": "Before implementing full rendering + client-side runtime features (no later than M4), define and test the sanitization/escaping policy end-to-end.",
+          "earliest_prevention_stage": "Architecture",
+          "evidence_pointers": "[{\"artifact_ref\":\"plan_candidate_B1A_v1\",\"entity_id\":\"K7\",\"json_pointer\":\"/plan_package/risk_register/6\",\"note\":\"Risk register explicitly flags XSS/content injection if content is rendered without sanitization/escaping.\"},{\"artifact_ref\":\"plan_candidate_B1A_v1\",\"entity_id\":\"DEC6\",\"json_pointer\":\"/plan_package/decision_log/5\",\"note\":\"Decision assumes sanitize/disallow raw HTML by default, but it is not yet enforced via requirements/tests.\"}]",
+          "mitigation_expectation": "Make safe-by-default behavior non-optional for MVP: disable raw HTML or sanitize it; escape all template insertions (including tags/link text); ensure search UI renders text nodes (not HTML); add regression tests with representative payloads."
+        }
+      },
+      {
+        "id": "FM3",
+        "category": "DATA_INPUT:SCALE_FAILURE",
+        "severity": "critical",
+        "finding": "Build can crash/hang or become impractically slow due to full-corpus in-memory processing (O1), especially with large note sets or large individual files; the target scale is unconfirmed (Q3) yet directly drives viability of link-graph and search-index phases.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "closure_target": "Before committing to O1-only implementation optimizations (no later than M2 start), confirm scale and set enforceable performance/memory budgets plus stress tests.",
+          "earliest_prevention_stage": "Intake",
+          "evidence_pointers": "[{\"artifact_ref\":\"plan_candidate_B1A_v1\",\"entity_id\":\"K4\",\"json_pointer\":\"/plan_package/risk_register/3\",\"note\":\"Critical risk: build slow/crash/hang due to scale/memory spikes.\"},{\"artifact_ref\":\"plan_candidate_B1A_v1\",\"entity_id\":\"Q3\",\"json_pointer\":\"/plan_package/project_capsule/open_questions/2\",\"note\":\"Scale question is blocking and unconfirmed.\"},{\"artifact_ref\":\"plan_candidate_B1A_v1\",\"entity_id\":\"O1\",\"json_pointer\":\"/plan_package/architecture/chosen/option_id\",\"note\":\"Chosen architecture is monolithic single-process in-memory graph, increasing scale sensitivity.\"}]",
+          "mitigation_expectation": "Confirm note-count/size targets; add hard limits + graceful degradation (skip huge files with warning); implement streaming where feasible (scanner/parser); add progress reporting and timeouts; create scale fixtures and benchmark gates in CI."
+        }
+      },
+      {
+        "id": "FM4",
+        "category": "Link resolution & graph integrity (links/backlinks)",
+        "severity": "high",
+        "finding": "Backlinks and internal navigation can be materially wrong if link conventions are mixed/ambiguous (relative paths vs wiki-links vs title-based links) and precedence rules aren’t nailed down early; this can lead to silent broken navigation, incorrect backlink sets, and loss of user trust.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "closure_target": "Before implementing link graph/backlinks (M3), require explicit configured link syntax/precedence and add fixtures covering mixed-convention cases.",
+          "earliest_prevention_stage": "Requirements",
+          "evidence_pointers": "[{\"artifact_ref\":\"plan_candidate_B1A_v1\",\"entity_id\":\"Q1\",\"json_pointer\":\"/plan_package/project_capsule/open_questions/0\",\"note\":\"Blocking: internal link conventions to support are undefined.\"},{\"artifact_ref\":\"plan_candidate_B1A_v1\",\"entity_id\":\"K2\",\"json_pointer\":\"/plan_package/risk_register/1\",\"note\":\"High risk: ambiguous/unsupported link conventions break links/backlinks.\"},{\"artifact_ref\":\"plan_candidate_B1A_v1\",\"entity_id\":\"DEC3\",\"json_pointer\":\"/plan_package/decision_log/2\",\"note\":\"Decision limits MVP to relative Markdown links; additional syntaxes configurable but still requires clear precedence to avoid ambiguity.\"}]",
+          "mitigation_expectation": "Require a link-spec in config (enabled syntaxes + precedence + normalization); emit unresolved-link diagnostics; add acceptance tests for each enabled syntax; ensure backlinks are computed from the resolved canonical targets only (no heuristic backfill)."
+        }
+      },
+      {
+        "id": "FM5",
+        "category": "Deployment/hosting compatibility (base paths, assets)",
+        "severity": "high",
+        "finding": "Generated site can appear broken (404s for assets, tag pages, note links, search index fetch) when deployed under a subdirectory (e.g., GitHub Pages project site) or opened via file:// if URL building is inconsistent across templates, runtime JS, and emitted paths.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "closure_target": "By M5 exit criteria, add deployment-target test matrix and enforce single URL-building helper across all generated links and runtime asset fetches.",
+          "earliest_prevention_stage": "Architecture",
+          "evidence_pointers": "[{\"artifact_ref\":\"plan_candidate_B1A_v1\",\"entity_id\":\"R19\",\"json_pointer\":\"/plan_package/requirements/18\",\"note\":\"Requirement to support base URL/path prefix for subdirectory deployments.\"},{\"artifact_ref\":\"plan_candidate_B1A_v1\",\"entity_id\":\"K13\",\"json_pointer\":\"/plan_package/risk_register/12\",\"note\":\"Risk: broken relative paths/base URLs break assets/navigation across hosting targets.\"},{\"artifact_ref\":\"plan_candidate_B1A_v1\",\"entity_id\":\"DEC8\",\"json_pointer\":\"/plan_package/decision_log/7\",\"note\":\"Decision calls for a single URL-building helper; failure mode is inconsistent application.\"}]",
+          "mitigation_expectation": "Add tests that host output under a non-root base path and verify: navigation links, tag links, backlinks, CSS/JS, and search-index fetch all resolve; prefer relative URLs when possible; document supported hosting targets explicitly."
+        }
+      },
+      {
+        "id": "FM6",
+        "category": "Cross-platform filesystem/path handling",
+        "severity": "high",
+        "finding": "Output path overwrites or cross-platform breakage can occur due to slug/path collisions (e.g., multiple index.md), case-insensitive filesystems (macOS/Windows), Unicode normalization differences, or reserved filenames; this can silently drop notes or misdirect links/backlinks.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "closure_target": "Before M3 (when canonical IDs are relied upon for graph correctness), implement collision detection and a deterministic disambiguation/error strategy; add Windows/macOS path fixtures.",
+          "earliest_prevention_stage": "Implementation",
+          "evidence_pointers": "[{\"artifact_ref\":\"plan_candidate_B1A_v1\",\"entity_id\":\"K10\",\"json_pointer\":\"/plan_package/risk_register/9\",\"note\":\"Risk: slug/title collisions map multiple notes to same output path causing overwrites and incorrect resolution.\"},{\"artifact_ref\":\"plan_candidate_B1A_v1\",\"entity_id\":\"K11\",\"json_pointer\":\"/plan_package/risk_register/10\",\"note\":\"Risk: OS-specific path handling/unusual filenames break builds or outputs.\"},{\"artifact_ref\":\"plan_candidate_B1A_v1\",\"entity_id\":\"DEC2\",\"json_pointer\":\"/plan_package/decision_log/1\",\"note\":\"Decision: path-based canonical identifiers; must still handle collisions and cross-platform normalization.\"}]",
+          "mitigation_expectation": "Detect collisions (case-folded + Unicode-normalized) as build errors (or require explicit user override); normalize path separators; avoid reserved names; add cross-platform CI or simulated path tests."
+        }
+      },
+      {
+        "id": "FM7",
+        "category": "Build determinism & reproducibility",
+        "severity": "medium",
+        "finding": "Non-deterministic build outputs (ordering, locale/timezone effects, embedded timestamps, nondeterministic search index serialization) can cause noisy diffs and unreliable deployments, and make debugging link/tag/search regressions harder.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "closure_target": "By M1 exit criteria and before adding more derived artifacts (tags/search), add a repeat-build determinism check and remove timestamps/unstable ordering from outputs.",
+          "earliest_prevention_stage": "Implementation",
+          "evidence_pointers": "[{\"artifact_ref\":\"plan_candidate_B1A_v1\",\"entity_id\":\"K20\",\"json_pointer\":\"/plan_package/risk_register/19\",\"note\":\"Risk: non-deterministic builds due to ordering/timestamps/locale differences.\"},{\"artifact_ref\":\"plan_candidate_B1A_v1\",\"entity_id\":\"M1\",\"json_pointer\":\"/plan_package/milestones/0/exit_criteria/2\",\"note\":\"M1 exit criteria already calls for deterministic file list; extend this to full output artifacts.\"}]",
+          "mitigation_expectation": "Sort inputs deterministically; avoid embedding timestamps by default; stabilize JSON key ordering/serialization for indexes; add CI test: two builds from same inputs produce identical hashes."
+        }
+      },
+      {
+        "id": "FM8",
+        "category": "Metadata extraction (tags/front matter) correctness",
+        "severity": "medium",
+        "finding": "Malformed YAML front matter (or mixed front matter formats) can cause partial or total build failure, or incorrect tag extraction that cascades into broken tag pages and search facets; current plan notes the risk but does not specify fallback behavior (skip/warn vs fail).",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "closure_target": "Before tag features (M2), define front matter parsing error policy (per-file warn/skip vs fail build), and add fixtures for malformed front matter.",
+          "earliest_prevention_stage": "Requirements",
+          "evidence_pointers": "[{\"artifact_ref\":\"plan_candidate_B1A_v1\",\"entity_id\":\"K6\",\"json_pointer\":\"/plan_package/risk_register/5\",\"note\":\"Risk: malformed YAML front matter causes build failure.\"},{\"artifact_ref\":\"plan_candidate_B1A_v1\",\"entity_id\":\"R11\",\"json_pointer\":\"/plan_package/requirements/10\",\"note\":\"Tag extraction depends on metadata parsing; incorrect parsing impacts tags.\"}]",
+          "mitigation_expectation": "Implement tolerant parsing: if front matter invalid, warn with file + line context, ignore front matter for that file (do not crash entire build) unless strict mode enabled; document supported front matter format."
+        }
+      },
+      {
+        "id": "FM01",
+        "category": "BUILD_LOGIC:CRASH_OR_HANG",
+        "severity": "critical",
+        "finding": "The build process, designed with an in-memory graph (Architecture Option O1), fails catastrophically (e.g., crashes from out-of-memory errors, hangs indefinitely, or becomes unacceptably slow) when processing a note collection at the upper end of the user's expected scale (related to Open Question Q3), rendering the tool unusable for its intended purpose.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {}
+      },
+      {
+        "id": "FM02",
+        "category": "SECURITY_PRIVACY:DATA_LEAKAGE",
+        "severity": "critical",
+        "finding": "A user inadvertently publishes a directory containing private or sensitive notes because the tool uses recursive discovery by default (R1) and robust exclusion mechanisms are not a guaranteed feature (R20 is a SHOULD). This leads to unintentional data leakage to the public internet, a severe risk given that access control is an explicit non-goal.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {}
+      },
+      {
+        "id": "FM03",
+        "category": "OUTPUT_ARTIFACT:SECURITY_VULNERABILITY",
+        "severity": "critical",
+        "finding": "The Markdown rendering pipeline improperly sanitizes note content or allows raw HTML to pass through into the generated static site without adequate safeguards (Risk K7). This creates a stored Cross-Site Scripting (XSS) vulnerability, allowing malicious code to execute in the browser of anyone viewing the published site.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {}
+      },
+      {
+        "id": "FM04",
+        "category": "Link resolution & graph integrity (links/backlinks)",
+        "severity": "high",
+        "finding": "Due to ambiguous conventions for note identification (file paths vs. titles), linking, and tagging, the note graph is constructed incorrectly. This leads to silent data loss (overwritten pages due to slug collisions), broken links, and incomplete backlink/tag indexes, undermining the core navigation and discovery features.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {}
+      },
+      {
+        "id": "FM05",
+        "category": "USER_ADOPTION:USABILITY_ISSUE",
+        "severity": "high",
+        "finding": "The client-side search index, generated as a single monolithic artifact (R8), grows so large that it significantly delays page loads, consumes excessive browser memory, and causes the search UI to be unresponsive, failing the performance expectation defined in R22 for a moderately-sized note collection.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {}
+      },
+      {
+        "id": "FM06",
+        "category": "Cross-platform filesystem/path handling",
+        "severity": "high",
+        "finding": "The build pipeline contains OS-specific logic, such as incorrect path separator handling, reliance on case-insensitive file lookups, or unacceptable character handling in filenames. This causes builds to fail or produce incorrect output when run on a different operating system than the one it was developed on (e.g., Windows vs. Linux/macOS).",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {}
+      }
+    ],
+    "closure_pass": false
+  }
+}

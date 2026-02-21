@@ -1,0 +1,121 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B1A_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:19:16.258816Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "trace_graph_B1A_primary_v2",
+    "trace_graph_B1A_anchor_v2"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B1A_v2",
+    "findings": [
+      {
+        "id": "TG-F001",
+        "severity": "low",
+        "summary": "Milestone M1 is included in the verification traces for Requirements R1 and R2, but M1 contains no deliverables or exit criteria relevant to Recursive File Discovery (R1) or Static Output constraints (R2). M1 implementation focuses on content syntax, security posture, and fixtures (supporting R3/R7/R9/R19), while R1 and R2 are exclusively addressed in Milestone M2.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": "R1",
+            "json_pointer": "/plan_package/requirements/0",
+            "note": "Requirement R1 focuses on recursive discovery of Markdown files.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "The system MUST accept a user-specified folder... and recursively discover Markdown (.md) files"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": "R2",
+            "json_pointer": "/plan_package/requirements/1",
+            "note": "Requirement R2 focuses on generating valid static site output.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "The system MUST generate a static website output consisting only of static files"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/deliverables",
+            "note": "M1 deliverables define Markdown flavor (R3), link syntax (R9), tag rules (R7), and fixtures; none define file discovery or static output architecture.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/deliverables",
+            "note": "M2 explicitly delivers the CLI skeleton, recursive discovery (DL6), and static output generation.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "plan.owner"
+      },
+      {
+        "id": "TG001",
+        "severity": "medium",
+        "summary": "Sample check for R2 relies only on AT2, which does not explicitly verify that search/tags/backlinks require no server-side runtime or network access; it primarily checks that output files are static and the site can be opened via a static server/host. This may leave part of R2’s constraint (no server-side runtime for search/tags/backlinks) unvalidated in the R2 check.",
+        "evidence": [
+          {
+            "artifact_ref": "inputs.plan_candidate",
+            "entity_id": "R2",
+            "json_pointer": "/plan_package/requirements/1/text",
+            "note": "R2 explicitly includes browsing, search, tags, and backlinks having no required server-side runtime.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "The system MUST generate a static website output consisting only of static files (HTML/CSS/JS/assets) that can be hosted or viewed without any required server-side runtime for browsing, search, tags,或"
+          },
+          {
+            "artifact_ref": "inputs.plan_candidate",
+            "entity_id": "AT2",
+            "json_pointer": "/plan_package/acceptance_tests/1/procedure",
+            "note": "AT2 checks static output and that the site functions when hosted/opened, but does not specify offline/network-disabled verification for search/tags/backlinks (contrast with AT5 for search).",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Run the build on a representative notes folder. Inspect the output directory contents and attempt to open the site via a local static file server (or static hosting)."
+          }
+        ],
+        "routing_target": "qa.acceptance_canonical_owner"
+      },
+      {
+        "id": "TG002",
+        "severity": "low",
+        "summary": "R3 validation (AT3) depends on a ‘selected Markdown flavor’, but the flavor choice is tied to a blocking open question (Q1) and Intake milestone deliverable (DL1). The sample check (R3 → AT3, M1/M2) is directionally correct but implicitly blocked until that flavor decision is made and recorded as test oracle/expectations.",
+        "evidence": [
+          {
+            "artifact_ref": "inputs.plan_candidate",
+            "entity_id": "R3",
+            "json_pointer": "/plan_package/requirements/2/text",
+            "note": "R3 scope references behavior ‘when supported by the selected flavor’, requiring an explicit flavor decision to judge correctness.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "...and commonly used elements such as images and tables when supported by the selected flavor)."
+          },
+          {
+            "artifact_ref": "inputs.plan_candidate",
+            "entity_id": "Q1",
+            "json_pointer": "/plan_package/project_capsule/open_questions/0",
+            "note": "Q1 is marked blocking and includes the Markdown flavor decision needed to define AT3 expectations.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "What Markdown flavor and internal link syntax should be supported for links/backlinks (CommonMark/GFM; standard Markdown links, Obsidian-style [[WikiLinks]], both)?"
+          },
+          {
+            "artifact_ref": "inputs.plan_candidate",
+            "entity_id": "DL1",
+            "json_pointer": "/plan_package/milestones/0/deliverables/0/text",
+            "note": "M1 deliverable explicitly requires documenting the chosen Markdown flavor/extensions, which AT3 needs as a baseline.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Document chosen Markdown flavor/extensions and renderer security posture (raw HTML handling; allowed URL schemes)."
+          }
+        ],
+        "routing_target": "hitl.product_owner_and_tech_lead"
+      }
+    ]
+  }
+}

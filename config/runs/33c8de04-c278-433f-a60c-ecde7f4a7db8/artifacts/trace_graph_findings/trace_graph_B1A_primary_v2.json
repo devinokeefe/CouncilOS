@@ -1,0 +1,59 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B1A_primary_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:18:43.728080Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "plan_candidate_B1A_v2"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B1A_v2",
+    "findings": [
+      {
+        "id": "TG-F001",
+        "severity": "low",
+        "summary": "Milestone M1 is included in the verification traces for Requirements R1 and R2, but M1 contains no deliverables or exit criteria relevant to Recursive File Discovery (R1) or Static Output constraints (R2). M1 implementation focuses on content syntax, security posture, and fixtures (supporting R3/R7/R9/R19), while R1 and R2 are exclusively addressed in Milestone M2.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": "R1",
+            "json_pointer": "/plan_package/requirements/0",
+            "note": "Requirement R1 focuses on recursive discovery of Markdown files.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "The system MUST accept a user-specified folder... and recursively discover Markdown (.md) files"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": "R2",
+            "json_pointer": "/plan_package/requirements/1",
+            "note": "Requirement R2 focuses on generating valid static site output.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": "The system MUST generate a static website output consisting only of static files"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/deliverables",
+            "note": "M1 deliverables define Markdown flavor (R3), link syntax (R9), tag rules (R7), and fixtures; none define file discovery or static output architecture.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v2",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/deliverables",
+            "note": "M2 explicitly delivers the CLI skeleton, recursive discovery (DL6), and static output generation.",
+            "candidate_id": "B1A",
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "plan.owner"
+      }
+    ]
+  }
+}

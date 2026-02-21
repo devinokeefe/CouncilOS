@@ -1,0 +1,529 @@
+{
+  "artifact_type": "candidate_delta",
+  "artifact_id": "candidate_delta_B2B_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:08:15.923266Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "branch_set_v1"
+  ],
+  "payload": {
+    "candidate_id": "B2B",
+    "executive_summary": "Candidate B2B adopts the plugin-based static site generator architecture (O2) to convert a folder of Markdown notes into a searchable static site with tags and backlinks. The plan uses a hybrid milestone strategy: Phase A delivers a thin-slice through the core orchestrator (C8), file-collector plugin (C9), and Markdown parser plugin (C10) to produce basic HTML output and validate the plugin lifecycle. Phase B parallelises development of the backlink resolver (C11), tag aggregator (C12), and search index (C13) plugins, each gated independently. Phase C integrates all plugins with the theme/renderer (C14) and client-side runtime (C15), running the full acceptance suite. Phase D hardens the system with watch mode, performance benchmarks, and optional features. This approach trades higher upfront design cost for long-term extensibility: features like graph views (R26), themes (R27), and advanced search (R28) can be added as plugins without modifying the core. Key risks include plugin API instability (K16), link/tag ambiguity (K1/K2) which must be resolved before Phase A exits, and XSS (K3) which requires a dedicated security gate before Phase C exit.",
+    "architecture_choice": {
+      "option_id": "O2",
+      "rationale": "O2's plugin-based architecture provides clean separation of concerns (file collection, parsing, backlinks, tags, search, theming) behind a formal build lifecycle with well-defined hooks. The hybrid milestone strategy mitigates the over-engineering risk noted in O2's cons by delivering a working thin-slice in Phase A before parallelising plugin development. Compared to O1 (monolith), O2 is more extensible for post-MVP features (graph view, themes, advanced search). Compared to O3 (Eleventy-based), O2 avoids coupling to a third-party SSG's conventions and upgrade cycle, giving full control over the plugin API and build pipeline. Compared to O4 (multi-tool pipeline), O2 keeps the single-command UX while achieving comparable modularity. The upfront investment in plugin API design is justified by the branch's assumption that the project will grow beyond MVP scope.",
+      "high_level_dataflow": "CLI invocation → C8 (Core Orchestrator) loads config and discovers plugins → Hook: collectFiles — C9 (File Collector Plugin) recursively scans input directory, populates shared noteRegistry → Hook: transform — C10 (Markdown Parser Plugin) parses each .md file into AST, extracts frontmatter/tags/links, enriches noteRegistry → Hook: resolve — C11 (Backlink Resolver Plugin) builds forward/backlink graph from noteRegistry links; C12 (Tag Aggregator Plugin) builds tag index and registers tag pages → Hook: render — C14 (Theme/Renderer Plugin) generates HTML pages (note pages, tag pages, home, search) using shared context → Hook: finalize — C13 (Search Index Plugin) builds client-side search index from noteRegistry and writes index artifacts to output → C15 (Client-Side Runtime) loaded in browser provides search UI, tag filtering, and backlink navigation over the static output.",
+      "key_design_decisions": [
+        "DEC1",
+        "DEC2",
+        "DEC3",
+        "DEC4",
+        "DEC5",
+        "DEC6",
+        "DEC7"
+      ]
+    },
+    "milestones": [
+      {
+        "id": "M1",
+        "name": "Phase A — Thin-Slice: Core Orchestrator + Basic Pipeline",
+        "deliverables": [
+          {
+            "id": "DL1",
+            "text": "Core Orchestrator (C8) with plugin lifecycle hooks (init, collectFiles, transform, resolve, render, finalize) and shared build context schema."
+          },
+          {
+            "id": "DL2",
+            "text": "File Collector Plugin (C9) that recursively discovers .md files and populates the note registry."
+          },
+          {
+            "id": "DL3",
+            "text": "Markdown Parser Plugin (C10) that parses Markdown to AST, extracts frontmatter, normalises internal links."
+          },
+          {
+            "id": "DL4",
+            "text": "Minimal HTML renderer producing one page per note with basic styling."
+          },
+          {
+            "id": "DL5",
+            "text": "Plugin API specification document (versioned, with schema validation)."
+          },
+          {
+            "id": "DL6",
+            "text": "Canonical internal link model and tag specification documents (resolving Q1/Q2)."
+          }
+        ],
+        "exit_criteria": [
+          "AT1 passes: all .md files recursively discovered.",
+          "AT2 passes: output is static files only, no server runtime required.",
+          "AT3 passes: Markdown formatting preserved in rendered HTML.",
+          "AT4 passes: each note has a distinct, stable URL.",
+          "AT13 passes: build completes without errors on representative folder.",
+          "Plugin-contract smoke test passes: a no-op plugin can register, receive all lifecycle hooks, and access the shared context without errors.",
+          "K1 (link syntax ambiguity) resolved: canonical link model documented and implemented.",
+          "K2 (tag format ambiguity) resolved: tag specification documented and parser implemented.",
+          "Plugin API schema validation enforced (mitigates K16)."
+        ],
+        "depends_on": []
+      },
+      {
+        "id": "M2",
+        "name": "Phase B — Parallel Plugin Development: Backlinks",
+        "deliverables": [
+          {
+            "id": "DL7",
+            "text": "Backlink Resolver Plugin (C11) that builds forward-link and backlink graphs and attaches backlink metadata to each note."
+          },
+          {
+            "id": "DL8",
+            "text": "Backlink section rendered on each note page."
+          }
+        ],
+        "exit_criteria": [
+          "AT8 passes: forward links resolve correctly and are clickable.",
+          "AT9 passes: 100% of expected backlinks appear on target pages (R21).",
+          "K10 mitigation verified: anchor links and URL-encoded paths handled correctly."
+        ],
+        "depends_on": [
+          "M1"
+        ]
+      },
+      {
+        "id": "M3",
+        "name": "Phase B — Parallel Plugin Development: Tags",
+        "deliverables": [
+          {
+            "id": "DL9",
+            "text": "Tag Aggregator Plugin (C12) that collects tags from frontmatter and/or inline syntax, builds tag-to-notes index, and registers tag pages."
+          },
+          {
+            "id": "DL10",
+            "text": "Per-tag listing pages and tag index page in generated site."
+          }
+        ],
+        "exit_criteria": [
+          "AT6 passes: 100% of tagged notes appear under correct tag pages (R20).",
+          "AT7 passes: each tag has a navigable listing with working links."
+        ],
+        "depends_on": [
+          "M1"
+        ]
+      },
+      {
+        "id": "M4",
+        "name": "Phase B — Parallel Plugin Development: Search",
+        "deliverables": [
+          {
+            "id": "DL11",
+            "text": "Search Index Plugin (C13) that builds a client-side full-text search index at build time and writes index artifacts to output."
+          },
+          {
+            "id": "DL12",
+            "text": "Client-side search UI component (part of C15) that loads the index and provides search input with results."
+          }
+        ],
+        "exit_criteria": [
+          "AT5 passes: search operates fully client-side without network access.",
+          "AT12 passes: ≥90% of representative queries return expected note in top 10 (R19)."
+        ],
+        "depends_on": [
+          "M1"
+        ]
+      },
+      {
+        "id": "M5",
+        "name": "Phase C — Integration: Full Site Generation",
+        "deliverables": [
+          {
+            "id": "DL13",
+            "text": "Theme/Renderer Plugin (C14) with complete HTML templates, CSS, and JS assets for note pages, tag pages, home page, and search page."
+          },
+          {
+            "id": "DL14",
+            "text": "Client-Side Runtime (C15) integrated: search UI, tag filter UI, backlink navigation."
+          },
+          {
+            "id": "DL15",
+            "text": "Site-wide navigation structure: index/home page listing all notes and tag index page (R17)."
+          },
+          {
+            "id": "DL16",
+            "text": "XSS security test suite with known payloads (K3 mitigation)."
+          },
+          {
+            "id": "DL17",
+            "text": "Full end-to-end acceptance test run across AT1–AT13."
+          }
+        ],
+        "exit_criteria": [
+          "All acceptance tests AT1–AT13 pass end-to-end.",
+          "K3 security gate passes: XSS payload tests show no injection in rendered output.",
+          "K5 mitigation verified: slug collisions detected and reported.",
+          "K9 mitigation verified: path traversal/symlink tests pass.",
+          "K12 mitigation verified: site works under non-root basePath deployment."
+        ],
+        "depends_on": [
+          "M2",
+          "M3",
+          "M4"
+        ]
+      },
+      {
+        "id": "M6",
+        "name": "Phase D — Hardening & Optional Features",
+        "deliverables": [
+          {
+            "id": "DL18",
+            "text": "Watch mode for incremental regeneration (R25)."
+          },
+          {
+            "id": "DL19",
+            "text": "Performance benchmarks on 100+ note dataset (R23)."
+          },
+          {
+            "id": "DL20",
+            "text": "Cross-browser verification report for Chrome, Firefox, Safari, Edge (R13)."
+          },
+          {
+            "id": "DL21",
+            "text": "Optional: graph view plugin (R26), theme support (R27), advanced search features (R28)."
+          }
+        ],
+        "exit_criteria": [
+          "AT10 passes: CLI build works offline.",
+          "AT11 passes: core features work in all target browsers without runtime errors.",
+          "R23 performance targets met (search results within 500ms on 100+ notes).",
+          "K14 mitigation verified if watch mode shipped: edit/rename/delete scenarios tested.",
+          "K15 mitigation verified: accessibility audit passes baseline."
+        ],
+        "depends_on": [
+          "M5"
+        ]
+      }
+    ],
+    "decision_log": [
+      {
+        "id": "DEC1",
+        "question": "Which architecture option to select?",
+        "choice": "O2 — Plugin-based static site generator with formal build lifecycle and plugin API.",
+        "rationale": "O2 balances extensibility with control. The plugin architecture allows features to be developed, tested, and shipped independently. The hybrid milestone strategy mitigates over-engineering risk by delivering a working thin-slice first. O2 avoids O3's coupling to a third-party SSG and O4's multi-command UX complexity, while being more extensible than O1's monolith.",
+        "alternatives_considered": [
+          "O1 — Monolithic CLI: simpler but harder to extend for post-MVP features.",
+          "O3 — Eleventy-based: mature ecosystem but constrains build pipeline to SSG conventions.",
+          "O4 — Multi-tool pipeline: high modularity but poor single-command UX."
+        ],
+        "what_would_change_this_decision": [
+          "If the project scope is confirmed to be strictly MVP-only with no anticipated growth, O1 would be simpler.",
+          "If the team already has deep Eleventy expertise, O3 would reduce implementation time.",
+          "If build performance at extreme scale (10k+ notes) is the primary concern, O3 with Pagefind might be preferable."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "architecture_canonical_v1",
+            "entity_id": "O2",
+            "json_pointer": "/options/1",
+            "note": "O2 definition with plugin lifecycle and components",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "branch_set_v1",
+            "entity_id": null,
+            "json_pointer": "/branches/1",
+            "note": "Branch B2 selects O2 with hybrid milestone strategy",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "The plugin-based architecture (O2) invests more upfront in API design but yields a highly extensible system"
+          }
+        ]
+      },
+      {
+        "id": "DEC2",
+        "question": "What milestone strategy to use?",
+        "choice": "Hybrid: thin-slice first (Phase A), then parallel plugin development (Phase B), integration (Phase C), hardening (Phase D).",
+        "rationale": "The thin-slice in Phase A validates the plugin lifecycle and core pipeline end-to-end before investing in parallel plugin work. This de-risks the plugin API design early. Parallel Phase B maximises throughput by allowing backlinks, tags, and search plugins to be developed concurrently. Phase C integration ensures all plugins work together before hardening.",
+        "alternatives_considered": [
+          "Fully sequential: lower risk but slower delivery.",
+          "Fully parallel from start: higher risk of plugin API rework."
+        ],
+        "what_would_change_this_decision": [
+          "If only one developer is available, sequential phases would be more practical.",
+          "If the plugin API is already proven (e.g., from a prior project), Phase A could be shortened."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "branch_set_v1",
+            "entity_id": null,
+            "json_pointer": "/branches/1/milestone_strategy",
+            "note": "Hybrid milestone strategy defined in branch",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Phase A (thin-slice): Build the core orchestrator (C8) with the file-collector plugin (C9) and Markdown parser plugin (C10)"
+          }
+        ]
+      },
+      {
+        "id": "DEC3",
+        "question": "When to resolve blocking questions Q1 (link syntax) and Q2 (tag format)?",
+        "choice": "Resolve Q1 and Q2 before Phase A exits; canonical link model and tag specification are Phase A deliverables.",
+        "rationale": "Plugin contracts for C11 (backlinks) and C12 (tags) depend on canonical link and tag models. Deferring these decisions would block Phase B parallel work and risk rework. K1 and K2 are both high-severity risks that must be mitigated early.",
+        "alternatives_considered": [
+          "Defer to Phase B: would block parallel plugin development.",
+          "Resolve before Phase A starts: ideal but may not be feasible if stakeholder input is needed."
+        ],
+        "what_would_change_this_decision": [
+          "If stakeholders cannot provide input before Phase A ends, a HITL interrupt would be required."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K1",
+            "json_pointer": "/risk_register/0",
+            "note": "Link syntax ambiguity risk — high severity, blocking Q1",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K2",
+            "json_pointer": "/risk_register/1",
+            "note": "Tag format ambiguity risk — high severity, blocking Q2",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "DEC4",
+        "question": "How to mitigate plugin API instability risk (K16)?",
+        "choice": "Design a minimal, versioned plugin API with schema validation before Phase B begins. Enforce schema validation in the orchestrator.",
+        "rationale": "K16 is the primary additional risk for the plugin-based architecture. A minimal API surface reduces the chance of breaking changes. Schema validation catches contract violations early. Versioning allows backward-compatible evolution.",
+        "alternatives_considered": [
+          "No formal versioning: faster initially but brittle as plugins multiply.",
+          "Extensive API upfront: risks over-engineering before real plugin usage patterns emerge."
+        ],
+        "what_would_change_this_decision": [
+          "If only first-party plugins are ever expected, formal versioning could be simplified."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K16",
+            "json_pointer": "/risk_register/15",
+            "note": "Config/plugin instability risk",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Overly permissive configuration or plugin/theme extensibility can introduce instability"
+          },
+          {
+            "artifact_ref": "branch_set_v1",
+            "entity_id": null,
+            "json_pointer": "/branches/1/risk_posture",
+            "note": "Branch risk posture identifies K16 as primary additional risk",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "K16 (config/plugin instability) is the primary additional risk for this branch"
+          }
+        ]
+      },
+      {
+        "id": "DEC5",
+        "question": "How to handle XSS risk (K3) in the plugin architecture?",
+        "choice": "Sanitisation is implemented in the Theme/Renderer Plugin (C14). A dedicated security acceptance test with XSS payloads is required before Phase C exit.",
+        "rationale": "K3 is critical severity. Centralising sanitisation in the renderer plugin ensures all output paths are covered regardless of which plugins contribute content. A security gate before Phase C exit prevents unsafe output from reaching integration.",
+        "alternatives_considered": [
+          "Sanitise in each plugin individually: higher risk of gaps.",
+          "Sanitise only at the Markdown parser level: misses content injected by other plugins."
+        ],
+        "what_would_change_this_decision": [
+          "If plugins are allowed to emit raw HTML directly to output (bypassing the renderer), per-plugin sanitisation would also be needed."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K3",
+            "json_pointer": "/risk_register/2",
+            "note": "XSS/content injection — critical severity",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Client-side XSS or content injection vulnerabilities if Markdown/HTML is rendered unsafely"
+          }
+        ]
+      },
+      {
+        "id": "DEC6",
+        "question": "How to gate acceptance tests across the hybrid milestones?",
+        "choice": "Phase A gates on AT1/AT2/AT3/AT4/AT13 plus plugin-contract smoke test. Phase B gates each plugin independently (AT8/AT9 for backlinks, AT6/AT7 for tags, AT5/AT12 for search). Phase C runs full suite AT1–AT13 end-to-end plus security gate. Phase D adds AT10/AT11 and performance benchmarks.",
+        "rationale": "Incremental gating ensures each phase delivers verified value. Independent plugin gates in Phase B enable parallel development without waiting for full integration. The full suite in Phase C catches integration issues. Phase D covers non-functional requirements.",
+        "alternatives_considered": [
+          "Run full suite at every phase: slower feedback loops during parallel development.",
+          "Gate only at Phase C: risks late discovery of plugin-level defects."
+        ],
+        "what_would_change_this_decision": [
+          "If CI infrastructure supports fast full-suite runs, running AT1–AT13 at every phase would be preferable."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "branch_set_v1",
+            "entity_id": null,
+            "json_pointer": "/branches/1/acceptance_strategy",
+            "note": "Acceptance strategy defined per phase",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Phase A gates on AT1/AT2/AT3/AT4/AT13 plus a plugin-contract smoke test"
+          }
+        ]
+      },
+      {
+        "id": "DEC7",
+        "question": "How to manage search index scalability in the plugin architecture?",
+        "choice": "Search Index Plugin (C13) supports optional chunked/sharded index artifacts for larger sites. Performance benchmarks in Phase D validate search responsiveness on 100+ notes.",
+        "rationale": "K4 (search index scale) is high severity. Chunking/sharding allows the search index to scale without degrading initial page load. Deferring performance validation to Phase D is acceptable because Phase B validates functional correctness (AT5/AT12) first.",
+        "alternatives_considered": [
+          "Require chunked indexes from the start: adds complexity before scale is confirmed.",
+          "Use Pagefind as the search plugin: would work but introduces a non-JS binary dependency (noted in K18/K19)."
+        ],
+        "what_would_change_this_decision": [
+          "If the expected dataset exceeds 1000+ notes, chunked indexing should be mandatory from Phase B.",
+          "If Pagefind is acceptable as a dependency, it could replace the custom search index plugin."
+        ],
+        "evidence_pointers": [
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K4",
+            "json_pointer": "/risk_register/3",
+            "note": "Search index scale/performance risk",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Client-side search index size/quality/performance may degrade at scale"
+          },
+          {
+            "artifact_ref": "architecture_canonical_v1",
+            "entity_id": "C13",
+            "json_pointer": "/options/1/components/5",
+            "note": "Search Index Plugin supports optional sharding",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      }
+    ],
+    "supplemental_evaluations": [
+      {
+        "title": "Plugin API Design Risk Assessment",
+        "notes": "The plugin-based architecture (O2) introduces K16 as a primary risk. The mitigation strategy is to design a minimal plugin API with schema validation before Phase B. The API surface should be limited to the six lifecycle hooks (init, collectFiles, transform, resolve, render, finalize) and a well-typed shared context object. Plugin ordering is managed by the orchestrator based on declared dependencies. The thin-slice in Phase A serves as the primary validation vehicle for the plugin API — if the file collector and Markdown parser plugins can successfully register, receive hooks, and populate/read the shared context, the API is viable for Phase B parallelisation.",
+        "evidence": [
+          {
+            "artifact_ref": "architecture_canonical_v1",
+            "entity_id": "O2",
+            "json_pointer": "/options/1",
+            "note": "O2 plugin lifecycle and hook definitions",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K16",
+            "json_pointer": "/risk_register/15",
+            "note": "Plugin instability risk and mitigation",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "title": "Dependency Management Comparison (O2 vs O3)",
+        "notes": "Branch B2 notes that K18 (dependency management) is lower risk for O2 than O3 because fewer external dependencies are needed. O2 requires a Markdown parsing library and optionally a search indexing library, but avoids coupling to a full SSG framework and its plugin ecosystem. This reduces the surface area for breaking changes from upstream. However, the custom plugin API itself becomes an internal dependency that must be maintained — this is traded off against the external dependency risk.",
+        "evidence": [
+          {
+            "artifact_ref": "branch_set_v1",
+            "entity_id": null,
+            "json_pointer": "/branches/1/risk_posture",
+            "note": "Branch risk posture on K18",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "K18 (dependency management) is lower risk here since fewer external dependencies are needed compared to O3"
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K18",
+            "json_pointer": "/risk_register/17",
+            "note": "Third-party dependency risk",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      }
+    ],
+    "synthesis_warnings": [
+      {
+        "id": "W1",
+        "severity": "high",
+        "summary": "Blocking questions Q1 (internal link syntax) and Q2 (tag representation) must be resolved before Phase A exits. If stakeholder input is unavailable, a HITL interrupt is required to unblock Phase B plugin development.",
+        "routing_target": "hitl",
+        "evidence": [
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K1",
+            "json_pointer": "/risk_register/0",
+            "note": "Link syntax ambiguity — blocking Q1",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K2",
+            "json_pointer": "/risk_register/1",
+            "note": "Tag format ambiguity — blocking Q2",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "W2",
+        "severity": "medium",
+        "summary": "Plugin API may require iteration during Phase A. If the thin-slice reveals that the six-hook lifecycle is insufficient, the API must be revised before Phase B begins, potentially delaying parallel plugin work.",
+        "routing_target": "review",
+        "evidence": [
+          {
+            "artifact_ref": "architecture_canonical_v1",
+            "entity_id": "O2",
+            "json_pointer": "/options/1/risks",
+            "note": "Plugin API iteration risk noted in O2",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Plugin API may need multiple iterations to stabilize, delaying initial delivery"
+          }
+        ]
+      },
+      {
+        "id": "W3",
+        "severity": "medium",
+        "summary": "No acceptance test currently covers the plugin-contract smoke test required as a Phase A exit criterion. A new acceptance test may need to be created, which is outside the scope of this synthesis (cannot mint AT# IDs).",
+        "routing_target": "review",
+        "evidence": [
+          {
+            "artifact_ref": "acceptance_canonical_v1",
+            "entity_id": null,
+            "json_pointer": "/acceptance_tests",
+            "note": "Existing AT1-AT13 do not include a plugin-contract smoke test",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,212 @@
+{
+  "artifact_type": "failure_mode_findings",
+  "artifact_id": "failure_modes_B1B_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:14:58.209039Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "plan_candidate_B1B_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B1B_v1",
+    "taxonomy": "taxonomy_categories (provided in inputs)",
+    "critical_findings": [
+      {
+        "id": "FM1",
+        "category": "Security (XSS/Injection/Unsafe URLs)",
+        "severity": "critical",
+        "finding": "Markdown rendering or link handling could permit client-side script execution (XSS) in the generated static site (e.g., raw HTML passthrough, unsafe URL schemes like javascript:), compromising readers.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "[{\"artifact_ref\":\"risk_gov_canonical_v1\",\"entity_id\":\"K3\",\"json_pointer\":\"/risk_register/2\"},{\"artifact_ref\":\"plan_candidate_B1B_v1\",\"entity_id\":\"DEC4\",\"json_pointer\":\"/plan_package/decision_log/3\"},{\"artifact_ref\":\"plan_candidate_B1B_v1\",\"entity_id\":\"M1\",\"json_pointer\":\"/plan_package/milestones/0/deliverables/3\"}]",
+          "closure_target": "Prevent script execution from note content by default: disable raw HTML (or sanitize), block unsafe URL schemes, set safe link attributes, and add an automated XSS regression suite tied to build/test.",
+          "earliest_prevention_stage": "M1 (Core Ingestion & HTML Rendering)"
+        }
+      },
+      {
+        "id": "FM2",
+        "category": "Ingestion & Filesystem Safety",
+        "severity": "critical",
+        "finding": "Ingestion could unintentionally read/include files outside the intended notes root (symlink following, path traversal, glob mistakes), leaking local secrets into the published static site.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "[{\"artifact_ref\":\"risk_gov_canonical_v1\",\"entity_id\":\"K9\",\"json_pointer\":\"/risk_register/8\"},{\"artifact_ref\":\"plan_candidate_B1B_v1\",\"entity_id\":\"DEC5\",\"json_pointer\":\"/plan_package/decision_log/4\"},{\"artifact_ref\":\"plan_candidate_B1B_v1\",\"entity_id\":\"R1\",\"json_pointer\":\"/plan_package/requirements/0\"}]",
+          "closure_target": "Constrain discovery to a declared root; default to not following symlinks; enforce .md-only allowlist; reject any resolved paths escaping root; generate an inclusion manifest for review.",
+          "earliest_prevention_stage": "M1 (Core Ingestion & HTML Rendering)"
+        }
+      },
+      {
+        "id": "FM3",
+        "category": "Link Graph (Forward Links, Backlinks, Anchors)",
+        "severity": "high",
+        "finding": "Slug/URL collisions (case-insensitive filesystems, same filename in different folders, inconsistent normalization) can overwrite pages and cause forward links/backlinks to resolve unpredictably or incorrectly.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "[{\"artifact_ref\":\"risk_gov_canonical_v1\",\"entity_id\":\"K5\",\"json_pointer\":\"/risk_register/4\"},{\"artifact_ref\":\"plan_candidate_B1B_v1\",\"entity_id\":\"R4\",\"json_pointer\":\"/plan_package/requirements/3\"},{\"artifact_ref\":\"plan_candidate_B1B_v1\",\"entity_id\":\"AT4\",\"json_pointer\":\"/plan_package/acceptance_tests/3\"}]",
+          "closure_target": "Define and implement a canonical slug strategy (path-based + normalization rules); detect collisions during build and fail with actionable errors; ensure link resolution uses the same canonicalization as URL generation.",
+          "earliest_prevention_stage": "M1 (Core Ingestion & HTML Rendering)"
+        }
+      },
+      {
+        "id": "FM4",
+        "category": "Deployment & Base Path/Hosting Compatibility",
+        "severity": "high",
+        "finding": "Core features (especially search index loading) may fail when opening pages via file:// or when deployed under a subpath (e.g., GitHub Pages), due to fetch/XHR restrictions and/or incorrect basePath-relative asset URLs.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "[{\"artifact_ref\":\"risk_gov_canonical_v1\",\"entity_id\":\"K11\",\"json_pointer\":\"/risk_register/10\"},{\"artifact_ref\":\"risk_gov_canonical_v1\",\"entity_id\":\"K12\",\"json_pointer\":\"/risk_register/11\"},{\"artifact_ref\":\"plan_candidate_B1B_v1\",\"entity_id\":\"AT2\",\"json_pointer\":\"/plan_package/acceptance_tests/1\"},{\"artifact_ref\":\"plan_candidate_B1B_v1\",\"entity_id\":\"AT5\",\"json_pointer\":\"/plan_package/acceptance_tests/4\"}]",
+          "closure_target": "Add configurable basePath and test non-root deployments; for local preview, either (a) avoid runtime fetch for the index (bundle/inline) or (b) detect file:// and present instructions to run a local static server; add regression tests for both modes.",
+          "earliest_prevention_stage": "M4 (Client-Side Search) for file:// search behavior; M1/M2 for basePath-safe link/asset generation"
+        }
+      },
+      {
+        "id": "FM5",
+        "category": "Link Graph (Forward Links, Backlinks, Anchors)",
+        "severity": "high",
+        "finding": "Link canonicalization mismatches (anchors, URL-encoding, relative path resolution) can produce partial or incorrect backlink sets even when forward links appear to work, undermining R21 correctness.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "[{\"artifact_ref\":\"risk_gov_canonical_v1\",\"entity_id\":\"K10\",\"json_pointer\":\"/risk_register/9\"},{\"artifact_ref\":\"plan_candidate_B1B_v1\",\"entity_id\":\"R10\",\"json_pointer\":\"/plan_package/requirements/9\"},{\"artifact_ref\":\"plan_candidate_B1B_v1\",\"entity_id\":\"AT9\",\"json_pointer\":\"/plan_package/acceptance_tests/8\"}]",
+          "closure_target": "Implement a single canonical internal link model used by both URL/slug generation and link parsing; normalize/resolve relative paths; standardize handling of anchors (strip for page identity); add fixtures for encoded characters, anchors, and relative paths.",
+          "earliest_prevention_stage": "M2 (Forward Links & Backlinks)"
+        }
+      },
+      {
+        "id": "FM6",
+        "category": "Performance & Resource Consumption",
+        "severity": "high",
+        "finding": "Client-side search index generation and runtime querying may become too large/slow at scale, causing long build times, large JS/JSON payloads, slow queries, or browser crashes; this risks failing R19/SM7 in realistic corpora.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "[{\"artifact_ref\":\"risk_gov_canonical_v1\",\"entity_id\":\"K4\",\"json_pointer\":\"/risk_register/3\"},{\"artifact_ref\":\"plan_candidate_B1B_v1\",\"entity_id\":\"R23\",\"json_pointer\":\"/plan_package/requirements/22\"},{\"artifact_ref\":\"plan_candidate_B1B_v1\",\"entity_id\":\"M4\",\"json_pointer\":\"/plan_package/milestones/3/deliverables/3\"}]",
+          "closure_target": "Define expected scale targets (Q3), adopt index-size controls (tokenization/stop-words/compression) and possibly lazy-loading/sharding; add CI performance budgets and benchmark fixtures; document hard limits/exclude options.",
+          "earliest_prevention_stage": "M4 (Client-Side Search), with Q3 answered before committing performance-sensitive implementation"
+        }
+      },
+      {
+        "id": "FM7",
+        "category": "Privacy & Information Disclosure",
+        "severity": "medium",
+        "finding": "Generated output or search index/logging could inadvertently disclose sensitive information such as absolute filesystem paths, excluded/private note names, or other local environment details, creating privacy risk for published sites.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "[{\"artifact_ref\":\"risk_gov_canonical_v1\",\"entity_id\":\"K17\",\"json_pointer\":\"/risk_register/16\"},{\"artifact_ref\":\"plan_candidate_B1B_v1\",\"entity_id\":\"tool_policy\",\"json_pointer\":\"/plan_package/governance/tool_policy/stage_policies/1/restrictions/2\"}]",
+          "closure_target": "Ensure build artifacts never contain absolute source paths (use relative IDs only); support exclude globs and a private flag; generate an inclusion manifest; scrub logs intended for publication.",
+          "earliest_prevention_stage": "M1 (Core Ingestion & HTML Rendering)"
+        }
+      },
+      {
+        "id": "FM8",
+        "category": "Build Process Failure",
+        "severity": "medium",
+        "finding": "Watch mode/incremental rebuild (if implemented) can produce stale backlinks, tags, or search index after edits/renames/deletes, leading to confusing inconsistencies that are hard to diagnose.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "[{\"artifact_ref\":\"risk_gov_canonical_v1\",\"entity_id\":\"K14\",\"json_pointer\":\"/risk_register/13\"},{\"artifact_ref\":\"plan_candidate_B1B_v1\",\"entity_id\":\"R25\",\"json_pointer\":\"/plan_package/requirements/24\"},{\"artifact_ref\":\"plan_candidate_B1B_v1\",\"entity_id\":\"M5\",\"json_pointer\":\"/plan_package/milestones/4\"}]",
+          "closure_target": "If watch mode is shipped, maintain a dependency graph to trigger recomputation of affected pages plus global artifacts (backlinks/search); add edit/rename/delete tests; provide a reliable full-rebuild fallback.",
+          "earliest_prevention_stage": "M5 (Polish & Optional Features)"
+        }
+      },
+      {
+        "id": "FM-001",
+        "category": "Security (XSS/Injection/Unsafe URLs)",
+        "severity": "critical",
+        "finding": "The system may be vulnerable to Cross-Site Scripting (XSS) if raw HTML is enabled or unsafe URL schemes (e.g., 'javascript:') are not blocked during Markdown rendering. A user with commit access to the notes could inject scripts that execute in the browsers of site readers, compromising security.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "{ \"artifact_ref\": \"risk_gov_canonical_v1\", \"entity_id\": \"K3\", \"json_pointer\": \"/risk_register/2\", \"quote\": \"Client-side XSS or content injection vulnerabilities if Markdown/HTML is rendered unsafely...\" }",
+          "closure_target": "Verification via dedicated M1 security test suite (DL4) that raw HTML is disabled and unsafe URL schemes are blocked by default.",
+          "earliest_prevention_stage": "Milestone M1"
+        }
+      },
+      {
+        "id": "FM-002",
+        "category": "Privacy & Information Disclosure",
+        "severity": "high",
+        "finding": "The file ingestion process could be vulnerable to path traversal if input paths are not sanitized, or if symbolic links are followed outside the specified root directory. This could allow a malicious commit to include sensitive local files from the build environment into the public static site.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "{ \"artifact_ref\": \"risk_gov_canonical_v1\", \"entity_id\": \"K9\", \"json_pointer\": \"/risk_register/8\", \"quote\": \"Path traversal or unintended file inclusion during ingestion...\" }",
+          "closure_target": "Implementation and testing of input path sanitization within the file ingestion component (C2), ensuring the build process cannot read outside the specified input directory. Validate during M1.",
+          "earliest_prevention_stage": "Milestone M1"
+        }
+      },
+      {
+        "id": "FM-003",
+        "category": "Link Graph (Forward Links, Backlinks, Anchors)",
+        "severity": "high",
+        "finding": "Without a strict, specified standard for internal link syntax (e.g., standard Markdown vs. [[wikilinks]]), the system may fail to correctly parse links, resulting in broken navigation and incomplete or incorrect backlink lists. This undermines a core feature of the system and is dependent on resolving blocking question Q1.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "{ \"artifact_ref\": \"risk_gov_canonical_v1\", \"entity_id\": \"K1\", \"json_pointer\": \"/risk_register/0\", \"quote\": \"Link/backlink resolution errors due to ambiguous or mixed internal link syntax...\" }",
+          "closure_target": "Formal resolution of open question Q1 to define a canonical link syntax. This decision must be documented before M1 begins, and the syntax must be implemented and tested during M2.",
+          "earliest_prevention_stage": "Pre-Milestone (Clarification)"
+        }
+      },
+      {
+        "id": "FM-004",
+        "category": "Tags & Metadata Extraction",
+        "severity": "high",
+        "finding": "Without a clear specification for how tags are represented (e.g., YAML frontmatter vs inline #tags), the system can misinterpret or miss tags entirely, leading to incorrect tag pages and broken tag-based navigation. This is dependent on resolving blocking question Q2.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "{ \"artifact_ref\": \"risk_gov_canonical_v1\", \"entity_id\": \"K2\", \"json_pointer\": \"/risk_register/1\", \"quote\": \"Tag extraction inconsistency due to unspecified or mixed tag formats...\" }",
+          "closure_target": "Formal resolution of open question Q2 to define a canonical tag format. This decision must be documented before M1 begins, and the format must be implemented and tested during M3.",
+          "earliest_prevention_stage": "Pre-Milestone (Clarification)"
+        }
+      },
+      {
+        "id": "FM-005",
+        "category": "Build Determinism & Reproducibility",
+        "severity": "high",
+        "finding": "The build process may be non-deterministic due to factors like unstable file ordering or locale-dependent sorting. This results in inconsistent site output for the same source notes, creating noisy diffs in version control and undermining reproducibility and caching.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "{ \"artifact_ref\": \"risk_gov_canonical_v1\", \"entity_id\": \"K6\", \"json_pointer\": \"/risk_register/5\", \"quote\": \"Non-deterministic builds...produce noisy diffs and inconsistent site output...\" }",
+          "closure_target": "Implement stable sorting for all collections (notes, tags, etc.) and pin all dependencies with a lockfile. A reproducibility test should be added to CI to validate a second clean build produces identical output.",
+          "earliest_prevention_stage": "Milestone M1"
+        }
+      },
+      {
+        "id": "FM-006",
+        "category": "Performance & Resource Consumption",
+        "severity": "high",
+        "finding": "As the number of notes grows, the client-side search index asset can become excessively large, increasing the site's initial load time and memory consumption. In-browser query performance may also degrade, leading to a poor user experience on large note collections.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "{ \"artifact_ref\": \"risk_gov_canonical_v1\", \"entity_id\": \"K4\", \"json_pointer\": \"/risk_register/3\", \"quote\": \"Client-side search index size/quality/performance may degrade at scale...\" }",
+          "closure_target": "Define performance targets based on expected scale (Q3). Implement and benchmark the search solution in M4 (DL18) against a representative dataset to validate index size, load time, and query latency.",
+          "earliest_prevention_stage": "Milestone M4"
+        }
+      },
+      {
+        "id": "FM-007",
+        "category": "Build Process Failure",
+        "severity": "high",
+        "finding": "If watch mode is implemented, failure to correctly track dependencies can lead to stale content after file edits, renames, or deletions. For example, renaming a note title might not update its backlinks, or deleting a note might not remove it from the search index, leading to data inconsistency.",
+        "required_closure": "mitigate",
+        "status": "open",
+        "closure": {
+          "evidence": "{ \"artifact_ref\": \"risk_gov_canonical_v1\", \"entity_id\": \"K14\", \"json_pointer\": \"/risk_register/13\", \"quote\": \"Incorrect incremental rebuild/watch behavior...can lead to stale search index/backlinks...\" }",
+          "closure_target": "If watch mode is implemented (M5), it must include a test suite for file edits, renames, and deletions, verifying that all dependent artifacts (backlinks, tag pages, search index) are correctly updated.",
+          "earliest_prevention_stage": "Milestone M5"
+        }
+      }
+    ],
+    "closure_pass": false
+  }
+}

@@ -1,0 +1,245 @@
+{
+  "artifact_type": "triage_report",
+  "artifact_id": "triage_B1B_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:25:19.083083Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "plan_candidate_B1B_v2",
+    "validator_B1B_v2"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B1B_v2",
+    "critic_id": "MERGED",
+    "verdict": "reject",
+    "defects": [
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Hard-gate failure: architecture options contain risk references that do not resolve to defined risk-register entities (id_integrity failure). Repair requires either (a) mapping these items to existing K# risks or (b) removing/rewriting the option-level risk reference lists; this is not safe to patch here without confirming the intended risk-ID linkage.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": null,
+            "json_pointer": "/inputs/validator_report/checks/1",
+            "note": "Validator id_integrity check failed with multiple missing risk-reference violations.",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "pass\": false"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": null,
+            "json_pointer": "/inputs/validator_report/checks/1/violations/0",
+            "note": "Example missing risk reference under architecture/options.",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "Option O1 references missing risk Search index asset may become too large for very large note sets, degrading initial load time"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": null,
+            "json_pointer": "/plan_package/architecture/options",
+            "note": "Options O1–O4 each include a risks list that is implicated by validator violations.",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Hard-gate failure: decision_log evidence pointers reference a missing entity id (B1) per validator report (id_integrity failure). Repair requires correcting/removing the invalid evidence pointers, but this cannot be safely done without access to the referenced artifact structure/IDs.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": null,
+            "json_pointer": "/inputs/validator_report/checks/1/violations/15",
+            "note": "Missing referenced id B1 in decision_log evidence pointers.",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "Evidence pointer references missing id: B1"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": null,
+            "json_pointer": "/inputs/validator_report/checks/1/violations/16",
+            "note": "Repeated missing referenced id B1 in decision_log evidence pointers.",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "Evidence pointer references missing id: B1"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "DEC1",
+            "json_pointer": "/plan_package/decision_log/0/evidence_pointers",
+            "note": "Decision evidence pointers include references to branch_set_v1 / B1 per plan content; validator indicates unresolved ID.",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": []
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "Temporal inconsistency: Q1/Q2 are described as a pre-M1 gate (must be resolved before any coding/before M1 begins) but also appear as M1 exit criteria phrased as 'before milestone work begins', which is confusing and reads as self-contradictory. Clarify the exit-criteria wording to an auditable precondition verification.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/exit_criteria/6",
+            "note": "Exit criteria wording references a pre-start condition.",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "Blocking questions Q1 and Q2 resolved and documented before milestone work begins."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "DEC3",
+            "json_pointer": "/plan_package/decision_log/2/choice",
+            "note": "DEC3 frames Q1/Q2 as pre-M1 gate.",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "Resolve both before any coding begins (pre-M1 gate)."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "CS1",
+            "json_pointer": "/inputs/consistency_findings/findings/0",
+            "note": "Consistency finding CS1 calls out the temporal inconsistency explicitly.",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/milestones/0/exit_criteria/6",
+            "value": "Pre-M1 gate verification: Q1 (internal link syntax) and Q2 (tag format) are resolved and documented before starting M1 (per DEC3); if not resolved, M1 MUST NOT begin."
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Overclaim in executive summary: it asserts 'stakeholder sign-off at each milestone gate' as enforced, but governance/HITL policy does not specify per-milestone signoff requirements/mechanism (only interruption triggers and approval roles). Reword to avoid asserting an unimplemented control.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": null,
+            "json_pointer": "/plan_package/executive_summary",
+            "note": "Contains the sign-off claim.",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "High HITL strictness ensures stakeholder sign-off at each milestone gate."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "CS2",
+            "json_pointer": "/inputs/consistency_findings/findings/1",
+            "note": "Consistency finding CS2 flags mismatch with governance.",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": null,
+            "json_pointer": "/plan_package/governance/hitl_policy/when_to_interrupt",
+            "note": "HITL triggers list interruptions, not milestone-gate signoff requirements.",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "governance_consistency",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/executive_summary",
+            "value": "Candidate B1B delivers a Markdown-to-static-site generator as a monolithic CLI (O1) using thin-slice milestones. Milestone 1 produces a working CLI that ingests a folder of .md files and outputs bare HTML pages with preserved formatting (R1–R4, R11, R22). Milestone 2 adds forward-link detection, backlink computation, and backlink section rendering (R9, R10, R21). Milestone 3 introduces tag extraction and per-tag navigation pages (R7, R8, R20). Milestone 4 delivers client-side search index generation and search UI (R5, R19). Milestone 5 polishes the tool with error reporting (R12), cross-browser validation (R13), watch mode (R25), and optional features (R24, R26–R29). Blocking questions Q1 (link syntax) and Q2 (tag format) must be resolved before coding begins. XSS mitigation (K3) is enforced from day one by disabling raw HTML and blocking unsafe URL schemes. HITL interruption triggers apply to blockers and security-sensitive decisions; milestone exit reviews should include stakeholder verification where required by policy. This branch optimises for speed-to-first-value and simplicity at the cost of long-term extensibility."
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Ambiguity in XSS verification status: plan both (a) treats XSS tests as required for M1 exit (DL4 + M1 exit criterion) and (b) warns that a canonical acceptance test is missing (W1), implying a need for a new AT ID that the candidate cannot mint. Clarify W1 to state DL4 is the concrete verification artifact, and that adding a canonical AT is optional/owned elsewhere.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "DL4",
+            "json_pointer": "/plan_package/milestones/0/deliverables/3/text",
+            "note": "Existing deliverable covers XSS testing as a suite (non-AT).",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "XSS security test suite covering K3 payloads (raw HTML, javascript: links)."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "W1",
+            "json_pointer": "/plan_package/synthesis_warnings/0/summary",
+            "note": "Warning implies a new canonical acceptance test (AT14) is required, conflicting with inability to mint AT IDs.",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "A new acceptance test (e.g., AT14) needs to be created."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/exit_criteria/5",
+            "note": "M1 exit criteria already requires XSS tests passing.",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "XSS security tests pass (K3 mitigation verified)."
+          }
+        ],
+        "violated_gate": "test_definition_consistency",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/synthesis_warnings/0/summary",
+            "value": "K3 (XSS) verification is required for M1 exit and is covered by DL4 (XSS security test suite). If the acceptance_tests owner requires a dedicated canonical acceptance test entry for XSS, it must be added outside this candidate (this candidate cannot mint AT# IDs)."
+          }
+        ]
+      },
+      {
+        "label": "note",
+        "severity": "medium",
+        "summary": "Requirements-to-milestone traceability gap: multiple SHOULD requirements (notably R14–R18 and also R6/R17) are not explicitly committed as deliverables/exit criteria, increasing risk they are missed or deferred without decision. Address by explicitly scoping them into milestones or recording deferral decisions (may require new deliverable IDs, so likely needs reroute).",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "W3",
+            "json_pointer": "/plan_package/synthesis_warnings/2/summary",
+            "note": "Plan itself flags the traceability gap.",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "R6 ... and R14–R18 ... are SHOULD-priority requirements not explicitly assigned to a specific milestone deliverable."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v2",
+            "entity_id": "CS3",
+            "json_pointer": "/inputs/consistency_findings/findings/2",
+            "note": "Consistency finding CS3 reiterates the traceability concern.",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "requirements_traceability",
+        "patch": []
+      }
+    ],
+    "reroute_target": "id_integrity_repair",
+    "reroute_reason": "Two hard-gate id_integrity failures are present (architecture/options risk references; decision_log evidence pointer missing id B1). Repair likely requires structural edits and/or confirming IDs in referenced artifacts, which is not safe to patch here without authoritative artifact validation."
+  }
+}

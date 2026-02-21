@@ -1,0 +1,104 @@
+{
+  "artifact_type": "requirements_draft",
+  "artifact_id": "requirements_draft_1_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T11:57:54.140882Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "capsule_canonical_v1"
+  ],
+  "payload": {
+    "requirements": [
+      {
+        "id": "REQ_A_1",
+        "priority": "MUST",
+        "text": "The system MUST ingest a user-specified folder (or repository working directory) containing Markdown files and treat those files as the source notes corpus for site generation.",
+        "rationale": "Implements the core workflow of converting a set of Markdown notes into a site. Evidence: /inputs/project_capsule/goals/0, /inputs/project_capsule/problem_statement."
+      },
+      {
+        "id": "REQ_A_2",
+        "priority": "MUST",
+        "text": "The system MUST generate a static website output consisting only of static files (HTML/CSS/JS/assets) that can be hosted or viewed without any required server-side runtime.",
+        "rationale": "Directly required by the static-site goal and the no-backend constraint. Evidence: /inputs/project_capsule/goals/0, /inputs/project_capsule/constraints/0, /inputs/project_capsule/non_goals/0."
+      },
+      {
+        "id": "REQ_A_3",
+        "priority": "MUST",
+        "text": "The system MUST parse and render Markdown content into HTML pages while preserving Markdown formatting and structure (e.g., headings, lists, code blocks, emphasis, links).",
+        "rationale": "Preservation of formatting is an explicit goal and is necessary for a usable rendered site. Evidence: /inputs/project_capsule/goals/4."
+      },
+      {
+        "id": "REQ_A_4",
+        "priority": "MUST",
+        "text": "The system MUST produce one distinct, navigable page per input note, with each page having a stable URL derived deterministically from the note’s path/filename or frontmatter-defined slug.",
+        "rationale": "Enables browsing and stable linking between notes; required to support forward links/backlinks and navigation. Evidence: /inputs/project_capsule/goals/0, /inputs/project_capsule/goals/3, /inputs/project_capsule/problem_statement."
+      },
+      {
+        "id": "REQ_A_5",
+        "priority": "MUST",
+        "text": "The system MUST generate a client-side full-text search index at build time and provide an in-browser search UI that searches across the full contents of all notes.",
+        "rationale": "Full-text search is a primary goal and must work without a backend at runtime. Evidence: /inputs/project_capsule/goals/1, /inputs/project_capsule/constraints/0, /inputs/project_capsule/assumptions/2."
+      },
+      {
+        "id": "REQ_A_6",
+        "priority": "SHOULD",
+        "text": "The search UI SHOULD display a results list that includes each matching note’s title (or filename) and a snippet or highlighted match context, and clicking a result SHOULD navigate to the corresponding note page.",
+        "rationale": "Improves discoverability and aligns with success criteria for relevant results and usability. Evidence: /inputs/project_capsule/success_metrics/1, /inputs/project_capsule/problem_statement."
+      },
+      {
+        "id": "REQ_A_7",
+        "priority": "MUST",
+        "text": "The system MUST extract tags from notes using a specified, consistent convention and expose tag-based browsing/filtering in the generated site.",
+        "rationale": "Tags are a stated goal; the representation must be standardized for correct extraction. Evidence: /inputs/project_capsule/goals/2, /inputs/project_capsule/assumptions/3, /inputs/project_capsule/open_questions/1."
+      },
+      {
+        "id": "REQ_A_8",
+        "priority": "MUST",
+        "text": "The system MUST generate a tag navigation experience such that each tag provides a listing of all notes containing that tag.",
+        "rationale": "Makes tags actionable for navigation and supports the tag correctness success metric. Evidence: /inputs/project_capsule/goals/2, /inputs/project_capsule/success_metrics/2."
+      },
+      {
+        "id": "REQ_A_9",
+        "priority": "MUST",
+        "text": "The system MUST detect forward links between notes based on a specified internal link syntax and render those links as clickable navigational elements in the output pages.",
+        "rationale": "Forward link detection/rendering is required to enable cross-note navigation and underpins backlinks computation. Evidence: /inputs/project_capsule/goals/3, /inputs/project_capsule/assumptions/1, /inputs/project_capsule/open_questions/0."
+      },
+      {
+        "id": "REQ_A_10",
+        "priority": "MUST",
+        "text": "The system MUST compute backlinks for each note by analyzing the corpus link graph and render a backlinks section on each note page listing all notes that link to it.",
+        "rationale": "Backlinks are a core requirement and have an explicit success metric. Evidence: /inputs/project_capsule/goals/3, /inputs/project_capsule/success_metrics/3, /inputs/project_capsule/glossary/2."
+      },
+      {
+        "id": "REQ_A_11",
+        "priority": "MUST",
+        "text": "The system MUST run as an offline build step (e.g., CLI) that produces the static output directory from the input notes without requiring network access for core generation.",
+        "rationale": "Supports the assumed workflow (user runs a build tool) and static hosting deployment. Evidence: /inputs/project_capsule/assumptions/5, /inputs/project_capsule/goals/0, /inputs/project_capsule/non_goals/0."
+      },
+      {
+        "id": "REQ_A_12",
+        "priority": "SHOULD",
+        "text": "The build process SHOULD provide clear error reporting for invalid Markdown, unresolvable internal links, or tag parsing failures, including file paths and line/position where applicable.",
+        "rationale": "Improves maintainability at scale and supports reliable generation on real corpora. Evidence: /inputs/project_capsule/problem_statement, /inputs/project_capsule/success_metrics/0."
+      },
+      {
+        "id": "REQ_A_13",
+        "priority": "MUST",
+        "text": "The generated site MUST function in modern browsers (Chrome, Firefox, Safari, Edge) with core features (navigation, search, tag browsing, backlinks) working without runtime errors.",
+        "rationale": "Cross-browser functionality is an explicit success metric for the static site. Evidence: /inputs/project_capsule/success_metrics/5."
+      },
+      {
+        "id": "REQ_A_14",
+        "priority": "SHOULD",
+        "text": "The system SHOULD support configuration of the Markdown flavor and the internal link and tag conventions to be used for parsing and site generation.",
+        "rationale": "Key conventions are open questions and must be specified; configurability reduces lock-in to one dialect while respecting the stated constraint that not all dialects are guaranteed without specification. Evidence: /inputs/project_capsule/constraints/1, /inputs/project_capsule/open_questions/0, /inputs/project_capsule/open_questions/1, /inputs/project_capsule/non_goals/6."
+      },
+      {
+        "id": "REQ_A_15",
+        "priority": "SHOULD",
+        "text": "On a representative dataset of at least 100 notes, the system SHOULD meet agreed performance targets for generation time and in-browser search responsiveness, and the project SHOULD define and document these targets based on expected scale.",
+        "rationale": "Performance targets are a success metric but depend on scale, which is an open question; this requirement ensures explicit measurement and agreement. Evidence: /inputs/project_capsule/success_metrics/6, /inputs/project_capsule/open_questions/2."
+      }
+    ]
+  }
+}

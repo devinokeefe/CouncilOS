@@ -1,0 +1,355 @@
+{
+  "artifact_type": "triage_report",
+  "artifact_id": "triage_B2A_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:39:35.248515Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B2A_v1",
+    "validator_B2A_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2A_v1",
+    "critic_id": "MERGED",
+    "verdict": "reject",
+    "defects": [
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Critical risk K8 (privacy leakage) is missing mitigation/acceptance closure in the risk register, despite the plan relying on it as a mandatory gate (DEC7, M1/M6). This fails risk closure tracking and weakens release governance.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "K8",
+            "json_pointer": "/plan_package/risk_register/7/mitigation",
+            "note": "K8 mitigation is null.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "K8",
+            "json_pointer": "/plan_package/risk_register/7/acceptance",
+            "note": "K8 acceptance is null.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "DEC7",
+            "json_pointer": "/plan_package/governance/decision_log/6/choice",
+            "note": "Elsewhere the plan specifies a concrete privacy gate approach.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "DL18",
+            "json_pointer": "/plan_package/milestones/5/deliverables/1/text",
+            "note": "Milestone deliverable depends on this mitigation being defined/verified.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "risk_closure",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/risk_register/7/mitigation",
+            "value": {
+              "text": "Implement a mandatory build-time privacy gate: support an explicit, configurable marker to exclude notes from emission AND from search indexing; generate a human-readable exclusion report; provide warn vs fail (strict) modes; ensure excluded notes are not present anywhere in output artifacts (HTML, JSON, manifests).",
+              "owner": "sec",
+              "status": "planned"
+            }
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/risk_register/7/acceptance",
+            "value": "Given a fixture where at least one note is marked private/non-publishable, the build output MUST contain no rendered page for that note and the search index MUST NOT include its title/body; the build MUST emit a clear report listing excluded notes; in strict mode the build MUST fail if any private-marked note would otherwise be emitted/indexed."
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "Decision log DEC6 contains an invalid/unknown artifact_ref in its evidence pointer (\"project_capsule_canonical_v1\"), breaking traceability to provided artifacts.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "DEC6",
+            "json_pointer": "/plan_package/governance/decision_log/5/evidence_pointers/1/artifact_ref",
+            "note": "Not aligned with the declared capsule_ref or provided artifact_refs.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "project_capsule_canonical_v1"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": null,
+            "json_pointer": "/inputs/capsule_ref",
+            "note": "Candidate declares capsule_canonical_v1 as the capsule ref.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "capsule_canonical_v1"
+          }
+        ],
+        "violated_gate": "traceability",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/governance/decision_log/5/evidence_pointers/1/artifact_ref",
+            "value": "capsule_canonical_v1"
+          }
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Architecture options embed free-text items in their \"risks\" arrays that do not correspond to risk_register IDs, violating ID integrity expectations for cross-referencing and causing validation failure.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "O1",
+            "json_pointer": "/plan_package/architecture/options/0/risks",
+            "note": "Contains non-ID risk strings.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "O2",
+            "json_pointer": "/plan_package/architecture/options/1/risks",
+            "note": "Contains non-ID risk strings.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "O3",
+            "json_pointer": "/plan_package/architecture/options/2/risks",
+            "note": "Contains non-ID risk strings.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "O4",
+            "json_pointer": "/plan_package/architecture/options/3/risks",
+            "note": "Contains non-ID risk strings.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/options/0/risks",
+            "value": [
+              "K4",
+              "K5"
+            ]
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/options/1/risks",
+            "value": []
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/options/2/risks",
+            "value": []
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/options/3/risks",
+            "value": [
+              "K14"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "note",
+        "severity": "medium",
+        "summary": "Plan asserts that alignment warnings (e.g., AL001/AL008) must be addressed, but the plan package does not include the alignment_warnings content; this creates a traceability gap for the claimed dependency.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "W2",
+            "json_pointer": "/plan_package/synthesis_warnings/1/summary",
+            "note": "States alignment warnings must be addressed but also notes missing content.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "W2",
+            "json_pointer": "/plan_package/synthesis_warnings/1/evidence/1/artifact_ref",
+            "note": "References an external artifact that is not integrated into this plan package payload.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "alignment_warnings_v1"
+          }
+        ],
+        "violated_gate": "traceability",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Risk K8 (critical privacy leakage) has null mitigation in risk_register but is referenced as mitigated in DEC7, M1 exit criteria, and M6 deliverable DL18. This violates risk_closure gate and creates an unresolvable inconsistency.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "K8",
+            "json_pointer": "/plan_package/risk_register/7/mitigation",
+            "note": "K8 mitigation field is null despite critical severity",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "\"mitigation\": null"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "DEC7",
+            "json_pointer": "/plan_package/governance/decision_log/6/choice",
+            "note": "DEC7 describes concrete mitigation for K8",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Implement a mandatory build-time privacy gate"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/exit_criteria/2",
+            "note": "M1 exit criteria requires K8 mitigation spec",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Privacy leakage mitigation approach for K8 has an explicit spec"
+          }
+        ],
+        "violated_gate": "risk_closure",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Twelve architecture option risks are referenced but missing from risk_register (O1: 3 risks, O2: 3 risks, O3: 3 risks, O4: 3 risks). This violates id_integrity gate.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "O1",
+            "json_pointer": "/plan_package/architecture/options/0/risks",
+            "note": "O1 references three missing risks in risk array",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Large collections can lead to high memory usage"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "O2",
+            "json_pointer": "/plan_package/architecture/options/1/risks",
+            "note": "O2 references three missing risks in risk array",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Plugin API and data model may evolve"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "O3",
+            "json_pointer": "/plan_package/architecture/options/2/risks",
+            "note": "O3 references three missing risks in risk array",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "SSG major-version changes can break"
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Decision DEC6 evidence pointer references non-existent artifact 'project_capsule_canonical_v1' instead of declared 'capsule_canonical_v1'. This violates id_integrity and traceability.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "DEC6",
+            "json_pointer": "/plan_package/governance/decision_log/5/evidence_pointers/1/artifact_ref",
+            "note": "DEC6 uses wrong artifact_ref name",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "project_capsule_canonical_v1"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": null,
+            "json_pointer": "/inputs/capsule_ref",
+            "note": "Candidate declares capsule_ref as capsule_canonical_v1",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "capsule_canonical_v1"
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": []
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Risks K6, K16, K23 have null mitigation and null acceptance without documented rationale for accepting no-mitigation posture.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "K6",
+            "json_pointer": "/plan_package/risk_register/5/mitigation",
+            "note": "K6 medium severity with null mitigation",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "\"mitigation\": null"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "K16",
+            "json_pointer": "/plan_package/risk_register/15/mitigation",
+            "note": "K16 low severity with null mitigation",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "\"mitigation\": null"
+          }
+        ],
+        "violated_gate": "risk_closure",
+        "patch": []
+      },
+      {
+        "label": "note",
+        "severity": "medium",
+        "summary": "Synthesis warning W2 references alignment_warnings_v1 artifact that was not provided in inputs, creating unverifiable dependency for stated requirement to address AL001/AL008.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "W2",
+            "json_pointer": "/plan_package/synthesis_warnings/1/summary",
+            "note": "W2 acknowledges missing alignment warnings content",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "alignment warnings content is not present in provided inputs"
+          }
+        ],
+        "violated_gate": "traceability",
+        "patch": []
+      }
+    ],
+    "reroute_target": "Orchestrator → Plan Owner (Risk register + architecture risk cross-references) and Orchestrator → Review/Judge (attach alignment_warnings content)",
+    "reroute_reason": "Some fixes are safe JSON edits (K8 closure; DEC6 artifact_ref). However, the architecture option risk cross-reference issue likely requires either (a) adding new risk_register entries for plugin/SSG/intermediate-artifact risks (needs new IDs not owned here), or (b) accepting loss of those risk statements if only remapped/removed. Alignment warnings content must be attached/inlined by the orchestrator to restore traceability."
+  }
+}

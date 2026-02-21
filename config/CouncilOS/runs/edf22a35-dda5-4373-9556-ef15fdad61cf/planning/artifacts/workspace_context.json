@@ -1,0 +1,1 @@
+{"access_control":[],"context_pack_limits":{"max_bytes":4000,"max_items":20},"namespace_rules":[],"partition_rules":{"canonical_prefixes":["canonical/"],"non_canonical_prefixes":["non_canonical/"]},"retention_policy":{"compaction_strategy":"none","max_age_days":7,"max_size_mb":10},"workspace_root":"workspace"}

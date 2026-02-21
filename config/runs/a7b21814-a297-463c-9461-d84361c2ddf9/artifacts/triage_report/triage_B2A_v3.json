@@ -1,0 +1,633 @@
+{
+  "artifact_type": "triage_report",
+  "artifact_id": "triage_B2A_v3",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:59:41.215730Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B2A_v3",
+    "validator_B2A_v3"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2A_v3",
+    "critic_id": "MERGED",
+    "verdict": "reject",
+    "defects": [
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Hard-gate id_integrity failure: architecture option risk references are not valid risk IDs in the risk register (free-text strings), causing missing-risk reference violations.",
+        "evidence": [
+          {
+            "artifact_ref": "validator_report",
+            "entity_id": null,
+            "json_pointer": "/checks/1",
+            "note": "id_integrity check fails with multiple missing-risk reference violations under /plan_package/architecture/options.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "O1",
+            "json_pointer": "/plan_package/architecture/options/0/risks",
+            "note": "O1 risks are free-text strings, not risk IDs.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "O2",
+            "json_pointer": "/plan_package/architecture/options/1/risks",
+            "note": "O2 risks are free-text strings, not risk IDs.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "O3",
+            "json_pointer": "/plan_package/architecture/options/2/risks",
+            "note": "O3 risks are free-text strings, not risk IDs.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "O4",
+            "json_pointer": "/plan_package/architecture/options/3/risks",
+            "note": "O4 risks are free-text strings, not risk IDs.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/options/0/risks",
+            "value": [
+              "K4",
+              "K5"
+            ]
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/options/1/risks",
+            "value": [
+              "K20",
+              "K21",
+              "K22"
+            ]
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/options/2/risks",
+            "value": [
+              "K21",
+              "K2",
+              "K5"
+            ]
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/architecture/options/3/risks",
+            "value": [
+              "K14",
+              "K20",
+              "K4"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Hard-gate risk_closure failure: critical risk K8 has no mitigation/closure in the risk register and conflicts with DEC6 (which asserts a mitigation).",
+        "evidence": [
+          {
+            "artifact_ref": "validator_report",
+            "entity_id": null,
+            "json_pointer": "/checks/5",
+            "note": "risk_closure check fails: Risk K8 missing closure.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "K8",
+            "json_pointer": "/plan_package/risk_register/7/mitigation",
+            "note": "K8 mitigation is null.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "consistency_findings",
+            "entity_id": "CS1",
+            "json_pointer": "/findings/0",
+            "note": "CS1 reports conflict between K8 mitigation=null and DEC6 asserting mitigation.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "DEC6",
+            "json_pointer": "/plan_package/decision_log/5/choice",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Implement a mandatory privacy publish-guard in the build..."
+          }
+        ],
+        "violated_gate": "risk_closure",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/risk_register/7/mitigation",
+            "value": {
+              "text": "Implement a mandatory privacy publish-guard in the build: define configurable privacy markers (e.g., front matter `private: true`, path denylist patterns, and/or publish allowlist). Fail the build by default if any note marked private would be emitted; emit an actionable report listing triggering files/markers and recommended remediation (move, mark publishable, or adjust config with explicit acknowledgement).",
+              "owner": "sec",
+              "status": "planned"
+            }
+          },
+          {
+            "op": "replace",
+            "path": "/plan_package/risk_register/7/acceptance",
+            "value": "Build fails (default) when any note is marked private under configured rules and would be emitted; failure output lists all triggering notes and the exact marker/rule that classified them as private. An explicit config acknowledgement is required to switch to warn-only/opt-out mode."
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "Milestone sequencing ambiguity: M4 deliverables require generating backlinks sections, but theme/template rendering is scheduled in M5 in the O2 architecture, risking an unimplementable M4 scope as written.",
+        "evidence": [
+          {
+            "artifact_ref": "consistency_findings",
+            "entity_id": "CS2",
+            "json_pointer": "/findings/1",
+            "note": "CS2 describes the M4 vs M5 rendering responsibility mismatch.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "DL11",
+            "json_pointer": "/plan_package/milestones/3/deliverables/0/text",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Link Resolution & Backlink plugin... generating backlinks sections (R10)."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "C15",
+            "json_pointer": "/plan_package/architecture/options/1/components/6",
+            "note": "In O2, Theme/Template plugin is responsible for rendering final pages/sections.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/milestones/3/deliverables/0/text",
+            "value": "Link Resolution & Backlink plugin supporting (at minimum) standard Markdown relative links to other notes (R9), computing/storing forward links + backlinks in the shared context (R10 data), and exposing a stable structure for renderers/templates to display a backlinks section."
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Traceability mismatch: AT3 depends on exclusion capability but is not mapped to R20, leaving R20 without direct acceptance coverage and weakening requirements-to-tests traceability.",
+        "evidence": [
+          {
+            "artifact_ref": "consistency_findings",
+            "entity_id": "CS3",
+            "json_pointer": "/findings/2",
+            "note": "CS3 reports AT3 uses exclusion config but doesn't map to R20.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "AT3",
+            "json_pointer": "/plan_package/acceptance_tests/2/maps_to_requirements",
+            "note": "AT3 maps only to R3.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "R20",
+            "json_pointer": "/plan_package/requirements/19/text",
+            "note": "R20 is the explicit exclusion requirement.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "traceability",
+        "patch": [
+          {
+            "op": "add",
+            "path": "/plan_package/acceptance_tests/2/maps_to_requirements/-",
+            "value": "R20"
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Risk register incompleteness: K6 (malformed YAML front matter) has no mitigation despite being a known failure mode that impacts tag/front matter parsing dependencies (R11 and later milestones).",
+        "evidence": [
+          {
+            "artifact_ref": "consistency_findings",
+            "entity_id": "CS002",
+            "json_pointer": "/findings/5",
+            "note": "CS002 flags K6 missing mitigation while front matter parsing is depended upon.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "K6",
+            "json_pointer": "/plan_package/risk_register/5/mitigation",
+            "note": "K6 mitigation is null.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "risk_governance_completeness",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/plan_package/risk_register/5/mitigation",
+            "value": {
+              "text": "Implement tolerant front matter parsing: detect malformed YAML; default to treating malformed front matter as plain text (or skip front matter) while emitting a file-level warning with line/column context. Provide a strict mode to fail the build on malformed YAML for CI. Add fixtures covering common YAML errors.",
+              "owner": "eng",
+              "status": "planned"
+            }
+          }
+        ]
+      },
+      {
+        "label": "note",
+        "severity": "low",
+        "summary": "Metadata ambiguity: meta.version is set but meta.plan_version is null, which may confuse downstream consumers about which field is authoritative.",
+        "evidence": [
+          {
+            "artifact_ref": "consistency_findings",
+            "entity_id": "CS4",
+            "json_pointer": "/findings/3",
+            "note": "CS4 flags version field ambiguity.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": null,
+            "json_pointer": "/plan_package/meta/version",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "v3"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": null,
+            "json_pointer": "/plan_package/meta/plan_version",
+            "note": "Null plan_version.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "n/a",
+        "patch": []
+      },
+      {
+        "label": "note",
+        "severity": "high",
+        "summary": "Cannot verify or close alignment warnings: plan references an alignment_warnings artifact, but its content is not present in provided inputs, blocking validation of required warning closures.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "W2",
+            "json_pointer": "/plan_package/synthesis_warnings/1",
+            "note": null,
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "alignment warnings content is not present in the provided inputs; cannot verify coverage"
+          }
+        ],
+        "violated_gate": "alignment_warnings_verification",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Risk K8 (privacy leakage) marked critical with null mitigation in risk_register but DEC6 claims mitigation exists; validator reports K8 missing closure; no milestone implements privacy guard before M7 mentions it",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "K8",
+            "json_pointer": "/plan_package/risk_register/7/mitigation",
+            "note": "K8 mitigation field is null",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "DEC6",
+            "json_pointer": "/plan_package/decision_log/5/choice",
+            "note": "DEC6 asserts privacy publish-guard mitigation",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Implement a mandatory privacy publish-guard in the build"
+          },
+          {
+            "artifact_ref": "candidate_delta_B2A_v3",
+            "entity_id": null,
+            "json_pointer": "/validator_report/checks/4/violations/0",
+            "note": "Validator reports K8 missing closure",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Risk K8 missing closure"
+          }
+        ],
+        "violated_gate": "risk_closure",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Milestone M2 exit criteria cannot be met: DL7 claims emit plugin satisfies R2 static output but R3 per-note HTML generation deferred to M3; M2 cannot produce valid static site without M3 work",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "DL7",
+            "json_pointer": "/plan_package/milestones/1/deliverables/3/text",
+            "note": "DL7 claims R2 satisfied in M2",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "ready to host on static hosting (R2)"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "DL9",
+            "json_pointer": "/plan_package/milestones/2/deliverables/1/text",
+            "note": "DL9 in M3 delivers per-note HTML required by R3",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Markdown render plugin producing per-note HTML pages"
+          }
+        ],
+        "violated_gate": "milestone_exit_criteria",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Milestone M4 deliverable DL11 requires backlinks sections in generated pages but theme/template plugin (C15) responsible for page rendering not planned until M5; milestone ordering inconsistent with component responsibilities",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "DL11",
+            "json_pointer": "/plan_package/milestones/3/deliverables/0/text",
+            "note": "M4 expects backlinks sections rendered",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "generating backlinks sections (R10)"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "DL15",
+            "json_pointer": "/plan_package/milestones/4/deliverables/1/text",
+            "note": "Template plugin scheduled for M5",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Template/theme plugin generates tags index"
+          }
+        ],
+        "violated_gate": "milestone_exit_criteria",
+        "patch": []
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Validator reports 12 architecture option risks referenced but missing from risk_register; id_integrity gate failed",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B2A_v3",
+            "entity_id": null,
+            "json_pointer": "/validator_report/checks/1/violations",
+            "note": "12 missing risk references across O1-O4",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Option O1 references missing risk Large collections can lead to high memory usage"
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": []
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "DEC2 mandates collision detection for path-based IDs but no milestone deliverable implements detection or error/warn behavior; K10 mitigation incomplete",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "DEC2",
+            "json_pointer": "/plan_package/decision_log/1/choice",
+            "note": "DEC2 requires collision detection",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "with collision detection and explicit error/warn behavior"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "K10",
+            "json_pointer": "/plan_package/risk_register/9",
+            "note": "K10 collision risk",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "coverage",
+        "patch": []
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Risk K6 (malformed YAML) has null mitigation despite R11 requiring front matter tag extraction; known failure mode unaddressed",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "K6",
+            "json_pointer": "/plan_package/risk_register/5/mitigation",
+            "note": "K6 mitigation null",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "R11",
+            "json_pointer": "/plan_package/requirements/10/text",
+            "note": "R11 requires YAML front matter parsing",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "YAML front matter tags field"
+          }
+        ],
+        "violated_gate": "risk_closure",
+        "patch": []
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "AT3 exercises exclusion config but maps only to R3; R20 (explicit exclusion requirement) has no mapped acceptance test; traceability gap",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "AT3",
+            "json_pointer": "/plan_package/acceptance_tests/2/maps_to_requirements",
+            "note": "AT3 maps only to R3",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "R20",
+            "json_pointer": "/plan_package/requirements/19",
+            "note": "R20 exclusion requirement unmapped",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "coverage",
+        "patch": []
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "AT6 requires actionable error messages but no milestone deliverable addresses error handling infrastructure before M7 DL22 build report",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "AT6",
+            "json_pointer": "/plan_package/acceptance_tests/5/pass_criteria",
+            "note": "AT6 requires clear error messages",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "clear, actionable error message"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "DL22",
+            "json_pointer": "/plan_package/milestones/6/deliverables/2",
+            "note": "Build report format only in M7",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "coverage",
+        "patch": []
+      },
+      {
+        "label": "note",
+        "severity": "low",
+        "summary": "Plan metadata has both meta.version='v3' and meta.plan_version=null; ambiguous versioning may confuse downstream consumers",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": null,
+            "json_pointer": "/plan_package/meta/version",
+            "note": "version field populated",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "v3"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": null,
+            "json_pointer": "/plan_package/meta/plan_version",
+            "note": "plan_version field null",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "schema",
+        "patch": []
+      },
+      {
+        "label": "note",
+        "severity": "medium",
+        "summary": "Risk K16 (mobile responsiveness) and K23 (CLI UX) have null mitigations; no acceptance tests or deliverables address these usability concerns",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "K16",
+            "json_pointer": "/plan_package/risk_register/15/mitigation",
+            "note": "K16 mitigation null",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "K23",
+            "json_pointer": "/plan_package/risk_register/22/mitigation",
+            "note": "K23 mitigation null",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "risk_closure",
+        "patch": []
+      },
+      {
+        "label": "note",
+        "severity": "high",
+        "summary": "Synthesis warning W2 flags missing alignment_warnings artifact content; plan has no deliverable to resolve alignment warnings before freeze",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v3",
+            "entity_id": "W2",
+            "json_pointer": "/plan_package/synthesis_warnings/1",
+            "note": "W2 reports missing alignment warnings content",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "alignment warnings content is not present"
+          }
+        ],
+        "violated_gate": "completeness_heuristic",
+        "patch": []
+      }
+    ],
+    "reroute_target": "orchestrator.artifact_injection",
+    "reroute_reason": "Inject the missing alignment_warnings artifact content (alignment_warnings_v1) so critics/validators can verify closures and enforce branch alignment requirements."
+  }
+}

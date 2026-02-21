@@ -1,0 +1,142 @@
+{
+  "artifact_type": "project_capsule",
+  "artifact_id": "capsule_draft_b_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:22:47.380651Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [],
+  "payload": {
+    "brief": "Create a software to turn my Markdown notes into a searchable static site with tags and backlinks.\n",
+    "problem_statement": "User needs a way to convert personal Markdown notes into a browsable, searchable static website that supports organizational features like tags and backlinks between notes.",
+    "goals": [
+      "G1: Generate a static site from Markdown files that can be hosted without a backend server",
+      "G2: Implement full-text search functionality across all notes",
+      "G3: Support tag-based organization and filtering of notes",
+      "G4: Automatically detect and render backlinks between notes",
+      "G5: Preserve Markdown formatting and structure in the generated site"
+    ],
+    "non_goals": [
+      "NG1: Real-time collaborative editing",
+      "NG2: Dynamic server-side rendering or database integration",
+      "NG3: Mobile native applications",
+      "NG4: Version control or change tracking beyond what exists in source files",
+      "NG5: Authentication or access control features"
+    ],
+    "constraints": [
+      {
+        "id": "CNS1",
+        "type": "tech",
+        "text": "Output must be static HTML/CSS/JS that can be hosted on any web server"
+      },
+      {
+        "id": "CNS2",
+        "type": "tech",
+        "text": "Must process standard Markdown syntax as input"
+      }
+    ],
+    "assumptions": [
+      {
+        "id": "A1",
+        "text": "User has Markdown notes stored as individual files in a file system",
+        "impact": "high",
+        "confidence": "high",
+        "needs_confirmation": true
+      },
+      {
+        "id": "A2",
+        "text": "Backlinks follow a standard notation (e.g., [[note-name]] or similar wiki-style syntax)",
+        "impact": "high",
+        "confidence": "medium",
+        "needs_confirmation": true
+      },
+      {
+        "id": "A3",
+        "text": "Tags are embedded in notes using a consistent format (e.g., #tag or frontmatter)",
+        "impact": "medium",
+        "confidence": "medium",
+        "needs_confirmation": true
+      },
+      {
+        "id": "A4",
+        "text": "User wants client-side search rather than requiring a search service",
+        "impact": "medium",
+        "confidence": "medium",
+        "needs_confirmation": true
+      },
+      {
+        "id": "A5",
+        "text": "Site will be used by a single user or small group without access control needs",
+        "impact": "low",
+        "confidence": "medium",
+        "needs_confirmation": false
+      }
+    ],
+    "open_questions": [
+      {
+        "id": "Q1",
+        "text": "What is the expected volume of notes (number of files, total size)?",
+        "impact": "medium",
+        "blocking": false
+      },
+      {
+        "id": "Q2",
+        "text": "What specific Markdown flavor or extensions should be supported (CommonMark, GFM, etc.)?",
+        "impact": "medium",
+        "blocking": false
+      },
+      {
+        "id": "Q3",
+        "text": "Should the tool run as a CLI, GUI application, or build script?",
+        "impact": "medium",
+        "blocking": true
+      },
+      {
+        "id": "Q4",
+        "text": "What is the preferred hosting environment (GitHub Pages, Netlify, local server, etc.)?",
+        "impact": "low",
+        "blocking": false
+      },
+      {
+        "id": "Q5",
+        "text": "Are there specific design or theming requirements for the generated site?",
+        "impact": "low",
+        "blocking": false
+      },
+      {
+        "id": "Q6",
+        "text": "Should the tool watch for changes and auto-rebuild, or is manual regeneration acceptable?",
+        "impact": "low",
+        "blocking": false
+      }
+    ],
+    "success_metrics": [
+      "SM1: All Markdown files successfully converted to HTML pages (100% conversion rate)",
+      "SM2: Search returns relevant results within 500ms for typical note collections",
+      "SM3: All backlinks correctly identified and rendered as clickable links",
+      "SM4: Tags accurately extracted and filterable with zero false negatives",
+      "SM5: Generated site loads and functions in modern browsers without errors"
+    ],
+    "stakeholders": [
+      "User (note author and primary site user)",
+      "Potential readers of the published notes"
+    ],
+    "glossary": [
+      {
+        "term": "Static Site",
+        "definition": "A website consisting of fixed HTML, CSS, and JavaScript files that do not require server-side processing"
+      },
+      {
+        "term": "Backlink",
+        "definition": "A reference from one note to another, typically shown bidirectionally so each note displays which other notes link to it"
+      },
+      {
+        "term": "Markdown",
+        "definition": "A lightweight markup language using plain text formatting syntax that converts to HTML"
+      },
+      {
+        "term": "Tag",
+        "definition": "A keyword or label attached to a note for categorization and filtering purposes"
+      }
+    ]
+  }
+}

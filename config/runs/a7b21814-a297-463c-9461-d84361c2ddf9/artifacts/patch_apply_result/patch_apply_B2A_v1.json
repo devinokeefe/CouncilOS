@@ -1,0 +1,36 @@
+{
+  "artifact_type": "patch_apply_result",
+  "artifact_id": "patch_apply_B2A_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:39:56.746716Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B2A_v1",
+    "patch_B2A_1_v1",
+    "patch_B2A_2_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2A_v1",
+    "selected_patch_ref": null,
+    "reroute_target": "Orchestrator → Plan Owner (risk_register + architecture risk cross-references) and Orchestrator → Review/Judge (alignment_warnings content)",
+    "applied_candidate_ref": null,
+    "candidates": [
+      {
+        "patch_ref": "patch_B2A_1_v1",
+        "applied": false,
+        "validator_status": "FAIL_REPAIRABLE",
+        "op_count": 7,
+        "paths_touched": 1,
+        "reason": "member 'decision_log' not found in {'failure_modes': [], 'tool_policy': {'stage_policies': [{'stage': 'Intake', 'allowlisted_tools': ['artifact_read', 'artifact_write'], 'restrictions': [{'type': 'no_external_network', 'value': True}, {'type': 'write_scope', 'value': 'audit_spine_and_intake_notes_only'}, {'type': 'data_minimization', 'value': 'do_not_request_or_store_note_contents_unless_required'}, {'artifact_write': 'canonical_allowed_only_for_declared_types', 'notes': 'Allow canonical audit-spine artifacts (run_manifest, event_log, stage_handoff).'}], 'hitl_triggers': ['Any request to access private repositories, personal notes, or credentials', 'Any ambiguity in requirements that changes scope beyond capsule goals/non-goals', 'Unconfirmed blocker questions (Q1/Q2/Q3/Q4/Q10) would materially change architecture or success metrics', 'Any decision affecting security boundaries (raw HTML, template execution, third-party JS/search libraries)']}, {'stage': 'Generate', 'allowlisted_tools': ['artifact_read'], 'restrictions': [{'type': 'no_external_network', 'value': True}, {'type': 'no_side_effects', 'value': True}, {'type': 'must_trace_to_inputs', 'value': 'only_use_project_capsule_and_confirmed_answers'}], 'hitl_triggers': ['Proposed features conflict with non-goals (e.g., auth, server runtime, AI generation)', 'Proposed approach requires unsupported Markdown/linking/tag conventions without confirmation', 'build_process_failure', 'excessive_resource_usage']}, {'stage': 'Validate', 'allowlisted_tools': ['artifact_read'], 'restrictions': [{'type': 'no_external_network', 'value': True}, {'type': 'consistency_checks_required', 'value': ['goals_vs_non_goals', 'constraints_coverage', 'open_questions_blockers']}], 'hitl_triggers': ['Validation finds blockers that affect architecture (Q1/Q2/Q3/Q4/Q10)', 'Security risk identified that requires a trust-model decision (e.g., raw HTML handling)', 'validation_error_threshold_exceeded', 'Validation stage detects a high number of broken links or accessibility violations above a defined threshold.', 'Build time or memory usage exceeds performance targets for the specified note scale.']}, {'stage': 'Review', 'allowlisted_tools': ['artifact_read', 'artifact_write'], 'restrictions': [{'type': 'no_external_network', 'value': True}, {'type': 'write_scope', 'value': 'review_findings_only'}, {'type': 'require_citations', 'value': 'all key claims must reference capsule fields or confirmed answers'}, {'artifact_write': 'canonical_allowed_only_for_declared_types', 'notes': 'Allow findings-only canonical artifacts (review_findings.json).'}], 'hitl_triggers': ['Any acceptance of high/critical risks without mitigations', 'Any policy decision impacting user security (sanitization, template execution)']}, {'stage': 'Judge', 'allowlisted_tools': ['artifact_read'], 'restrictions': [{'type': 'no_external_network', 'value': True}, {'type': 'no_writes', 'value': True}, {'type': 'decision_basis', 'value': 'must_be_explainable_from_artifacts'}], 'hitl_triggers': ['Tradeoff requires product decision (feature cuts, performance budgets, compatibility choices)', 'Any build process failure (e.g., crash, non-zero exit code).']}, {'stage': 'Freeze', 'allowlisted_tools': ['artifact_read'], 'restrictions': [{'type': 'no_external_network', 'value': True}, {'type': 'no_writes', 'value': True}, {'type': 'no_new_requirements', 'value': True}], 'hitl_triggers': ['Request to change scope or revise locked decisions']}]}, 'hitl_policy': {'when_to_interrupt': ['Unconfirmed blocker questions (Q1/Q2/Q3/Q4/Q10) would materially change architecture or success metrics', 'Any decision affecting security boundaries (raw HTML, template execution, third-party JS/search libraries)', 'Any proposal that violates hard constraints (static-only output) or non-goals (server runtime, auth, AI content generation)', 'Any need to accept a high/critical risk without a mitigation plan', 'Any build process failure (e.g., crash, non-zero exit code).', 'Validation stage detects a high number of broken links or accessibility violations above a defined threshold.', 'Build time or memory usage exceeds performance targets for the specified note scale.'], 'approval_roles': ['Product Owner', 'Security Reviewer', 'Tech Lead', 'Developer', 'Project Lead']}}"
+      },
+      {
+        "patch_ref": "patch_B2A_2_v1",
+        "applied": false,
+        "validator_status": "FAIL_REPAIRABLE",
+        "op_count": 0,
+        "paths_touched": 0,
+        "reason": "reroute"
+      }
+    ]
+  }
+}

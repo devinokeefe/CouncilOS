@@ -1,0 +1,120 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B1B_fallback_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:39:07.763212Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B1B_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B1B_v1",
+    "findings": [
+      {
+        "id": "TG001",
+        "severity": "medium",
+        "summary": "R1 milestone mapping includes M2 but M2 deliverables do not address file discovery; M1 fully satisfies R1",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "R1",
+            "json_pointer": "/plan_package/requirements/0",
+            "note": "R1 requires recursive .md discovery",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "recursively discover Markdown files, including all files with the \".md\" extension by default"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/deliverables/1",
+            "note": "M1 DL2 delivers recursive .md discovery",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "Recursive .md file discovery from the input directory (R1)"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/deliverables",
+            "note": "M2 deliverables focus on tags only, no file discovery work",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "trace_graph"
+      },
+      {
+        "id": "TG002",
+        "severity": "medium",
+        "summary": "R2 milestone mapping includes M2 but M2 deliverables do not address static output generation; M1 fully satisfies R2",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "R2",
+            "json_pointer": "/plan_package/requirements/1",
+            "note": "R2 requires static HTML/CSS/JS output",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "generate a static build output consisting only of HTML, CSS, JavaScript"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/deliverables/3",
+            "note": "M1 DL4 delivers static site output",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "Static site output directory containing one HTML page per note plus minimal CSS (R2)"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/deliverables",
+            "note": "M2 deliverables focus on tags only, no static output work",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "trace_graph"
+      },
+      {
+        "id": "TG003",
+        "severity": "medium",
+        "summary": "R3 milestone mapping includes M2 but M2 deliverables do not address Markdown parsing or HTML generation; M1 fully satisfies R3",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "R3",
+            "json_pointer": "/plan_package/requirements/2",
+            "note": "R3 requires CommonMark parsing and HTML generation",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "parse each discovered Markdown file using at least CommonMark-compliant syntax"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/deliverables/2",
+            "note": "M1 DL3 delivers CommonMark rendering",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "CommonMark-compliant Markdown-to-HTML rendering for each discovered note (R3, R4)"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/deliverables",
+            "note": "M2 deliverables focus on tags only, no Markdown parsing work",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "trace_graph"
+      }
+    ]
+  }
+}

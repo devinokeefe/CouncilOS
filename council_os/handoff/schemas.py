@@ -45,6 +45,19 @@ class HashSpec(HandoffModel):
     canonical_json: str = "JCS-like-v1"
     excluded_fields_by_pointer: list[str] = Field(default_factory=list)
 
+class PlanFreezeRef(HandoffModel):
+    ref: str
+    hash: str
+
+
+class PlanFreezeRefs(HandoffModel):
+    config_snapshot: PlanFreezeRef | None = None
+    clarifications: PlanFreezeRef | None = None
+    approval: PlanFreezeRef | None = None
+    repo_snapshot: PlanFreezeRef | None = None
+    env_snapshot: PlanFreezeRef | None = None
+    hash_spec: PlanFreezeRef | None = None
+
 
 class ClarificationSummary(HandoffModel):
     question_id: str
@@ -69,7 +82,7 @@ class HumanFeedbackBundle(HandoffModel):
 
 
 class PlanFreezeRecord(HandoffModel):
-    schema_version: str = "2.1.0"
+    schema_version: str = "plan_freeze_record.v1"
     plan_id: str
     planning_run_id: str
     frozen_at: str
@@ -87,6 +100,7 @@ class PlanFreezeRecord(HandoffModel):
     hash_spec_ref: HandoffArtifactRef | None = None
     config_snapshot_ref: HandoffArtifactRef
     human_feedback_bundle_ref: HandoffArtifactRef
+    refs: PlanFreezeRefs | None = None
     notes: str | None = None
 
 
@@ -128,6 +142,7 @@ class RepoAcquisitionSpec(HandoffModel):
     git_tree_hash: str | None = None
     submodules: str | None = None
     fetch_depth: int | None = None
+    remotes: list[str] | None = None
 
 
 class HandoffManifest(HandoffModel):
@@ -146,7 +161,7 @@ class ImportedArtifactRef(HandoffModel):
 
 
 class HandoffAck(HandoffModel):
-    schema_version: str = "2.1.0"
+    schema_version: str = "handoff_ack.v1"
     implementation_run_id: str
     accepted_at: str
     accepted_handoff_digest: str
@@ -162,7 +177,7 @@ class HandoffAck(HandoffModel):
 
 
 class HandoffRejection(HandoffModel):
-    schema_version: str = "2.1.0"
+    schema_version: str = "handoff_rejection.v1"
     rejected_at: str
     reason: str
     reason_code: str | None = None

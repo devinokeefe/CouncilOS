@@ -1,0 +1,141 @@
+Metadata-Version: 2.4
+Name: council-os
+Version: 0.1.0
+Summary: Council OS Planning System
+Requires-Python: >=3.12
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: pydantic<3,>=2.7
+Requires-Dist: typer<1,>=0.12
+Requires-Dist: pyyaml<7,>=6.0
+Requires-Dist: jsonpatch<2,>=1.33
+Requires-Dist: fastapi<1,>=0.111
+Provides-Extra: dev
+Requires-Dist: pytest<9,>=8.0; extra == "dev"
+Requires-Dist: mypy<2,>=1.10; extra == "dev"
+Requires-Dist: ruff<1,>=0.6; extra == "dev"
+Requires-Dist: black<25,>=24.0; extra == "dev"
+Requires-Dist: types-PyYAML>=6.0.12; extra == "dev"
+Requires-Dist: httpx<1,>=0.27; extra == "dev"
+Dynamic: license-file
+
+# Council OS
+
+Council OS is a deterministic, artifact-first planning and implementation system. Phase 1 focuses on planning: it turns a brief into a frozen Plan Package with audit logs, checkpoints, and a handoff bundle. The implementation engine consumes the handoff and produces patchsets, validation evidence, and a frozen release bundle under explicit governance.
+
+**What This Repo Contains**
+- A planning pipeline in two modes: a roles-based Engine and a config-driven HQ pipeline.
+- An implementation pipeline with v1, v2, and v2.1 schemas, workspace governance, and freeze gates.
+- Artifact stores, audit event logs, checkpoints, and handoff tooling.
+- JSON schemas in `schemas/` and prompt packs in `council_os/agents/prompts/`.
+
+**Quickstart**
+```bash
+uv sync --extra dev
+```
+
+Mock planning run:
+```bash
+uv run council run --config config/default.yml --brief eval/golden_briefs/brief_01.md
+```
+
+LLM planning run (OpenRouter):
+```bash
+OPENROUTER_API_KEY=... uv run council run --config config/llm_openai_anthropic.yml --brief eval/golden_briefs/brief_01.md
+```
+
+HQ planning run (stage graph + multi-model portfolio):
+```bash
+OPENROUTER_API_KEY=... uv run council run --config config/council_os_hq.yml --brief eval/golden_briefs/brief_01.md
+```
+
+Implementation run from a planning handoff:
+```bash
+uv run council implement --config path/to/implementation.yml --from-handoff <run_root>/planning/handoff_manifest.json
+```
+
+Optional OpenRouter headers: `OPENROUTER_HTTP_REFERER`, `OPENROUTER_APP_TITLE`, `OPENROUTER_BASE_URL`, `OPENROUTER_TIMEOUT_SEC`.
+
+**Planning Pipeline**
+The Phase 1 planning pipeline generates structured plan artifacts and freezes a final plan. Stages are: intake, clarify, draft_pods, branch, synthesize, validate, triage, failure_mode, judge, freeze.
+
+Feedback gates are optional:
+- `--feedback-clarify` enables structured clarification questions and resolutions.
+- `--feedback-plan-review` enables a plan review loop and explicit approval gating.
+- `--feedback-provider {auto,cli,file}` selects the input provider.
+- `--response-file <path>` supplies a response artifact for offline resume.
+- `--max-plan-review-rounds <N>` caps the review loop.
+
+**Implementation Pipeline**
+The implementation engine consumes a planning handoff and executes a governed workflow. Stages are: intake, work_planning, generate, patch_apply, integrate_validate, remote_validate, validate, review, judge, freeze.
+
+It enforces:
+- Handoff acceptance with hash checks and a `handoff_ack.json` (or `handoff_rejection.json`).
+- Patchset-only repo changes, deterministic apply/selection, and forbidden-path checks.
+- Evidence pointer validation, trace completeness, and freeze gates.
+- Workspace governance with canonical/non-canonical partitions, context packs, and stage handoffs.
+
+Schema versions and features are controlled by `schemas_version` and `features` in the implementation config. v2/v2.1 add execution profiles, tool registry, expectation registry + evidence index, remote ops, and research artifacts.
+
+**Handoff Artifacts**
+Planning produces both a legacy bundle and a manifest for determinism:
+- `planning/planning_handoff_bundle.json`
+- `planning/handoff_manifest.json`
+- `planning/plan_freeze_record.json`
+- `planning/hash_spec.json`
+- `planning/plan_package_final.json`
+
+The manifest form (`handoff_manifest.json`) is the preferred input to `council implement`.
+
+**CLI**
+- `council run --config <path> --brief <path>`
+- `council resume --run-id <id> [--checkpoint-id <id>]`
+- `council fork --checkpoint-id <id> --new-config <path>`
+- `council status --run-id <id>`
+- `council checkpoints --run-id <id>`
+- `council show --run-id <id> --artifact <artifact_id> [--render]`
+- `council list --run-id <id> --artifacts`
+- `council diff --run-id <id> --a <artifact_id> --b <artifact_id>`
+- `council eval --config <path> --golden <path>`
+- `council lint --config <path>`
+- `council implement --config <path> --from-handoff <handoff_bundle_or_manifest>`
+
+Windows helper: `run.ps1` wraps `council run` and `council resume`.
+
+**Run Output**
+Runs are stored under the storage root derived from the config (`storage_root` for role configs, or `runtime.artifacts.store_dir` for HQ configs). Typical planning run output:
+- `runs/<run_id>/manifest.json`
+- `runs/<run_id>/events.jsonl`
+- `runs/<run_id>/checkpoints/*.json`
+- `runs/<run_id>/artifacts/<artifact_type>/*.json`
+- `runs/<run_id>/planning/` (handoff and feedback artifacts)
+- `runs/<run_id>/frozen_plan.md`
+
+Typical implementation run output:
+- `runs/<run_id>/implementation_run_manifest.json`
+- `runs/<run_id>/implementation_event_log.jsonl`
+- `runs/<run_id>/artifacts/<artifact_type>/*.json`
+- `runs/<run_id>/workspace_index.json`
+- `runs/<run_id>/context_packs/`
+- `runs/<run_id>/stage_handoffs/`
+- `runs/<run_id>/inputs/planning/` (imported handoff inputs)
+
+**Schemas**
+- Planning schemas live in `schemas/` and are referenced by the HQ config in `config/council_os_hq.yml`.
+- Implementation schemas live in `schemas/implementation/v2/` and `schemas/implementation/v2_1/`.
+
+**Service API**
+`council_os.service:app` exposes a planning-only FastAPI service:
+- `POST /runs`
+- `POST /runs/{id}/resume`
+- `POST /runs/{id}/interrupt_response`
+- `GET /runs/{id}/artifacts`
+- `GET /runs/{id}/events`
+- `GET /runs/{id}/status`
+
+**Evaluation and Tests**
+- `council eval --config <path> --golden eval/golden_briefs`
+- `pytest`
+
+**Roadmap**
+See `IMPROVEMENTS.md` for the vNext design notes and backlog.

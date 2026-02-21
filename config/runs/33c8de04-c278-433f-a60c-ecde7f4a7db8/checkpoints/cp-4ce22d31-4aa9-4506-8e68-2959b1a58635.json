@@ -1,0 +1,17 @@
+{
+  "checkpoint_id": "cp-4ce22d31-4aa9-4506-8e68-2959b1a58635",
+  "run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "created_at": "2026-02-21T11:54:59.600503Z",
+  "stage_name": "intake.capsule_normalize",
+  "stage_index": 0,
+  "event_cursor": "e20f701c-d5b1-40c1-a2ca-a94d2be24e27",
+  "artifact_refs": {
+    "capsule_draft_a": "capsule_draft_a_v1",
+    "capsule_draft_b": "capsule_draft_b_v1"
+  },
+  "routing_state": {
+    "stage": "intake.capsule_normalize",
+    "index": 0
+  },
+  "tool_side_effect_ledger_ref": null
+}

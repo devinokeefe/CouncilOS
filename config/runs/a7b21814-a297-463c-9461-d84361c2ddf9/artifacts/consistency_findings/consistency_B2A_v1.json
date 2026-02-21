@@ -1,0 +1,267 @@
+{
+  "artifact_type": "consistency_findings",
+  "artifact_id": "consistency_B2A_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:36:54.411719Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B2A_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2A_v1",
+    "findings": [
+      {
+        "id": "CS1",
+        "severity": "high",
+        "summary": "Decision log DEC6 cites a non-existent capsule artifact ref (\"project_capsule_canonical_v1\"), inconsistent with the candidate’s declared capsule_ref (\"capsule_canonical_v1\") and the provided artifact_refs mapping.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "DEC6",
+            "json_pointer": "/plan_package/governance/decision_log/5/evidence_pointers/1/artifact_ref",
+            "note": "DEC6 evidence pointer uses artifact_ref \"project_capsule_canonical_v1\" (not present in artifact_refs).",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "project_capsule_canonical_v1"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": null,
+            "json_pointer": "/inputs/capsule_ref",
+            "note": "Candidate declares capsule_ref \"capsule_canonical_v1\".",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "capsule_canonical_v1"
+          }
+        ],
+        "routing_target": "Plan Owner: Governance/Decision Log (fix artifact_ref naming / evidence pointers)"
+      },
+      {
+        "id": "CS2",
+        "severity": "critical",
+        "summary": "Risk K8 (critical privacy leakage) has mitigation set to null in the risk register, but elsewhere the plan specifies a concrete mitigation (mandatory privacy gate) via DEC7 and milestone deliverables; this is an internal inconsistency in risk tracking.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "K8",
+            "json_pointer": "/plan_package/risk_register/7/mitigation",
+            "note": "K8 mitigation is null in the risk register.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "DEC7",
+            "json_pointer": "/plan_package/governance/decision_log/6/choice",
+            "note": "DEC7 defines a mitigation approach (mandatory build-time privacy gate).",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Implement a mandatory build-time privacy gate: support a configurable, explicit marker to exclude notes from output and search indexing..."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "DL18",
+            "json_pointer": "/plan_package/milestones/5/deliverables/1/text",
+            "note": "Milestone M6 includes a concrete privacy leakage gate deliverable.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Privacy leakage gate: mandatory build-time check preventing emission/indexing of notes marked private/non-publishable; emits a clear report and can fail build in strict mode."
+          }
+        ],
+        "routing_target": "Plan Owner: Risk/Governance (synchronize risk register mitigations with DEC7/M6)"
+      },
+      {
+        "id": "CS3",
+        "severity": "medium",
+        "summary": "Synthesis warning W2 asserts alignment warnings content was not present in inputs, yet the plan includes an evidence pointer to alignment_warnings_v1; the plan’s own audit trail depends on an external artifact that is not integrated into the package, creating an internal traceability gap for the stated requirement to address AL001/AL008 before proceeding.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "W2",
+            "json_pointer": "/plan_package/synthesis_warnings/1/summary",
+            "note": "W2 states alignment warnings content is not present in provided inputs for this delta.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Branch requires addressing high-severity alignment warnings (e.g., AL001, AL008) before proceeding, but the alignment warnings content is not present in provided inputs for this delta."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "W2",
+            "json_pointer": "/plan_package/synthesis_warnings/1/evidence/1/artifact_ref",
+            "note": "W2 still references alignment_warnings_v1 as evidence.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "alignment_warnings_v1"
+          }
+        ],
+        "routing_target": "Orchestrator/Review: Attach or inline alignment_warnings content so the plan’s stated dependency can be verified"
+      },
+      {
+        "id": "CS001",
+        "severity": "high",
+        "summary": "Milestone M1 exit criteria references privacy leakage mitigation for K8, but K8 has no mitigation defined in risk_register",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/exit_criteria/2",
+            "note": "M1 exit criteria requires privacy leakage mitigation approach for K8 with explicit spec and acceptance gate definition.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Privacy leakage mitigation approach for K8 has an explicit spec and acceptance gate definition."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "K8",
+            "json_pointer": "/plan_package/risk_register/7",
+            "note": "K8 is critical severity but mitigation field is null.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "\"mitigation\": null"
+          }
+        ],
+        "routing_target": "Generate: Risk mitigation author"
+      },
+      {
+        "id": "CS002",
+        "severity": "high",
+        "summary": "Decision DEC7 claims to implement mandatory build-time privacy gate for K8, but K8 has no mitigation or acceptance criteria defined",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "DEC7",
+            "json_pointer": "/plan_package/decision_log/6",
+            "note": "DEC7 describes privacy gate implementation as mitigation for K8.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Implement a mandatory build-time privacy gate"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "K8",
+            "json_pointer": "/plan_package/risk_register/7",
+            "note": "K8 mitigation and acceptance are both null.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "\"mitigation\": null, \"acceptance\": null"
+          }
+        ],
+        "routing_target": "Generate: Risk mitigation author"
+      },
+      {
+        "id": "CS003",
+        "severity": "medium",
+        "summary": "Milestone M6 deliverable DL18 references privacy leakage gate but K8 has no acceptance criteria to validate against",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "DL18",
+            "json_pointer": "/plan_package/milestones/5/deliverables/1",
+            "note": "DL18 describes privacy leakage gate implementation.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Privacy leakage gate: mandatory build-time check preventing emission/indexing of notes marked private/non-publishable"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "K8",
+            "json_pointer": "/plan_package/risk_register/7/acceptance",
+            "note": "K8 acceptance is null, no criteria to validate DL18 against.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "\"acceptance\": null"
+          }
+        ],
+        "routing_target": "Generate: Risk acceptance author"
+      },
+      {
+        "id": "CS004",
+        "severity": "medium",
+        "summary": "Multiple risks (K6, K16, K23) have null mitigation but are referenced in governance or have medium/low severity without documented acceptance of no-mitigation posture",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "K6",
+            "json_pointer": "/plan_package/risk_register/5",
+            "note": "K6 medium severity, mitigation null, acceptance null.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "\"mitigation\": null, \"acceptance\": null"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "K16",
+            "json_pointer": "/plan_package/risk_register/15",
+            "note": "K16 low severity, mitigation null, acceptance null.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "\"mitigation\": null, \"acceptance\": null"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "K23",
+            "json_pointer": "/plan_package/risk_register/22",
+            "note": "K23 low severity, mitigation null, acceptance null.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "\"mitigation\": null, \"acceptance\": null"
+          }
+        ],
+        "routing_target": "Review: Risk completeness check"
+      },
+      {
+        "id": "CS005",
+        "severity": "medium",
+        "summary": "Synthesis warning W2 claims alignment warnings AL001/AL008 must be addressed per branch posture, but no such warnings exist in the provided alignment_warnings artifact reference",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "W2",
+            "json_pointer": "/plan_package/synthesis_warnings/1",
+            "note": "W2 references AL001/AL008 as high-severity alignment warnings requiring resolution.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Branch requires addressing high-severity alignment warnings (e.g., AL001, AL008)"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "W2",
+            "json_pointer": "/plan_package/synthesis_warnings/1/evidence/1",
+            "note": "W2 evidence acknowledges alignment_warnings artifact contents not provided.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Alignment warnings artifact reference exists but its contents were not provided"
+          }
+        ],
+        "routing_target": "Intake: Alignment warnings resolution"
+      },
+      {
+        "id": "CS006",
+        "severity": "low",
+        "summary": "Executive summary claims 'mandatory build-time privacy gate before Freeze' but M6 exit criteria does not explicitly require K8 mitigation acceptance before freeze",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": null,
+            "json_pointer": "/plan_package/executive_summary",
+            "note": "Executive summary emphasizes mandatory privacy gate before Freeze.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "mandatory build-time privacy gate before Freeze"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "M6",
+            "json_pointer": "/plan_package/milestones/5/exit_criteria",
+            "note": "M6 exit criteria mentions no unmitigated critical risks but does not explicitly call out K8 acceptance gate.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "No unmitigated critical risks remain for K7 and K8; privacy guardrail is enforced"
+          }
+        ],
+        "routing_target": "Review: Milestone exit criteria completeness"
+      }
+    ]
+  }
+}

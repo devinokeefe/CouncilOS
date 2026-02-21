@@ -1,0 +1,50 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B1A_primary_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:09:41.011251Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "plan_candidate_B1A_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B1A_v1",
+    "findings": [
+      {
+        "id": "TG-1",
+        "severity": "low",
+        "summary": "The provided trace samples associate Requirements R1, R2, and R3 with Milestone M2, but the Plan restricts their explicit delivery and verification (AT1, AT2, AT3) to Milestone M1. Milestone M2 focuses on Requirements R9 and R10 (links/backlinks) and does not list AT1-AT3 in its exit criteria.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/exit_criteria",
+            "note": "Milestone M1 is where AT1, AT2, and AT3 are verified.",
+            "candidate_id": "B1A",
+            "artifact_id": "97173ca2-3073-40ef-a95c-20526d7adb73",
+            "quote": "AT1, AT2, AT3, AT4, and AT13 pass on a deterministic fixture dataset."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/deliverables/1/text",
+            "note": "Milestone M1 delivers R1 and R2.",
+            "candidate_id": "B1A",
+            "artifact_id": "97173ca2-3073-40ef-a95c-20526d7adb73",
+            "quote": "Monolithic CLI skeleton (C1) ... produces a static output folder ... (R1, R2, R4, R11)."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1A_v1",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/exit_criteria",
+            "note": "Milestone M2 exit criteria does not include AT1, AT2, or AT3.",
+            "candidate_id": "B1A",
+            "artifact_id": "97173ca2-3073-40ef-a95c-20526d7adb73",
+            "quote": "AT8 and AT9 pass on a deterministic link-graph fixture dataset (meets R21)."
+          }
+        ],
+        "routing_target": "Generate/Tech Lead"
+      }
+    ]
+  }
+}

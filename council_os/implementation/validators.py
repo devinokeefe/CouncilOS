@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import hashlib
 import json
 import re
 try:
@@ -29,9 +28,9 @@ from council_os.implementation.schemas import (
     ToolProbeResultsPayload,
     ToolRegistryPayload,
     WorkPlanPayloadV2,
-    deterministic_json_dumps,
 )
 from council_os.implementation.secrets import scan_for_secrets
+from council_os.utils import deterministic_json_hash
 
 
 class ValidationError(Exception):
@@ -665,10 +664,6 @@ def validate_expectation_evidence_coverage(
         raise ValidationError(f"Expectation evidence coverage failed: {exp.expectation_id}")
 
 
-def _hash_payload(payload: dict[str, Any]) -> str:
-    return hashlib.sha256(deterministic_json_dumps(payload).encode("utf-8")).hexdigest()
-
-
 def validate_attestation_bundle(
     attestation: AttestationBundlePayload,
     artifacts: dict[str, dict[str, Any]],
@@ -703,7 +698,7 @@ def validate_attestation_bundle(
             if inp.hash is None:
                 continue
             raise ValidationError(f"Attestation input missing: {inp.artifact_ref}")
-        if inp.hash and inp.hash != _hash_payload(payload):
+        if inp.hash and inp.hash != deterministic_json_hash(payload):
             raise ValidationError(f"Attestation hash mismatch for {inp.artifact_ref}")
 
 
@@ -795,8 +790,7 @@ def evaluate_expectation(
             diffs.append({"reason": "schema_validation_failed", "error": schema_error})
         return (len(diffs) == 0), diffs
     if oracle.type == "golden_hash":
-        payload = deterministic_json_dumps(output).encode("utf-8")
-        digest = hashlib.sha256(payload).hexdigest()
+        digest = deterministic_json_hash(output)
         if digest == (oracle.expected_hash or ""):
             return True, diffs
         return False, [{"expected": oracle.expected_hash, "actual": digest}]

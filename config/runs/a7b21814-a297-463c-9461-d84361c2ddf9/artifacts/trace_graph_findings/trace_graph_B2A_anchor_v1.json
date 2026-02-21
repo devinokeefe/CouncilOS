@@ -1,0 +1,111 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B2A_anchor_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:37:38.427695Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B2A_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2A_v1",
+    "findings": [
+      {
+        "id": "TG001",
+        "severity": "high",
+        "summary": "Deterministic sample check for R1 maps milestones to M1/M2, but the plan’s actual implementation + validation for recursive .md discovery and related acceptance testing is scheduled in M3 (Ingestion + Markdown render plugins).",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "R1",
+            "json_pointer": "/inputs/deterministic_sample_checks/0/milestones",
+            "note": "Sample check claims R1 is covered by milestones M1 and M2 only.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "\"milestones\": [\"M1\", \"M2\"]"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "M3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/2/deliverables/0/text",
+            "note": "M3 explicitly delivers the ingestion behavior required by R1 (recursive discovery, default .md inclusion).",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Ingestion Plugin (C11) implementing directory input, recursive discovery, default .md inclusion"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "M3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/2/exit_criteria/0",
+            "note": "M3 exit criteria includes passing AT1 (the acceptance test mapped to R1).",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "AT1, AT3, AT4, AT5, and AT6 pass for the ingestion/render path"
+          }
+        ],
+        "routing_target": "Orchestrator: trace_graph_mapper (correct requirement-to-milestone coverage for R1 to include M3)"
+      },
+      {
+        "id": "TG002",
+        "severity": "medium",
+        "summary": "Deterministic sample check for R2 maps milestones to M1/M2, but the plan’s explicit validation of static-only artifacts (R2/AT2) is stated in M3 exit criteria; mapping omits that milestone.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "R2",
+            "json_pointer": "/inputs/deterministic_sample_checks/1/milestones",
+            "note": "Sample check claims R2 is covered by milestones M1 and M2 only.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "\"milestones\": [\"M1\", \"M2\"]"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "M3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/2/exit_criteria/1",
+            "note": "M3 exit criteria explicitly references satisfying R2/AT2 for static-only output.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Generated site artifacts remain static-only (HTML/CSS/JS/assets) satisfying R2/AT2."
+          }
+        ],
+        "routing_target": "Orchestrator: trace_graph_mapper (update sample check milestone coverage for R2 to include M3 validation)"
+      },
+      {
+        "id": "TG003",
+        "severity": "high",
+        "summary": "Deterministic sample check for R3 maps milestones to M1/M2, but the plan’s actual implementation + acceptance validation for CommonMark parsing and per-note HTML generation (AT3) is scheduled in M3.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "R3",
+            "json_pointer": "/inputs/deterministic_sample_checks/2/milestones",
+            "note": "Sample check claims R3 is covered by milestones M1 and M2 only.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "\"milestones\": [\"M1\", \"M2\"]"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "M3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/2/deliverables/1/text",
+            "note": "M3 deliverable states CommonMark-compliant parsing/rendering (R3) as part of the Markdown Render Plugin.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Markdown Render Plugin (C14) implementing CommonMark-compliant parsing/rendering"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2A_v1",
+            "entity_id": "M3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/2/exit_criteria/0",
+            "note": "M3 exit criteria includes passing AT3 (the acceptance test mapped to R3).",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "AT1, AT3, AT4, AT5, and AT6 pass for the ingestion/render path"
+          }
+        ],
+        "routing_target": "Orchestrator: trace_graph_mapper (correct requirement-to-milestone coverage for R3 to include M3)"
+      }
+    ]
+  }
+}

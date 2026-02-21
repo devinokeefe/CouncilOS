@@ -1,0 +1,167 @@
+{
+  "artifact_type": "validator_report",
+  "artifact_id": "validator_B1B_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:17:00.756156Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "plan_candidate_B1B_v2"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B1B_v2",
+    "overall_status": "FAIL_REPAIRABLE",
+    "checks": [
+      {
+        "name": "schema",
+        "hard_gate": true,
+        "pass": true,
+        "violations": []
+      },
+      {
+        "name": "id_integrity",
+        "hard_gate": true,
+        "pass": false,
+        "violations": [
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O1 references missing risk Search index asset may become too large for very large note sets, degrading initial load time",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O1 references missing risk Memory usage can grow substantially at very large scale (e.g., many thousands of notes) due to in-memory representations",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O1 references missing risk Wiki-link and tag syntax ambiguity can cause incorrect extraction/resolution without a clear specification",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O1 references missing risk Single-threaded sequential build may become slow on very large repositories",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O2 references missing risk Plugin API may need multiple iterations to stabilize, delaying initial delivery",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O2 references missing risk Poorly specified plugin contracts can lead to brittle plugins and breaking changes",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O2 references missing risk Performance overhead or complexity from hook dispatch and large shared context objects may emerge at scale",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O3 references missing risk SSG plugin/data model limitations may force workarounds for specific features",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O3 references missing risk Upgrades to the SSG or plugin APIs may introduce breaking changes requiring maintenance",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O3 references missing risk Search indexing toolchain (e.g., Pagefind) may add CI/CD complexity on some platforms",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O3 references missing risk Wiki-link resolution plugin may not cover all desired dialects/edge cases without customization",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O4 references missing risk User experience may suffer if orchestration is cumbersome (multiple commands, ordering, cleanup)",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O4 references missing risk Intermediate JSON/schema changes require coordinated updates across multiple tools",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/architecture/options",
+            "message": "Option O4 references missing risk Disk usage can increase due to large intermediate artifacts on big note sets",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/decision_log",
+            "message": "Evidence pointer references missing id: B1",
+            "repair_hint": null
+          },
+          {
+            "severity": "high",
+            "json_pointer": "/plan_package/decision_log",
+            "message": "Evidence pointer references missing id: B1",
+            "repair_hint": null
+          }
+        ]
+      },
+      {
+        "name": "coverage",
+        "hard_gate": true,
+        "pass": true,
+        "violations": []
+      },
+      {
+        "name": "milestone_exit_criteria",
+        "hard_gate": true,
+        "pass": true,
+        "violations": []
+      },
+      {
+        "name": "risk_closure",
+        "hard_gate": true,
+        "pass": true,
+        "violations": []
+      },
+      {
+        "name": "tool_policy_parse",
+        "hard_gate": true,
+        "pass": true,
+        "violations": []
+      },
+      {
+        "name": "measurability_heuristic",
+        "hard_gate": false,
+        "pass": true,
+        "violations": []
+      },
+      {
+        "name": "contradiction_heuristic",
+        "hard_gate": false,
+        "pass": true,
+        "violations": []
+      },
+      {
+        "name": "completeness_heuristic",
+        "hard_gate": false,
+        "pass": true,
+        "violations": []
+      }
+    ]
+  }
+}

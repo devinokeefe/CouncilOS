@@ -1,0 +1,129 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B2B_anchor_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:48:29.772298Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B2B_v2"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2B_v2",
+    "findings": [
+      {
+        "id": "TG1",
+        "severity": "medium",
+        "summary": "Sample check for R1 maps work to milestones M1 and M2, but the plan places the end-to-end recursive discovery acceptance test (AT1) in M6 exit criteria; M2 does not mention R1/AT1 deliverables, so the trace mapping appears incorrect.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "R1",
+            "json_pointer": "/inputs/deterministic_sample_checks/0/milestones",
+            "note": "Deterministic sample check claims R1 is covered by M1 and M2.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "M6",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/5/exit_criteria/0",
+            "note": "M6 exit criteria includes AT1 (recursive Markdown discovery) as an end-to-end check.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "AT1 (recursive Markdown discovery) passes end-to-end."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "M2",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/1/deliverables",
+            "note": "M2 deliverables are focused on Markdown rendering/XSS; no mention of recursive discovery acceptance (AT1).",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "alignment_warnings"
+      },
+      {
+        "id": "TG2",
+        "severity": "medium",
+        "summary": "Sample check for R2 maps work to milestones M1 and M2, but the plan positions the static-output acceptance test (AT2) in M6 exit criteria; M1/M2 do not list emit/site assembly deliverables needed to satisfy AT2, indicating trace mismatch.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "R2",
+            "json_pointer": "/inputs/deterministic_sample_checks/1/milestones",
+            "note": "Deterministic sample check claims R2 is covered by M1 and M2.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "M6",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/5/exit_criteria/1",
+            "note": "M6 exit criteria includes AT2 (purely static output, loads without server runtime).",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "AT2 (output is purely static, loads without server runtime) passes."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "M6",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/5/deliverables/2",
+            "note": "Emit Plugin (C17) that writes pages/assets appears in M6, aligning more directly with AT2 than M1/M2.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Emit Plugin (C17) writing all pages and assets to output directory with configurable base URL/path prefix (R19)."
+          }
+        ],
+        "routing_target": "alignment_warnings"
+      },
+      {
+        "id": "TG3",
+        "severity": "high",
+        "summary": "Sample check for R3 maps to M1 and M2 with AT3, but the plan’s M2 exit criteria requires AT3 (one-to-one HTML page generation) even though page templating and emitting are planned for M6; this creates an internal trace inconsistency about when HTML pages actually get generated.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "R3",
+            "json_pointer": "/inputs/deterministic_sample_checks/2/milestones",
+            "note": "Deterministic sample check claims R3 is covered by M1 and M2.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "M2",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/1/exit_criteria/0",
+            "note": "M2 exit criteria claims AT3 passes (HTML page generation).",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "AT3 (one-to-one HTML page generation for non-excluded files) passes."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "M6",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/5/deliverables/0",
+            "note": "Theme/Template Plugin (C15) rendering per-note pages is planned for M6.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Theme/Template Plugin (C15) rendering per-note pages with tags, backlinks, and search UI."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "M6",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/5/deliverables/2",
+            "note": "Emit Plugin (C17) that writes pages/assets is planned for M6, suggesting HTML outputs are assembled/emitted there rather than in M2.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Emit Plugin (C17) writing all pages and assets to output directory with configurable base URL/path prefix (R19)."
+          }
+        ],
+        "routing_target": "alignment_warnings"
+      }
+    ]
+  }
+}

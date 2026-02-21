@@ -1,0 +1,58 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B2A_primary_v3",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:57:28.241482Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B2A_v3"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2A_v3",
+    "findings": [
+      {
+        "id": "TG-001",
+        "severity": "medium",
+        "summary": "Requirement R3 (Markdown to HTML parsing) is scheduled for implementation in Milestone M3, but the audit trace expects completion within Milestones M1/M2.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate",
+            "entity_id": "M3",
+            "json_pointer": "/plan_package/milestones/2/deliverables/1",
+            "note": "Milestone M3 deliverables include the Markdown render plugin and per-note HTML generation (R3/R4), enabling R3.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Markdown render plugin producing per-note HTML pages for all non-excluded notes (R3/R4)."
+          },
+          {
+            "artifact_ref": "plan_candidate",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/deliverables",
+            "note": "Milestone M2 deliverables are limited to core engine, ingestion (R1), and skeleton emission (R2), with no content rendering component.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "planner"
+      },
+      {
+        "id": "TG-002",
+        "severity": "low",
+        "summary": "Acceptance Tests AT1, AT2, and AT3 are scheduled for automated execution in Milestone M3, extending beyond the trace check's expected scope of Milestones M1/M2.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate",
+            "entity_id": "M3",
+            "json_pointer": "/plan_package/milestones/2/deliverables/2",
+            "note": "Milestone M3 (Validate) includes the automated runs for AT1, AT2, AT3.",
+            "candidate_id": "B2A",
+            "artifact_id": null,
+            "quote": "Automated runs of AT1, AT2, AT3, AT4, AT5, AT6 integrated into CI for the core pipeline."
+          }
+        ],
+        "routing_target": "planner"
+      }
+    ]
+  }
+}

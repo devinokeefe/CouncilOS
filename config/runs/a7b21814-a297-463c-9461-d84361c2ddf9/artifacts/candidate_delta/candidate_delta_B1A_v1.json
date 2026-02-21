@@ -1,0 +1,403 @@
+{
+  "artifact_type": "candidate_delta",
+  "artifact_id": "candidate_delta_B1A_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:35:54.948872Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "branch_set_v1"
+  ],
+  "payload": {
+    "candidate_id": "B1A",
+    "executive_summary": "This candidate delivers a monolithic CLI tool (O1) that turns a directory of Markdown notes into a fully static HTML/CSS/JS site with tags, backlinks, and client-side full-text search. Delivery follows a thin-slice plan: first produce a working build pipeline that renders notes to HTML and passes ingestion/build correctness tests, then incrementally add tags, link/backlink graphing, search, and final deployment/polish features. Key risks around link/tag conventions (K2/K3) are managed by making those conventions explicit configuration before implementing their dependent features, and by adding build-time reporting/warnings rather than failing builds by default.",
+    "architecture_choice": {
+      "option_id": "O1",
+      "rationale": "Choose O1 (custom monolithic CLI pipeline) because it satisfies the static-output constraint and all MUST requirements with the least upfront framework/API design, enabling fast iteration and thin-slice delivery. The single-process in-memory graph is appropriate for the confirmed near-term target (up to ~1,000 notes per R22) and keeps debugging straightforward while link/tag conventions are still being clarified (Q1/Q2).",
+      "high_level_dataflow": "CLI Orchestrator (C1) reads args/config -> Source Scanner & Front Matter Parser (C2) discovers .md files and parses per-file metadata -> Content Analyzer & Graph Builder (C3) extracts tags and internal links, resolves them to canonical note IDs, and computes backlinks -> Markdown Renderer (C4) converts Markdown to HTML (with sanitization policy) -> Template & Theme Renderer (C5) wraps rendered note content into per-note pages and generates site-level pages (home/all notes/tags) -> Search Index Builder (C6) builds a static index artifact -> Output Emitter (C7) writes HTML/assets/index into output -> Client-Side Runtime (C8) loads the index and provides in-browser search UI.",
+      "key_design_decisions": [
+        "DEC1",
+        "DEC2",
+        "DEC3",
+        "DEC4",
+        "DEC5",
+        "DEC6",
+        "DEC7",
+        "DEC8"
+      ]
+    },
+    "milestones": [
+      {
+        "id": "M1",
+        "name": "Thin slice: CLI skeleton + recursive Markdown ingestion + per-note HTML rendering",
+        "deliverables": [
+          {
+            "id": "DL1",
+            "text": "CLI command that accepts input directory and output directory, validates arguments, and runs an end-to-end build (R5)."
+          },
+          {
+            "id": "DL2",
+            "text": "Recursive discovery of .md files by default with an internal file manifest/report for discovered vs ignored files (R1)."
+          },
+          {
+            "id": "DL3",
+            "text": "CommonMark-compliant Markdown parsing and HTML generation for each non-excluded Markdown file (R3, R4)."
+          },
+          {
+            "id": "DL4",
+            "text": "Static site output directory containing only static assets (HTML/CSS/JS/JSON/images/fonts as needed) suitable for static hosting (R2)."
+          },
+          {
+            "id": "DL5",
+            "text": "Build error handling baseline: clear actionable messages for invalid input/config and readable per-file parse/render failures (R6)."
+          }
+        ],
+        "exit_criteria": [
+          "AT1–AT6 pass (R1–R6).",
+          "Build produces one HTML page per non-excluded Markdown file and no server/runtime dependencies are required to view pages.",
+          "Build produces a deterministic file list for a given input set (stable ordering in manifests/log output)."
+        ],
+        "depends_on": []
+      },
+      {
+        "id": "M2",
+        "name": "Tags: extraction + normalization + tags index/per-tag pages + tag navigation",
+        "deliverables": [
+          {
+            "id": "DL6",
+            "text": "Configurable tag extraction source(s) implemented for at least one convention (e.g., YAML front matter tags and/or inline #tags) (R11)."
+          },
+          {
+            "id": "DL7",
+            "text": "Tag normalization pipeline implemented (case/whitespace rules) and applied consistently across pages (R16)."
+          },
+          {
+            "id": "DL8",
+            "text": "Per-note tag display with each tag rendered as a navigable link (R12)."
+          },
+          {
+            "id": "DL9",
+            "text": "Tags index page plus per-tag pages listing associated notes (R13)."
+          },
+          {
+            "id": "DL10",
+            "text": "Tag extraction report (counts, normalization outcomes) to support debugging convention issues (mitigates K3)."
+          }
+        ],
+        "exit_criteria": [
+          "AT11–AT13 pass (R11–R13).",
+          "Tag pages are generated deterministically (stable tag ordering and stable note ordering per tag)."
+        ],
+        "depends_on": [
+          "M1"
+        ]
+      },
+      {
+        "id": "M3",
+        "name": "Links & graph: internal link resolution + backlinks section",
+        "deliverables": [
+          {
+            "id": "DL11",
+            "text": "Canonical note identifier/slug strategy defined and implemented (path-based by default) to support stable cross-references and collision handling (mitigates K10)."
+          },
+          {
+            "id": "DL12",
+            "text": "Internal link resolver for standard Markdown relative links to other notes; emitted HTML links navigate to the correct generated pages (R9)."
+          },
+          {
+            "id": "DL13",
+            "text": "Backlink computation and per-note backlinks section that links back to source notes (R10)."
+          },
+          {
+            "id": "DL14",
+            "text": "Link-graph diagnostics output (e.g., counts + unresolved targets list) to support convention debugging (mitigates K2/K9/K12)."
+          }
+        ],
+        "exit_criteria": [
+          "AT9–AT10 pass (R9–R10).",
+          "Backlink generation handles cycles without crashing/hanging (basic graph consistency check)."
+        ],
+        "depends_on": [
+          "M2"
+        ]
+      },
+      {
+        "id": "M4",
+        "name": "Search: build-time index generation + client-side search UI",
+        "deliverables": [
+          {
+            "id": "DL15",
+            "text": "Build-time search index artifact generated and shipped in output directory (R8)."
+          },
+          {
+            "id": "DL16",
+            "text": "Client-side search UI that loads the shipped index and supports searching titles and body text fully in-browser (R7)."
+          },
+          {
+            "id": "DL17",
+            "text": "Basic performance instrumentation/reporting for index size and query timing on fixture sets to inform R22 (mitigates K5)."
+          }
+        ],
+        "exit_criteria": [
+          "AT7–AT8 pass (R7–R8).",
+          "Search works with network disabled and returns results linking to note pages."
+        ],
+        "depends_on": [
+          "M3"
+        ]
+      },
+      {
+        "id": "M5",
+        "name": "Polish & compatibility: broken-link warnings, base URL, GFM extensions, browser QA",
+        "deliverables": [
+          {
+            "id": "DL18",
+            "text": "Broken-link handling: build-time warnings for unresolved internal links (with source context), do not fail build by default, and render unresolved links as clearly non-navigable (R18)."
+          },
+          {
+            "id": "DL19",
+            "text": "Base URL / path-prefix configuration applied consistently across generated links/assets to support subdirectory deployments (R19)."
+          },
+          {
+            "id": "DL20",
+            "text": "GFM extensions support plan implemented for the agreed subset (e.g., tables/strikethrough/task lists) and syntax highlighting behavior (R21)."
+          }
+        ],
+        "exit_criteria": [
+          "End-to-end acceptance run: AT1–AT14 pass in sequence.",
+          "Cross-browser check complete: site functions in stable Chrome/Firefox/Safari/Edge without JS errors blocking core functionality (R14).",
+          "Deployability spot-check: output works when hosted under a subdirectory base path."
+        ],
+        "depends_on": [
+          "M4"
+        ]
+      }
+    ],
+    "decision_log": [
+      {
+        "id": "DEC1",
+        "question": "Which architecture option should be implemented for the MVP static-site generator?",
+        "choice": "Implement O1 (custom monolithic CLI pipeline) as the initial architecture.",
+        "rationale": "O1 meets the static-only constraint and all MUST requirements with minimal up-front complexity and fastest path to a working end-to-end build. Given open questions around conventions (Q1/Q2), a single cohesive pipeline is easier to iterate on than a plugin API or multi-stage caching system.",
+        "alternatives_considered": [
+          "O2 (plugin-based core)",
+          "O3 (extend an existing SSG)",
+          "O4 (multi-stage pipeline with intermediate artifacts)"
+        ],
+        "what_would_change_this_decision": [
+          "If strong requirements emerge for third-party extensibility or multiple interchangeable Markdown/search backends (favor O2).",
+          "If watch mode/incremental builds become a primary requirement early (favor O4 or O3).",
+          "If the user already standardizes on an SSG ecosystem and wants to adopt its conventions/tooling (favor O3)."
+        ],
+        "evidence_pointers": []
+      },
+      {
+        "id": "DEC2",
+        "question": "What is the canonical note identifier used for output paths and link resolution?",
+        "choice": "Use a path-based canonical identifier derived from the note’s relative source path (with a deterministic slug/output-path mapping) and treat collisions as a build-time error or explicit disambiguation requirement.",
+        "rationale": "Path-based IDs are deterministic and avoid ambiguity from duplicate titles. This supports robust internal link resolution and stable URLs, and reduces overwrite risk (K10).",
+        "alternatives_considered": [
+          "Title-based slugs as the primary identifier",
+          "Content-hash-based identifiers",
+          "User-supplied explicit IDs in front matter"
+        ],
+        "what_would_change_this_decision": [
+          "If the note ecosystem relies primarily on title-based linking (e.g., wiki-links) and titles are guaranteed unique by convention.",
+          "If the user demands stable URLs independent of file paths (e.g., to preserve external links)."
+        ],
+        "evidence_pointers": []
+      },
+      {
+        "id": "DEC3",
+        "question": "What link syntaxes are required for MVP internal links and how should additional syntaxes be handled?",
+        "choice": "MVP MUST support standard Markdown relative links to other Markdown notes (R9). Additional syntaxes (e.g., wiki-links) are treated as configurable extensions (R15) and should not be enabled by default until conventions are confirmed (Q1).",
+        "rationale": "R9 requires standard relative Markdown link resolution end-to-end; expanding beyond that without Q1 confirmation increases ambiguity and broken-link risk (K2).",
+        "alternatives_considered": [
+          "Support wiki-links by default",
+          "Attempt to auto-detect link conventions without configuration",
+          "Support multiple link syntaxes concurrently without precedence rules"
+        ],
+        "what_would_change_this_decision": [
+          "Confirmed user requirement that wiki-links (or Obsidian-style variants) are the primary convention and must work for MVP.",
+          "Availability of a clear precedence and parsing spec from the user for mixed conventions."
+        ],
+        "evidence_pointers": []
+      },
+      {
+        "id": "DEC4",
+        "question": "How are tags extracted and normalized across the site?",
+        "choice": "Implement a configurable tag extraction mode (at least one convention for MVP per R11) plus a single normalization pipeline applied everywhere (R16).",
+        "rationale": "Tag conventions are a known blocker (Q2) and a high risk (K3). Making extraction explicit and normalization consistent prevents duplicated/fragmented tag pages and supports predictable navigation.",
+        "alternatives_considered": [
+          "Hard-code one convention without configuration",
+          "Treat tags as opaque strings with no normalization",
+          "Allow per-page ad hoc normalization behaviors"
+        ],
+        "what_would_change_this_decision": [
+          "If the user confirms a single unambiguous tag convention with strict rules and no need for configuration.",
+          "If the user requires preserving original tag casing/format exactly as authored, with normalization only for URLs."
+        ],
+        "evidence_pointers": []
+      },
+      {
+        "id": "DEC5",
+        "question": "What is the default behavior for unresolved internal links?",
+        "choice": "Default to build-time warnings (not failure), include source context in messages, and render unresolved links as clearly non-navigable output; optionally provide a stricter mode later (R18).",
+        "rationale": "This matches the SHOULD requirement for broken-link handling (R18) and mitigates K12 without disrupting builds for minor issues. It also supports iterative cleanup while conventions are refined.",
+        "alternatives_considered": [
+          "Fail the build on any unresolved link by default",
+          "Silently ignore unresolved links",
+          "Render unresolved links as normal links (leading to 404s)"
+        ],
+        "what_would_change_this_decision": [
+          "If the user intends to use this in CI/CD where broken links must block deployment by default.",
+          "If the note collection is expected to be fully consistent and strictness is preferred."
+        ],
+        "evidence_pointers": []
+      },
+      {
+        "id": "DEC6",
+        "question": "What is the default security posture for rendering Markdown that may contain raw HTML?",
+        "choice": "Default to disallowing or sanitizing raw HTML in Markdown output and ensure template escaping for all user-controlled strings; document the trust model (related to K7).",
+        "rationale": "Notes may contain content that becomes executable in a browser if rendered unsafely. A safe default reduces XSS risk while still allowing a controlled opt-in if needed, which aligns with the risk register (K7).",
+        "alternatives_considered": [
+          "Allow raw HTML passthrough by default",
+          "Strip all HTML aggressively without configurability",
+          "Rely on users to avoid unsafe content without sanitization"
+        ],
+        "what_would_change_this_decision": [
+          "If the user explicitly requires raw HTML support for trusted private notes and accepts the risk.",
+          "If the chosen Markdown renderer cannot safely sanitize and the project scope needs a different renderer or a strict HTML-escaping mode."
+        ],
+        "evidence_pointers": []
+      },
+      {
+        "id": "DEC7",
+        "question": "What search indexing approach should be used to satisfy fully static, client-side search?",
+        "choice": "Generate a build-time search index artifact (e.g., JSON-based corpus/index data) and ship it with the site; implement browser-side search that queries this artifact without server requests (R7, R8), with basic reporting for index size/performance (R22 guidance).",
+        "rationale": "This directly satisfies the static constraint and MUST requirements for client-side search and build-time index generation. It also provides an anchor for later optimizations (chunking/lazy loading) if K5 becomes acute.",
+        "alternatives_considered": [
+          "Server-side search",
+          "Rely on third-party hosted search services",
+          "No prebuilt index; fetch per-page content at query time"
+        ],
+        "what_would_change_this_decision": [
+          "If confirmed scale (Q3) makes a single shipped index impractically large, requiring chunking or a different representation.",
+          "If the user later accepts a non-static runtime (conflicts with constraints/non-goals)."
+        ],
+        "evidence_pointers": []
+      },
+      {
+        "id": "DEC8",
+        "question": "How should the generator handle deployments under subdirectories (base paths)?",
+        "choice": "Provide a base URL/path-prefix configuration and generate all internal URLs (note links, tag links, assets, search index fetch path) through a single URL-building helper to ensure consistency (R19).",
+        "rationale": "Subdirectory hosting is common and a frequent source of broken navigation/assets (K13). Centralizing URL generation reduces errors and simplifies testing across deployment targets.",
+        "alternatives_considered": [
+          "Hard-code root-relative URLs",
+          "Only support relative URLs everywhere with no configuration",
+          "Defer base path support entirely"
+        ],
+        "what_would_change_this_decision": [
+          "If the user confirms a single deployment target that is always root-hosted and does not require base paths.",
+          "If the user requires local file browsing (file://) as a primary target, which may require stricter relative-path behavior."
+        ],
+        "evidence_pointers": []
+      }
+    ],
+    "supplemental_evaluations": [
+      {
+        "title": "Thin-slice milestone alignment to MUST requirements and acceptance tests",
+        "notes": "Milestone 1 is scoped to lock in the end-to-end CLI build, static output, CommonMark rendering, and error handling (R1–R6) and immediately validates them via AT1–AT6. Milestones 2–4 add the remaining core MUST feature sets (tags, links/backlinks, search) and explicitly gate each via their mapped acceptance tests (AT7–AT13). Milestone 5 focuses on cross-browser QA (AT14) and key SHOULD items that materially affect real-world deployability and usability (R18–R21, R19).",
+        "evidence": []
+      }
+    ],
+    "synthesis_warnings": [
+      {
+        "id": "W1",
+        "severity": "high",
+        "summary": "Blocker convention questions remain unresolved (Q1 internal link syntax/precedence, Q2 tag conventions/normalization, Q4 information architecture, Q10 CLI vs other integration). These materially affect implementation details and test fixtures for links/tags/navigation and should be confirmed before or during Milestone 1–2 to avoid rework.",
+        "routing_target": "hitl.product_owner",
+        "evidence": [
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q1",
+            "json_pointer": "/project_capsule/open_questions/0",
+            "note": "Internal link conventions blocker.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q2",
+            "json_pointer": "/project_capsule/open_questions/1",
+            "note": "Tag conventions blocker.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q4",
+            "json_pointer": "/project_capsule/open_questions/3",
+            "note": "Information architecture blocker.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q10",
+            "json_pointer": "/project_capsule/open_questions/9",
+            "note": "CLI vs GUI/build integration blocker.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "W2",
+        "severity": "high",
+        "summary": "Security boundary decision is required for raw HTML handling and sanitization behavior because it affects XSS exposure (K7) and may trigger HITL policy review. This candidate assumes safe-by-default (sanitize/disallow raw HTML) but needs explicit approval if the user expects raw HTML passthrough.",
+        "routing_target": "hitl.security_reviewer",
+        "evidence": [
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K7",
+            "json_pointer": "/risk_gov/risk_register/6",
+            "note": "XSS/content injection risk.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      },
+      {
+        "id": "W3",
+        "severity": "medium",
+        "summary": "Scale/performance expectations are not fully confirmed (Q3). Search-index representation and client-side performance (R22, K5) may need adjustment (e.g., chunking/lazy loading) if the dataset is significantly larger or heavier than anticipated.",
+        "routing_target": "hitl.tech_lead",
+        "evidence": [
+          {
+            "artifact_ref": "capsule_canonical_v1",
+            "entity_id": "Q3",
+            "json_pointer": "/project_capsule/open_questions/2",
+            "note": "Scale blocker.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "risk_gov_canonical_v1",
+            "entity_id": "K5",
+            "json_pointer": "/risk_gov/risk_register/4",
+            "note": "Client-side search index size/performance risk.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ]
+      }
+    ]
+  }
+}

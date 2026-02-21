@@ -1,0 +1,13 @@
+pydantic<3,>=2.7
+typer<1,>=0.12
+pyyaml<7,>=6.0
+jsonpatch<2,>=1.33
+fastapi<1,>=0.111
+
+[dev]
+pytest<9,>=8.0
+mypy<2,>=1.10
+ruff<1,>=0.6
+black<25,>=24.0
+types-PyYAML>=6.0.12
+httpx<1,>=0.27

@@ -1,0 +1,216 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B2B_fallback_v3",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:58:39.059326Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B2B_v3"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2B_v3",
+    "findings": [
+      {
+        "id": "TG001",
+        "severity": "high",
+        "summary": "Requirement R1 maps to milestone M1 but M1 deliverables only include a skeleton ingestion plugin that discovers files without reading contents; full ingestion (reading file contents and parsing front matter) is deferred to M2, creating a gap in R1 coverage at M1 exit.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "R1",
+            "json_pointer": "/plan_package/requirements/0",
+            "note": "R1 requires recursive discovery of Markdown files.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "The system MUST accept a user-specified local directory path as input and recursively discover Markdown files"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/deliverables/4",
+            "note": "M1 DL5 delivers only a skeleton ingestion plugin with stub note records.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Skeleton Ingestion Plugin (C11) that discovers .md files recursively (R1) and populates the shared context with stub note records."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/deliverables/0",
+            "note": "M2 DL9 delivers full ingestion including file reading and front matter parsing.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Full Ingestion Plugin (C11) reading file contents, parsing YAML front matter, and populating shared context with complete note records"
+          }
+        ],
+        "routing_target": "plan_candidate_B2B_v3"
+      },
+      {
+        "id": "TG002",
+        "severity": "medium",
+        "summary": "Acceptance test AT1 is mapped to both M1 and M2, but AT1 pass criteria require discovery of exactly three .md files with a build log/manifest, which implies more than stub records; M1 exit criteria only verify partial AT1 (discovery), creating ambiguity in test ownership and exit gate.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "AT1",
+            "json_pointer": "/plan_package/acceptance_tests/0",
+            "note": "AT1 requires build log showing discovery of exactly three .md files.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Build completes successfully and the build log (or output manifest) shows discovery of exactly the three .md files"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/exit_criteria/3",
+            "note": "M1 exit criteria claim partial AT1 coverage (discovery only).",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Skeleton ingestion plugin discovers all .md files recursively in a test fixture (AT1 partial)."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/exit_criteria/0",
+            "note": "M2 exit criteria claim full AT1 coverage.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "All .md files in a nested test fixture are ingested with correct raw content and front matter (AT1)."
+          }
+        ],
+        "routing_target": "plan_candidate_B2B_v3"
+      },
+      {
+        "id": "TG003",
+        "severity": "high",
+        "summary": "Requirement R2 (static output only) is mapped to milestones M1 and M2, but M1 deliverables include only a skeleton emit plugin writing placeholder output (DL6), and M2 has no emit-related deliverables; full emit capability is delivered in M4 (DL24), creating a coverage gap for R2 at M1 and M2 exits.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "R2",
+            "json_pointer": "/plan_package/requirements/1",
+            "note": "R2 requires static-only output.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "The system MUST generate a static build output consisting only of HTML, CSS, JavaScript, and other static assets"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/deliverables/5",
+            "note": "M1 DL6 delivers only a skeleton emit plugin with placeholder output.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Skeleton Emit Plugin (C17) that writes placeholder output to the output directory to verify the full lifecycle executes end-to-end."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "M4",
+            "json_pointer": "/plan_package/milestones/3/deliverables/5",
+            "note": "M4 DL24 delivers full emit plugin writing HTML pages and static assets.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Emit Plugin (C17) fully writing HTML pages and static assets to output directory (R2)."
+          }
+        ],
+        "routing_target": "plan_candidate_B2B_v3"
+      },
+      {
+        "id": "TG004",
+        "severity": "medium",
+        "summary": "Acceptance test AT2 is mapped to milestones M1 and M2, but AT2 requires inspecting output directory for static assets only and serving the site, which cannot be satisfied until M4 when full emit and rendering are delivered; M1/M2 exit criteria do not reference AT2, creating a traceability gap.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "AT2",
+            "json_pointer": "/plan_package/acceptance_tests/1",
+            "note": "AT2 requires inspecting output for static assets and serving the site.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "All emitted files are static assets (e.g., .html, .css, .js, images, fonts, .json for search index)."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/exit_criteria",
+            "note": "M1 exit criteria do not mention AT2.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "M4",
+            "json_pointer": "/plan_package/milestones/3/exit_criteria/1",
+            "note": "M4 exit criteria reference AT2.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Output consists only of static HTML/CSS/JS assets (AT2)."
+          }
+        ],
+        "routing_target": "plan_candidate_B2B_v3"
+      },
+      {
+        "id": "TG005",
+        "severity": "high",
+        "summary": "Requirement R3 (parse Markdown and generate HTML for each file) is mapped to milestones M1 and M2, but Markdown rendering is not delivered until M4 (DL19); M1/M2 have no rendering deliverables, creating a coverage gap for R3 at M1 and M2 exits.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "R3",
+            "json_pointer": "/plan_package/requirements/2",
+            "note": "R3 requires parsing Markdown and generating HTML pages.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "The system MUST parse each discovered Markdown file using at least CommonMark-compliant syntax and generate a corresponding HTML page"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/deliverables",
+            "note": "M1 has no Markdown rendering deliverables.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "M4",
+            "json_pointer": "/plan_package/milestones/3/deliverables/0",
+            "note": "M4 DL19 delivers Markdown Render Plugin.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Markdown Render Plugin (C14) converting Markdown to HTML with CommonMark compliance"
+          }
+        ],
+        "routing_target": "plan_candidate_B2B_v3"
+      },
+      {
+        "id": "TG006",
+        "severity": "medium",
+        "summary": "Acceptance test AT3 is mapped to milestones M1 and M2, but AT3 requires counting generated HTML note pages and verifying one-to-one mapping, which cannot be satisfied until M4 when rendering and emit are complete; M1/M2 exit criteria reference partial AT3 but the partial scope is unclear.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "AT3",
+            "json_pointer": "/plan_package/acceptance_tests/2",
+            "note": "AT3 requires counting generated HTML pages.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "For each non-excluded input Markdown file, exactly one corresponding HTML page exists in output"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v3",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/exit_criteria/2",
+            "note": "M2 exit criteria claim partial AT3 coverage but rendering is not delivered until M4.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Excluded files/directories are skipped and do not appear in output (AT3 partial)."
+          }
+        ],
+        "routing_target": "plan_candidate_B2B_v3"
+      }
+    ]
+  }
+}

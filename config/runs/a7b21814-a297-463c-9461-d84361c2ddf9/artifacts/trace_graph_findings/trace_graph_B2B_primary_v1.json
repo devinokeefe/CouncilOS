@@ -1,0 +1,41 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B2B_primary_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:37:45.634213Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B2B_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2B_v1",
+    "findings": [
+      {
+        "id": "TG-001",
+        "severity": "medium",
+        "summary": "Trace graph sample check mismatch: Requirement R2 (Static Output) and Acceptance Test AT2 are mapped to Milestones M1/M2 in the sample check, but the plan deliverables and exit criteria explicitly place them in Milestone M4.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "DL21",
+            "json_pointer": "/plan_package/milestones/3/deliverables/3",
+            "note": "Deliverable DL21 in M4 explicitly claims coverage of R2 (Emit Plugin).",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Emit Plugin (C17) writing pages and static assets to output directory... (R2, R19, K13 mitigation)."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": null,
+            "json_pointer": "/plan_package/milestones/3/exit_criteria/0",
+            "note": "M4 exit criteria explicitly verifies AT2 (Static output check).",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "AT2 passes: output is purely static (HTML/CSS/JS), loads without server runtime."
+          }
+        ],
+        "routing_target": "plan_candidate_B2B_v1"
+      }
+    ]
+  }
+}

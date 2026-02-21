@@ -1,0 +1,67 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B2B_primary_v3",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:57:39.771583Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B2B_v3"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2B_v3",
+    "findings": [
+      {
+        "id": "TG-001",
+        "severity": "high",
+        "summary": "Requirement R2 (Static Output Generation) is not substantively addressed in Milestone M2, despite the specific compliance check expecting M2 coverage. The plan explicitly schedules the full static asset emission (DL24) in Milestone M4.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate",
+            "entity_id": "M2",
+            "json_pointer": "/milestones/1/deliverables",
+            "note": "M2 deliverables focus exclusively on ingestion, metadata, and exclusion. No output generation is listed.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate",
+            "entity_id": "DL24",
+            "json_pointer": "/milestones/3/deliverables/5",
+            "note": "R2 is explicitly claimed in M4 deliverables.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Emit Plugin (C17) fully writing HTML pages and static assets to output directory (R2)."
+          }
+        ],
+        "routing_target": "plan_candidate"
+      },
+      {
+        "id": "TG-002",
+        "severity": "high",
+        "summary": "Requirement R3 (Markdown to HTML Parsing) is not satisfied in Milestone M2, despite the compliance check expectation and a citation in DL9. DL9 only covers reading raw content; the actual Parsing and HTML generation defined in R3 is scheduled for Milestone M4 (DL19).",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate",
+            "entity_id": "DL9",
+            "json_pointer": "/milestones/1/deliverables/0",
+            "note": "DL9 in M2 cites R3 but only describes 'reading file contents' and 'populating shared context', not generating HTML.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Full Ingestion Plugin (C11) reading file contents ... including raw Markdown and metadata (R1, R3)."
+          },
+          {
+            "artifact_ref": "plan_candidate",
+            "entity_id": "DL19",
+            "json_pointer": "/milestones/3/deliverables/0",
+            "note": "The actual conversion to HTML required by R3 is defined in M4.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Markdown Render Plugin (C14) converting Markdown to HTML ... (R3, R4, R21)."
+          }
+        ],
+        "routing_target": "plan_candidate"
+      }
+    ]
+  }
+}

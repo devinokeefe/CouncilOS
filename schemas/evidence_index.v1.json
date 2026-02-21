@@ -3,40 +3,29 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "schema_version": {
-      "type": "string"
-    },
+    "schema_version": {"type": "string"},
     "meta": {
-      "type": "object"
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "plan_hash": {"type": "string"},
+        "milestone_id": {"type": "string"}
+      },
+      "required": ["plan_hash", "milestone_id"]
     },
     "expectations": {
       "type": "array",
       "items": {
         "type": "object",
+        "additionalProperties": false,
         "properties": {
-          "expectation_id": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string"
-          },
-          "evidence_refs": {
-            "type": "array",
-            "items": {
-              "type": "object"
-            }
-          }
+          "expectation_id": {"type": "string"},
+          "status": {"type": "string"},
+          "evidence_refs": {"type": "array", "items": {"type": "object"}}
         },
-        "required": [
-          "expectation_id",
-          "status"
-        ],
-        "additionalProperties": true
+        "required": ["expectation_id", "status", "evidence_refs"]
       }
     }
   },
-  "required": [
-    "schema_version",
-    "expectations"
-  ]
+  "required": ["schema_version", "meta", "expectations"]
 }

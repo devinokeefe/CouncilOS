@@ -8,6 +8,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from council_os.utils import deterministic_json_dumps, is_valid_json_pointer
+
 SCHEMA_VERSION = "1.0.0"
 
 ArtifactType = Literal[
@@ -58,27 +60,6 @@ Severity = Literal["low", "medium", "high", "critical"]
 
 class StrictModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
-
-
-def _is_valid_json_pointer(pointer: str) -> bool:
-    if pointer == "":
-        return True
-    if not pointer.startswith("/"):
-        return False
-    idx = 1
-    length = len(pointer)
-    while idx < length:
-        ch = pointer[idx]
-        if ch == "~":
-            if idx + 1 >= length:
-                return False
-            nxt = pointer[idx + 1]
-            if nxt not in {"0", "1"}:
-                return False
-            idx += 2
-            continue
-        idx += 1
-    return True
 
 
 class Constraint(StrictModel):
@@ -437,7 +418,7 @@ class EvidencePointer(StrictModel):
     @field_validator("json_pointer")
     @classmethod
     def _validate_json_pointer(cls, value: str) -> str:
-        if _is_valid_json_pointer(value):
+        if is_valid_json_pointer(value):
             return value
         raise ValueError("json_pointer must be a valid RFC 6901 JSON Pointer")
 
@@ -539,6 +520,7 @@ class PlanMeta(StrictModel):
 
     plan_id: UUID
     version: str = Field(pattern=r"^(v\d+|vFinal)$")
+    plan_version: int | None = None
     created_at: datetime
     source_run_id: UUID
     schema_version: str
@@ -832,10 +814,6 @@ class ArtifactEnvelope(StrictModel):
     source_run_id: UUID
     parents: list[str]
     payload: dict[str, Any]
-
-
-def deterministic_json_dumps(data: Any) -> str:
-    return json.dumps(data, sort_keys=True, separators=(",", ":"), default=str)
 
 
 def payload_model_for(artifact_type: ArtifactType) -> type[StrictModel]:

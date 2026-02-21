@@ -25,7 +25,8 @@ from council_os.orchestrator.feedback.schemas import (
     PlanReviewPacket,
 )
 from council_os.orchestrator.feedback.store import PlanningArtifactStore
-from council_os.orchestrator.feedback.utils import plan_hash, write_planning_artifact
+from council_os.handoff.hashing import plan_content_hash
+from council_os.orchestrator.feedback.utils import write_planning_artifact
 from council_os.orchestrator.feedback import event_log
 
 
@@ -85,13 +86,14 @@ def _build_review_packet(plan: dict[str, Any], plan_ref: str) -> PlanReviewPacke
         approve_keyword="APPROVE",
         how_to_give_feedback=[
             "Reference IDs like R-003, AT-004, A-002, Q-007",
+            "For vNext plans, reference IDs like REQ-001, WI-001, CHK-001/EXP-001, MS-001",
             "Or describe changes in plain text; the planner will normalize",
         ],
     )
     return PlanReviewPacket(
         schema_version="1.0",
         draft_plan_ref=plan_ref,
-        plan_hash=plan_hash(plan),
+        plan_hash=plan_content_hash(plan),
         high_attention=high_attention,
         open_questions=[str(q.get("id")) for q in open_questions if isinstance(q, dict) and q.get("id")],
         instructions=instructions,
@@ -142,7 +144,7 @@ def _normalize_feedback_items(
         return PlanFeedbackItems(schema_version="1.0", items=[])
     task = "Normalize feedback into anchored items tied to plan IDs."
     context = (
-        f"Plan hash: {plan_hash(plan)}\n"
+        f"Plan hash: {plan_content_hash(plan)}\n"
         f"Plan JSON:\n{plan}\n\n"
         f"Feedback:\n{feedback.model_dump()}"
     )
@@ -215,7 +217,7 @@ def run_plan_review_loop(
 
     if store.exists("plan_approval.json"):
         approval = PlanApproval.model_validate_json(store.path("plan_approval.json").read_text(encoding="utf-8"))
-        if approval.approved and approval.approved_plan_hash == plan_hash(plan):
+        if approval.approved and approval.approved_plan_hash == plan_content_hash(plan):
             return plan, approval
 
     while True:
@@ -245,7 +247,7 @@ def run_plan_review_loop(
         render = render_plan_review_markdown(plan)
         store.write_text(f"plan_review_render_v{round_idx}.md", render)
 
-        current_hash = plan_hash(plan)
+        current_hash = plan_content_hash(plan)
         feedback_resp = gate.request_response(
             gate_type="plan_review",
             request_artifact=f"plan_review_packet_v{round_idx}.json",

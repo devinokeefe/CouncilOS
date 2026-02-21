@@ -1,0 +1,271 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B1B_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:39:07.764715Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "trace_graph_B1B_primary_v1",
+    "trace_graph_B1B_anchor_v1",
+    "trace_graph_B1B_fallback_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B1B_v1",
+    "findings": [
+      {
+        "id": "TG-1",
+        "severity": "medium",
+        "summary": "Traceability Gap: Milestone M2 lacks regression verification for core requirements R1, R2, and R3, despite the audit sample explicitly mapping these requirements to this milestone.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "M2",
+            "json_pointer": "/plan_candidate/plan_package/milestones/1/exit_criteria",
+            "note": "Milestone M2 Exit Criteria only include tests for new tag features (AT11, AT12, AT13) and lack regression tests for input discovery (R1/AT1), static output (R2/AT2), and note page generation (R3/AT3), contrary to the audit sample which traces these requirements to M2.",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "[\"AT11 passes: tags extracted per configured convention...\", \"AT12 passes: each tag on a note page links...\", \"AT13 passes: tags index page lists all tags...\"]"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "M2",
+            "json_pointer": "/plan_candidate/plan_package/milestones/1/deliverables",
+            "note": "Milestone M2 deliverables modify the note page generation defined in R3 (by injecting tags via DL8) but do not explicitly cite R3 or R1/R2 as active requirements for this phase.",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "plan_candidate"
+      },
+      {
+        "id": "TG1",
+        "severity": "medium",
+        "summary": "Deterministic sample check for R1 maps the requirement to milestones [\"M1\",\"M2\"], but the plan’s explicit R1 delivery work is in M1; M2 deliverables do not mention Markdown file discovery. This looks like an over-broad or inaccurate milestone trace in the sample check.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "R1",
+            "json_pointer": "/deterministic_sample_checks/0/milestones",
+            "note": "Sample check milestone mapping for R1 includes M2",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_candidate/plan_package/milestones/0/deliverables",
+            "note": "M1 includes recursive .md file discovery explicitly tied to R1 (DL2)",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Recursive .md file discovery from the input directory (R1)"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "M2",
+            "json_pointer": "/plan_candidate/plan_package/milestones/1/deliverables",
+            "note": "M2 deliverables are tags-focused and do not reference file discovery / R1",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "trace_graph"
+      },
+      {
+        "id": "TG2",
+        "severity": "medium",
+        "summary": "Deterministic sample check for R2 maps the requirement to milestones [\"M1\",\"M2\"], but the plan’s explicit R2 delivery work is in M1; M2 deliverables do not mention static-only output constraints. This looks like an over-broad or inaccurate milestone trace in the sample check.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "R2",
+            "json_pointer": "/deterministic_sample_checks/1/milestones",
+            "note": "Sample check milestone mapping for R2 includes M2",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_candidate/plan_package/milestones/0/deliverables",
+            "note": "M1 includes static site output directory deliverable tied to R2 (DL4)",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Static site output directory containing one HTML page per note plus minimal CSS (R2)"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "M2",
+            "json_pointer": "/plan_candidate/plan_package/milestones/1/deliverables",
+            "note": "M2 deliverables are tags-focused and do not reference static-only output / R2",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "trace_graph"
+      },
+      {
+        "id": "TG3",
+        "severity": "high",
+        "summary": "R3/AT3 require the ability to exclude a Markdown file via configuration (\"not explicitly excluded by configuration\"; AT3 procedure uses an exclusion config), but M1 deliverables (where AT3 is an M1 exit criterion) do not include any exclusion/config capability. Exclusion appears later as M5 DL23 (R20 SHOULD). This creates a trace inconsistency: either M1 must deliver minimal exclusion/config to satisfy AT3/R3, or AT3/M1 exit criteria need adjustment.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "R3",
+            "json_pointer": "/plan_candidate/plan_package/requirements/2/text",
+            "note": "R3 references exclusion by configuration",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "generate a corresponding HTML page for every input Markdown file not explicitly excluded by configuration."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "AT3",
+            "json_pointer": "/plan_candidate/plan_package/acceptance_tests/2/procedure",
+            "note": "AT3 explicitly depends on a configuration that excludes one Markdown file",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Prepare a fixture with N Markdown files (N>=3) and a configuration that excludes one specific Markdown file."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_candidate/plan_package/milestones/0/exit_criteria",
+            "note": "M1 exit criteria includes AT3 passing",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "AT3 passes: one-to-one mapping of non-excluded .md files to HTML pages"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_candidate/plan_package/milestones/0/deliverables",
+            "note": "M1 deliverables list does not include any exclusion/config feature needed by AT3/R3",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "M5",
+            "json_pointer": "/plan_candidate/plan_package/milestones/4/deliverables/5/text",
+            "note": "Exclusion is deferred to M5 as a SHOULD (DL23 / R20 SHOULD), conflicting with AT3 in M1",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "File/directory exclusion via configuration or CLI option (R20 SHOULD)"
+          }
+        ],
+        "routing_target": "trace_graph"
+      },
+      {
+        "id": "TG001",
+        "severity": "medium",
+        "summary": "R1 milestone mapping includes M2 but M2 deliverables do not address file discovery; M1 fully satisfies R1",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "R1",
+            "json_pointer": "/plan_package/requirements/0",
+            "note": "R1 requires recursive .md discovery",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "recursively discover Markdown files, including all files with the \".md\" extension by default"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/deliverables/1",
+            "note": "M1 DL2 delivers recursive .md discovery",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "Recursive .md file discovery from the input directory (R1)"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/deliverables",
+            "note": "M2 deliverables focus on tags only, no file discovery work",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "trace_graph"
+      },
+      {
+        "id": "TG002",
+        "severity": "medium",
+        "summary": "R2 milestone mapping includes M2 but M2 deliverables do not address static output generation; M1 fully satisfies R2",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "R2",
+            "json_pointer": "/plan_package/requirements/1",
+            "note": "R2 requires static HTML/CSS/JS output",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "generate a static build output consisting only of HTML, CSS, JavaScript"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/deliverables/3",
+            "note": "M1 DL4 delivers static site output",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "Static site output directory containing one HTML page per note plus minimal CSS (R2)"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/deliverables",
+            "note": "M2 deliverables focus on tags only, no static output work",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "trace_graph"
+      },
+      {
+        "id": "TG003",
+        "severity": "medium",
+        "summary": "R3 milestone mapping includes M2 but M2 deliverables do not address Markdown parsing or HTML generation; M1 fully satisfies R3",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "R3",
+            "json_pointer": "/plan_package/requirements/2",
+            "note": "R3 requires CommonMark parsing and HTML generation",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "parse each discovered Markdown file using at least CommonMark-compliant syntax"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/deliverables/2",
+            "note": "M1 DL3 delivers CommonMark rendering",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "CommonMark-compliant Markdown-to-HTML rendering for each discovered note (R3, R4)"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/deliverables",
+            "note": "M2 deliverables focus on tags only, no Markdown parsing work",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "routing_target": "trace_graph"
+      }
+    ]
+  }
+}

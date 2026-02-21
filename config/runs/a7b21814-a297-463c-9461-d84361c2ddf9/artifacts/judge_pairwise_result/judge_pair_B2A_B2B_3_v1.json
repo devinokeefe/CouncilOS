@@ -1,0 +1,66 @@
+{
+  "artifact_type": "judge_pairwise_result",
+  "artifact_id": "judge_pair_B2A_B2B_3_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T11:06:03.483667Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B2A_v3",
+    "plan_candidate_B2B_v3"
+  ],
+  "payload": {
+    "comparison": {
+      "a": "Strong O2 plugin architecture with detailed decisions and acceptance tests for MUST requirements, plus explicit determinism and security-default considerations. Milestones are comprehensive but less directly committed to several SHOULD items (e.g., GFM/exclusions) as concrete deliverables.",
+      "b": "Clearer phased milestone plan (foundation then thin-slice plugins) with explicit exit criteria and inclusion of exclusions, GFM, and performance validation as concrete deliverables. Security governance is stronger/more explicit (pinning, sandboxing, reviews), though sandbox feasibility may depend on implementation stack."
+    },
+    "judge_id": "pairwise_judge",
+    "judge_model": "unspecified",
+    "winner": "b",
+    "scores": {
+      "feasibility": 7,
+      "testability": 8,
+      "governance": 8,
+      "architecture": 8,
+      "clarity": 8
+    },
+    "evidence": [
+      {
+        "artifact_ref": "plan_candidate_B2A_v3",
+        "entity_id": "M4",
+        "json_pointer": "/plan_package/milestones/3",
+        "note": "A includes explicit determinism + security validation deliverables and exit criteria.",
+        "candidate_id": "B2A",
+        "artifact_id": null,
+        "quote": "Deterministic build check: repeated builds of the same input produce identical outputs"
+      },
+      {
+        "artifact_ref": "plan_candidate_B2A_v3",
+        "entity_id": "DEC5",
+        "json_pointer": "/plan_package/decision_log/4",
+        "note": "A sets realistic default trust model and safe rendering defaults for XSS/template risks.",
+        "candidate_id": "B2A",
+        "artifact_id": null,
+        "quote": "Default to a safe rendering mode: disallow or sanitize raw HTML in Markdown"
+      },
+      {
+        "artifact_ref": "plan_candidate_B2B_v3",
+        "entity_id": "M1",
+        "json_pointer": "/plan_package/milestones/0",
+        "note": "B front-loads plugin API/engine/context with HITL approval before feature plugins.",
+        "candidate_id": "B2B",
+        "artifact_id": null,
+        "quote": "HITL review of plugin API contract completed and approved by Tech Lead."
+      },
+      {
+        "artifact_ref": "plan_candidate_B2B_v3",
+        "entity_id": "M6",
+        "json_pointer": "/plan_package/milestones/5",
+        "note": "B makes R20/R21 concrete deliverables with cross-browser validation in the same phase.",
+        "candidate_id": "B2B",
+        "artifact_id": null,
+        "quote": "File/directory exclusion support via config or CLI (R20)."
+      }
+    ],
+    "notes": "B2B is more closure-ready due to clearer phased execution with explicit exit criteria and more concrete coverage of key SHOULD items (exclusions, GFM, performance). Main caveat is that proposed sandboxing for user-provided plugins/templates may be non-trivial depending on chosen language/runtime."
+  }
+}

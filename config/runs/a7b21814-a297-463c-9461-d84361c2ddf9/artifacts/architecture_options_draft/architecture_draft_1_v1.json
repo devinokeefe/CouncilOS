@@ -1,0 +1,591 @@
+{
+  "artifact_type": "architecture_options_draft",
+  "artifact_id": "architecture_draft_1_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:26:10.269349Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "capsule_canonical_v1"
+  ],
+  "payload": {
+    "options": [
+      {
+        "id": "OPT_A1",
+        "summary": "Monolithic CLI pipeline – a single Node.js CLI application with an in-process pipeline that reads Markdown, builds a link/tag graph, renders HTML with templates, generates a client-side search index, and writes the output directory. All stages run sequentially in one process.",
+        "components": [
+          {
+            "id": "CMP_A1",
+            "name": "CLI Entry Point",
+            "responsibilities": [
+              "Parse command-line arguments (source dir, output dir, config file path)",
+              "Load configuration and validate inputs",
+              "Orchestrate the build pipeline stages in order",
+              "Report errors and build summary"
+            ]
+          },
+          {
+            "id": "CMP_A2",
+            "name": "Markdown Ingestion Module",
+            "responsibilities": [
+              "Recursively scan source directory for .md files",
+              "Read file contents and extract YAML front matter (title, tags, metadata)",
+              "Normalize file identifiers (slug from filename) for cross-referencing"
+            ]
+          },
+          {
+            "id": "CMP_A3",
+            "name": "Link & Tag Graph Builder",
+            "responsibilities": [
+              "Parse each note's body for internal links (Markdown links and wiki-links)",
+              "Build a directed graph of note-to-note references",
+              "Compute backlinks (reverse edges) for every note",
+              "Collect and normalize tags from front matter and inline hashtags",
+              "Produce a structured NoteGraph object consumed by downstream stages"
+            ]
+          },
+          {
+            "id": "CMP_A4",
+            "name": "Markdown Renderer",
+            "responsibilities": [
+              "Convert Markdown AST to HTML using a configurable Markdown-it (or unified/remark) pipeline",
+              "Support syntax highlighting for code blocks",
+              "Inject backlinks section and tag list into each note's HTML"
+            ]
+          },
+          {
+            "id": "CMP_A5",
+            "name": "Template Engine",
+            "responsibilities": [
+              "Render note pages, tag index pages, home page, and all-notes page using HTML templates (e.g., Nunjucks/EJS)",
+              "Accept theme/layout configuration",
+              "Produce final HTML strings per page"
+            ]
+          },
+          {
+            "id": "CMP_A6",
+            "name": "Search Index Generator",
+            "responsibilities": [
+              "Build a client-side search index (e.g., Lunr.js or FlexSearch) from note titles and body text",
+              "Serialize the index to a JSON file included in the output"
+            ]
+          },
+          {
+            "id": "CMP_A7",
+            "name": "Output Writer",
+            "responsibilities": [
+              "Write generated HTML, CSS, JS, and search index to the output directory",
+              "Copy static assets (images, fonts)",
+              "Generate sitemap or manifest if configured"
+            ]
+          },
+          {
+            "id": "CMP_A8",
+            "name": "Client-Side Search UI",
+            "responsibilities": [
+              "Load the prebuilt search index in the browser",
+              "Provide a search input with instant results overlay",
+              "Link results to note pages"
+            ]
+          }
+        ],
+        "interfaces": [
+          {
+            "id": "IF_A1",
+            "from": "CMP_A1",
+            "to": "CMP_A2",
+            "contract": "Passes validated config object containing sourceDirPath, outputDirPath, and options map."
+          },
+          {
+            "id": "IF_A2",
+            "from": "CMP_A2",
+            "to": "CMP_A3",
+            "contract": "Returns NoteFile[] where each entry has slug, rawMarkdown, frontMatter (tags, title), and filePath."
+          },
+          {
+            "id": "IF_A3",
+            "from": "CMP_A3",
+            "to": "CMP_A4",
+            "contract": "Returns NoteGraph containing Map<slug, NoteNode> with fields: slug, title, tags[], outLinks[], backLinks[], rawMarkdown."
+          },
+          {
+            "id": "IF_A4",
+            "from": "CMP_A4",
+            "to": "CMP_A5",
+            "contract": "Returns RenderedNote[] each with slug, htmlContent, tags[], backLinks[], title."
+          },
+          {
+            "id": "IF_A5",
+            "from": "CMP_A3",
+            "to": "CMP_A6",
+            "contract": "Provides NoteGraph (titles + body text) for index construction."
+          },
+          {
+            "id": "IF_A6",
+            "from": "CMP_A5",
+            "to": "CMP_A7",
+            "contract": "Returns PageOutput[] each with relativePath and htmlString, plus list of static asset paths."
+          },
+          {
+            "id": "IF_A7",
+            "from": "CMP_A6",
+            "to": "CMP_A7",
+            "contract": "Returns serialized search index JSON blob to be written to output directory."
+          },
+          {
+            "id": "IF_A8",
+            "from": "CMP_A7",
+            "to": "CMP_A8",
+            "contract": "Browser loads search-index.json via HTTP GET; CMP_A8 is bundled JS included in every page."
+          }
+        ],
+        "tradeoffs": {
+          "pros": [
+            "Simple to build, test, and debug as a single process",
+            "No external dependencies beyond Node.js and npm packages",
+            "Easy to distribute as a single npm package or binary",
+            "Straightforward incremental-build extension (add file-hash caching layer later)",
+            "Low latency build for small-to-medium note sets"
+          ],
+          "cons": [
+            "All logic coupled in one codebase; harder to swap individual stages independently",
+            "Single-threaded by default; large note sets (10k+) may see slow builds without worker threads",
+            "Tightly coupled to Node.js ecosystem; harder for non-JS developers to extend",
+            "Template and renderer choices baked in; switching requires code changes"
+          ]
+        },
+        "risks": [
+          "Performance may degrade with very large note collections (>5k notes) without parallelization or incremental builds",
+          "Tight coupling between graph builder and renderer may complicate future plugin architecture",
+          "Client-side search index size may become prohibitive for very large corpora, impacting page load"
+        ]
+      },
+      {
+        "id": "OPT_A2",
+        "summary": "Plugin-based static site generator architecture – a lightweight core orchestrator exposes a plugin API with defined hook points (ingest, transform, render, emit). Each concern (Markdown parsing, link resolution, tag extraction, search indexing, theming) is a separate plugin. Enables community/user extensibility.",
+        "components": [
+          {
+            "id": "CMP_A20",
+            "name": "Core Orchestrator",
+            "responsibilities": [
+              "Load configuration and discover/register plugins",
+              "Define build lifecycle hooks: onIngest, onTransform, onRender, onEmit",
+              "Execute hooks in defined order, passing a shared BuildContext",
+              "Provide plugin API for registering hooks and accessing shared state"
+            ]
+          },
+          {
+            "id": "CMP_A21",
+            "name": "File Ingestion Plugin",
+            "responsibilities": [
+              "Scan source directory for Markdown files",
+              "Read contents and emit NoteFile objects into BuildContext"
+            ]
+          },
+          {
+            "id": "CMP_A22",
+            "name": "Front Matter & Tag Plugin",
+            "responsibilities": [
+              "Parse YAML front matter from each note",
+              "Extract and normalize tags (front matter + inline hashtags)",
+              "Attach metadata to each NoteFile in BuildContext"
+            ]
+          },
+          {
+            "id": "CMP_A23",
+            "name": "Link Resolution & Backlink Plugin",
+            "responsibilities": [
+              "Detect internal links (Markdown links, wiki-links) in note bodies",
+              "Resolve link targets to note slugs",
+              "Build forward and backward link maps in BuildContext"
+            ]
+          },
+          {
+            "id": "CMP_A24",
+            "name": "Markdown Render Plugin",
+            "responsibilities": [
+              "Convert Markdown to HTML using configurable parser (markdown-it, remark, etc.)",
+              "Apply syntax highlighting for code blocks",
+              "Store rendered HTML in BuildContext per note"
+            ]
+          },
+          {
+            "id": "CMP_A25",
+            "name": "Theme / Template Plugin",
+            "responsibilities": [
+              "Provide HTML templates for note pages, tag pages, index pages",
+              "Render final HTML from BuildContext data using a template engine",
+              "Support user-supplied theme overrides"
+            ]
+          },
+          {
+            "id": "CMP_A26",
+            "name": "Search Index Plugin",
+            "responsibilities": [
+              "Build client-side search index from BuildContext note data",
+              "Emit index file to output"
+            ]
+          },
+          {
+            "id": "CMP_A27",
+            "name": "Emit Plugin",
+            "responsibilities": [
+              "Write all generated pages, assets, and index files to output directory",
+              "Handle base URL rewriting for deployment targets"
+            ]
+          },
+          {
+            "id": "CMP_A28",
+            "name": "Client-Side Runtime",
+            "responsibilities": [
+              "Search UI: load index, render results",
+              "Backlink navigation and tag filtering in the browser"
+            ]
+          }
+        ],
+        "interfaces": [
+          {
+            "id": "IF_A20",
+            "from": "CMP_A20",
+            "to": "CMP_A21",
+            "contract": "Orchestrator invokes onIngest hook; plugin writes NoteFile[] to BuildContext.notes."
+          },
+          {
+            "id": "IF_A21",
+            "from": "CMP_A20",
+            "to": "CMP_A22",
+            "contract": "Orchestrator invokes onTransform hook; plugin reads BuildContext.notes, mutates each note's metadata field in place."
+          },
+          {
+            "id": "IF_A22",
+            "from": "CMP_A20",
+            "to": "CMP_A23",
+            "contract": "Orchestrator invokes onTransform hook (after CMP_A22); plugin reads note bodies, writes BuildContext.linkGraph (Map<slug, {outLinks, backLinks}>)."
+          },
+          {
+            "id": "IF_A23",
+            "from": "CMP_A20",
+            "to": "CMP_A24",
+            "contract": "Orchestrator invokes onRender hook; plugin reads rawMarkdown from BuildContext.notes, writes htmlContent per note."
+          },
+          {
+            "id": "IF_A24",
+            "from": "CMP_A20",
+            "to": "CMP_A25",
+            "contract": "Orchestrator invokes onRender hook (after CMP_A24); plugin reads htmlContent, linkGraph, tags and produces final PageOutput[] in BuildContext.pages."
+          },
+          {
+            "id": "IF_A25",
+            "from": "CMP_A20",
+            "to": "CMP_A26",
+            "contract": "Orchestrator invokes onRender hook; plugin reads BuildContext.notes titles/bodies and writes searchIndex blob to BuildContext.assets."
+          },
+          {
+            "id": "IF_A26",
+            "from": "CMP_A20",
+            "to": "CMP_A27",
+            "contract": "Orchestrator invokes onEmit hook; plugin reads BuildContext.pages and BuildContext.assets, writes to disk."
+          },
+          {
+            "id": "IF_A27",
+            "from": "CMP_A27",
+            "to": "CMP_A28",
+            "contract": "Static files served to browser; CMP_A28 fetches search-index.json at runtime."
+          }
+        ],
+        "tradeoffs": {
+          "pros": [
+            "Highly extensible: users and contributors can add/replace plugins without modifying core",
+            "Separation of concerns makes individual plugins easier to test in isolation",
+            "Supports multiple Markdown flavors and template engines via plugin swap",
+            "Community can contribute plugins (e.g., graph visualization, RSS feed)",
+            "Easier to implement incremental builds as a plugin"
+          ],
+          "cons": [
+            "Higher upfront design and implementation effort for the plugin API",
+            "Plugin ordering and inter-plugin dependencies add complexity",
+            "Debugging build issues may be harder due to indirection through hooks",
+            "Potential performance overhead from hook dispatch and shared mutable BuildContext",
+            "Requires good documentation for plugin authors"
+          ]
+        },
+        "risks": [
+          "Plugin API design may need breaking changes as new use cases emerge, causing ecosystem churn",
+          "Shared mutable BuildContext can lead to subtle bugs if plugins mutate state unexpectedly",
+          "Plugin discovery and version compatibility management adds maintenance burden"
+        ]
+      },
+      {
+        "id": "OPT_A3",
+        "summary": "Python-based CLI with decoupled processing stages – uses Python (with libraries like markdown-it-py or mistune for Markdown, Jinja2 for templates, and Whoosh or a custom inverted-index builder for search). Each stage is a standalone Python module invoked by a CLI driver. Targets users already in a Python ecosystem.",
+        "components": [
+          {
+            "id": "CMP_A30",
+            "name": "CLI Driver (Click/Typer)",
+            "responsibilities": [
+              "Parse CLI arguments and load YAML/TOML config",
+              "Orchestrate pipeline: ingest → graph → render → search → emit",
+              "Provide watch mode via filesystem polling or watchdog library",
+              "Report build statistics and errors"
+            ]
+          },
+          {
+            "id": "CMP_A31",
+            "name": "Ingestion Module",
+            "responsibilities": [
+              "Walk source directory tree for .md files",
+              "Parse YAML front matter using python-frontmatter",
+              "Return list of NoteRecord dataclass instances"
+            ]
+          },
+          {
+            "id": "CMP_A32",
+            "name": "Graph Module",
+            "responsibilities": [
+              "Scan note bodies for internal links (regex + AST-based detection)",
+              "Build networkx or custom adjacency-list graph",
+              "Compute backlinks via graph transpose",
+              "Extract and normalize tags"
+            ]
+          },
+          {
+            "id": "CMP_A33",
+            "name": "Render Module",
+            "responsibilities": [
+              "Convert Markdown to HTML (markdown-it-py / mistune)",
+              "Inject backlinks and tag sections into note HTML",
+              "Support code syntax highlighting via Pygments"
+            ]
+          },
+          {
+            "id": "CMP_A34",
+            "name": "Template Module",
+            "responsibilities": [
+              "Use Jinja2 to render page layouts (note, tag index, home, all-notes)",
+              "Accept user-provided template overrides directory",
+              "Generate navigation and breadcrumb HTML"
+            ]
+          },
+          {
+            "id": "CMP_A35",
+            "name": "Search Index Builder",
+            "responsibilities": [
+              "Tokenize and stem note text",
+              "Build a JSON search index compatible with Lunr.js (via lunr.py or custom builder)",
+              "Write index to output directory"
+            ]
+          },
+          {
+            "id": "CMP_A36",
+            "name": "Output Emitter",
+            "responsibilities": [
+              "Write HTML pages, CSS, JS, and search index to output directory",
+              "Copy static assets",
+              "Optionally run post-processing (HTML minification)"
+            ]
+          },
+          {
+            "id": "CMP_A37",
+            "name": "Client-Side Search UI",
+            "responsibilities": [
+              "Load Lunr.js index in browser",
+              "Render search results with links to note pages"
+            ]
+          }
+        ],
+        "interfaces": [
+          {
+            "id": "IF_A30",
+            "from": "CMP_A30",
+            "to": "CMP_A31",
+            "contract": "CLI calls ingest(source_dir: Path) → List[NoteRecord] where NoteRecord has slug, raw_md, front_matter dict, file_path."
+          },
+          {
+            "id": "IF_A31",
+            "from": "CMP_A31",
+            "to": "CMP_A32",
+            "contract": "Graph module receives List[NoteRecord], returns NoteGraph dataclass with nodes dict and edges (forward_links, back_links per slug), plus tags_map: Dict[tag, List[slug]]."
+          },
+          {
+            "id": "IF_A32",
+            "from": "CMP_A32",
+            "to": "CMP_A33",
+            "contract": "Render module receives NoteGraph, returns List[RenderedNote] with slug, html_content, tags, back_links."
+          },
+          {
+            "id": "IF_A33",
+            "from": "CMP_A33",
+            "to": "CMP_A34",
+            "contract": "Template module receives List[RenderedNote] plus tags_map and site config, returns List[PageOutput] with relative_path and html_string."
+          },
+          {
+            "id": "IF_A34",
+            "from": "CMP_A31",
+            "to": "CMP_A35",
+            "contract": "Search builder receives List[NoteRecord] (titles + bodies), outputs search_index.json bytes."
+          },
+          {
+            "id": "IF_A35",
+            "from": "CMP_A34",
+            "to": "CMP_A36",
+            "contract": "Emitter receives List[PageOutput] and search_index bytes, writes all to output_dir."
+          },
+          {
+            "id": "IF_A36",
+            "from": "CMP_A36",
+            "to": "CMP_A37",
+            "contract": "Browser fetches search-index.json; CMP_A37 is bundled JS served with the site."
+          }
+        ],
+        "tradeoffs": {
+          "pros": [
+            "Leverages rich Python ecosystem (markdown-it-py, Jinja2, Pygments, networkx)",
+            "Familiar to users who already use Python-based tooling",
+            "Jinja2 templates are widely known and easy to customize",
+            "Easy to package as a pip-installable CLI tool",
+            "networkx provides robust graph operations for backlink analysis"
+          ],
+          "cons": [
+            "Python build performance is slower than Node.js for large file I/O and string processing",
+            "Client-side search still requires JavaScript, so the project spans two languages",
+            "Smaller ecosystem for static-site-specific tooling compared to Node.js",
+            "Watch mode and live reload require additional libraries (watchdog + livereload)",
+            "Distribution as a standalone binary is harder than with Node.js (requires pyinstaller or similar)"
+          ]
+        },
+        "risks": [
+          "Python Markdown libraries may not support all GFM extensions out of the box, requiring custom plugins",
+          "Generating a Lunr.js-compatible index from Python requires careful compatibility testing",
+          "Build times for 1000+ notes may be noticeably slower than Node.js alternatives without multiprocessing"
+        ]
+      },
+      {
+        "id": "OPT_A4",
+        "summary": "Extend an existing SSG (e.g., Eleventy/11ty) via custom plugins and data pipeline – rather than building from scratch, configure Eleventy as the core engine and implement backlinks, tag pages, and search as Eleventy plugins and data files. Minimizes custom code by leveraging a battle-tested SSG.",
+        "components": [
+          {
+            "id": "CMP_A40",
+            "name": "Eleventy Core (External Dependency)",
+            "responsibilities": [
+              "Provide static site generation engine with template rendering, collections, and pagination",
+              "Handle file watching and dev server",
+              "Process Markdown files with configurable Markdown library"
+            ]
+          },
+          {
+            "id": "CMP_A41",
+            "name": "Eleventy Configuration Module",
+            "responsibilities": [
+              "Define .eleventy.js configuration: input/output dirs, Markdown library setup, template formats",
+              "Register custom collections (allNotes, taggedNotes)",
+              "Register shortcodes and filters for backlinks and tag rendering"
+            ]
+          },
+          {
+            "id": "CMP_A42",
+            "name": "Backlinks Data Plugin",
+            "responsibilities": [
+              "Run as an Eleventy beforeBuild event handler or computed data function",
+              "Scan all note content for internal links (wiki-links and Markdown links)",
+              "Compute backlinks map and inject into each note's data cascade"
+            ]
+          },
+          {
+            "id": "CMP_A43",
+            "name": "Tag Pages Generator",
+            "responsibilities": [
+              "Use Eleventy pagination to auto-generate a page per tag",
+              "Provide tag index page listing all tags with counts",
+              "Leverage Eleventy's built-in tags collection with custom filtering"
+            ]
+          },
+          {
+            "id": "CMP_A44",
+            "name": "Search Index Build Step",
+            "responsibilities": [
+              "Implement as an Eleventy afterBuild event or a custom transform",
+              "Read rendered content, tokenize, and build a Lunr.js / Pagefind index",
+              "Write index file(s) to output directory"
+            ]
+          },
+          {
+            "id": "CMP_A45",
+            "name": "Theme / Layout Templates",
+            "responsibilities": [
+              "Provide Nunjucks/Liquid templates for note page, tag page, home page, all-notes page",
+              "Include search UI component in base layout",
+              "Style with CSS (custom or a CSS framework)"
+            ]
+          },
+          {
+            "id": "CMP_A46",
+            "name": "Client-Side Runtime",
+            "responsibilities": [
+              "Search UI using Lunr.js or Pagefind JS widget",
+              "Interactive backlink/tag navigation"
+            ]
+          }
+        ],
+        "interfaces": [
+          {
+            "id": "IF_A40",
+            "from": "CMP_A41",
+            "to": "CMP_A40",
+            "contract": "Configuration module exports a function that receives eleventyConfig and registers plugins, collections, filters, and shortcodes."
+          },
+          {
+            "id": "IF_A41",
+            "from": "CMP_A42",
+            "to": "CMP_A40",
+            "contract": "Plugin registers eleventyConfig.addGlobalData('backlinks', async () => backlinksMap) or uses computed data; Eleventy merges into template data."
+          },
+          {
+            "id": "IF_A42",
+            "from": "CMP_A43",
+            "to": "CMP_A40",
+            "contract": "Tag pages defined as a template with pagination: { data: 'collections', size: 1, alias: 'tag' }; Eleventy generates one page per tag."
+          },
+          {
+            "id": "IF_A43",
+            "from": "CMP_A44",
+            "to": "CMP_A40",
+            "contract": "Registers eleventyConfig.on('eleventy.after', async () => buildSearchIndex(outputDir)); writes search-index.json to output."
+          },
+          {
+            "id": "IF_A44",
+            "from": "CMP_A40",
+            "to": "CMP_A45",
+            "contract": "Eleventy passes merged data (note content, backlinks, tags, collections) to templates; templates render final HTML."
+          },
+          {
+            "id": "IF_A45",
+            "from": "CMP_A40",
+            "to": "CMP_A46",
+            "contract": "Generated static files served to browser; CMP_A46 JS loaded in pages fetches search index."
+          }
+        ],
+        "tradeoffs": {
+          "pros": [
+            "Minimal custom code; leverages Eleventy's mature, well-documented SSG features",
+            "Built-in dev server, watch mode, and incremental builds out of the box",
+            "Large community and plugin ecosystem for additional features (RSS, sitemap, image optimization)",
+            "Battle-tested Markdown processing and template rendering",
+            "Easy to adopt Pagefind for search (zero-config, excellent performance)"
+          ],
+          "cons": [
+            "Tightly coupled to Eleventy's architecture and release cycle",
+            "Wiki-link support and backlinks require custom logic not native to Eleventy",
+            "Less control over build internals; debugging may require understanding Eleventy's data cascade",
+            "Harder to distribute as a standalone tool; users must install Node.js and npm dependencies",
+            "Eleventy version upgrades may break custom plugins"
+          ]
+        },
+        "risks": [
+          "Eleventy API changes in major versions could break backlinks plugin and custom configuration",
+          "Wiki-link parsing in Markdown-it requires a community plugin (markdown-it-wikilinks) that may lag behind or be unmaintained",
+          "Pagefind or Lunr.js integration as a post-build step may not cover all search requirements without customization",
+          "Users unfamiliar with Eleventy's data cascade may find customization confusing"
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,103 @@
+{
+  "artifact_type": "trace_graph_findings",
+  "artifact_id": "trace_graph_B1B_anchor_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:10:20.909014Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "plan_candidate_B1B_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B1B_v1",
+    "findings": [
+      {
+        "id": "TG001",
+        "severity": "medium",
+        "summary": "Deterministic sample checks for R1–R3 list milestones [\"M1\",\"M2\"], but the plan’s M2 milestone scope is forward links/backlinks; there is no explicit additional implementation/verification of R1–R3 in M2 beyond what is already gated in M1. This milestone mapping may be misleading unless M2 is intended as an explicit regression re-check milestone for these requirements.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "R1",
+            "json_pointer": "/inputs/deterministic_sample_checks/0/milestones",
+            "note": "Sample check includes M2 for R1",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "[\"M1\",\"M2\"]"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "R2",
+            "json_pointer": "/inputs/deterministic_sample_checks/1/milestones",
+            "note": "Sample check includes M2 for R2",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "[\"M1\",\"M2\"]"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "R3",
+            "json_pointer": "/inputs/deterministic_sample_checks/2/milestones",
+            "note": "Sample check includes M2 for R3",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "[\"M1\",\"M2\"]"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "M1",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/0/deliverables/4/text",
+            "note": "M1 explicitly includes acceptance tests covering AT1/AT2/AT3 (R1/R2/R3)",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "Fixture-based acceptance tests for AT1, AT2, AT3, AT4, AT13."
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "M2",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/1/name",
+            "note": "M2 is scoped to forward links/backlinks",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "Forward Links & Backlinks"
+          }
+        ],
+        "routing_target": "trace_graph_alignment"
+      },
+      {
+        "id": "TG002",
+        "severity": "high",
+        "summary": "Sample check for R3 (Markdown parse/render fidelity) does not reflect the dependency on resolving Q1 (Markdown flavor/link syntax). The plan treats Q1 as blocking before M1 work begins; without capturing this dependency in the trace sample, R3 may be treated as schedulable/verifiable before its specification prerequisite is resolved.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "R3",
+            "json_pointer": "/inputs/deterministic_sample_checks/2",
+            "note": "R3 sample check lacks explicit dependency on Q1",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "Q1",
+            "json_pointer": "/inputs/plan_candidate/plan_package/project_capsule/open_questions/0/text",
+            "note": "Q1 is blocking and includes Markdown flavor decision affecting rendering expectations",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "What Markdown flavor and internal link syntax should be supported for links/backlinks (CommonMark/GFM; standard Markdown links, Obsidian-style [[WikiLinks]], both)?"
+          },
+          {
+            "artifact_ref": "plan_candidate_B1B_v1",
+            "entity_id": "M1",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/0/exit_criteria/6",
+            "note": "Plan gates milestone work on resolving Q1/Q2 first",
+            "candidate_id": "B1B",
+            "artifact_id": null,
+            "quote": "Blocking questions Q1 and Q2 resolved and documented before milestone work begins."
+          }
+        ],
+        "routing_target": "hitl_gate"
+      }
+    ]
+  }
+}

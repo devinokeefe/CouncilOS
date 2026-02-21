@@ -1,0 +1,733 @@
+{
+  "artifact_type": "triage_report",
+  "artifact_id": "triage_B2B_v2",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T10:50:37.934938Z",
+  "source_run_id": "a7b21814-a297-463c-9461-d84361c2ddf9",
+  "parents": [
+    "plan_candidate_B2B_v2",
+    "validator_B2B_v2"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2B_v2",
+    "critic_id": "MERGED",
+    "verdict": "reject",
+    "defects": [
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "ID integrity hard-gate failure: architecture option risk references are treated as IDs but do not resolve to any risk entities. Fix likely requires either (a) adding missing risk IDs to the risk register (needs new non-T IDs) or (b) changing the reference model.",
+        "evidence": [
+          {
+            "artifact_ref": "validator_report",
+            "entity_id": null,
+            "json_pointer": "/checks/1",
+            "note": "id_integrity check fails with multiple 'references missing risk' violations under /plan_package/architecture/options.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Option O2 references missing risk Plugin API and data model may evolve, causing breaking changes and ecosystem churn"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "O2",
+            "json_pointer": "/plan_package/architecture/options/1/risks",
+            "note": "Architecture option risks are present as free-text strings, triggering missing-ID reference checks.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": [
+          {
+            "recommendation": "reroute",
+            "target": "risk_gov_canonical",
+            "reason": "Repair requires adding/aligning risk entities (non-T IDs) so architecture option risk references can be valid, or updating the canonical reference rules."
+          }
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Risk closure hard-gate failure: critical risk K8 has no mitigation/closure recorded (null mitigation; acceptance also null), despite the plan claiming mitigation via M1/DL6 and DEC3. This breaks traceability and violates risk_closure gate.",
+        "evidence": [
+          {
+            "artifact_ref": "validator_report",
+            "entity_id": null,
+            "json_pointer": "/checks/4/violations/0",
+            "note": "risk_closure check failure.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Risk K8 missing closure"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "K8",
+            "json_pointer": "/plan_package/risk_register/7/mitigation",
+            "note": "K8 mitigation is null in the plan copy.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "DL6",
+            "json_pointer": "/plan_package/milestones/0/deliverables/5/text",
+            "note": "Plan introduces a privacy-check mitigation, but it is not reflected in K8.mitigation.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Build-time privacy check mechanism: mandatory configuration flag and build-time validation to warn/block publication of notes marked as private (mitigates K8)."
+          }
+        ],
+        "violated_gate": "risk_closure",
+        "patch": [
+          {
+            "type": "json_patch",
+            "op": "replace",
+            "path": "/plan_package/risk_register/7/mitigation",
+            "value": {
+              "text": "Implement a build-time privacy gate: detect notes marked private (e.g., front matter flag) and block build/output emission unless an explicit override is provided; surface a clear report of private-flagged notes and require HITL acknowledgement for overrides.",
+              "owner": "sec",
+              "status": "planned"
+            }
+          },
+          {
+            "type": "json_patch",
+            "op": "replace",
+            "path": "/plan_package/risk_register/7/acceptance",
+            "value": {
+              "text": "Residual risk is acceptable only when the privacy gate is enabled by default and any override requires explicit user action plus documentation of the trust model (private vs public publication).",
+              "owner": "po",
+              "status": "planned"
+            }
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "ID integrity failure in decision_log evidence pointers: multiple evidence pointers reference missing id 'B2' (entity_id), causing hard-gate failure. Safe repair: set those evidence pointer entity_id values to null (since entity_id is optional) unless/until validated against the referenced artifact.",
+        "evidence": [
+          {
+            "artifact_ref": "validator_report",
+            "entity_id": null,
+            "json_pointer": "/checks/1/violations",
+            "note": "Multiple violations: 'Evidence pointer references missing id: B2'.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "DEC1",
+            "json_pointer": "/plan_package/decision_log/0/evidence_pointers/1/entity_id",
+            "note": "Evidence pointer uses entity_id=B2.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "B2"
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": [
+          {
+            "type": "json_patch",
+            "op": "replace",
+            "path": "/plan_package/decision_log/0/evidence_pointers/1/entity_id",
+            "value": null
+          },
+          {
+            "type": "json_patch",
+            "op": "replace",
+            "path": "/plan_package/decision_log/1/evidence_pointers/0/entity_id",
+            "value": null
+          },
+          {
+            "type": "json_patch",
+            "op": "replace",
+            "path": "/plan_package/decision_log/2/evidence_pointers/1/entity_id",
+            "value": null
+          },
+          {
+            "type": "json_patch",
+            "op": "replace",
+            "path": "/plan_package/decision_log/6/evidence_pointers/0/entity_id",
+            "value": null
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "critical",
+        "summary": "Milestone plan is internally inconsistent: M2–M5 exit criteria require end-to-end acceptance tests that depend on Theme/Template + Emit (scheduled for M6) and/or exclusion support (scheduled for M6). This makes earlier milestone exits unachievable as written.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/exit_criteria",
+            "note": "M2 exit criteria include AT3/AT4 which require emitted pages and exclusion config.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "AT3 (one-to-one HTML page generation for non-excluded files) passes."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "M3",
+            "json_pointer": "/plan_package/milestones/2/exit_criteria",
+            "note": "M3 exit criteria include AT10 which requires rendered backlinks section on a page (Theme/Template planned for M6).",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "AT10 (backlinks section lists all linking notes with clickable links) passes."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "M4",
+            "json_pointer": "/plan_package/milestones/3/exit_criteria",
+            "note": "M4 exit criteria include AT12/AT13 requiring tag pages and rendered tag links (Theme/Template planned for M6).",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "AT13 (tag index page and per-tag pages list correct notes) passes."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "M5",
+            "json_pointer": "/plan_package/milestones/4/exit_criteria",
+            "note": "M5 exit criteria include AT7/AT8 requiring search UI and emitted assets (integration planned for M6).",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "AT7 (client-side search returns correct results without server requests) passes."
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {
+            "type": "json_patch",
+            "op": "replace",
+            "path": "/plan_package/milestones/1/exit_criteria",
+            "value": [
+              "Markdown Render Plugin stores rendered HTML in the build context for every non-excluded discovered note record (component/integration test at plugin level).",
+              "Golden-file tests pass for representative CommonMark constructs; optional GFM constructs pass when enabled.",
+              "XSS payload test suite passes (no script execution in output) under default configuration (raw HTML disabled or sanitized)."
+            ]
+          },
+          {
+            "type": "json_patch",
+            "op": "replace",
+            "path": "/plan_package/milestones/2/exit_criteria",
+            "value": [
+              "Link resolver correctly identifies standard Markdown relative links and resolves them to canonical note identifiers (plugin-level fixtures).",
+              "Backlinks are computed and stored as reverse edges in shared build context; fixtures verify expected backlink sets.",
+              "Unresolved link warnings are emitted without failing the build by default.",
+              "Graph consistency checks detect and report cycles and collisions without crashing."
+            ]
+          },
+          {
+            "type": "json_patch",
+            "op": "replace",
+            "path": "/plan_package/milestones/3/exit_criteria",
+            "value": [
+              "Tags are extracted per selected convention(s) and attached to note records in shared build context (plugin-level fixtures).",
+              "Normalization tests confirm case-folding, trimming, and deduplication behave as configured.",
+              "Tag index structures (in shared context) contain correct tag-to-note mappings for fixtures."
+            ]
+          },
+          {
+            "type": "json_patch",
+            "op": "replace",
+            "path": "/plan_package/milestones/4/exit_criteria",
+            "value": [
+              "Search index artifact(s) are generated deterministically at build time from note titles and body content (plugin-level fixtures).",
+              "Search runtime JS can query the prebuilt index in isolation (unit/integration tests outside of full Theme/Emit integration).",
+              "Index size is reported and stays within an agreed budget for the tested fixture set; performance target verification is deferred to M6/M7 end-to-end runs."
+            ]
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Privacy-check behavior is ambiguous/inconsistent across DEC3, DL6, and M1 exit criteria (warn vs block). Align the deliverable wording with the decision/exit criteria (block-by-default with explicit override).",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "DEC3",
+            "json_pointer": "/plan_package/decision_log/2/choice",
+            "note": "DEC3 states block unless overridden.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "blocks publication unless explicitly overridden"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "DL6",
+            "json_pointer": "/plan_package/milestones/0/deliverables/5/text",
+            "note": "DL6 says warn/block, implying different modes.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "warn/block publication"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/exit_criteria/3",
+            "note": "M1 exit criteria assumes block behavior.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Privacy check blocks build when private-flagged notes are present and no override is set."
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {
+            "type": "json_patch",
+            "op": "replace",
+            "path": "/plan_package/milestones/0/deliverables/5/text",
+            "value": "Build-time privacy check mechanism: mandatory configuration and build-time validation to block publication of notes marked as private unless an explicit override is provided (mitigates K8)."
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Capsule open question Q10 is marked blocking (CLI vs GUI) but the plan hard-commits to CLI as MUST (R5) and implements CLI in M1. Either mark Q10 as resolved/non-blocking in the plan copy or record an explicit resolution decision.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "Q10",
+            "json_pointer": "/plan_package/project_capsule/open_questions/9",
+            "note": "Q10 is blocking.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Should the tool run as a CLI, GUI application, or build script integration?"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "R5",
+            "json_pointer": "/plan_package/requirements/4",
+            "note": "CLI is MUST requirement.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "MUST provide a command-line interface (CLI)"
+          }
+        ],
+        "violated_gate": "completeness_heuristic",
+        "patch": [
+          {
+            "type": "json_patch",
+            "op": "replace",
+            "path": "/plan_package/project_capsule/open_questions/9/blocking",
+            "value": false
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Risk register completeness gap: K6 has null mitigation, but the plan narrative claims it is addressed. Either add an explicit mitigation entry for K6 or remove the unsupported claim in supplemental evaluations.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "K6",
+            "json_pointer": "/plan_package/risk_register/5/mitigation",
+            "note": "K6 mitigation is null.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": null,
+            "json_pointer": "/plan_package/supplemental_evaluations/1/notes",
+            "note": "Claims K6 addressed in M2/M4, but no deliverable explicitly covers it.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "K6 (malformed YAML, medium) is addressed in M2/M4 via graceful error handling."
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {
+            "type": "json_patch",
+            "op": "replace",
+            "path": "/plan_package/risk_register/5/mitigation",
+            "value": {
+              "text": "Handle malformed YAML front matter gracefully: treat as recoverable per-file error, emit a warning with file path and parser error, and continue build unless strict mode is enabled; add fixtures for malformed YAML cases.",
+              "owner": "eng",
+              "status": "planned"
+            }
+          }
+        ]
+      },
+      {
+        "label": "note",
+        "severity": "low",
+        "summary": "AT14 browser-compat procedure is not fully deterministic because it does not record the exact browser versions tested. Consider amending procedure to capture versions (and optionally pin a CI-driven browser matrix).",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "AT14",
+            "json_pointer": "/plan_package/acceptance_tests/13/procedure",
+            "note": "Procedure says 'latest stable versions' without recording versions.",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "latest stable versions of Chrome, Firefox, Safari, and Edge"
+          }
+        ],
+        "violated_gate": "measurability_heuristic",
+        "patch": [
+          {
+            "type": "json_patch",
+            "op": "replace",
+            "path": "/plan_package/acceptance_tests/13/procedure",
+            "value": "Build the site and open it in the current stable releases of Chrome, Firefox, Safari, and Edge (record exact version numbers used). Navigate between notes, run a search query, and open a tag page. Monitor the browser console for errors."
+          }
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "M2 exit criteria require AT3 and AT4 (HTML page generation and formatting), but M2 deliverables only implement Markdown rendering to context, not page emission. AT3 also depends on exclusion support (DL27) planned for M6. Exit criteria cannot be satisfied by M2 scope.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "M2",
+            "json_pointer": "/plan_package/milestones/1/exit_criteria",
+            "note": "M2 exit criteria include AT3 and AT4",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "AT3 (one-to-one HTML page generation for non-excluded files) passes."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "DL8",
+            "json_pointer": "/plan_package/milestones/1/deliverables/0",
+            "note": "M2 only stores HTML in context, does not emit pages",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "stored in build context"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "DL27",
+            "json_pointer": "/plan_package/milestones/5/deliverables/4",
+            "note": "Exclusion support required by AT3 is in M6",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "File/directory exclusion support via configuration (R20)."
+          }
+        ],
+        "violated_gate": "milestone_exit_criteria",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "M3 exit criteria require AT10 (backlinks section rendered on note page), but M3 only computes backlinks in context. Page rendering with backlinks section is planned for M6 (DL23). Exit criteria cannot be satisfied by M3 scope.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "M3",
+            "json_pointer": "/plan_package/milestones/2/exit_criteria",
+            "note": "M3 requires AT10",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "AT10 (backlinks section lists all linking notes with clickable links) passes."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "DL14",
+            "json_pointer": "/plan_package/milestones/2/deliverables/2",
+            "note": "M3 only stores backlinks in context",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "storing reverse edges in the shared build context"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "DL23",
+            "json_pointer": "/plan_package/milestones/5/deliverables/0",
+            "note": "Backlinks rendering is in M6",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "rendering per-note pages with tags, backlinks, and search UI"
+          }
+        ],
+        "violated_gate": "milestone_exit_criteria",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "M4 exit criteria require AT12 and AT13 (tags displayed on pages, tag index/per-tag pages exist), but M4 deliverables only extract/normalize tags. Page rendering and emission are planned for M6. Exit criteria cannot be satisfied by M4 scope.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "M4",
+            "json_pointer": "/plan_package/milestones/3/exit_criteria",
+            "note": "M4 requires AT12 and AT13",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "AT12 (tags displayed on note page as navigable links to tag pages) passes."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "DL19",
+            "json_pointer": "/plan_package/milestones/3/deliverables/2",
+            "note": "M4 references Theme/Template integration not delivered until M6",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "via Theme/Template Plugin integration"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "DL23",
+            "json_pointer": "/plan_package/milestones/5/deliverables/0",
+            "note": "Theme/Template plugin is M6",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Theme/Template Plugin (C15) rendering per-note pages"
+          }
+        ],
+        "violated_gate": "milestone_exit_criteria",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "M5 exit criteria require AT7 and AT8 (search UI in browser, index asset loaded from output), but M5 deliverables do not include Theme/Template integration to embed search UI in pages or Emit plugin to write assets. These are planned for M6. Exit criteria cannot be satisfied by M5 scope.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "M5",
+            "json_pointer": "/plan_package/milestones/4/exit_criteria",
+            "note": "M5 requires AT7 and AT8",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "AT7 (client-side search returns correct results without server requests) passes."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "AT7",
+            "json_pointer": "/plan_package/acceptance_tests/6/procedure",
+            "note": "AT7 requires search UI in built site",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Use the search UI to query a term"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "DL23",
+            "json_pointer": "/plan_package/milestones/5/deliverables/0",
+            "note": "Search UI integration is M6",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "rendering per-note pages with tags, backlinks, and search UI"
+          }
+        ],
+        "violated_gate": "milestone_exit_criteria",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "critical",
+        "summary": "Risk K8 (data leakage) is critical severity and validator reports missing closure, but K8.mitigation is null in the plan's risk register. M1 deliverable DL6 implements a privacy check, but the mitigation is not recorded in the risk register, violating risk_closure gate.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "K8",
+            "json_pointer": "/plan_package/risk_register/7/mitigation",
+            "note": "K8 mitigation is null",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "DL6",
+            "json_pointer": "/plan_package/milestones/0/deliverables/5",
+            "note": "M1 implements privacy check for K8",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "mitigates K8"
+          },
+          {
+            "artifact_ref": "validator_report",
+            "entity_id": null,
+            "json_pointer": "/checks/4/violations/0",
+            "note": "Validator reports K8 missing closure",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Risk K8 missing closure"
+          }
+        ],
+        "violated_gate": "risk_closure",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "Validator reports 12 missing risk IDs referenced in architecture options (O1, O2, O3, O4 risks fields) and 4 missing branch IDs in decision_log evidence pointers. These are id_integrity violations that must be resolved.",
+        "evidence": [
+          {
+            "artifact_ref": "validator_report",
+            "entity_id": null,
+            "json_pointer": "/checks/1/violations",
+            "note": "16 id_integrity violations reported",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Option O1 references missing risk"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "O1",
+            "json_pointer": "/plan_package/architecture/options/0/risks",
+            "note": "O1 risks are prose, not risk IDs",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Large collections can lead to high memory usage"
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Decision DEC3 states privacy check 'blocks publication unless explicitly overridden', but deliverable DL6 says 'warn/block', and M1 exit criterion enforces block-only behavior. The optionality is inconsistent across decision, deliverable, and exit criteria.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "DEC3",
+            "json_pointer": "/plan_package/decision_log/2/choice",
+            "note": "Decision says blocks with override",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "blocks publication unless explicitly overridden"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "DL6",
+            "json_pointer": "/plan_package/milestones/0/deliverables/5",
+            "note": "Deliverable allows warn or block",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "warn/block publication"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "M1",
+            "json_pointer": "/plan_package/milestones/0/exit_criteria/3",
+            "note": "Exit criterion enforces block",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Privacy check blocks build"
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Risk K6 (malformed YAML) has null mitigation, but supplemental evaluation claims K6 is addressed in M2/M4 via graceful error handling. No M2 or M4 deliverable explicitly mentions YAML error handling, creating a traceability gap.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "K6",
+            "json_pointer": "/plan_package/risk_register/5/mitigation",
+            "note": "K6 mitigation is null",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": null,
+            "json_pointer": "/plan_package/supplemental_evaluations/1/notes",
+            "note": "Claims K6 addressed in M2/M4",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "K6 (malformed YAML, medium) is addressed in M2/M4"
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "note",
+        "severity": "medium",
+        "summary": "Q10 (CLI vs GUI) is marked blocking in project capsule, but R5 mandates CLI as MUST and M1 delivers CLI entry point. The plan has implicitly resolved Q10 without updating its status, creating a semantic mismatch.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "Q10",
+            "json_pointer": "/plan_package/project_capsule/open_questions/9",
+            "note": "Q10 marked blocking",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Should the tool run as a CLI, GUI application"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "R5",
+            "json_pointer": "/plan_package/requirements/4",
+            "note": "R5 requires CLI",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "MUST provide a command-line interface"
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {}
+        ]
+      },
+      {
+        "label": "note",
+        "severity": "low",
+        "summary": "R15 (wiki-link support) is SHOULD priority, but M3 deliverable DL13 includes wiki-link support unconditionally. The plan treats a SHOULD requirement as mandatory without explicit elevation.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "R15",
+            "json_pointer": "/plan_package/requirements/14",
+            "note": "R15 is SHOULD priority",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "SHOULD provide configurable rules"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v2",
+            "entity_id": "DL13",
+            "json_pointer": "/plan_package/milestones/2/deliverables/2",
+            "note": "M3 includes wiki-links unconditionally",
+            "candidate_id": "B2B",
+            "artifact_id": null,
+            "quote": "Configurable support for wiki-style links"
+          }
+        ],
+        "violated_gate": "consistency",
+        "patch": [
+          {}
+        ]
+      }
+    ],
+    "reroute_target": "risk_gov_canonical",
+    "reroute_reason": "At least one id_integrity blocker likely requires adding/aligning missing risk entities (non-T IDs) so architecture option risk references can be valid; this cannot be safely repaired without updating the canonical risk register/reference model."
+  }
+}

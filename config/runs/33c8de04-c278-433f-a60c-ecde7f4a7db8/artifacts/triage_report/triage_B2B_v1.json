@@ -1,0 +1,428 @@
+{
+  "artifact_type": "triage_report",
+  "artifact_id": "triage_B2B_v1",
+  "schema_version": "1.0.0",
+  "created_at": "2026-02-21T12:11:17.419408Z",
+  "source_run_id": "33c8de04-c278-433f-a60c-ecde7f4a7db8",
+  "parents": [
+    "plan_candidate_B2B_v1",
+    "validator_B2B_v1"
+  ],
+  "payload": {
+    "candidate_ref": "plan_candidate_B2B_v1",
+    "critic_id": "MERGED",
+    "verdict": "reject",
+    "defects": [
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Hard-gate failure: architecture options list “risks” that do not resolve to entries in the risk register (id_integrity FAIL).",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": null,
+            "json_pointer": "/inputs/validator_report/checks/1",
+            "note": "Validator id_integrity check failed with multiple “references missing risk …” violations.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "pass\": false"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "O1",
+            "json_pointer": "/inputs/plan_candidate/plan_package/architecture/options/0/risks",
+            "note": "O1 risks are free-text and not risk-register IDs.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "O2",
+            "json_pointer": "/inputs/plan_candidate/plan_package/architecture/options/1/risks",
+            "note": "O2 risks are free-text and not risk-register IDs.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/inputs/plan_candidate/plan_package/architecture/options/0/risks",
+            "value": [
+              "K4",
+              "K13",
+              "K1",
+              "K2",
+              "K13"
+            ]
+          },
+          {
+            "op": "replace",
+            "path": "/inputs/plan_candidate/plan_package/architecture/options/1/risks",
+            "value": [
+              "K16",
+              "K16",
+              "K13"
+            ]
+          },
+          {
+            "op": "replace",
+            "path": "/inputs/plan_candidate/plan_package/architecture/options/2/risks",
+            "value": [
+              "K18",
+              "K18",
+              "K19",
+              "K1"
+            ]
+          },
+          {
+            "op": "replace",
+            "path": "/inputs/plan_candidate/plan_package/architecture/options/3/risks",
+            "value": [
+              "K19",
+              "K16",
+              "K13"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "Phase gating contradiction: Phase C requires AT1–AT13 (includes AT10/AT11), but DEC6 and Phase D treat AT10/AT11 as Phase D-only gates.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "M5",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/4/exit_criteria/0",
+            "note": "Phase C gate currently includes all AT1–AT13.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "All acceptance tests AT1–AT13 pass end-to-end."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "DEC6",
+            "json_pointer": "/inputs/plan_candidate/plan_package/decision_log/5/choice",
+            "note": "DEC6 states Phase D adds AT10/AT11.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "M6",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/5/exit_criteria/0",
+            "note": "Phase D gate repeats AT10.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "AT10 passes: CLI build works offline."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "M6",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/5/exit_criteria/1",
+            "note": "Phase D gate repeats AT11.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "AT11 passes: core features work in all target browsers without runtime errors."
+          }
+        ],
+        "violated_gate": "contradiction_heuristic",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/inputs/plan_candidate/plan_package/milestones/4/exit_criteria/0",
+            "value": "All acceptance tests AT1–AT9 and AT12–AT13 pass end-to-end (AT10/AT11 deferred to Phase D hardening)."
+          },
+          {
+            "op": "replace",
+            "path": "/inputs/plan_candidate/plan_package/decision_log/5/choice",
+            "value": "Phase A gates on AT1/AT2/AT3/AT4/AT13 plus a plugin-contract smoke check. Phase B gates each plugin independently (AT8/AT9 for backlinks, AT6/AT7 for tags, AT5/AT12 for search). Phase C runs the integrated suite AT1–AT9 and AT12–AT13 end-to-end plus security gate. Phase D adds AT10/AT11 and performance benchmarks."
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "Plugin lifecycle ordering/contract mismatch: the chosen dataflow says render happens before finalize, but finalize writes search index artifacts that rendered pages must reference (worse with optional sharding).",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "O2",
+            "json_pointer": "/inputs/plan_candidate/plan_package/architecture/chosen/high_level_dataflow",
+            "note": "Chosen high-level dataflow orders render → finalize while search index is written in finalize.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "IF13",
+            "json_pointer": "/inputs/plan_candidate/plan_package/architecture/options/1/interfaces/4/contract",
+            "note": "Finalize writes search artifacts.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "IF15",
+            "json_pointer": "/inputs/plan_candidate/plan_package/architecture/options/1/interfaces/6/contract",
+            "note": "Rendered pages must reference search index assets.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "contradiction_heuristic",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/inputs/plan_candidate/plan_package/architecture/chosen/high_level_dataflow",
+            "value": "CLI invocation → C8 (Core Orchestrator) loads config and discovers plugins → Hook: collectFiles — C9 (File Collector Plugin) recursively scans input directory, populates shared noteRegistry → Hook: transform — C10 (Markdown Parser Plugin) parses each .md file into AST, extracts frontmatter/tags/links, enriches noteRegistry → Hook: resolve — C11 (Backlink Resolver Plugin) builds forward/backlink graph; C12 (Tag Aggregator Plugin) builds tag index and registers tag pages → Hook: finalize — C13 (Search Index Plugin) builds client-side search index from noteRegistry and writes index artifacts to output (and publishes an asset manifest/paths into context) → Hook: render — C14 (Theme/Renderer Plugin) generates HTML pages using shared context including search-asset paths → C15 (Client-Side Runtime) loaded in browser provides search UI, tag filtering, and backlink navigation over the static output."
+          },
+          {
+            "op": "replace",
+            "path": "/inputs/plan_candidate/plan_package/architecture/options/1/interfaces/4/contract",
+            "value": "Hook: finalize(context) → search index artifacts written to output directory (optionally sharded) AND a search-asset manifest (paths/entrypoints) attached to context for the renderer to reference."
+          },
+          {
+            "op": "replace",
+            "path": "/inputs/plan_candidate/plan_package/architecture/options/1/interfaces/5/contract",
+            "value": "Hook: render(context) → HTML files and static theme assets written to output directory using context data, including the search-asset manifest produced earlier."
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Milestone gating mismatch: Phase A requires a “plugin-contract smoke test”, but no AT# exists for it; adding a new AT ID is out-of-scope here.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "M1",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/0/exit_criteria/5",
+            "note": "Exit criteria references a plugin-contract smoke test without an AT#.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Plugin-contract smoke test passes: a no-op plugin can register..."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": null,
+            "json_pointer": "/inputs/plan_candidate/plan_package/acceptance_tests",
+            "note": "Acceptance tests catalog contains only AT1–AT13.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "milestone_exit_criteria",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/inputs/plan_candidate/plan_package/milestones/0/exit_criteria/5",
+            "value": "Plugin-contract smoke check completed and documented (non-AT checklist): a no-op plugin can register, receive all lifecycle hooks, and access the shared context without errors."
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "high",
+        "summary": "Security posture gap: Phase A includes a minimal renderer, but XSS mitigation is only specified as implemented later in Phase C (C14). Phase A renderer safety expectations are unspecified.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "DL4",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/0/deliverables/3/text",
+            "note": "Phase A delivers an HTML renderer without stated sanitization behavior.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "DEC5",
+            "json_pointer": "/inputs/plan_candidate/plan_package/decision_log/4/choice",
+            "note": "Sanitization scoped to C14 (Phase C).",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "Sanitisation is implemented in the Theme/Renderer Plugin (C14)."
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "K3",
+            "json_pointer": "/inputs/plan_candidate/plan_package/risk_register/2/mitigation/text",
+            "note": "K3 mitigation expects disabling/sanitizing raw HTML and blocking unsafe URL schemes.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "risk_closure",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/inputs/plan_candidate/plan_package/milestones/0/deliverables/3/text",
+            "value": "Minimal HTML renderer producing one page per note with basic styling, with safe defaults: raw HTML disabled or sanitized, and unsafe URL schemes (e.g., javascript:) blocked."
+          },
+          {
+            "op": "add",
+            "path": "/inputs/plan_candidate/plan_package/milestones/0/exit_criteria/-",
+            "value": "Phase A renderer safety baseline met: raw HTML disabled or sanitized by default, and unsafe link protocols blocked (early partial mitigation for K3)."
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "Performance target inconsistency: R23 says targets are to be agreed/defined based on scale, but Phase D hard-codes a specific 500ms target as an exit gate.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "R23",
+            "json_pointer": "/inputs/plan_candidate/plan_package/requirements/22/text",
+            "note": "R23 describes performance targets as to-be-defined.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "these targets SHOULD be defined/documented based on expected scale"
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "M6",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/5/exit_criteria/2",
+            "note": "Phase D exit criterion hard-codes 500ms.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": "search results within 500ms on 100+ notes"
+          }
+        ],
+        "violated_gate": "completeness_heuristic",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/inputs/plan_candidate/plan_package/milestones/5/exit_criteria/2",
+            "value": "R23 performance targets are defined (based on confirmed scale) and met; benchmarks are recorded for a representative dataset (e.g., 100+ notes) with an agreed search responsiveness threshold (example: ≤500ms)."
+          }
+        ]
+      },
+      {
+        "label": "fix",
+        "severity": "medium",
+        "summary": "K16 mitigation calls for configuration schema validation/versioning, but plan deliverables do not explicitly include a configuration schema spec (supports R14 configurability).",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "K16",
+            "json_pointer": "/inputs/plan_candidate/plan_package/risk_register/15/mitigation/text",
+            "note": "K16 mitigation includes config schema validation and versioning.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "DL5",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/0/deliverables/4/text",
+            "note": "DL5 mentions plugin API spec but not configuration schema/versioning.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "R14",
+            "json_pointer": "/inputs/plan_candidate/plan_package/requirements/13/text",
+            "note": "R14 expects configurability for Markdown/link/tag conventions.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "risk_closure",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/inputs/plan_candidate/plan_package/milestones/0/deliverables/4/text",
+            "value": "Plugin API + configuration specification document (versioned), including shared context schema and configuration schema validation rules."
+          }
+        ]
+      },
+      {
+        "label": "note",
+        "severity": "low",
+        "summary": "Traceability polish: Phase C security gate mentions XSS tests but does not explicitly reference DL16 (XSS test suite) as the validating artifact.",
+        "evidence": [
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "M5",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/4/exit_criteria/1",
+            "note": "Security gate is stated without explicit link to DL16.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "plan_candidate_B2B_v1",
+            "entity_id": "DL16",
+            "json_pointer": "/inputs/plan_candidate/plan_package/milestones/4/deliverables/3/text",
+            "note": "DL16 is the XSS payload suite deliverable.",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "completeness_heuristic",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/inputs/plan_candidate/plan_package/milestones/4/exit_criteria/1",
+            "value": "K3 security gate passes (validated via DL16): XSS payload tests show no injection in rendered output."
+          }
+        ]
+      },
+      {
+        "label": "blocker",
+        "severity": "high",
+        "summary": "Architecture options O1-O4 reference 14 risk IDs that do not exist in the risk_register (K1-K20). These are inline risk descriptions in the options' 'risks' arrays, not references to canonical risk entities.",
+        "evidence": [
+          {
+            "artifact_ref": "candidate_delta_B2B_v1",
+            "entity_id": null,
+            "json_pointer": "/validator_report/checks/1/violations/0",
+            "note": "Validator reports O1 references missing risk 'Search index asset may become too large...'",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "candidate_delta_B2B_v1",
+            "entity_id": null,
+            "json_pointer": "/validator_report/checks/1/violations/1",
+            "note": "Validator reports O1 references missing risk 'Memory usage can grow substantially...'",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          },
+          {
+            "artifact_ref": "candidate_delta_B2B_v1",
+            "entity_id": null,
+            "json_pointer": "/validator_report/checks/1/violations/2",
+            "note": "Validator reports O1 references missing risk 'Wiki-link and tag syntax ambiguity...'",
+            "candidate_id": null,
+            "artifact_id": null,
+            "quote": null
+          }
+        ],
+        "violated_gate": "id_integrity",
+        "patch": []
+      }
+    ],
+    "reroute_target": "synthesizer_b",
+    "reroute_reason": "The validator correctly identified that architecture options contain inline risk descriptions in their 'risks' arrays rather than references to canonical risk IDs. The schema expects options.risks to be an array of strings (risk IDs), but the candidate has prose risk descriptions. This requires the synthesizer to either: (1) mint new canonical risk IDs (K21-K34) for these 14 option-specific risks and reference them from the options, or (2) restructure the architecture schema to allow inline risk objects. Option (1) is preferred to maintain traceability. This is a structural fix requiring ID minting, which is outside triage critic scope."
+  }
+}
