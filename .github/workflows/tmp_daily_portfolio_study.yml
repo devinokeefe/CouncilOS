@@ -41,6 +41,7 @@ jobs:
           unzip -o /tmp/daily-study.zip -d /mnt/data
           python tmp_daily_study/patch_engine.py
           python tmp_daily_study/patch_daily_rebuild.py
+          python tmp_daily_study/patch_wrapper_shapes.py
           python -m pip install --upgrade pip --quiet
           python -m pip install -r /mnt/data/requirements.txt --quiet
 
