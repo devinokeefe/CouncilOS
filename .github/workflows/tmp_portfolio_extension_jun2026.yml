@@ -28,8 +28,11 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install numpy pandas requests
 
-      - name: Fetch daily data through June 2026
+      - name: Fetch official and open-source daily data
         run: python tmp_portfolio_extension/fetch_extension.py
+
+      - name: Fetch Yahoo proxy histories through June 2026
+        run: python tmp_portfolio_extension/fetch_yahoo_proxies.py
 
       - name: Package outputs
         if: always()
