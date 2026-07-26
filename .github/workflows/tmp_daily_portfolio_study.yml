@@ -40,6 +40,7 @@ jobs:
           cat tmp_daily_study/payload/part* | base64 -d > /tmp/daily-study.zip
           unzip -o /tmp/daily-study.zip -d /mnt/data
           python tmp_daily_study/patch_engine.py
+          python tmp_daily_study/patch_daily_rebuild.py
           python -m pip install --upgrade pip --quiet
           python -m pip install -r /mnt/data/requirements.txt --quiet
 
