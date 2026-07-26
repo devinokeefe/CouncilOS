@@ -1,0 +1,16 @@
+Source,URL,Status,Detail
+Fama-French 5 factors daily,https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/F-F_Research_Data_5_Factors_2x3_daily_CSV.zip,downloaded,F-F_Research_Data_5_Factors_2x3_daily.csv
+Fama-French momentum daily,https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/F-F_Momentum_Factor_daily_CSV.zip,downloaded,F-F_Momentum_Factor_daily.csv
+QQQ price close,https://query1.finance.yahoo.com/ (QQQ),downloaded,6186 closes; yfinance auto_adjust=False
+Bitcoin USD close,https://query1.finance.yahoo.com/ (BTC-USD),downloaded,3307 closes; yfinance auto_adjust=False
+pysystemtrade daily futures data,https://github.com/pst-group/pysystemtrade,cloned,develop branch
+Rates_US5,https://github.com/pst-group/pysystemtrade/tree/develop/data/futures,downloaded,US5
+Gold,https://github.com/pst-group/pysystemtrade/tree/develop/data/futures,downloaded,GOLD
+Corn,https://github.com/pst-group/pysystemtrade/tree/develop/data/futures,downloaded,CORN
+Silver,https://github.com/pst-group/pysystemtrade/tree/develop/data/futures,downloaded,SILVER
+Cboe BXM,https://cdn.cboe.com/api/global/us_indices/daily_prices/BXM_History.csv,downloaded,6121 observations; column BXM
+Cboe PUT,https://cdn.cboe.com/api/global/us_indices/daily_prices/PUT_History.csv,downloaded,4927 observations; column PUT
+Cboe PPUT,https://cdn.cboe.com/api/global/us_indices/daily_prices/PPUT_History.csv,downloaded,10089 observations; column PPUT
+Cboe CLL,https://cdn.cboe.com/api/global/us_indices/daily_prices/CLL_History.csv,downloaded,4464 observations; column CLL
+Cboe VXTH,https://cdn.cboe.com/api/global/us_indices/daily_prices/VXTH_History.csv,downloaded,5107 observations; column VXTH
+Cboe BXMD,https://cdn.cboe.com/api/global/us_indices/daily_prices/BXMD_History.csv,downloaded,10095 observations; column BXMD

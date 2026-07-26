@@ -1,0 +1,13 @@
+{
+  "daily_observations": 4719,
+  "strategies": 874,
+  "baseline_cagr": 0.35773222258656245,
+  "top_strategy": "Combined: QQQ 100% + styles 15% + fast 4/26",
+  "top_cagr": 0.4237418580108787,
+  "top_cagr_uplift": 0.06600963542431626,
+  "top_daily_t": 3.088896912946201,
+  "top_daily_nw20_t": 2.928808007014874,
+  "top_search_adjusted_p": 0.14247669773635152,
+  "direct_daily_strategies": 808,
+  "hybrid_daily_strategies": 66
+}

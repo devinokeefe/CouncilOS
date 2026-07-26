@@ -1,0 +1,63 @@
+Group,Instrument,AssetClass,Status,First date,Last date,Observations
+Equity,SP500,Equity,included,1982-09-15,2024-03-28,10692
+Equity,NASDAQ,Equity,included,1999-12-15,2024-03-28,6226
+Equity,DOW,Equity,included,2002-06-13,2024-03-28,6183
+Equity,RUSSELL,Equity,insufficient coverage,2015-03-12,2024-03-28,2652
+Equity,FTSE100,Equity,included,1984-05-22,2024-03-28,10053
+Equity,DAX,Equity,included,2000-03-14,2024-03-28,6104
+Equity,EUROSTX,Equity,insufficient coverage,2014-03-14,2024-03-28,2418
+Equity,CAC,Equity,insufficient coverage,2009-04-17,2024-03-28,3837
+Equity,AEX,Equity,insufficient coverage,2009-08-19,2024-03-28,3749
+Equity,NIKKEI,Equity,insufficient coverage,2011-06-13,2024-03-29,3270
+Equity,TOPIX,Equity,insufficient coverage,2010-03-12,2024-03-29,3586
+Equity,ASX,Equity,missing,,,0
+Equity,KOSPI,Equity,insufficient coverage,2014-03-14,2024-03-29,2494
+Equity,HANG,Equity,included,1986-05-26,2024-03-28,9321
+Equity,MSCIWORLD,Equity,insufficient coverage,2021-12-14,2024-03-28,587
+Rates,US2,Bond,included,2000-03-03,2024-03-28,6192
+Rates,US3,Bond,insufficient coverage,2020-08-28,2024-03-28,893
+Rates,US5,Bond,included,1989-06-01,2024-03-28,8797
+Rates,US10,Bond,included,1982-08-31,2024-03-28,10513
+Rates,US20,Bond,included,1978-06-01,2024-03-28,11553
+Rates,US30,Bond,insufficient coverage,2010-03-04,2024-03-28,4130
+Rates,BOBL,Bond,insufficient coverage,2008-03-06,2024-03-28,4140
+Rates,BUND,Bond,included,2006-12-04,2024-03-28,4298
+Rates,BUXL,Bond,insufficient coverage,2015-12-04,2024-03-28,2072
+Rates,SCHATZ,,missing,,,0
+Rates,GILT,Bond,included,1983-03-28,2024-03-28,10363
+Rates,JGB,Bond,included,2001-12-05,2024-03-29,5595
+Rates,AUS10,,missing,,,0
+Rates,CAD10,Bond,included,1993-05-25,2024-03-28,7679
+Rates,OAT,Bond,insufficient coverage,2012-09-06,2024-03-28,2783
+FX,EUR,FX,included,1999-06-16,2024-03-28,6155
+FX,GBP,FX,included,1975-12-17,2024-03-28,12325
+FX,JPY,FX,included,1977-06-15,2024-03-28,11810
+FX,CHF,FX,included,1972-09-15,2024-03-28,13714
+FX,AUD,FX,included,1987-06-17,2024-03-28,9337
+FX,CAD,FX,included,1972-09-15,2024-03-28,13743
+FX,NZD,FX,included,2003-03-12,2024-03-28,5229
+FX,MXP,FX,included,1995-09-18,2024-03-28,7102
+FX,KRWUSD,FX,insufficient coverage,2021-03-09,2024-03-28,738
+FX,PLN,FX,included,2004-09-09,2024-03-28,4592
+FX,SEK,FX,included,2002-06-17,2024-03-28,5486
+FX,NOK,FX,included,2002-06-17,2024-03-28,5580
+Commodities,GOLD,Metals,included,1975-04-02,2024-03-28,12378
+Commodities,SILVER,Metals,included,1970-06-16,2024-03-28,14209
+Commodities,COPPER,Metals,included,1995-09-05,2024-03-28,7621
+Commodities,ALUMINIUM,Metals,insufficient coverage,2019-12-16,2024-03-28,1026
+Commodities,ZINC_LME,Metals,insufficient coverage,2023-06-02,2024-03-28,211
+Commodities,NICKEL_LME,Metals,insufficient coverage,2023-06-02,2024-03-28,211
+Commodities,CRUDE_W,OilGas,included,1990-10-17,2024-03-28,8520
+Commodities,BRENT_W,OilGas,included,1989-08-14,2024-03-28,9434
+Commodities,GAS_US,OilGas,included,1990-07-27,2024-03-28,8438
+Commodities,NATGAS,,missing,,,0
+Commodities,CORN,Ags,included,1972-10-19,2024-03-28,12998
+Commodities,WHEAT,Ags,included,1973-12-20,2024-03-28,12650
+Commodities,SOYBEAN,Ags,included,1985-09-23,2024-03-28,9673
+Commodities,SOYMEAL,Ags,included,1970-05-06,2024-03-28,13652
+Commodities,SUGAR,,missing,,,0
+Commodities,COFFEE,Ags,insufficient coverage,2007-02-21,2024-03-28,4308
+Commodities,COCOA,Ags,included,1970-03-26,2024-03-28,13523
+Commodities,COTTON,Ags,insufficient coverage,2007-02-23,2024-03-28,4190
+Commodities,LIVECOW,Ags,included,1971-10-22,2024-03-28,13180
+Commodities,LEANHOG,Ags,included,1974-07-23,2024-03-28,12483

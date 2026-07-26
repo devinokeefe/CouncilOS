@@ -1,0 +1,158 @@
+12:50:26 Downloading official Fama-French daily factors
+12:50:27 Downloading QQQ and Bitcoin daily closes
+12:50:28 Cloning daily futures source data
+Cloning into '/mnt/data/pysystemtrade'...
+Updating files:  26% (414/1558)Updating files:  27% (421/1558)Updating files:  28% (437/1558)Updating files:  29% (452/1558)Updating files:  30% (468/1558)Updating files:  31% (483/1558)Updating files:  32% (499/1558)Updating files:  33% (515/1558)Updating files:  34% (530/1558)Updating files:  35% (546/1558)Updating files:  36% (561/1558)Updating files:  37% (577/1558)Updating files:  38% (593/1558)Updating files:  39% (608/1558)Updating files:  40% (624/1558)Updating files:  41% (639/1558)Updating files:  42% (655/1558)Updating files:  43% (670/1558)Updating files:  44% (686/1558)Updating files:  45% (702/1558)Updating files:  46% (717/1558)Updating files:  47% (733/1558)Updating files:  48% (748/1558)Updating files:  49% (764/1558)Updating files:  50% (779/1558)Updating files:  51% (795/1558)Updating files:  52% (811/1558)Updating files:  53% (826/1558)Updating files:  54% (842/1558)Updating files:  55% (857/1558)Updating files:  56% (873/1558)Updating files:  57% (889/1558)Updating files:  58% (904/1558)Updating files:  59% (920/1558)Updating files:  60% (935/1558)Updating files:  61% (951/1558)Updating files:  62% (966/1558)Updating files:  63% (982/1558)Updating files:  64% (998/1558)Updating files:  65% (1013/1558)Updating files:  66% (1029/1558)Updating files:  67% (1044/1558)Updating files:  68% (1060/1558)Updating files:  69% (1076/1558)Updating files:  70% (1091/1558)Updating files:  71% (1107/1558)Updating files:  72% (1122/1558)Updating files:  73% (1138/1558)Updating files:  74% (1153/1558)Updating files:  75% (1169/1558)Updating files:  76% (1185/1558)Updating files:  77% (1200/1558)Updating files:  78% (1216/1558)Updating files:  79% (1231/1558)Updating files:  80% (1247/1558)Updating files:  81% (1262/1558)Updating files:  82% (1278/1558)Updating files:  83% (1294/1558)Updating files:  84% (1309/1558)Updating files:  85% (1325/1558)Updating files:  86% (1340/1558)Updating files:  87% (1356/1558)Updating files:  88% (1372/1558)Updating files:  89% (1387/1558)Updating files:  90% (1403/1558)Updating files:  91% (1418/1558)Updating files:  92% (1434/1558)Updating files:  93% (1449/1558)Updating files:  94% (1465/1558)Updating files:  95% (1481/1558)Updating files:  96% (1496/1558)Updating files:  97% (1512/1558)Updating files:  98% (1527/1558)Updating files:  99% (1543/1558)Updating files: 100% (1558/1558)Updating files: 100% (1558/1558), done.
+12:50:48 Building Rates_US5 from US5
+12:50:48 Building Gold from GOLD
+12:50:48 Building Corn from CORN
+12:50:48 Building Silver from SILVER
+12:50:49 Building contract-level cross-asset trend sleeve
+12:50:52 Trend group Equity: 6 instruments
+12:50:53 Trend group Rates: 8 instruments
+12:50:53 Trend group FX: 11 instruments
+12:50:54 Trend group Commodities: 13 instruments
+12:50:56 Normalizing daily P&Ls with weekly lagged risk estimates
+12:50:56 Running complete hypothesis engine on rebuilt daily-origin sleeves
+12:50:57 Executing run_portfolio_experiments.py
+completed 25: Static: rates total 20%
+completed 50: Static: commodities 20%, metals only
+completed 75: Dynamic inverse-vol: 52w, reb 4w
+completed 100: Momentum tilt absolute+relative: 13w, k=0.50, reb 4w
+completed 125: Momentum tilt absolute+relative: 52w, k=0.50, reb 13w
+completed 150: Momentum tilt relative: 26/52/104w, k=1.00, reb 4w
+completed 175: Equity trend filter: 104w, cut 75%, reb 4w
+completed 200: High-correlation defensive tilt: 26w, q90%, cut 25%
+completed 225: Added commodities TSMOM long-short [13, 26, 52], weight 15%
+completed 250: Added equities TSMOM long-short [26, 52, 104], weight 20%
+completed 275: Growth sleeve via 55% 3x QQQ plus cash wrapper, replace 50%
+completed 300: Vol forecast: fast 13w, slow 52w, floor 4%
+completed 325: Option sleeve: QQQ 10% OTM put-write proxy, IV premium 2%, weight 5.0%
+completed 350: Option sleeve: QQQ collar 10% put / 5% call, IV premium 6%, weight 10.0%
+Core experiments complete: 358
+Static grid complete: 500 candidates
+missing ensemble member Ensemble: baseline + inverse-vol + ERC + HRP {'Dynamic HRP: 156w, shrink 25%, reb 4w', 'Dynamic ERC: 156w, shrink 50%, reb 4w'}
+missing ensemble member Ensemble: diversified dynamic five-rule {'Dynamic ERC: 156w, shrink 50%, reb 4w'}
+
+TOP 30
+                                          Experiment               Category                                    Evidence status     CAGR  CAGR uplift vs baseline  Volatility   Sharpe  Max drawdown  Positive-uplift subperiods  Worst subperiod uplift  Annualized incremental turnover cost  Average leverage proxy  Bootstrap P(uplift<=0)  Robust improvement flag
+               Grid winner: maximum full-sample CAGR Data-mined static grid Empirical but selected in-sample from a large grid 0.363105                 0.039104    0.324905 1.080418     -0.419173                           3               -0.054589                              0.000011                7.088333                0.110000                     True
+                         Grid winner: maximum Sharpe Data-mined static grid Empirical but selected in-sample from a large grid 0.363105                 0.039104    0.324905 1.080418     -0.419173                           3               -0.054589                              0.000011                7.088333                0.110000                     True
+                    Static: QQQ share of equity 100%    Static risk budgets                         Empirical on saved sleeves 0.355156                 0.031154    0.324923 1.061863     -0.416864                           5                0.007804                              0.000005                6.645006                0.026667                     True
+                           Static: QQQ-trend barbell Alternative allocation                         Empirical on saved sleeves 0.354995                 0.030994    0.324920 1.060800     -0.417337                           4               -0.039712                              0.000004                6.363482                0.133333                     True
+                             Static: remove Broad_US          Leave-one-out                         Empirical on saved sleeves 0.354591                 0.030589    0.324918 1.059631     -0.445295                           3               -0.023540                              0.000006                6.934854                0.190000                     True
+           Vol forecast: fast 4w, slow 52w, floor 1%   Volatility targeting                         Empirical on saved sleeves 0.345204                 0.021202    0.324915 1.039255     -0.398886                           3               -0.012729                              0.000005                6.626095                0.043333                     True
+           Vol forecast: fast 4w, slow 52w, floor 2%   Volatility targeting                         Empirical on saved sleeves 0.345204                 0.021202    0.324915 1.039255     -0.398886                           3               -0.012729                              0.000005                6.626095                0.043333                     True
+           Vol forecast: fast 4w, slow 26w, floor 1%   Volatility targeting                         Empirical on saved sleeves 0.345092                 0.021091    0.324917 1.038848     -0.396724                           4               -0.010443                              0.000005                6.683916                0.040000                     True
+           Vol forecast: fast 4w, slow 26w, floor 2%   Volatility targeting                         Empirical on saved sleeves 0.345092                 0.021091    0.324917 1.038848     -0.396724                           4               -0.010443                              0.000005                6.683916                0.040000                     True
+          Vol forecast: fast 4w, slow 104w, floor 1%   Volatility targeting                         Empirical on saved sleeves 0.342746                 0.018744    0.324915 1.033761     -0.405691                           3               -0.020850                              0.000005                6.581143                0.076667                     True
+          Vol forecast: fast 4w, slow 104w, floor 2%   Volatility targeting                         Empirical on saved sleeves 0.342746                 0.018744    0.324915 1.033761     -0.405691                           3               -0.020850                              0.000005                6.581143                0.076667                     True
+                     Static: QQQ share of equity 75%    Static risk budgets                         Empirical on saved sleeves 0.336645                 0.012644    0.324912 1.020126     -0.433721                           5                0.004773                              0.000005                6.645657                0.016667                     True
+                  Static: commodities 12%, gold only    Static risk budgets                         Empirical on saved sleeves 0.335884                 0.011883    0.324912 1.018820     -0.444688                           3               -0.041245                              0.000005                6.637530                0.163333                     True
+                      Static: remove corn and silver         Simplification                         Empirical on saved sleeves 0.333677                 0.009676    0.324900 1.013539     -0.428391                           3               -0.003615                              0.000005                6.484288                0.070000                     True
+                   Static: commodities 4%, gold only    Static risk budgets                         Empirical on saved sleeves 0.333476                 0.009475    0.324900 1.013066     -0.427980                           3               -0.004441                              0.000005                6.479034                0.086667                     True
+                               Static: remove Silver          Leave-one-out                         Empirical on saved sleeves 0.330706                 0.006705    0.324901 1.006693     -0.433657                           4               -0.001930                              0.000005                6.579745                0.053333                     True
+                         Static: Bitcoin total 15.0%    Static risk budgets                         Empirical on saved sleeves 0.328584                 0.004583    0.324909 1.001488     -0.424589                           4               -0.002574                              0.000015                6.522563                     NaN                     True
+           Vol forecast: fast 8w, slow 52w, floor 1%   Volatility targeting                         Empirical on saved sleeves 0.328416                 0.004415    0.324910 1.001280     -0.433860                           3               -0.010008                              0.000005                6.623835                     NaN                     True
+           Vol forecast: fast 8w, slow 52w, floor 2%   Volatility targeting                         Empirical on saved sleeves 0.328416                 0.004415    0.324910 1.001280     -0.433860                           3               -0.010008                              0.000005                6.623835                     NaN                     True
+                          Static: Bitcoin total 7.5%    Static risk budgets                         Empirical on saved sleeves 0.328288                 0.004287    0.324905 1.001182     -0.442661                           5                0.000083                              0.000008                6.604869                     NaN                     True
+High-correlation defensive tilt: 104w, q70%, cut 50%      Regime allocation                         Empirical on saved sleeves 0.327977                 0.003976    0.324905 1.000499     -0.442832                           5                0.000028                              0.000054                6.599337                     NaN                     True
+                             Static: trend total 30%    Static risk budgets                         Empirical on saved sleeves 0.327240                 0.003238    0.324905 0.998195     -0.443730                           3               -0.020646                              0.000005                6.526584                     NaN                     True
+         Vol forecast: fast 13w, slow 104w, floor 4%   Volatility targeting                         Empirical on saved sleeves 0.326932                 0.002930    0.324904 0.998256     -0.450393                           4               -0.005381                              0.000005                6.583103                     NaN                     True
+                Static: commodities 0%, baseline mix    Static risk budgets                         Empirical on saved sleeves 0.326859                 0.002858    0.324896 0.997510     -0.421284                           3               -0.025425                              0.000005                6.330090                     NaN                     True
+                   Static: commodities 0%, equal mix    Static risk budgets                         Empirical on saved sleeves 0.326859                 0.002858    0.324896 0.997510     -0.421284                           3               -0.025425                              0.000005                6.330090                     NaN                     True
+                 Static: commodities 0%, metals only    Static risk budgets                         Empirical on saved sleeves 0.326859                 0.002858    0.324896 0.997510     -0.421284                           3               -0.025425                              0.000005                6.330090                     NaN                     True
+                   Static: commodities 0%, gold only    Static risk budgets                         Empirical on saved sleeves 0.326859                 0.002858    0.324896 0.997510     -0.421284                           3               -0.025425                              0.000005                6.330090                     NaN                     True
+           Vol forecast: fast 8w, slow 52w, floor 4%   Volatility targeting                         Empirical on saved sleeves 0.326801                 0.002800    0.324907 0.997692     -0.440863                           3               -0.011541                              0.000005                6.607329                     NaN                     True
+         Vol forecast: fast 13w, slow 104w, floor 1%   Volatility targeting                         Empirical on saved sleeves 0.326779                 0.002778    0.324905 0.997823     -0.448292                           3               -0.004458                              0.000005                6.579552                     NaN                     True
+         Vol forecast: fast 13w, slow 104w, floor 2%   Volatility targeting                         Empirical on saved sleeves 0.326779                 0.002778    0.324905 0.997823     -0.448292                           3               -0.004458                              0.000005                6.579552                     NaN                     True
+
+ROBUST COUNT 46 TOTAL 363
+12:51:53 Executing run_combination_experiments.py
+                                                  Experiment                                                    Evidence status     CAGR  CAGR uplift vs baseline   Sharpe  Max drawdown  Positive-uplift subperiods  Worst subperiod uplift  Bootstrap P(uplift<=0)  Full 2000-2023 CAGR  Full 2000-2023 Max drawdown
+                 Combined: QQQ 100% + styles 20% + fast 4/26 Empirical, multi-stage composition informed by first-stage results 0.389835                 0.065834 1.139531     -0.383284                           4               -0.029021                0.013333             0.418533                    -0.383284
+                 Combined: QQQ 100% + styles 15% + fast 4/26 Empirical, multi-stage composition informed by first-stage results 0.385879                 0.061877 1.130459     -0.377658                           4               -0.012805                0.000000             0.407595                    -0.377658
+                    Combined: QQQ share 100% + fast 4/26 vol                                         Empirical on saved sleeves 0.374397                 0.050395 1.104479     -0.398774                           4               -0.002527                0.000000             0.389390                    -0.398774
+        Combined: moderated grid-inspired static + fast 4/26         Empirical, but composition informed by first-stage results 0.373991                 0.049990 1.104531     -0.419877                           5                0.004686                0.003333             0.402168                    -0.419877
+                  Combined: QQQ 75% + styles 20% + fast 4/26                                         Empirical on saved sleeves 0.372957                 0.048956 1.102329     -0.398660                           3               -0.023915                0.090000             0.418001                    -0.398660
+                   Combined: sampled-grid winner + fast 4/26                           Empirical but heavily selected in-sample 0.369950                 0.045949 1.096013     -0.413794                           4               -0.013658                0.060000             0.399574                    -0.413794
+                  Combined: QQQ 75% + styles 15% + fast 4/26                                         Empirical on saved sleeves 0.368646                 0.044645 1.092369     -0.388645                           4               -0.007318                0.010000             0.403345                    -0.388645
+Combined: QQQ 75% + gold-only static commodities + fast 4/26                                         Empirical on saved sleeves 0.366772                 0.042770 1.087719     -0.403642                           5                0.001249                0.006667             0.387315                    -0.403642
+       Combined: QQQ 75% + styles 15% + TSMOM 5% + fast 4/26 Empirical, multi-stage composition informed by first-stage results 0.365240                 0.041238 1.085099     -0.385513                           4               -0.013334                0.020000             0.393098                    -0.385513
+               Combined: QQQ 75% + remove Silver + fast 4/26                                         Empirical on saved sleeves 0.363423                 0.039421 1.080144     -0.395254                           5                0.008505                0.003333             0.383143                    -0.395254
+                     Combined: QQQ share 75% + fast 4/26 vol                                         Empirical on saved sleeves 0.357554                 0.033553 1.066949     -0.390830                           5                0.003983                0.006667             0.383244                    -0.390830
+                   Combined: QQQ 75% + rates 16% + fast 4/26                                         Empirical on saved sleeves 0.354773                 0.030771 1.060632     -0.438396                           4               -0.055894                0.020000             0.387416                    -0.438396
+         Combined: QQQ 75% + all-sleeve TSMOM 5% + fast 4/26                          Empirical transformation of saved sleeves 0.352548                 0.028547 1.055913     -0.402310                           4               -0.018507                0.030000             0.372039                    -0.402310
+                   Combined: QQQ 75% + rates 20% + fast 4/26                                         Empirical on saved sleeves 0.346050                 0.022049 1.040686     -0.485148                           3               -0.113586                0.180000             0.384644                    -0.485148
+        Combined: QQQ 75% + all-sleeve TSMOM 10% + fast 4/26                          Empirical transformation of saved sleeves 0.343906                 0.019904 1.036433     -0.422321                           2               -0.055384                0.206667             0.355681                    -0.422321
+                     Combined: QQQ 75% + all-sleeve TSMOM 5%                          Empirical transformation of saved sleeves 0.333147                 0.009146 1.012475     -0.429029                           4               -0.014814                0.150000             0.344336                    -0.429029
+                    Combined: QQQ 75% + all-sleeve TSMOM 10%                          Empirical transformation of saved sleeves 0.326194                 0.002193 0.996712     -0.438388                           2               -0.041348                0.450000             0.331174                    -0.438388
+                           Baseline: current 40/25/12/10/8/5                                         Empirical on saved sleeves 0.324001                 0.000000 0.991258     -0.442770                           0                0.000000                     NaN             0.338456                    -0.442770
+12:51:54 Executing run_meta_ensembles.py
+                                                 Experiment                                 Method     CAGR  CAGR uplift vs baseline   Sharpe  Max drawdown  Positive-uplift subperiods  Worst subperiod uplift  Bootstrap P(uplift<=0)  Choice changes
+                            Research four-strategy ensemble         Equal-weight strategy ensemble 0.369539                 0.045538 1.094243     -0.385515                           5                0.011119                0.000000             NaN
+Annual selector sharpe, trailing 156w, simple candidate set Annual walk-forward strategy selection 0.355242                 0.031241 1.061929     -0.399372                           3               -0.022271                0.033333            10.0
+   Annual selector log, trailing 156w, simple candidate set Annual walk-forward strategy selection 0.355242                 0.031241 1.061929     -0.399372                           3               -0.022271                0.033333            11.0
+   Annual selector log, trailing 260w, simple candidate set Annual walk-forward strategy selection 0.354819                 0.030818 1.060809     -0.391349                           3               -0.029094                0.023333            10.0
+                              Simple four-strategy ensemble         Equal-weight strategy ensemble 0.353627                 0.029626 1.058317     -0.401634                           5                0.004018                0.000000             NaN
+                       Conservative three-strategy ensemble         Equal-weight strategy ensemble 0.353487                 0.029485 1.057972     -0.406047                           5                0.002117                0.000000             NaN
+Annual selector sharpe, trailing 260w, simple candidate set Annual walk-forward strategy selection 0.346328                 0.022326 1.041597     -0.390940                           3               -0.046983                0.116667            12.0
+12:51:55 Executing run_nested_grid_selection.py
+raw grid 100
+raw grid 200
+raw grid 300
+raw grid 400
+raw grid 500
+                                        Experiment     CAGR  CAGR uplift vs baseline   Sharpe  Max drawdown  Positive-uplift subperiods  Worst subperiod uplift  Bootstrap P(uplift<=0)  Annualized incremental turnover cost
+   Nested grid: worst_year, 260w, top 10, fast vol 0.335918                 0.011917 1.017205     -0.360898                           3               -0.145252                0.403333                              0.000287
+          Nested grid: lcb, 260w, top 10, fast vol 0.334768                 0.010766 1.015223     -0.484833                           2               -0.124658                0.463333                              0.000445
+          Nested grid: log, 260w, top 10, fast vol 0.332717                 0.008715 1.010691     -0.464722                           2               -0.125270                0.480000                              0.000428
+       Nested grid: sharpe, 260w, top 10, fast vol 0.330013                 0.006012 1.004191     -0.477912                           2               -0.140506                0.483333                              0.000432
+    Nested grid: worst_year, 260w, top 1, fast vol 0.313628                -0.010373 0.965988     -0.378373                           2               -0.241760                0.700000                              0.000381
+Nested grid: worst_year, 260w, top 10, default vol 0.312466                -0.011535 0.964048     -0.407294                           2               -0.135494                0.736667                              0.000287
+       Nested grid: lcb, 260w, top 10, default vol 0.311410                -0.012591 0.962134     -0.477814                           2               -0.112095                0.713333                              0.000435
+       Nested grid: log, 260w, top 10, default vol 0.311393                -0.012608 0.962170     -0.458154                           2               -0.112521                0.690000                              0.000417
+        Nested grid: sharpe, 260w, top 1, fast vol 0.308402                -0.015600 0.954950     -0.422436                           3               -0.235965                0.693333                              0.000535
+    Nested grid: sharpe, 260w, top 10, default vol 0.307273                -0.016728 0.952286     -0.471692                           2               -0.128432                0.730000                              0.000420
+           Nested grid: log, 260w, top 1, fast vol 0.296575                -0.027426 0.927138     -0.438256                           3               -0.244236                0.773333                              0.000598
+     Nested grid: sharpe, 260w, top 1, default vol 0.296556                -0.027445 0.927375     -0.433661                           2               -0.205169                0.780000                              0.000515
+       Nested grid: sharpe, 156w, top 10, fast vol 0.296536                -0.027466 0.925567     -0.543697                           2               -0.173695                0.816667                              0.000564
+           Nested grid: lcb, 260w, top 1, fast vol 0.293612                -0.030390 0.919850     -0.442775                           3               -0.243767                0.816667                              0.000618
+          Nested grid: log, 156w, top 10, fast vol 0.293590                -0.030412 0.918749     -0.539174                           2               -0.175751                0.840000                              0.000547
+          Nested grid: lcb, 156w, top 10, fast vol 0.293126                -0.030876 0.917470     -0.553737                           2               -0.177966                0.833333                              0.000548
+ Nested grid: worst_year, 260w, top 1, default vol 0.292662                -0.031340 0.918268     -0.466773                           2               -0.212940                0.850000                              0.000380
+        Nested grid: log, 260w, top 1, default vol 0.284767                -0.039234 0.899366     -0.439327                           2               -0.212075                0.870000                              0.000574
+        Nested grid: lcb, 260w, top 1, default vol 0.281673                -0.042328 0.891746     -0.442406                           2               -0.212344                0.886667                              0.000591
+    Nested grid: sharpe, 156w, top 10, default vol 0.274464                -0.049538 0.874454     -0.528102                           1               -0.163444                0.933333                              0.000540
+       Nested grid: log, 156w, top 10, default vol 0.272729                -0.051273 0.870479     -0.525607                           1               -0.167045                0.946667                              0.000525
+       Nested grid: lcb, 156w, top 10, default vol 0.271918                -0.052084 0.868262     -0.537757                           1               -0.167897                0.943333                              0.000525
+           Nested grid: log, 156w, top 1, fast vol 0.266456                -0.057545 0.854553     -0.588774                           2               -0.210680                0.936667                              0.000665
+           Nested grid: lcb, 156w, top 1, fast vol 0.253045                -0.070956 0.821834     -0.629294                           1               -0.219137                0.966667                              0.000681
+        Nested grid: sharpe, 156w, top 1, fast vol 0.251644                -0.072357 0.818443     -0.627637                           1               -0.218318                0.976667                              0.000668
+        Nested grid: log, 156w, top 1, default vol 0.246806                -0.077196 0.807751     -0.588296                           2               -0.210155                0.966667                              0.000637
+     Nested grid: sharpe, 156w, top 1, default vol 0.236479                -0.087522 0.782057     -0.619197                           1               -0.213183                0.983333                              0.000631
+        Nested grid: lcb, 156w, top 1, default vol 0.234086                -0.089915 0.776104     -0.621068                           2               -0.214004                0.986667                              0.000650
+12:52:04 Captured 867 unique portfolio paths
+12:52:06 Expanded 100 strategies to daily P&L
+12:52:07 Expanded 200 strategies to daily P&L
+12:52:49 Expanded 300 strategies to daily P&L
+12:52:51 Expanded 400 strategies to daily P&L
+12:52:52 Expanded 500 strategies to daily P&L
+12:52:53 Expanded 600 strategies to daily P&L
+12:52:55 Expanded 700 strategies to daily P&L
+12:52:56 Expanded 800 strategies to daily P&L
+12:53:19 Running daily max-t reality check over 856 strategies
+12:53:22 Study complete
+{
+  "daily_observations": 4719,
+  "strategies": 874,
+  "baseline_cagr": 0.35773222258656245,
+  "top_strategy": "Combined: QQQ 100% + styles 15% + fast 4/26",
+  "top_cagr": 0.4237418580108787,
+  "top_cagr_uplift": 0.06600963542431626,
+  "top_daily_t": 3.088896912946201,
+  "top_daily_nw20_t": 2.928808007014874,
+  "top_search_adjusted_p": 0.14247669773635152,
+  "direct_daily_strategies": 808,
+  "hybrid_daily_strategies": 66
+}

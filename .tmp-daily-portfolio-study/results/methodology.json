@@ -1,0 +1,23 @@
+{
+  "Study period": [
+    "2005-01-07",
+    "2023-10-06"
+  ],
+  "Observation frequency": "Genuine daily portfolio mark-to-market dates from the Fama-French US trading calendar",
+  "Rebalance frequency": "Weekly; weights and leverage are constant within each week",
+  "T-stat formula": "(mean(candidate daily PnL - baseline daily PnL) / sample stdev(diff)) * sqrt(number of paired daily observations)",
+  "Equal-volatility rule": "Every strategy is ex-post rescaled to exactly 32.5% annualized daily volatility for comparison.",
+  "Direct sleeves": [
+    "QQQ price",
+    "Fama-French market",
+    "Fama-French HML/RMW/CMA/Mom composite",
+    "US5 futures",
+    "Gold futures",
+    "Corn futures",
+    "Silver futures",
+    "Bitcoin spot"
+  ],
+  "Trend reconstruction": "Contract-level multi-horizon time-series momentum proxy across global equity-index, rates, FX and commodity futures from pysystemtrade daily data.",
+  "Derived strategy treatment": "Strategies whose source return matrix modifies or adds weekly sleeves are bridged across each week using the corresponding genuine daily sleeve shape; source quality is reported per strategy.",
+  "Inference warning": "Daily P&L differences can be serially correlated. Newey-West t-stats and a 20-day moving-block max-t reality check accompany the requested statistic."
+}
