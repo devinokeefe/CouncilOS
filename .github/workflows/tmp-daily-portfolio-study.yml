@@ -3,12 +3,14 @@ name: Temporary daily portfolio study
 on:
   push:
     branches: [tmp-daily-portfolio-study-2-20260726]
+    paths-ignore:
+      - '.tmp-daily-portfolio-study/results/**'
   pull_request:
     branches: [main]
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 env:
   PYTHONUNBUFFERED: "1"
@@ -105,7 +107,9 @@ jobs:
           python -m py_compile /mnt/data/daily_rebuild_and_study.py /mnt/data/portfolio_experiment_engine.py
 
       - name: Fetch daily source returns and run study
+        id: study
         if: steps.assemble.outcome == 'success'
+        continue-on-error: true
         run: |
           set -o pipefail
           python /mnt/data/daily_rebuild_and_study.py 2>&1 | tee /tmp/artifact/study.log
@@ -121,7 +125,10 @@ jobs:
           cp /mnt/data/run_*experiments.py /tmp/artifact/ 2>/dev/null || true
           cp /mnt/data/run_meta_ensembles.py /tmp/artifact/ 2>/dev/null || true
           cp /mnt/data/run_nested_grid_selection.py /tmp/artifact/ 2>/dev/null || true
-          echo "assemble_outcome=${{ steps.assemble.outcome }}" > /tmp/artifact/workflow_status.txt
+          printf '{"run_id": "%s", "run_attempt": "%s", "event": "%s", "assemble_outcome": "%s", "study_outcome": "%s", "head_sha": "%s"}\n' \
+            "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" "$GITHUB_EVENT_NAME" \
+            "${{ steps.assemble.outcome }}" "${{ steps.study.outcome }}" "$GITHUB_SHA" \
+            > /tmp/artifact/workflow_run.json
           find /tmp/artifact -maxdepth 3 -type f -printf '%p %s bytes\n' | sort | head -200
 
       - name: Upload result bundle
@@ -133,6 +140,29 @@ jobs:
           retention-days: 1
           if-no-files-found: error
 
-      - name: Fail workflow if payload assembly failed
-        if: steps.assemble.outcome != 'success'
+      - name: Publish compact results and run ID to temporary branch
+        if: always() && github.event_name == 'push'
+        run: |
+          set -e
+          dest=.tmp-daily-portfolio-study/results
+          rm -rf "$dest"
+          mkdir -p "$dest"
+          cp /tmp/artifact/workflow_run.json "$dest/"
+          cp /tmp/artifact/study.log "$dest/" 2>/dev/null || true
+          cp /tmp/artifact/payload_diagnostic.log "$dest/" 2>/dev/null || true
+          for f in \
+            summary.json methodology.json source_manifest.csv trend_instrument_audit.csv \
+            strategy_daily_source_quality.csv all_daily_strategy_results.csv \
+            daily_strategy_shortlist.csv daily_hypothesis_family_summary.csv \
+            genuine_cboe_option_benchmark_tests.csv top_strategy_daily_pnl_diff.csv; do
+            cp "/mnt/data/daily_results/$f" "$dest/" 2>/dev/null || true
+          done
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add "$dest"
+          git commit -m 'Store temporary daily study outputs [skip actions]' || true
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+
+      - name: Fail workflow if assembly or study failed
+        if: steps.assemble.outcome != 'success' || steps.study.outcome != 'success'
         run: exit 1
