@@ -7,6 +7,12 @@ on:
     paths:
       - ".github/workflows/tmp_daily_portfolio_study.yml"
       - "tmp_daily_study/**"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/tmp_daily_portfolio_study.yml"
+      - "tmp_daily_study/**"
   workflow_dispatch:
 
 permissions:
