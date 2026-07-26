@@ -32,14 +32,17 @@ jobs:
 
       - name: Assemble and validate study payload
         run: |
-          mkdir -p /mnt/data
+          sudo mkdir -p /mnt/data
+          sudo chown -R "$USER":"$USER" /mnt/data
           cat .tmp-daily-portfolio-study/code_payload.part00 \
               .tmp-daily-portfolio-study/code_payload.part01 \
               .tmp-daily-portfolio-study/code_payload.part02 \
               .tmp-daily-portfolio-study/code_payload.part03 \
               .tmp-daily-portfolio-study/code_payload.part04 \
               | tr -d '\n\r ' | base64 --decode > /tmp/code_payload.zip
+          sha256sum /tmp/code_payload.zip
           echo "16906abfffc0f4b4c2a2073c97d6a27aba74ca80ffdf34a6db63ed6aa9a847d5  /tmp/code_payload.zip" | sha256sum --check
+          unzip -t /tmp/code_payload.zip
           unzip -q /tmp/code_payload.zip -d /mnt/data
           cp .tmp-daily-portfolio-study/daily_rebuild_and_study.py /mnt/data/daily_rebuild_and_study.py
           python -m py_compile /mnt/data/*.py
