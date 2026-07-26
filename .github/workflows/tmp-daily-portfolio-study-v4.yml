@@ -1,0 +1,111 @@
+name: Temporary genuine-daily portfolio study v4
+
+on:
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - '.tmp-daily-portfolio-study/results/**'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temporary-genuine-daily-study-v4-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  PYTHONUNBUFFERED: "1"
+  STUDY_BRANCH: tmp-daily-portfolio-study-2-20260726
+
+jobs:
+  daily-study:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - name: Check out study branch
+        uses: actions/checkout@v4
+        with:
+          ref: tmp-daily-portfolio-study-2-20260726
+          fetch-depth: 0
+
+      - name: Publish run-start marker
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          mkdir -p .tmp-daily-portfolio-study/results
+          printf '{"run_id":"%s","run_attempt":"%s","head_sha":"%s","event":"%s","status":"started"}\n' \
+            "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" "$GITHUB_SHA" "$GITHUB_EVENT_NAME" \
+            > .tmp-daily-portfolio-study/results/daily_run_started.json
+          git add .tmp-daily-portfolio-study/results/daily_run_started.json
+          git commit -m 'Record temporary daily-study run [skip actions]' || true
+          git push origin HEAD:${STUDY_BRANCH}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "numpy>=1.26" "pandas>=2.1" "scipy>=1.11" "statsmodels>=0.14" "requests>=2.31" "yfinance>=0.2.40"
+
+      - name: Fetch genuine daily returns and run study
+        id: study
+        continue-on-error: true
+        run: bash .tmp-daily-portfolio-study/run_daily_study_v4.sh
+
+      - name: Assemble result bundle
+        if: always()
+        run: |
+          mkdir -p /tmp/artifact
+          if [ -d /mnt/data/daily_results ]; then cp -a /mnt/data/daily_results /tmp/artifact/; fi
+          if [ -d /mnt/data/portfolio_experiments ]; then cp -a /mnt/data/portfolio_experiments /tmp/artifact/; fi
+          if [ -d /mnt/data/gobundle ]; then cp -a /mnt/data/gobundle /tmp/artifact/; fi
+          cp /mnt/data/daily_rebuild_and_study.py /tmp/artifact/ 2>/dev/null || true
+          cp /mnt/data/portfolio_experiment_engine.py /tmp/artifact/ 2>/dev/null || true
+          cp /mnt/data/run_*experiments.py /tmp/artifact/ 2>/dev/null || true
+          cp /mnt/data/run_meta_ensembles.py /tmp/artifact/ 2>/dev/null || true
+          cp /mnt/data/run_nested_grid_selection.py /tmp/artifact/ 2>/dev/null || true
+          printf '{"run_id":"%s","run_attempt":"%s","head_sha":"%s","event":"%s","study_outcome":"%s"}\n' \
+            "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" "$GITHUB_SHA" "$GITHUB_EVENT_NAME" \
+            "${{ steps.study.outcome }}" > /tmp/artifact/workflow_run.json
+          find /tmp/artifact -maxdepth 3 -type f -printf '%p %s bytes\n' | sort | head -300
+
+      - name: Upload full research artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: genuine-daily-portfolio-study-results
+          path: /tmp/artifact
+          retention-days: 1
+          if-no-files-found: error
+
+      - name: Publish compact outputs
+        if: always()
+        run: |
+          set -e
+          git fetch origin ${STUDY_BRANCH}
+          git checkout ${STUDY_BRANCH}
+          git pull --rebase origin ${STUDY_BRANCH}
+          dest=.tmp-daily-portfolio-study/results
+          rm -rf "$dest"
+          mkdir -p "$dest"
+          cp /tmp/artifact/workflow_run.json "$dest/"
+          cp /tmp/artifact/study.log "$dest/" 2>/dev/null || true
+          for f in summary.json methodology.json source_manifest.csv trend_instrument_audit.csv \
+                   strategy_daily_source_quality.csv all_daily_strategy_results.csv \
+                   daily_strategy_shortlist.csv daily_hypothesis_family_summary.csv \
+                   genuine_cboe_option_benchmark_tests.csv top_strategy_daily_pnl_diff.csv; do
+            cp "/mnt/data/daily_results/$f" "$dest/" 2>/dev/null || true
+          done
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add "$dest"
+          git commit -m 'Store temporary genuine-daily study outputs [skip actions]' || true
+          git push origin ${STUDY_BRANCH}
+
+      - name: Fail if study failed
+        if: steps.study.outcome != 'success'
+        run: exit 1
