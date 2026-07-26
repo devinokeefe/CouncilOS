@@ -1,0 +1,178 @@
+name: Temporary genuine-daily portfolio study v3
+
+on:
+  push:
+    branches: [tmp-daily-portfolio-study-2-20260726]
+    paths-ignore:
+      - '.tmp-daily-portfolio-study/results/**'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temporary-genuine-daily-study-v3
+  cancel-in-progress: true
+
+env:
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  daily-study:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - name: Check out study branch
+        uses: actions/checkout@v4
+        with:
+          ref: tmp-daily-portfolio-study-2-20260726
+          fetch-depth: 0
+
+      - name: Publish run-start marker
+        run: |
+          set -e
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          mkdir -p .tmp-daily-portfolio-study/results
+          printf '{"run_id":"%s","run_attempt":"%s","head_sha":"%s","event":"%s","status":"started"}\n' \
+            "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" "$GITHUB_SHA" "$GITHUB_EVENT_NAME" \
+            > .tmp-daily-portfolio-study/results/daily_run_started.json
+          git add .tmp-daily-portfolio-study/results/daily_run_started.json
+          git commit -m 'Record temporary daily-study run [skip actions]' || true
+          git push origin HEAD:tmp-daily-portfolio-study-2-20260726
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "numpy>=1.26" "pandas>=2.1" "scipy>=1.11" "statsmodels>=0.14" "requests>=2.31" "yfinance>=0.2.40"
+
+      - name: Prepare workspaces
+        run: |
+          sudo mkdir -p /mnt/data
+          sudo chown -R "$USER":"$USER" /mnt/data
+          mkdir -p /tmp/artifact
+
+      - name: Assemble and validate research payload
+        id: assemble
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          {
+            cat .tmp-daily-portfolio-study/code_payload.part00 \
+                .tmp-daily-portfolio-study/code_payload.part01a \
+                .tmp-daily-portfolio-study/code_payload.part01b \
+                .tmp-daily-portfolio-study/code_payload.part02aa \
+                .tmp-daily-portfolio-study/code_payload.part02ab \
+                .tmp-daily-portfolio-study/code_payload.part02b \
+                .tmp-daily-portfolio-study/code_payload.part03 \
+                .tmp-daily-portfolio-study/code_payload.part04 \
+                | tr -d '\n\r ' > /tmp/code_payload.b64
+            base64 --decode /tmp/code_payload.b64 > /tmp/code_payload.zip
+            echo "16906abfffc0f4b4c2a2073c97d6a27aba74ca80ffdf34a6db63ed6aa9a847d5  /tmp/code_payload.zip" | sha256sum --check
+            unzip -t /tmp/code_payload.zip
+            unzip -q /tmp/code_payload.zip -d /mnt/data
+            cp .tmp-daily-portfolio-study/daily_rebuild_and_study.py /mnt/data/daily_rebuild_and_study.py
+            python -m py_compile /mnt/data/*.py
+            ls -lh /mnt/data
+          } 2>&1 | tee /tmp/artifact/payload_diagnostic.log
+
+      - name: Patch daily-date alignment and numerical edge cases
+        if: steps.assemble.outcome == 'success'
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          runner = Path('/mnt/data/daily_rebuild_and_study.py')
+          text = runner.read_text(encoding='utf-8')
+          text = text.replace(
+              "pd.to_datetime(df[datecol], errors='coerce').dt.tz_localize(None)",
+              "pd.to_datetime(df[datecol], errors='coerce').dt.tz_localize(None).dt.normalize()",
+          )
+          runner.write_text(text, encoding='utf-8')
+
+          engine = Path('/mnt/data/portfolio_experiment_engine.py')
+          text = engine.read_text(encoding='utf-8')
+          text = text.replace(
+              """    if s <= 0:
+        raise ValueError('weights sum to zero')
+    return w / s
+""",
+              """    if s <= 0:
+        if len(w) == 0:
+            raise ValueError('empty asset set')
+        return pd.Series(1.0 / len(w), index=w.index)
+    return w / s
+""",
+          )
+          engine.write_text(text, encoding='utf-8')
+          PY
+          python -m py_compile /mnt/data/daily_rebuild_and_study.py /mnt/data/portfolio_experiment_engine.py
+
+      - name: Fetch daily returns and run full study
+        id: study
+        if: steps.assemble.outcome == 'success'
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          python /mnt/data/daily_rebuild_and_study.py 2>&1 | tee /tmp/artifact/study.log
+
+      - name: Assemble complete result bundle
+        if: always()
+        run: |
+          if [ -d /mnt/data/daily_results ]; then cp -a /mnt/data/daily_results /tmp/artifact/; fi
+          if [ -d /mnt/data/portfolio_experiments ]; then cp -a /mnt/data/portfolio_experiments /tmp/artifact/; fi
+          if [ -d /mnt/data/gobundle ]; then cp -a /mnt/data/gobundle /tmp/artifact/; fi
+          cp /mnt/data/daily_rebuild_and_study.py /tmp/artifact/ 2>/dev/null || true
+          cp /mnt/data/portfolio_experiment_engine.py /tmp/artifact/ 2>/dev/null || true
+          cp /mnt/data/run_*experiments.py /tmp/artifact/ 2>/dev/null || true
+          cp /mnt/data/run_meta_ensembles.py /tmp/artifact/ 2>/dev/null || true
+          cp /mnt/data/run_nested_grid_selection.py /tmp/artifact/ 2>/dev/null || true
+          printf '{"run_id":"%s","run_attempt":"%s","head_sha":"%s","event":"%s","assemble_outcome":"%s","study_outcome":"%s"}\n' \
+            "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" "$GITHUB_SHA" "$GITHUB_EVENT_NAME" \
+            "${{ steps.assemble.outcome }}" "${{ steps.study.outcome }}" \
+            > /tmp/artifact/workflow_run.json
+          find /tmp/artifact -maxdepth 3 -type f -printf '%p %s bytes\n' | sort | head -300
+
+      - name: Upload full research artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: genuine-daily-portfolio-study-results
+          path: /tmp/artifact
+          retention-days: 1
+          if-no-files-found: error
+
+      - name: Publish compact outputs and final run manifest
+        if: always()
+        run: |
+          set -e
+          git fetch origin tmp-daily-portfolio-study-2-20260726
+          git checkout tmp-daily-portfolio-study-2-20260726
+          git pull --rebase origin tmp-daily-portfolio-study-2-20260726
+          dest=.tmp-daily-portfolio-study/results
+          rm -rf "$dest"
+          mkdir -p "$dest"
+          cp /tmp/artifact/workflow_run.json "$dest/"
+          cp /tmp/artifact/study.log "$dest/" 2>/dev/null || true
+          cp /tmp/artifact/payload_diagnostic.log "$dest/" 2>/dev/null || true
+          for f in \
+            summary.json methodology.json source_manifest.csv trend_instrument_audit.csv \
+            strategy_daily_source_quality.csv all_daily_strategy_results.csv \
+            daily_strategy_shortlist.csv daily_hypothesis_family_summary.csv \
+            genuine_cboe_option_benchmark_tests.csv top_strategy_daily_pnl_diff.csv; do
+            cp "/mnt/data/daily_results/$f" "$dest/" 2>/dev/null || true
+          done
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add "$dest"
+          git commit -m 'Store temporary genuine-daily study outputs [skip actions]' || true
+          git push origin tmp-daily-portfolio-study-2-20260726
+
+      - name: Fail workflow if assembly or study failed
+        if: steps.assemble.outcome != 'success' || steps.study.outcome != 'success'
+        run: exit 1
