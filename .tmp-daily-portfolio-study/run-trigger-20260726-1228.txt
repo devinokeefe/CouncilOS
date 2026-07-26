@@ -1,0 +1,1 @@
+Trigger daily portfolio study after timestamp and optimizer fixes.
