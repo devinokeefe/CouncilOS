@@ -1,0 +1,25 @@
+name: Temporary push marker
+
+on:
+  push:
+    branches: [tmp-daily-portfolio-study-2-20260726]
+    paths-ignore:
+      - '.tmp-daily-portfolio-study/results/**'
+
+permissions:
+  contents: write
+
+jobs:
+  marker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Commit marker
+        run: |
+          mkdir -p .tmp-daily-portfolio-study/results
+          printf '{"run_id":"%s","sha":"%s","event":"%s"}\n' "$GITHUB_RUN_ID" "$GITHUB_SHA" "$GITHUB_EVENT_NAME" > .tmp-daily-portfolio-study/results/push_marker.json
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add .tmp-daily-portfolio-study/results/push_marker.json
+          git commit -m 'Store temporary push marker [skip actions]' || true
+          git push origin "HEAD:${GITHUB_REF_NAME}"
