@@ -1,0 +1,72 @@
+name: Temporary daily portfolio study
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  daily-study:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - name: Check out study branch
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "numpy>=1.26" "pandas>=2.1" "scipy>=1.11" "statsmodels>=0.14" "requests>=2.31" "yfinance>=0.2.40"
+
+      - name: Assemble and validate study payload
+        run: |
+          mkdir -p /mnt/data
+          cat .tmp-daily-portfolio-study/code_payload.part00 \
+              .tmp-daily-portfolio-study/code_payload.part01 \
+              .tmp-daily-portfolio-study/code_payload.part02 \
+              .tmp-daily-portfolio-study/code_payload.part03 \
+              .tmp-daily-portfolio-study/code_payload.part04 \
+              | tr -d '\n\r ' | base64 --decode > /tmp/code_payload.zip
+          echo "16906abfffc0f4b4c2a2073c97d6a27aba74ca80ffdf34a6db63ed6aa9a847d5  /tmp/code_payload.zip" | sha256sum --check
+          unzip -q /tmp/code_payload.zip -d /mnt/data
+          cp .tmp-daily-portfolio-study/daily_rebuild_and_study.py /mnt/data/daily_rebuild_and_study.py
+          python -m py_compile /mnt/data/*.py
+          ls -lh /mnt/data
+
+      - name: Fetch daily source returns and run study
+        run: python /mnt/data/daily_rebuild_and_study.py
+
+      - name: Assemble result bundle
+        if: always()
+        run: |
+          mkdir -p /tmp/artifact
+          if [ -d /mnt/data/daily_results ]; then cp -a /mnt/data/daily_results /tmp/artifact/; fi
+          if [ -d /mnt/data/portfolio_experiments ]; then cp -a /mnt/data/portfolio_experiments /tmp/artifact/; fi
+          if [ -d /mnt/data/gobundle ]; then cp -a /mnt/data/gobundle /tmp/artifact/; fi
+          cp /mnt/data/daily_rebuild_and_study.py /tmp/artifact/ 2>/dev/null || true
+          cp /mnt/data/portfolio_experiment_engine.py /tmp/artifact/ 2>/dev/null || true
+          cp /mnt/data/run_*experiments.py /tmp/artifact/ 2>/dev/null || true
+          cp /mnt/data/run_meta_ensembles.py /tmp/artifact/ 2>/dev/null || true
+          cp /mnt/data/run_nested_grid_selection.py /tmp/artifact/ 2>/dev/null || true
+          find /tmp/artifact -maxdepth 3 -type f -printf '%p %s bytes\n' | sort | head -200
+
+      - name: Upload result bundle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-portfolio-study-results
+          path: /tmp/artifact
+          retention-days: 1
+          if-no-files-found: error
