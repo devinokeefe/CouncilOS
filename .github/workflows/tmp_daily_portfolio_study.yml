@@ -1,0 +1,64 @@
+name: Temporary Daily Portfolio Study
+
+on:
+  push:
+    branches:
+      - tmp-daily-portfolio-study-20260726-v2
+    paths:
+      - ".github/workflows/tmp_daily_portfolio_study.yml"
+      - "tmp_daily_study/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  run-study:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Check out temporary branch
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Reconstruct study payload
+        shell: bash
+        run: |
+          set -euxo pipefail
+          sudo mkdir -p /mnt/data
+          sudo chown "$USER":"$USER" /mnt/data
+          cat tmp_daily_study/payload/part* | base64 -d > /tmp/daily-study.zip
+          unzip -o /tmp/daily-study.zip -d /mnt/data
+          python -m pip install --upgrade pip
+          python -m pip install -r /mnt/data/requirements.txt
+
+      - name: Fetch daily returns and run study
+        shell: bash
+        run: |
+          set -euxo pipefail
+          python /mnt/data/daily_rebuild_and_study.py
+
+      - name: Package results
+        if: always()
+        shell: bash
+        run: |
+          set -euxo pipefail
+          cd /mnt/data
+          zip -r /tmp/genuine-daily-portfolio-study.zip \
+            daily_results portfolio_experiments gobundle \
+            daily_rebuild_and_study.py portfolio_experiment_engine.py \
+            run_portfolio_experiments.py run_combination_experiments.py \
+            run_meta_ensembles.py run_nested_grid_selection.py requirements.txt || true
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: genuine-daily-portfolio-study
+          path: /tmp/genuine-daily-portfolio-study.zip
+          if-no-files-found: error
+          retention-days: 1
