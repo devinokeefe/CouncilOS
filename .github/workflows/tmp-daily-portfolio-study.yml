@@ -45,21 +45,24 @@ jobs:
             wc -c .tmp-daily-portfolio-study/code_payload.part00 \
                   .tmp-daily-portfolio-study/code_payload.part01a \
                   .tmp-daily-portfolio-study/code_payload.part01b \
-                  .tmp-daily-portfolio-study/code_payload.part02a \
+                  .tmp-daily-portfolio-study/code_payload.part02aa \
+                  .tmp-daily-portfolio-study/code_payload.part02ab \
                   .tmp-daily-portfolio-study/code_payload.part02b \
                   .tmp-daily-portfolio-study/code_payload.part03 \
                   .tmp-daily-portfolio-study/code_payload.part04
             sha256sum .tmp-daily-portfolio-study/code_payload.part00 \
                       .tmp-daily-portfolio-study/code_payload.part01a \
                       .tmp-daily-portfolio-study/code_payload.part01b \
-                      .tmp-daily-portfolio-study/code_payload.part02a \
+                      .tmp-daily-portfolio-study/code_payload.part02aa \
+                      .tmp-daily-portfolio-study/code_payload.part02ab \
                       .tmp-daily-portfolio-study/code_payload.part02b \
                       .tmp-daily-portfolio-study/code_payload.part03 \
                       .tmp-daily-portfolio-study/code_payload.part04
             cat .tmp-daily-portfolio-study/code_payload.part00 \
                 .tmp-daily-portfolio-study/code_payload.part01a \
                 .tmp-daily-portfolio-study/code_payload.part01b \
-                .tmp-daily-portfolio-study/code_payload.part02a \
+                .tmp-daily-portfolio-study/code_payload.part02aa \
+                .tmp-daily-portfolio-study/code_payload.part02ab \
                 .tmp-daily-portfolio-study/code_payload.part02b \
                 .tmp-daily-portfolio-study/code_payload.part03 \
                 .tmp-daily-portfolio-study/code_payload.part04 \
