@@ -1,0 +1,33 @@
+name: Temporary current IBKR sizing
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tmp_ibkr_sizing/**'
+      - '.github/workflows/tmp_current_ibkr_sizing.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  size-portfolio:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip pandas numpy yfinance
+      - name: Fetch market data and calculate current targets
+        run: python tmp_ibkr_sizing/current_sizing.py
+      - name: Package results
+        run: zip -r /tmp/current-ibkr-sizing.zip tmp_ibkr_sizing/output tmp_ibkr_sizing/current_sizing.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: current-ibkr-sizing
+          path: /tmp/current-ibkr-sizing.zip
+          retention-days: 1
