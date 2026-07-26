@@ -39,14 +39,16 @@ jobs:
           sudo chown "$USER":"$USER" /mnt/data
           cat tmp_daily_study/payload/part* | base64 -d > /tmp/daily-study.zip
           unzip -o /tmp/daily-study.zip -d /mnt/data
-          python -m pip install --upgrade pip
-          python -m pip install -r /mnt/data/requirements.txt
+          python tmp_daily_study/patch_engine.py
+          python -m pip install --upgrade pip --quiet
+          python -m pip install -r /mnt/data/requirements.txt --quiet
 
       - name: Fetch daily returns and run study
         shell: bash
         run: |
           set -euxo pipefail
-          python /mnt/data/daily_rebuild_and_study.py
+          mkdir -p /mnt/data/daily_results
+          python /mnt/data/daily_rebuild_and_study.py 2>&1 | tee /mnt/data/daily_results/run.log
 
       - name: Package results
         if: always()
