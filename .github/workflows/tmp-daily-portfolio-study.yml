@@ -1,6 +1,8 @@
 name: Temporary daily portfolio study
 
 on:
+  push:
+    branches: [tmp-daily-portfolio-study-2-20260726]
   pull_request:
     branches: [main]
   workflow_dispatch:
